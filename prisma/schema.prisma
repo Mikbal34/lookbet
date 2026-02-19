@@ -1,0 +1,329 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============ ENUMS ============
+
+enum UserRole {
+  CUSTOMER
+  AGENCY
+  ADMIN
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  FAILED
+}
+
+enum ReservationSource {
+  CUSTOMER
+  AGENCY
+}
+
+enum PriceRuleType {
+  PERCENTAGE_DISCOUNT
+  FIXED_DISCOUNT
+  MARKUP
+}
+
+enum PriceRuleTarget {
+  ALL_AGENCIES
+  SPECIFIC_AGENCY
+  ALL_CUSTOMERS
+}
+
+enum CommissionType {
+  PERCENTAGE
+  FIXED
+}
+
+enum LocationType {
+  COUNTRY
+  CITY
+  DISTRICT
+  AREA
+}
+
+// ============ USER & AUTH ============
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  phone        String?
+  passwordHash String
+  role         UserRole  @default(CUSTOMER)
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  agency          Agency?        @relation("UserAgency")
+  approvedAgencies Agency[]      @relation("ApprovedByAdmin")
+  reservations    Reservation[]
+  searchHistories SearchHistory[]
+  auditLogs       AuditLog[]
+  notifications   Notification[]
+  priceRules      PriceRule[]    @relation("CreatedByAdmin")
+
+  @@map("users")
+}
+
+model Agency {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  companyName  String
+  taxId        String   @unique
+  address      String?
+  phone        String?
+  discountRate Float    @default(0)
+  feedId       String?
+  isApproved   Boolean  @default(false)
+  approvedById String?
+  commission   Float    @default(0)
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user         User     @relation("UserAgency", fields: [userId], references: [id], onDelete: Cascade)
+  approvedBy   User?    @relation("ApprovedByAdmin", fields: [approvedById], references: [id])
+  reservations Reservation[]
+  priceRules   PriceRule[]
+  commissions  Commission[]
+
+  @@map("agencies")
+}
+
+// ============ ROYAL API CACHE ============
+
+model RoyalApiToken {
+  id           String   @id @default(cuid())
+  accessToken  String
+  refreshToken String?
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+
+  @@map("royal_api_tokens")
+}
+
+model Currency {
+  id   String @id @default(cuid())
+  code String @unique
+  name String
+
+  @@map("currencies")
+}
+
+model BoardType {
+  id   String @id @default(cuid())
+  code String @unique
+  name String
+
+  @@map("board_types")
+}
+
+model HotelFacility {
+  id         String @id @default(cuid())
+  externalId String @unique
+  category   String
+  name       String
+
+  @@map("hotel_facilities")
+}
+
+model RoomAttribute {
+  id         String @id @default(cuid())
+  externalId String @unique
+  category   String
+  name       String
+
+  @@map("room_attributes")
+}
+
+model Location {
+  id         String       @id @default(cuid())
+  externalId String       @unique
+  name       String
+  parentId   String?
+  type       LocationType @default(CITY)
+
+  parent   Location?  @relation("LocationHierarchy", fields: [parentId], references: [id])
+  children Location[] @relation("LocationHierarchy")
+  hotels   Hotel[]
+
+  @@map("locations")
+}
+
+model Hotel {
+  id          String   @id @default(cuid())
+  hotelCode   String   @unique
+  name        String
+  stars       Int?
+  address     String?
+  latitude    Float?
+  longitude   Float?
+  description String?
+  images      Json?
+  facilities  Json?
+  locationId  String?
+  phone       String?
+  email       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  location Location? @relation(fields: [locationId], references: [id])
+
+  @@index([locationId])
+  @@map("hotels")
+}
+
+// ============ PRICING & RULES ============
+
+model PriceRule {
+  id          String          @id @default(cuid())
+  name        String
+  type        PriceRuleType
+  value       Float
+  appliesTo   PriceRuleTarget
+  agencyId    String?
+  hotelCode   String?
+  boardType   String?
+  startDate   DateTime?
+  endDate     DateTime?
+  isActive    Boolean         @default(true)
+  priority    Int             @default(0)
+  createdById String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  agency    Agency? @relation(fields: [agencyId], references: [id])
+  createdBy User?   @relation("CreatedByAdmin", fields: [createdById], references: [id])
+
+  @@index([isActive, priority])
+  @@index([agencyId])
+  @@map("price_rules")
+}
+
+model Commission {
+  id        String         @id @default(cuid())
+  agencyId  String
+  type      CommissionType
+  value     Float
+  hotelCode String?
+  boardType String?
+  startDate DateTime?
+  endDate   DateTime?
+  isActive  Boolean        @default(true)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
+  @@index([agencyId, isActive])
+  @@map("commissions")
+}
+
+// ============ RESERVATIONS ============
+
+model Reservation {
+  id                    String            @id @default(cuid())
+  bookingNumber         String?           @unique
+  clientReferenceId     String            @unique @default(cuid())
+  hotelCode             String
+  hotelName             String?
+  userId                String
+  agencyId              String?
+  checkIn               DateTime
+  checkOut              DateTime
+  status                ReservationStatus @default(PENDING)
+  totalPrice            Float
+  discountedPrice       Float?
+  discountAmount        Float?
+  currency              String            @default("EUR")
+  boardType             String?
+  roomType              String?
+  contactName           String?
+  contactEmail          String?
+  contactPhone          String?
+  guests                Json?
+  cancellationPolicy    Json?
+  roomConfirmationCodes Json?
+  appliedPriceRules     Json?
+  source                ReservationSource @default(CUSTOMER)
+  notes                 String?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  user   User    @relation(fields: [userId], references: [id])
+  agency Agency? @relation(fields: [agencyId], references: [id])
+
+  @@index([userId])
+  @@index([agencyId])
+  @@index([status])
+  @@index([checkIn, checkOut])
+  @@map("reservations")
+}
+
+// ============ SYSTEM ============
+
+model SearchHistory {
+  id          String   @id @default(cuid())
+  userId      String?
+  params      Json
+  resultCount Int?
+  createdAt   DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("search_histories")
+}
+
+model SystemSetting {
+  id          String  @id @default(cuid())
+  key         String  @unique
+  value       String
+  description String?
+
+  @@map("system_settings")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  entity    String
+  entityId  String?
+  oldData   Json?
+  newData   Json?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([entity, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String?
+  type      String
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}

@@ -1,0 +1,16 @@
+"use client";
+
+import { Navbar } from "@/components/layout";
+
+export default function AgencyLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <main>{children}</main>
+    </div>
+  );
+}
