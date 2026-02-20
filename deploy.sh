@@ -93,7 +93,7 @@ docker compose -f docker-compose.prod.yml down
 docker compose -f docker-compose.prod.yml up -d
 
 echo "==> Prisma migrate deploy..."
-docker compose -f docker-compose.prod.yml exec app npx prisma migrate deploy
+docker compose -f docker-compose.prod.yml exec app node node_modules/prisma/build/index.js migrate deploy
 
 echo "==> Nginx reload..."
 sudo nginx -t && sudo systemctl reload nginx
@@ -111,7 +111,7 @@ DEPLOY_EOF
 cmd_migrate() {
     check_config
     log "Prisma migrate deploy çalıştırılıyor..."
-    ssh_cmd "cd ${APP_DIR} && docker compose -f docker-compose.prod.yml exec app npx prisma migrate deploy"
+    ssh_cmd "cd ${APP_DIR} && docker compose -f docker-compose.prod.yml exec app node node_modules/prisma/build/index.js migrate deploy"
     log "Migration tamamlandı."
 }
 
