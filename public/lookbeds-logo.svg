@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- LookBeds logosu — vektörel yeniden çizim.
+       Marka turuncusu: #E06028 (orijinal görselden örneklendi) -->
+  <rect x="14" y="14" width="484" height="484" rx="112" fill="#E06028"/>
+
+  <!-- Yatak "H" formu -->
+  <!-- Sol dikey (başlık) -->
+  <rect x="76" y="52" width="58" height="340" rx="29" fill="#FFFFFF"/>
+  <!-- Sağ dikey (ayak ucu) -->
+  <rect x="378" y="120" width="58" height="340" rx="29" fill="#FFFFFF"/>
+  <!-- Yatak platformu (kalın orta bar) -->
+  <rect x="76" y="248" width="360" height="86" rx="30" fill="#FFFFFF"/>
+
+  <!-- LOOK — gözlü O'lar -->
+  <g font-family="Arial Rounded MT Bold, Nunito, Quicksand, Arial, sans-serif" font-weight="800" fill="#FFFFFF" text-anchor="middle">
+    <text x="170" y="224" font-size="64">L</text>
+    <text x="228" y="224" font-size="64">O</text>
+    <text x="291" y="224" font-size="64">O</text>
+    <text x="352" y="224" font-size="64">K</text>
+  </g>
+  <!-- Gözler -->
+  <circle cx="228" cy="201" r="9.5" fill="#14100C"/>
+  <circle cx="291" cy="201" r="9.5" fill="#14100C"/>
+
+  <!-- BEDS -->
+  <g font-family="Arial Rounded MT Bold, Nunito, Quicksand, Arial, sans-serif" font-weight="800" fill="#FFFFFF" text-anchor="middle">
+    <text x="172" y="428" font-size="64">B</text>
+    <text x="234" y="428" font-size="64">E</text>
+    <text x="297" y="428" font-size="64">D</text>
+    <text x="359" y="428" font-size="64">S</text>
+  </g>
+</svg>

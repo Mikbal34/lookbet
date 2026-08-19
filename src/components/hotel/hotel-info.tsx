@@ -146,7 +146,7 @@ export function HotelInfo({ hotel, className }: HotelInfoProps) {
       {(phone || email) && (
         <section
           aria-labelledby="contact-heading"
-          className="rounded-xl border border-gray-100 bg-gray-50 p-4 space-y-2"
+          className="rounded-lg border border-gray-100 bg-gray-50 p-4 space-y-2"
         >
           <h2 id="contact-heading" className="text-sm font-semibold text-gray-700">
             İletişim

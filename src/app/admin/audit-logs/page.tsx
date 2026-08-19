@@ -68,7 +68,7 @@ function DetailsCell({ details }: { details: Record<string, unknown> | null | un
     <div>
       <button
         onClick={() => setExpanded((v) => !v)}
-        className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-medium"
+        className="inline-flex items-center gap-1 text-xs text-navy hover:text-navy-dark font-medium"
         aria-expanded={expanded}
         aria-label={expanded ? "Detayı gizle" : "Detayı göster"}
       >
@@ -122,18 +122,18 @@ export default function AuditLogsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Denetim Logları</h1>
+        <h1 className="font-serif text-[28px] font-normal text-ink">Denetim Logları</h1>
         <p className="text-sm text-gray-500 mt-1">
           Toplam {data?.total ?? 0} log kaydı
         </p>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4 flex flex-col sm:flex-row gap-3 flex-wrap">
+      <div className="bg-white rounded-md border border-[rgb(26_24_20/0.08)] p-4 flex flex-col sm:flex-row gap-3 flex-wrap">
         <select
           value={entityType}
           onChange={(e) => { setEntityType(e.target.value); setPage(1); }}
-          className="w-full sm:w-48 py-2 px-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full sm:w-48 py-2 px-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy"
           aria-label="Varlık türüne göre filtrele"
         >
           {ENTITY_TYPES.map((et) => (
@@ -146,7 +146,7 @@ export default function AuditLogsPage() {
         <select
           value={userId}
           onChange={(e) => { setUserId(e.target.value); setPage(1); }}
-          className="w-full sm:w-56 py-2 px-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full sm:w-56 py-2 px-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy"
           aria-label="Kullanıcıya göre filtrele"
         >
           <option value="">Tüm Kullanıcılar</option>
@@ -163,7 +163,7 @@ export default function AuditLogsPage() {
             type="date"
             value={dateFrom}
             onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
-            className="py-2 px-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="py-2 px-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy"
             aria-label="Başlangıç tarihi"
           />
           <span className="text-gray-400 text-sm">–</span>
@@ -171,14 +171,14 @@ export default function AuditLogsPage() {
             type="date"
             value={dateTo}
             onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
-            className="py-2 px-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="py-2 px-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy"
             aria-label="Bitiş tarihi"
           />
         </div>
       </div>
 
       {/* Logs Table */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-white rounded-md border border-[rgb(26_24_20/0.08)] p-6">
         {isLoading ? (
           <div className="space-y-3 animate-pulse">
             {[1, 2, 3, 4, 5].map((i) => (

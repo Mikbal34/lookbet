@@ -69,12 +69,12 @@ export default function AdminDashboardPage() {
       <div className="space-y-6 animate-pulse">
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-28 bg-white rounded-xl border border-gray-200" />
+            <div key={i} className="h-28 bg-white rounded-md border border-[rgb(26_24_20/0.08)]" />
           ))}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 h-80 bg-white rounded-xl border border-gray-200" />
-          <div className="h-80 bg-white rounded-xl border border-gray-200" />
+          <div className="lg:col-span-2 h-80 bg-white rounded-md border border-[rgb(26_24_20/0.08)]" />
+          <div className="h-80 bg-white rounded-md border border-[rgb(26_24_20/0.08)]" />
         </div>
       </div>
     );
@@ -124,7 +124,7 @@ export default function AdminDashboardPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+        <h1 className="font-serif text-[28px] font-normal text-ink">Dashboard</h1>
         <p className="text-sm text-gray-500 mt-1">Lookbet admin paneline hoş geldiniz</p>
       </div>
 
@@ -134,7 +134,7 @@ export default function AdminDashboardPage() {
           title="Toplam Rezervasyon"
           value={stats?.totalReservations ?? 0}
           icon={CalendarCheck}
-          iconColor="text-blue-600 bg-blue-100"
+          iconColor="text-navy bg-chip-blue"
         />
         <StatsCard
           title="Toplam Ciro"
@@ -196,7 +196,7 @@ export default function AdminDashboardPage() {
       </ChartCard>
 
       {/* Recent Reservations */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-white rounded-md border border-[rgb(26_24_20/0.08)] p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Son Rezervasyonlar</h3>
         <DataTable
           columns={columns}

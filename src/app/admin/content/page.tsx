@@ -63,7 +63,7 @@ export default function ContentSyncPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Content Sync</h1>
+          <h1 className="font-serif text-[28px] font-normal text-ink">Content Sync</h1>
           <p className="text-sm text-gray-500 mt-1">
             {status?.lastSync
               ? `Son senkronizasyon: ${formatDate(status.lastSync)}`
@@ -76,7 +76,7 @@ export default function ContentSyncPage() {
             syncMutation.mutate();
           }}
           disabled={syncMutation.isPending}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-navy text-white text-sm font-medium rounded-lg hover:bg-navy-dark transition-colors disabled:opacity-50"
           aria-label="Senkronizasyonu başlat"
         >
           <RefreshCw
@@ -92,7 +92,7 @@ export default function ContentSyncPage() {
           title="Otel Sayısı"
           value={counts?.hotels ?? 0}
           icon={Hotel}
-          iconColor="text-blue-600 bg-blue-100"
+          iconColor="text-navy bg-chip-blue"
         />
         <StatsCard
           title="Lokasyon Sayısı"
@@ -110,11 +110,11 @@ export default function ContentSyncPage() {
 
       {/* Loading state */}
       {syncMutation.isPending && (
-        <div className="bg-white rounded-xl border border-blue-200 p-8">
+        <div className="bg-white rounded-lg border border-line p-8">
           <div className="flex flex-col items-center gap-4">
             <div className="relative">
-              <div className="w-16 h-16 rounded-full border-4 border-blue-100" />
-              <div className="absolute inset-0 w-16 h-16 rounded-full border-4 border-blue-600 border-t-transparent animate-spin" />
+              <div className="w-16 h-16 rounded-full border-4 border-line" />
+              <div className="absolute inset-0 w-16 h-16 rounded-full border-4 border-navy border-t-transparent animate-spin" />
             </div>
             <div className="text-center">
               <p className="font-semibold text-gray-900">Senkronizasyon devam ediyor...</p>
@@ -129,7 +129,7 @@ export default function ContentSyncPage() {
       {/* Sync Result */}
       {syncResult && !syncMutation.isPending && (
         <div
-          className={`bg-white rounded-xl border p-6 ${
+          className={`bg-white rounded-lg border p-6 ${
             syncResult.success ? "border-green-200" : "border-orange-200"
           }`}
         >
@@ -161,7 +161,7 @@ export default function ContentSyncPage() {
                 key={item.label}
                 className="bg-gray-50 rounded-lg p-4 text-center"
               >
-                <p className="text-2xl font-bold text-gray-900">{item.count}</p>
+                <p className="font-serif text-[28px] font-normal text-ink">{item.count}</p>
                 <p className="text-xs text-gray-500 mt-1">{item.label} güncellendi</p>
               </div>
             ))}
@@ -188,9 +188,9 @@ export default function ContentSyncPage() {
       )}
 
       {/* Info card */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
-        <h3 className="text-sm font-semibold text-blue-800 mb-2">Senkronizasyon Hakkında</h3>
-        <ul className="space-y-1 text-sm text-blue-700">
+      <div className="bg-chip-blue border border-line rounded-lg p-5">
+        <h3 className="text-sm font-semibold text-navy-dark mb-2">Senkronizasyon Hakkında</h3>
+        <ul className="space-y-1 text-sm text-navy-dark">
           <li>Royal API&apos;dan otel, lokasyon ve para birimi verileri çekilir.</li>
           <li>Mevcut kayıtlar güncellenir, yeni kayıtlar eklenir.</li>
           <li>Senkronizasyon tamamlanana kadar sayfadan ayrılmayın.</li>

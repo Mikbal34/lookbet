@@ -169,12 +169,22 @@ function SearchPageContent() {
       p.set("childAges", values.guests.childAges.join(","));
     }
     p.set("nationality", values.nationality);
+    // Mevcut para birimi tercihini koru
+    p.set("currency", rawParams.get("currency") ?? "EUR");
     router.push(`/search?${p.toString()}`);
   };
 
   const destination = rawParams.get("destination") ?? "";
   const checkIn = rawParams.get("checkIn") ?? "";
   const checkOut = rawParams.get("checkOut") ?? "";
+  const nationality = rawParams.get("nationality") ?? "TR";
+
+  // Uyruk değişince URL güncellenir → fiyatlar yeni uyrukla tekrar aranır.
+  const handleNationalityChange = (code: string) => {
+    const p = new URLSearchParams(rawParams.toString());
+    p.set("nationality", code);
+    router.push(`/search?${p.toString()}`);
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -205,6 +215,8 @@ function SearchPageContent() {
                 filters={filters}
                 onFilterChange={setFilters}
                 boardTypes={allBoardTypes}
+                nationality={nationality}
+                onNationalityChange={handleNationalityChange}
               />
             </div>
 
@@ -216,19 +228,19 @@ function SearchPageContent() {
                   filters={filters}
                   onFilterChange={setFilters}
                   boardTypes={allBoardTypes}
+                  nationality={nationality}
+                  onNationalityChange={handleNationalityChange}
                 />
               </div>
 
               {/* Results header */}
               {!isLoading && !isError && data && (
                 <div className="mb-4 flex items-center justify-between">
-                  <p className="text-sm text-gray-600">
-                    <span className="font-semibold text-gray-900">
-                      {filteredHotels.length}
-                    </span>{" "}
-                    otel bulundu
+                  <p className="text-[14.5px] text-slate-text">
+                    <b className="text-ink">{filteredHotels.length}</b> otel
+                    bulundu
                     {destination && (
-                      <span className="text-gray-500"> — {destination}</span>
+                      <span className="text-muted"> — {destination}</span>
                     )}
                   </p>
                 </div>

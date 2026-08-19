@@ -99,9 +99,9 @@ export const TabsTrigger = ({
       className={cn(
         "relative inline-flex items-center gap-1.5 px-4 py-3 text-sm font-medium",
         "transition-colors duration-150 select-none whitespace-nowrap",
-        "focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-navy focus-visible:ring-inset",
         isActive
-          ? "text-blue-600 border-b-2 border-blue-600 -mb-px"
+          ? "text-navy border-b-2 border-navy -mb-px"
           : "text-gray-500 hover:text-gray-700 border-b-2 border-transparent -mb-px hover:border-gray-300",
         className
       )}
@@ -132,7 +132,7 @@ export const TabsContent = ({
       role="tabpanel"
       tabIndex={0}
       className={cn(
-        "mt-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg",
+        "mt-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-navy rounded-lg",
         className
       )}
       {...props}

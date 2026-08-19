@@ -172,8 +172,8 @@ export default function CommissionsPage() {
             aria-label={`Komisyon ${c.isActive ? "pasif yap" : "aktif yap"}`}
             onClick={() => toggleMutation.mutate({ id: c.id, isActive: !c.isActive })}
             disabled={toggleMutation.isPending}
-            className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 disabled:opacity-50 ${
-              c.isActive ? "bg-blue-600" : "bg-gray-200"
+            className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-navy focus:ring-offset-1 disabled:opacity-50 ${
+              c.isActive ? "bg-navy" : "bg-gray-200"
             }`}
           >
             <span
@@ -214,14 +214,14 @@ export default function CommissionsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Komisyonlar</h1>
+          <h1 className="font-serif text-[28px] font-normal text-ink">Komisyonlar</h1>
           <p className="text-sm text-gray-500 mt-1">
             Toplam {data?.total ?? 0} komisyon kaydı
           </p>
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-navy text-white text-sm font-medium rounded-lg hover:bg-navy-dark transition-colors"
         >
           <Plus className="h-4 w-4" />
           Yeni Komisyon
@@ -230,7 +230,7 @@ export default function CommissionsPage() {
 
       {/* Create Form Panel */}
       {showForm && (
-        <div className="bg-white rounded-xl border border-blue-200 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-lg border border-line shadow-sm overflow-hidden">
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
             <h3 className="text-base font-semibold text-gray-900">Yeni Komisyon</h3>
             <button
@@ -252,7 +252,7 @@ export default function CommissionsPage() {
       )}
 
       {/* Agency Filter */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4">
+      <div className="bg-white rounded-md border border-[rgb(26_24_20/0.08)] p-4">
         <div className="flex items-center gap-3">
           <label className="text-sm font-medium text-gray-700 whitespace-nowrap">
             Acente Filtrele:
@@ -260,7 +260,7 @@ export default function CommissionsPage() {
           <select
             value={agencyFilter}
             onChange={(e) => setAgencyFilter(e.target.value)}
-            className="w-64 py-2 px-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-64 py-2 px-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy"
             aria-label="Acenteye göre filtrele"
           >
             <option value="">Tüm Acenteler</option>

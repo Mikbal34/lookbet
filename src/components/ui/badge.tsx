@@ -15,7 +15,7 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 
 const variantClasses: Record<NonNullable<BadgeProps["variant"]>, string> = {
   default:
-    "bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20",
+    "bg-chip-blue text-navy-dark ring-1 ring-inset ring-blue-600/20",
   success:
     "bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20",
   warning:
@@ -31,7 +31,7 @@ export const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
     <span
       ref={ref}
       className={cn(
-        "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium",
+        "inline-flex items-center gap-1 rounded-sm px-2.5 py-0.5 text-xs font-bold",
         variantClasses[variant],
         className
       )}

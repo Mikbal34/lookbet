@@ -55,7 +55,7 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
             className={cn(
               "h-10 w-full rounded-lg border px-3 pl-9 text-sm text-gray-900",
               "bg-white transition-colors duration-150",
-              "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 focus:border-blue-500",
+              "focus:outline-none focus:ring-2 focus:ring-navy focus:ring-offset-0 focus:border-navy",
               "disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500",
               // Style the native date picker
               "[&::-webkit-calendar-picker-indicator]:opacity-0",

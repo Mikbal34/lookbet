@@ -48,7 +48,7 @@ function FieldWrapper({ label, error, htmlFor, icon: Icon, children }: FieldWrap
 const inputClass = (hasError: boolean) =>
   cn(
     "h-10 w-full rounded-lg border pl-9 pr-3 text-sm text-gray-900 placeholder:text-gray-400 bg-white",
-    "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors",
+    "focus:outline-none focus:ring-2 focus:ring-navy focus:border-navy transition-colors",
     hasError
       ? "border-red-400 focus:ring-red-400"
       : "border-gray-300 hover:border-gray-400"

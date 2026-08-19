@@ -42,7 +42,7 @@ export function ReservationCard({ reservation: r, className }: ReservationCardPr
         className={cn(
           "flex flex-col sm:flex-row sm:items-center gap-4 bg-white rounded-2xl border border-gray-100 p-5",
           "hover:shadow-md hover:border-gray-200 transition-all duration-200",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy focus-visible:ring-offset-2"
         )}
         aria-label={`Rezervasyon ${r.bookingNumber ?? r.id} - ${r.hotelName ?? r.hotelCode}`}
       >
@@ -50,7 +50,7 @@ export function ReservationCard({ reservation: r, className }: ReservationCardPr
         <div className="flex-1 min-w-0 space-y-2">
           {/* Hotel name + status */}
           <div className="flex items-start justify-between gap-3 flex-wrap">
-            <h3 className="font-semibold text-gray-900 text-base truncate group-hover:text-blue-600 transition-colors">
+            <h3 className="font-semibold text-gray-900 text-base truncate group-hover:text-navy transition-colors">
               {r.hotelName ?? r.hotelCode}
             </h3>
             <StatusBadge status={r.status} />
@@ -79,7 +79,7 @@ export function ReservationCard({ reservation: r, className }: ReservationCardPr
               <div className="flex items-center gap-1.5">
                 <UtensilsCrossed className="h-3.5 w-3.5 text-gray-400" aria-hidden="true" />
                 <span
-                  className="inline-flex items-center px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 text-xs font-medium border border-blue-100"
+                  className="inline-flex items-center px-2 py-0.5 rounded-md bg-chip-blue text-navy-dark text-xs font-medium border border-line"
                 >
                   {r.boardType}
                 </span>

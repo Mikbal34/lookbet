@@ -108,7 +108,7 @@ export function RoomCard({
       className={cn(
         "bg-white rounded-2xl border transition-all duration-200",
         isSelected
-          ? "border-blue-500 ring-2 ring-blue-100 shadow-md"
+          ? "border-navy ring-2 ring-blue-100 shadow-md"
           : "border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200",
         className
       )}
@@ -133,7 +133,7 @@ export function RoomCard({
               )}
             </div>
           </div>
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-100 shrink-0">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-chip-blue text-navy-dark text-xs font-semibold border border-line shrink-0">
             <UtensilsCrossed className="h-3 w-3" aria-hidden="true" />
             {room.boardTypeName || room.boardType}
           </span>
@@ -170,11 +170,11 @@ export function RoomCard({
             onClick={() => onSelect?.(room.priceCode)}
             aria-pressed={isSelected}
             className={cn(
-              "shrink-0 h-10 px-5 rounded-xl text-sm font-semibold transition-all duration-150",
+              "shrink-0 h-10 px-5 rounded-lg text-sm font-semibold transition-all duration-150",
               "focus:outline-none focus:ring-2 focus:ring-offset-2",
               isSelected
-                ? "bg-blue-600 text-white focus:ring-blue-500"
-                : "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 focus:ring-blue-500"
+                ? "bg-navy text-white focus:ring-navy"
+                : "bg-navy text-white hover:bg-navy-dark active:bg-navy-dark focus:ring-navy"
             )}
           >
             {isSelected ? "Seçildi" : "Seç"}

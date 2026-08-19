@@ -35,7 +35,7 @@ function getInitials(name: string): string {
 
 // Deterministic color from name
 const avatarColors = [
-  "bg-blue-100 text-blue-700",
+  "bg-chip-blue text-navy-dark",
   "bg-indigo-100 text-indigo-700",
   "bg-purple-100 text-purple-700",
   "bg-pink-100 text-pink-700",

@@ -169,7 +169,7 @@ export const DropdownMenuContent = ({
       role="menu"
       aria-orientation="vertical"
       className={cn(
-        "absolute top-full z-50 mt-1.5 min-w-[10rem] rounded-xl border border-gray-200",
+        "absolute top-full z-50 mt-1.5 min-w-[10rem] rounded-lg border border-gray-200",
         "bg-white shadow-lg py-1",
         "animate-in fade-in-0 zoom-in-95 duration-150",
         alignClass,

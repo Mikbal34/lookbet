@@ -22,8 +22,7 @@ interface User {
 
 interface UsersResponse {
   users: User[];
-  total: number;
-  totalPages: number;
+  pagination: { page: number; limit: number; total: number; totalPages: number };
 }
 
 // ---- Helpers ----------------------------------------------------------------
@@ -121,7 +120,7 @@ export default function UsersPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => toast.info(`Düzenleme: ${u.name}`)}
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-navy-dark bg-chip-blue rounded-lg hover:bg-chip-blue transition-colors"
               aria-label={`Düzenle: ${u.name}`}
             >
               <Pencil className="h-3.5 w-3.5" />
@@ -145,14 +144,14 @@ export default function UsersPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Kullanıcılar</h1>
+        <h1 className="font-serif text-[28px] font-normal text-ink">Kullanıcılar</h1>
         <p className="text-sm text-gray-500 mt-1">
-          Toplam {data?.total ?? 0} kullanıcı
+          Toplam {data?.pagination.total ?? 0} kullanıcı
         </p>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4 flex flex-col sm:flex-row gap-3">
+      <div className="bg-white rounded-md border border-[rgb(26_24_20/0.08)] p-4 flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <input
@@ -160,14 +159,14 @@ export default function UsersPage() {
             placeholder="Ad veya e-posta ile ara..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            className="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy"
             aria-label="Kullanıcı ara"
           />
         </div>
         <select
           value={role}
           onChange={(e) => { setRole(e.target.value); setPage(1); }}
-          className="w-full sm:w-44 py-2 px-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full sm:w-44 py-2 px-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy"
           aria-label="Rol filtrele"
         >
           {ROLES.map((r) => (
@@ -179,7 +178,7 @@ export default function UsersPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-white rounded-md border border-[rgb(26_24_20/0.08)] p-6">
         {isLoading ? (
           <div className="space-y-3 animate-pulse">
             {[1, 2, 3, 4, 5].map((i) => (
@@ -195,11 +194,11 @@ export default function UsersPage() {
           />
         )}
 
-        {(data?.totalPages ?? 0) > 1 && (
+        {(data?.pagination.totalPages ?? 0) > 1 && (
           <div className="mt-4 flex justify-end">
             <Pagination
               currentPage={page}
-              totalPages={data?.totalPages ?? 1}
+              totalPages={data?.pagination.totalPages ?? 1}
               onPageChange={setPage}
             />
           </div>

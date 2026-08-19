@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Container } from "@/components/layout";
+
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { cn } from "@/lib/utils/cn";
 import Link from "next/link";
@@ -33,11 +33,14 @@ export default function AgencyReservationsPage() {
   });
 
   return (
-    <Container className="py-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">
-          Acente Rezervasyonları
-        </h1>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="font-serif text-[28px] font-normal text-ink">Rezervasyonlar</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Acenteniz üzerinden yapılan tüm rezervasyonlar
+          </p>
+        </div>
       </div>
 
       {/* Filters */}
@@ -71,13 +74,13 @@ export default function AgencyReservationsPage() {
               setSearch(e.target.value);
               setPage(1);
             }}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-navy"
           />
         </div>
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-md border border-[rgb(26_24_20/0.08)] overflow-hidden">
         <div className="overflow-x-auto">
           {isLoading ? (
             <div className="p-12 text-center text-gray-500">
@@ -132,7 +135,7 @@ export default function AgencyReservationsPage() {
                       <td className="py-3 px-6 text-sm font-mono">
                         <Link
                           href={`/reservations/${r.id}`}
-                          className="text-blue-600 hover:underline"
+                          className="text-navy hover:underline"
                         >
                           {r.bookingNumber || r.id.slice(0, 8)}
                         </Link>
@@ -219,6 +222,6 @@ export default function AgencyReservationsPage() {
           </div>
         )}
       </div>
-    </Container>
+    </div>
   );
 }

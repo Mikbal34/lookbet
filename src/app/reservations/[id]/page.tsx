@@ -182,7 +182,7 @@ export default function ReservationDetailPage({
                 <div className="flex items-start justify-between gap-4 mb-4 flex-wrap">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <Hotel className="h-5 w-5 text-blue-600" aria-hidden="true" />
+                      <Hotel className="h-5 w-5 text-navy" aria-hidden="true" />
                       <h1 className="text-xl font-bold text-gray-900">
                         {data.hotelName || data.hotelCode}
                       </h1>
@@ -269,7 +269,7 @@ export default function ReservationDetailPage({
                         <InfoRow
                           label="Toplam"
                           value={
-                            <span className="font-bold text-blue-600 text-base">
+                            <span className="font-bold text-navy text-base">
                               {formatCurrency(data.discountedPrice ?? data.totalPrice, data.currency)}
                             </span>
                           }
@@ -279,7 +279,7 @@ export default function ReservationDetailPage({
                       <InfoRow
                         label="Toplam"
                         value={
-                          <span className="font-bold text-blue-600 text-base">
+                          <span className="font-bold text-navy text-base">
                             {formatCurrency(data.totalPrice, data.currency)}
                           </span>
                         }
@@ -352,7 +352,7 @@ export default function ReservationDetailPage({
                     {data.roomConfirmationCodes.map((code, idx) => (
                       <span
                         key={idx}
-                        className="rounded-md bg-blue-50 px-2.5 py-1 text-xs font-mono font-medium text-blue-700"
+                        className="rounded-md bg-chip-blue px-2.5 py-1 text-xs font-mono font-medium text-navy-dark"
                       >
                         {code}
                       </span>

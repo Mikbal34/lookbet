@@ -187,7 +187,7 @@ function BookingPageContent() {
                       {(() => {
                         const contact = getValues("contact");
                         return (
-                          <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
+                          <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
                             <p className="text-sm font-semibold text-gray-700 mb-2">
                               İletişim
                             </p>
@@ -201,7 +201,7 @@ function BookingPageContent() {
                       })()}
 
                       {/* Guests summary */}
-                      <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
+                      <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
                         <p className="text-sm font-semibold text-gray-700 mb-2">
                           Misafirler ({totalGuests} kişi)
                         </p>

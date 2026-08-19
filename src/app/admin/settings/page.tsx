@@ -112,13 +112,13 @@ export default function SettingsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Sistem Ayarları</h1>
+          <h1 className="font-serif text-[28px] font-normal text-ink">Sistem Ayarları</h1>
           <p className="text-sm text-gray-500 mt-1">Uygulama geneli yapılandırma değerleri</p>
         </div>
         <button
           onClick={() => saveMutation.mutate()}
           disabled={saveMutation.isPending || !isDirty}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-navy text-white text-sm font-medium rounded-lg hover:bg-navy-dark transition-colors disabled:opacity-50"
           aria-label="Ayarları kaydet"
         >
           <Save className="h-4 w-4" />
@@ -127,7 +127,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Settings Form */}
-      <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
+      <div className="bg-white rounded-md border border-[rgb(26_24_20/0.08)] divide-y divide-gray-100">
         {isLoading ? (
           <div className="p-6 space-y-6 animate-pulse">
             {[1, 2, 3, 4].map((i) => (
@@ -166,7 +166,7 @@ export default function SettingsPage() {
                     value={values[setting.key] ?? ""}
                     onChange={(e) => handleChange(setting.key, e.target.value)}
                     placeholder={meta?.placeholder ?? ""}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy font-mono"
                     aria-describedby={`desc-${setting.key}`}
                   />
                 </div>
@@ -178,7 +178,7 @@ export default function SettingsPage() {
 
       {/* Unsaved changes indicator */}
       {isDirty && (
-        <div className="flex items-center justify-between bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-3">
+        <div className="flex items-center justify-between bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-3">
           <p className="text-sm text-yellow-800 font-medium">
             Kaydedilmemiş değişiklikler var.
           </p>

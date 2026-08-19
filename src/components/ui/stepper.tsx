@@ -56,7 +56,7 @@ export const Stepper = ({
                   <div
                     className={cn(
                       "w-0.5 flex-1 my-1",
-                      status === "completed" ? "bg-blue-600" : "bg-gray-200"
+                      status === "completed" ? "bg-navy" : "bg-gray-200"
                     )}
                     aria-hidden="true"
                   />
@@ -99,7 +99,7 @@ export const Stepper = ({
                 <div
                   className={cn(
                     "h-0.5 flex-1 mx-2",
-                    status === "completed" ? "bg-blue-600" : "bg-gray-200"
+                    status === "completed" ? "bg-navy" : "bg-gray-200"
                   )}
                   aria-hidden="true"
                 />
@@ -129,8 +129,8 @@ const StepIndicator = ({ index, status }: StepIndicatorProps) => (
       "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold",
       "border-2 transition-colors duration-200",
       {
-        "border-blue-600 bg-blue-600 text-white": status === "completed",
-        "border-blue-600 bg-white text-blue-600 ring-4 ring-blue-50":
+        "border-navy bg-navy text-white": status === "completed",
+        "border-navy bg-white text-navy ring-4 ring-blue-50":
           status === "active",
         "border-gray-300 bg-white text-gray-400": status === "upcoming",
       }
@@ -153,7 +153,7 @@ interface StepLabelProps {
 const StepLabel = ({ step, status }: StepLabelProps) => (
   <span
     className={cn("text-xs font-medium text-center leading-snug max-w-[80px]", {
-      "text-blue-600": status === "active",
+      "text-navy": status === "active",
       "text-gray-900": status === "completed",
       "text-gray-400": status === "upcoming",
     })}

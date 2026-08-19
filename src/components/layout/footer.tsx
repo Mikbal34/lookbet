@@ -1,116 +1,111 @@
-import { Hotel, Mail, Phone, MapPin } from "lucide-react";
 import Link from "next/link";
+import { Phone } from "lucide-react";
+import { Logo } from "./logo";
+import { LocaleFooterLabel } from "./locale-switcher";
 
+// LookBeds footer — CruiseScanner tasarımının turuncu hali:
+// düz marka rengi zemin, logo + tagline + telefon, kolon grid, fine print.
 export function Footer() {
+  const columns = [
+    {
+      heading: "Planla",
+      links: [
+        { label: "Otel ara", href: "/search" },
+        { label: "Kampanyalar", href: "/kampanyalar" },
+        { label: "Popüler bölgeler", href: "/search" },
+      ],
+    },
+    {
+      heading: "LookBeds",
+      links: [
+        { label: "Hakkımızda", href: "/yardim" },
+        { label: "İletişim", href: "/yardim" },
+        { label: "Partner paneli", href: "/agency/login" },
+        { label: "Partner başvurusu", href: "/register/agency" },
+      ],
+    },
+    {
+      heading: "Yasal",
+      links: [
+        { label: "Gizlilik politikası", href: "/yardim" },
+        { label: "Kullanım koşulları", href: "/yardim" },
+        { label: "KVKK", href: "/yardim" },
+        { label: "İptal & iade", href: "/yardim" },
+      ],
+    },
+    {
+      heading: "Hesap",
+      links: [
+        { label: "Giriş yap", href: "/login" },
+        { label: "Rezervasyonlarım", href: "/reservations" },
+        { label: "Yardım merkezi", href: "/yardim" },
+      ],
+    },
+  ] as const;
+
   return (
-    <footer className="bg-gray-900 text-gray-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Brand */}
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center">
-                <Hotel className="h-5 w-5 text-white" />
-              </div>
-              <span className="text-xl font-bold text-white">Lookbet</span>
-            </div>
-            <p className="text-sm text-gray-400 leading-relaxed">
-              10.000+ otel arasından en uygun fiyatlarla rezervasyon yapın.
-              Güvenli, hızlı, kolay.
+    <footer className="mt-16 bg-navy text-white">
+      <div className="mx-auto max-w-[1200px] px-4 py-12 sm:px-6 lg:py-16">
+        {/* Üst — logo + tagline + telefon */}
+        <div className="flex flex-col gap-6 border-b border-white/10 pb-8 md:flex-row md:items-end md:justify-between">
+          <div className="max-w-xl">
+            <Logo variant="light" size="md" />
+            <p className="mt-4 text-[14.5px] leading-relaxed text-white/75">
+              Türkiye&apos;nin dört bir yanında 2.400+ otel. En iyi fiyat
+              garantisi, çoğu otelde ücretsiz iptal, girişte ödeme seçeneği.
             </p>
-            {/* Trust badges */}
-            <div className="flex gap-2 mt-4">
-              <span className="text-xs bg-gray-800 text-gray-400 px-2.5 py-1 rounded-full border border-gray-700">
-                SSL Güvenli
+            <p className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1">
+              <a
+                href="tel:+908502550000"
+                className="inline-flex items-center gap-2 text-[17px] font-extrabold tracking-[-0.01em] text-white underline-offset-[3px] hover:underline"
+              >
+                <Phone className="size-4" aria-hidden />
+                0850 255 00 00
+              </a>
+              <span className="text-[12.5px] text-white/60">
+                Her gün 09.00 – 24.00
               </span>
-              <span className="text-xs bg-gray-800 text-gray-400 px-2.5 py-1 rounded-full border border-gray-700">
-                7/24 Destek
-              </span>
-            </div>
+            </p>
           </div>
 
-          {/* Quick Links */}
-          <div>
-            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
-              Hızlı Linkler
-            </h3>
-            <ul className="space-y-2.5">
-              <li>
-                <Link href="/" className="text-sm hover:text-white transition-colors">
-                  Ana Sayfa
-                </Link>
-              </li>
-              <li>
-                <Link href="/search" className="text-sm hover:text-white transition-colors">
-                  Otel Ara
-                </Link>
-              </li>
-              <li>
-                <Link href="/reservations" className="text-sm hover:text-white transition-colors">
-                  Rezervasyonlarım
-                </Link>
-              </li>
-              <li>
-                <Link href="/profile" className="text-sm hover:text-white transition-colors">
-                  Profilim
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Agencies */}
-          <div>
-            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
-              Acenteler
-            </h3>
-            <ul className="space-y-2.5">
-              <li>
-                <Link
-                  href="/register/agency"
-                  className="text-sm hover:text-white transition-colors"
-                >
-                  Acente Kaydı
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/agency/dashboard"
-                  className="text-sm hover:text-white transition-colors"
-                >
-                  Acente Paneli
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Contact */}
-          <div>
-            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
-              İletişim
-            </h3>
-            <ul className="space-y-3 text-sm">
-              <li className="flex items-center gap-2">
-                <Mail className="h-4 w-4 text-blue-400 shrink-0" aria-hidden="true" />
-                <span>info@lookbet.com</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-blue-400 shrink-0" aria-hidden="true" />
-                <span>+90 (212) 000 00 00</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-blue-400 shrink-0" aria-hidden="true" />
-                <span>İstanbul, Türkiye</span>
-              </li>
-            </ul>
+          <div className="flex flex-wrap items-center gap-2 text-[12.5px] font-semibold">
+            <span className="inline-flex items-center gap-3 rounded-full border border-white/25 bg-white/5 px-3 py-1.5 text-white">
+              <LocaleFooterLabel />
+            </span>
           </div>
         </div>
 
-        <div className="mt-10 pt-8 border-t border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-400">
-          <p>&copy; {new Date().getFullYear()} Lookbet. Tüm hakları saklıdır.</p>
-          <div className="flex gap-4">
-            <Link href="#" className="hover:text-white transition-colors">Gizlilik Politikası</Link>
-            <Link href="#" className="hover:text-white transition-colors">Kullanım Koşulları</Link>
-          </div>
+        {/* Kolonlar */}
+        <div className="grid grid-cols-2 gap-x-6 gap-y-10 pt-10 sm:grid-cols-4 lg:gap-x-10">
+          {columns.map((col) => (
+            <div key={col.heading}>
+              <h4 className="text-[12.5px] font-semibold tracking-[0.04em] text-white uppercase">
+                {col.heading}
+              </h4>
+              <ul className="mt-4 space-y-2.5">
+                {col.links.map((l) => (
+                  <li key={l.label}>
+                    <Link
+                      href={l.href}
+                      className="text-[13.5px] text-white/75 underline-offset-[3px] hover:text-white hover:underline"
+                    >
+                      {l.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        {/* Fine print */}
+        <div className="mt-12 flex flex-col gap-2 border-t border-white/10 pt-6">
+          <p className="text-[12px] font-semibold tracking-[0.01em] text-white/80">
+            LookBeds Turizm A.Ş. · TÜRSAB Belge No: 0000
+          </p>
+          <p className="text-[11.5px] tracking-[0.04em] text-white/50">
+            © 2026 LookBeds. Tüm hakları saklıdır.
+          </p>
         </div>
       </div>
     </footer>

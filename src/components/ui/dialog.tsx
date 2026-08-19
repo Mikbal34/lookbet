@@ -99,7 +99,7 @@ export const Dialog = ({
             "absolute right-4 top-4 z-10 rounded-lg p-1.5",
             "text-gray-400 hover:text-gray-600 hover:bg-gray-100",
             "transition-colors duration-150",
-            "focus:outline-none focus:ring-2 focus:ring-blue-500"
+            "focus:outline-none focus:ring-2 focus:ring-navy"
           )}
         >
           <X className="h-4 w-4" aria-hidden="true" />

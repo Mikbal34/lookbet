@@ -1,70 +1,69 @@
-import { Navbar, Footer } from "@/components/layout";
-import { AgencyRegisterForm } from "@/components/auth";
+// Partner (acente) başvurusu — lookbet. tasarım dili: solda başvuru formu,
+// sağda "Neden lookbet partner?" koyu gradyan kartı.
+// Hesap oluşturmaz; başvuru admin onayıyla hesaba dönüşür.
+
 import Link from "next/link";
-import { Building2, Info } from "lucide-react";
+import { AgencyApplicationForm } from "@/components/auth";
+import { Logo } from "@/components/layout/logo";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Acente Kaydı - Lookbet",
-  description: "Lookbet iş ortağı olmak için acente başvurusu yapın",
+  title: "Partner Başvurusu — lookbet.partner",
+  description: "lookbet iş ortağı olmak için partner başvurusu yapın",
 };
+
+const benefits = [
+  { stat: "%12", text: "sektörün üzerinde baz komisyon, hacimle artar" },
+  { stat: "2.400+", text: "otelde anlık kontenjan ve net fiyat" },
+  { stat: "7/24", text: "partnerlere özel destek hattı" },
+  { stat: "API", text: "kendi sitene entegre et, beyaz etiket seçeneği" },
+];
 
 export default function AgencyRegisterPage() {
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <Navbar />
+    <div className="min-h-screen flex flex-col bg-paper">
+      {/* Üst bar */}
+      <header className="flex items-center justify-between flex-wrap gap-2.5 px-4 sm:px-6 lg:px-14 py-3.5 bg-white border-b border-line">
+        <Logo suffix="PARTNER" />
+        <Link
+          href="/agency/login"
+          className="text-[13.5px] font-semibold text-navy hover:text-gold transition-colors"
+        >
+          Zaten partnerim → Giriş
+        </Link>
+      </header>
 
-      <main className="flex flex-1 items-center justify-center px-4 py-12">
-        <div className="w-full max-w-2xl">
-          {/* Card */}
-          <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-sm">
-            {/* Header */}
-            <div className="mb-8 text-center">
-              <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-xl bg-indigo-600">
-                <Building2 className="h-7 w-7 text-white" aria-hidden="true" />
-              </div>
-              <h1 className="text-2xl font-bold text-gray-900">Acente Kaydı</h1>
-              <p className="mt-1 text-sm text-gray-500">
-                Lookbet iş ortağı olun, özel fiyatlardan yararlanın
-              </p>
-            </div>
-
-            {/* Info note */}
-            <div className="mb-6 flex gap-3 rounded-xl border border-blue-100 bg-blue-50 p-4">
-              <Info
-                className="h-5 w-5 shrink-0 text-blue-600 mt-0.5"
-                aria-hidden="true"
-              />
-              <div className="text-sm text-blue-800">
-                <p className="font-semibold">Onay Süreci Hakkında</p>
-                <p className="mt-1 leading-relaxed">
-                  Başvurunuz alındıktan sonra ekibimiz en geç{" "}
-                  <strong>2 iş günü</strong> içinde inceleyecek ve size email
-                  ile bilgi verecektir. Onay sonrası özel B2B fiyatlarına
-                  erişim sağlayabilirsiniz.
-                </p>
-              </div>
-            </div>
-
-            <AgencyRegisterForm />
-
-            {/* Links */}
-            <div className="mt-6 text-center text-sm">
-              <p className="text-gray-500">
-                Bireysel hesap mı istiyorsunuz?{" "}
-                <Link
-                  href="/register"
-                  className="font-medium text-blue-600 hover:text-blue-700 hover:underline"
-                >
-                  Bireysel Kayıt
-                </Link>
-              </p>
+      <main className="max-w-[1080px] w-full mx-auto px-4 sm:px-6 lg:px-14 py-10 lg:py-12 flex-1">
+        <div className="flex flex-wrap gap-9 items-start">
+          {/* Form */}
+          <div className="flex-[999_1_300px] min-w-0">
+            <h1 className="font-serif text-3xl lg:text-[34px] font-normal mb-2">
+              Partner başvurusu
+            </h1>
+            <p className="text-[14.5px] text-muted mb-7">
+              Formu doldur, ekibimiz 2 iş günü içinde dönüş yapsın.
+            </p>
+            <div className="bg-white rounded-md p-7 border border-[rgb(26_24_20/0.08)]">
+              <AgencyApplicationForm />
             </div>
           </div>
+
+          {/* Neden lookbet partner? — tek renk koyu mavi */}
+          <aside className="rounded-md p-8 text-paper lg:sticky lg:top-6 flex-[1_1_300px] bg-navy-deep">
+            <div className="text-xs font-bold tracking-[2px] uppercase text-gold mb-[18px]">
+              Neden lookbet partner?
+            </div>
+            <div className="flex flex-col gap-[18px] text-sm leading-normal">
+              {benefits.map((b) => (
+                <div key={b.stat} className="flex gap-3">
+                  <b className="text-gold shrink-0">{b.stat}</b>
+                  <span>{b.text}</span>
+                </div>
+              ))}
+            </div>
+          </aside>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }

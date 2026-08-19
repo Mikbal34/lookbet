@@ -58,9 +58,9 @@ export const Switch = ({
         className={cn(
           "relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full",
           "transition-colors duration-200 ease-in-out",
-          "focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2",
+          "focus:outline-none focus-visible:ring-2 focus-visible:ring-navy focus-visible:ring-offset-2",
           "disabled:cursor-not-allowed disabled:opacity-50",
-          checked ? "bg-blue-600" : "bg-gray-200"
+          checked ? "bg-navy" : "bg-gray-200"
         )}
       >
         <span

@@ -16,10 +16,10 @@ export default withAuth(
       }
     }
 
-    // Agency routes
-    if (path.startsWith("/agency")) {
+    // Agency routes (login sayfası hariç — o herkese açık)
+    if (path.startsWith("/agency") && path !== "/agency/login") {
       if (token?.role !== "AGENCY") {
-        return NextResponse.redirect(new URL("/login", req.url));
+        return NextResponse.redirect(new URL("/agency/login", req.url));
       }
     }
 
@@ -38,6 +38,13 @@ export default withAuth(
           path.startsWith("/register/") ||
           path.startsWith("/api/auth/")
         ) {
+          return true;
+        }
+
+        // /agency rotalarının auth kontrolü yukarıdaki middleware fonksiyonunda:
+        // girişsiz veya rolü uymayan kullanıcı /agency/login'e yönlendirilir
+        // (genel /login'e değil).
+        if (path.startsWith("/agency")) {
           return true;
         }
 

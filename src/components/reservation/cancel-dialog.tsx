@@ -101,7 +101,7 @@ export function CancelDialog({
           className={cn(
             "absolute right-4 top-4 p-1.5 rounded-lg text-gray-400",
             "hover:text-gray-600 hover:bg-gray-100 transition-colors",
-            "focus:outline-none focus:ring-2 focus:ring-blue-500",
+            "focus:outline-none focus:ring-2 focus:ring-navy",
             "disabled:pointer-events-none"
           )}
         >
@@ -111,7 +111,7 @@ export function CancelDialog({
         {/* Header */}
         <div className="px-6 pt-6 pb-4">
           <div className="flex items-center gap-3 mb-3">
-            <div className="p-2.5 bg-red-100 rounded-xl shrink-0">
+            <div className="p-2.5 bg-red-100 rounded-lg shrink-0">
               <AlertTriangle className="h-5 w-5 text-red-600" aria-hidden="true" />
             </div>
             <h2
@@ -151,7 +151,7 @@ export function CancelDialog({
             className={cn(
               "h-9 px-4 rounded-lg text-sm font-medium text-gray-700 bg-gray-100",
               "hover:bg-gray-200 transition-colors duration-150",
-              "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
+              "focus:outline-none focus:ring-2 focus:ring-navy focus:ring-offset-2",
               "disabled:opacity-50 disabled:pointer-events-none"
             )}
           >

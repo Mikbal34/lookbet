@@ -6,11 +6,11 @@ import { cn } from "@/lib/utils/cn";
 // Usage:
 // <Skeleton className="h-10 w-full" />
 // <Skeleton className="h-4 w-3/4" />
-// <Skeleton className="h-32 w-full rounded-xl" />
+// <Skeleton className="h-32 w-full rounded-lg" />
 //
 // Card skeleton pattern:
 // <div className="space-y-3">
-//   <Skeleton className="h-48 w-full rounded-xl" />
+//   <Skeleton className="h-48 w-full rounded-lg" />
 //   <Skeleton className="h-4 w-2/3" />
 //   <Skeleton className="h-4 w-1/2" />
 // </div>

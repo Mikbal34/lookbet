@@ -37,7 +37,8 @@ export async function GET(_req: NextRequest) {
 
       prisma.agency.count({ where: { isApproved: true } }),
 
-      prisma.agency.count({ where: { isApproved: false } }),
+      // Yeni akışta bekleyenler acente kaydı değil, başvurudur.
+      prisma.agencyApplication.count({ where: { status: "PENDING" } }),
 
       prisma.user.count(),
 

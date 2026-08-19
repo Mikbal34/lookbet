@@ -87,7 +87,7 @@ export const Pagination = ({
         className={cn(
           "inline-flex h-9 w-9 items-center justify-center rounded-lg border text-sm",
           "transition-colors duration-150",
-          "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1",
+          "focus:outline-none focus:ring-2 focus:ring-navy focus:ring-offset-1",
           currentPage <= 1
             ? "pointer-events-none border-gray-200 text-gray-300"
             : "border-gray-300 text-gray-600 hover:bg-gray-50 hover:border-gray-400"
@@ -115,9 +115,9 @@ export const Pagination = ({
             className={cn(
               "inline-flex h-9 w-9 items-center justify-center rounded-lg border text-sm font-medium",
               "transition-colors duration-150",
-              "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1",
+              "focus:outline-none focus:ring-2 focus:ring-navy focus:ring-offset-1",
               page === currentPage
-                ? "border-blue-600 bg-blue-600 text-white"
+                ? "border-navy bg-navy text-white"
                 : "border-gray-300 text-gray-600 hover:bg-gray-50 hover:border-gray-400"
             )}
           >
@@ -134,7 +134,7 @@ export const Pagination = ({
         className={cn(
           "inline-flex h-9 w-9 items-center justify-center rounded-lg border text-sm",
           "transition-colors duration-150",
-          "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1",
+          "focus:outline-none focus:ring-2 focus:ring-navy focus:ring-offset-1",
           currentPage >= totalPages
             ? "pointer-events-none border-gray-200 text-gray-300"
             : "border-gray-300 text-gray-600 hover:bg-gray-50 hover:border-gray-400"

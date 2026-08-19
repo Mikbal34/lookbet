@@ -80,7 +80,7 @@ function RoomCardSkeleton() {
           <Skeleton className="h-3 w-24" />
           <Skeleton className="h-7 w-28" />
         </div>
-        <Skeleton className="h-10 w-24 rounded-xl" />
+        <Skeleton className="h-10 w-24 rounded-lg" />
       </div>
     </div>
   );
@@ -172,7 +172,7 @@ function RoomsPageContent({
           {/* Heading */}
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <BedDouble className="h-6 w-6 text-blue-600" aria-hidden="true" />
+              <BedDouble className="h-6 w-6 text-navy" aria-hidden="true" />
               Müsait Odalar
             </h1>
             {searchParams.get("checkIn") && (

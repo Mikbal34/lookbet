@@ -34,7 +34,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="text-sm font-medium text-gray-700"
+            className="text-[12.5px] font-bold text-ink"
           >
             {label}
           </label>
@@ -46,19 +46,19 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           aria-describedby={describedBy}
           aria-invalid={error ? "true" : undefined}
           className={cn(
-            "h-10 w-full rounded-lg border px-3 text-sm text-gray-900 placeholder:text-gray-400",
+            "h-11 w-full rounded-md border px-[15px] text-sm text-ink placeholder:text-muted/70",
             "bg-white transition-colors duration-150",
-            "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 focus:border-blue-500",
-            "disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500",
+            "focus:outline-none focus:border-navy",
+            "disabled:cursor-not-allowed disabled:bg-paper disabled:text-muted",
             error
-              ? "border-red-400 focus:ring-red-400 focus:border-red-400"
-              : "border-gray-300 hover:border-gray-400",
+              ? "border-red-400 focus:border-red-400"
+              : "border-line-strong",
             className
           )}
           {...props}
         />
         {hint && !error && (
-          <p id={hintId} className="text-xs text-gray-500">
+          <p id={hintId} className="text-xs text-muted">
             {hint}
           </p>
         )}

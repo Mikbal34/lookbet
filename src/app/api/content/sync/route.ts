@@ -1,7 +1,37 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
+import { prisma } from "@/lib/prisma";
 import { syncAll } from "@/lib/royal-api";
+
+// GET /api/content/sync
+// Admin content sayfası için mevcut içerik istatistikleri.
+export async function GET(_request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || session.user.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const [hotels, locations, currencies, lastSynced] = await Promise.all([
+      prisma.hotel.count(),
+      prisma.location.count(),
+      prisma.currency.count(),
+      prisma.hotel.findFirst({
+        orderBy: { updatedAt: "desc" },
+        select: { updatedAt: true },
+      }),
+    ]);
+
+    return NextResponse.json({
+      lastSync: lastSynced?.updatedAt ?? null,
+      counts: { hotels, locations, currencies },
+    });
+  } catch (error) {
+    console.error("[CONTENT_SYNC_GET]", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
 
 // POST /api/content/sync
 // Admin-only endpoint.

@@ -40,7 +40,7 @@ function SectionCard({
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
       <h2 className="mb-5 flex items-center gap-2 text-base font-semibold text-gray-900">
-        <Icon className="h-5 w-5 text-blue-600" aria-hidden="true" />
+        <Icon className="h-5 w-5 text-navy" aria-hidden="true" />
         {title}
       </h2>
       {children}
@@ -229,8 +229,8 @@ export default function ProfilePage() {
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-8 space-y-5">
           {/* Page heading */}
           <div className="flex items-center gap-4">
-            <div className="h-14 w-14 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-              <User className="h-7 w-7 text-blue-600" aria-hidden="true" />
+            <div className="h-14 w-14 rounded-full bg-chip-blue flex items-center justify-center shrink-0">
+              <User className="h-7 w-7 text-navy" aria-hidden="true" />
             </div>
             <div>
               <h1 className="text-xl font-bold text-gray-900">
@@ -238,7 +238,7 @@ export default function ProfilePage() {
               </h1>
               <div className="flex items-center gap-2 mt-0.5">
                 <p className="text-sm text-gray-500">{session?.user?.email}</p>
-                <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-700">
+                <span className="rounded-full bg-chip-blue px-2.5 py-0.5 text-xs font-medium text-navy-dark">
                   {roleLabel}
                 </span>
               </div>
@@ -291,7 +291,7 @@ export default function ProfilePage() {
               {passErrors.general && (
                 <div
                   role="alert"
-                  className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+                  className="flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
                 >
                   <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" aria-hidden="true" />
                   {passErrors.general}
@@ -316,7 +316,7 @@ export default function ProfilePage() {
                       autoComplete="current-password"
                       className={cn(
                         "h-10 w-full rounded-lg border px-3 pr-10 text-sm text-gray-900 bg-white",
-                        "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors",
+                        "focus:outline-none focus:ring-2 focus:ring-navy focus:border-navy transition-colors",
                         passErrors.currentPassword ? "border-red-400" : "border-gray-300 hover:border-gray-400"
                       )}
                     />
@@ -352,7 +352,7 @@ export default function ProfilePage() {
                       placeholder="En az 6 karakter"
                       className={cn(
                         "h-10 w-full rounded-lg border px-3 pr-10 text-sm text-gray-900 bg-white",
-                        "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors",
+                        "focus:outline-none focus:ring-2 focus:ring-navy focus:border-navy transition-colors",
                         passErrors.newPassword ? "border-red-400" : "border-gray-300 hover:border-gray-400"
                       )}
                     />
@@ -387,7 +387,7 @@ export default function ProfilePage() {
                     placeholder="Yeni şifrenizi tekrar girin"
                     className={cn(
                       "h-10 w-full rounded-lg border px-3 text-sm text-gray-900 bg-white",
-                      "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors",
+                      "focus:outline-none focus:ring-2 focus:ring-navy focus:border-navy transition-colors",
                       passErrors.confirmPassword ? "border-red-400" : "border-gray-300 hover:border-gray-400"
                     )}
                   />
@@ -420,7 +420,7 @@ export default function ProfilePage() {
                   {/* Status banner */}
                   <div
                     className={cn(
-                      "flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium",
+                      "flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium",
                       agencyInfo.status === "APPROVED"
                         ? "bg-green-50 text-green-700 border border-green-100"
                         : agencyInfo.status === "PENDING"

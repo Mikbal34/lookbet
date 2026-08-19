@@ -63,12 +63,12 @@ export function CountdownTimer({
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-2 rounded-xl px-4 py-2.5 border transition-colors duration-500",
+        "inline-flex items-center gap-2 rounded-lg px-4 py-2.5 border transition-colors duration-500",
         isExpired
           ? "bg-gray-100 border-gray-200 text-gray-400"
           : isUrgent
           ? "bg-red-50 border-red-200 text-red-600 animate-pulse"
-          : "bg-blue-50 border-blue-200 text-blue-700",
+          : "bg-chip-blue border-line text-navy-dark",
         className
       )}
       role="timer"
@@ -99,7 +99,7 @@ export function CountdownTimer({
               ? "text-gray-400"
               : isUrgent
               ? "text-red-500"
-              : "text-blue-600"
+              : "text-navy"
           )}
         >
           {isExpired ? "Sure doldu" : "Fiyat gecerlilik suresi"}
@@ -111,7 +111,7 @@ export function CountdownTimer({
               ? "text-gray-400"
               : isUrgent
               ? "text-red-600"
-              : "text-blue-700"
+              : "text-navy-dark"
           )}
         >
           {isExpired ? "00:00" : formatTime(remaining)}

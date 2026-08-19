@@ -15,6 +15,12 @@ enum UserRole {
   ADMIN
 }
 
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum ReservationStatus {
   PENDING
   CONFIRMED
@@ -71,8 +77,51 @@ model User {
   auditLogs       AuditLog[]
   notifications   Notification[]
   priceRules      PriceRule[]    @relation("CreatedByAdmin")
+  reviewedApplications AgencyApplication[] @relation("ReviewedApplications")
 
   @@map("users")
+}
+
+// Müşteri girişi için tek kullanımlık email kodu (passwordless login).
+// Kod hash'lenerek saklanır; süresi dolunca veya kullanılınca silinir.
+model LoginCode {
+  id        String   @id @default(cuid())
+  email     String
+  codeHash  String
+  expiresAt DateTime
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@map("login_codes")
+}
+
+// Acente başvurusu: hesap DEĞİLDİR. Acenteler bu formu doldurur, admin
+// panelde inceleyip onaylarsa User + Agency hesabı oluşturulur.
+model AgencyApplication {
+  id              String            @id @default(cuid())
+  contactName     String
+  email           String
+  phone           String?
+  companyName     String
+  taxId           String
+  companyPhone    String?
+  address         String?
+  message         String?
+  status          ApplicationStatus @default(PENDING)
+  rejectionReason String?
+  reviewedById    String?
+  reviewedAt      DateTime?
+  agencyId        String?           @unique
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  reviewedBy User?   @relation("ReviewedApplications", fields: [reviewedById], references: [id])
+  agency     Agency? @relation(fields: [agencyId], references: [id])
+
+  @@index([status])
+  @@index([email])
+  @@map("agency_applications")
 }
 
 model Agency {
@@ -96,6 +145,7 @@ model Agency {
   reservations Reservation[]
   priceRules   PriceRule[]
   commissions  Commission[]
+  application  AgencyApplication?
 
   @@map("agencies")
 }

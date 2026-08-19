@@ -55,7 +55,7 @@ async function fetchReservations(status: ReservationStatus): Promise<Reservation
 
 function ReservationSkeleton() {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5">
+    <div className="bg-white rounded-lg border border-gray-200 p-5">
       <div className="flex items-start justify-between">
         <div className="flex-1 space-y-2">
           <div className="flex items-center gap-3">
@@ -127,7 +127,7 @@ function TabContent({ status }: { status: ReservationStatus }) {
         {status === "ALL" && (
           <a
             href="/search"
-            className="mt-4 inline-block bg-blue-600 text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors"
+            className="mt-4 inline-block bg-navy text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-navy-dark transition-colors"
           >
             Otel Ara
           </a>
@@ -160,7 +160,7 @@ export default function ReservationsPage() {
           {/* Page header */}
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <CalendarCheck className="h-6 w-6 text-blue-600" aria-hidden="true" />
+              <CalendarCheck className="h-6 w-6 text-navy" aria-hidden="true" />
               Rezervasyonlarım
             </h1>
             <p className="text-sm text-gray-500 mt-1">

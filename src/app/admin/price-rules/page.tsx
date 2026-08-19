@@ -195,8 +195,8 @@ export default function PriceRulesPage() {
             aria-label={`${r.name} ${r.isActive ? "pasif yap" : "aktif yap"}`}
             onClick={() => toggleMutation.mutate({ id: r.id, isActive: !r.isActive })}
             disabled={toggleMutation.isPending}
-            className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 disabled:opacity-50 ${
-              r.isActive ? "bg-blue-600" : "bg-gray-200"
+            className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-navy focus:ring-offset-1 disabled:opacity-50 ${
+              r.isActive ? "bg-navy" : "bg-gray-200"
             }`}
           >
             <span
@@ -237,14 +237,14 @@ export default function PriceRulesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Fiyat Kuralları</h1>
+          <h1 className="font-serif text-[28px] font-normal text-ink">Fiyat Kuralları</h1>
           <p className="text-sm text-gray-500 mt-1">
             Toplam {data?.total ?? 0} kural
           </p>
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-navy text-white text-sm font-medium rounded-lg hover:bg-navy-dark transition-colors"
         >
           <Plus className="h-4 w-4" />
           Yeni Kural Ekle
@@ -253,7 +253,7 @@ export default function PriceRulesPage() {
 
       {/* Create Form Panel */}
       {showForm && (
-        <div className="bg-white rounded-xl border border-blue-200 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-lg border border-line shadow-sm overflow-hidden">
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
             <h3 className="text-base font-semibold text-gray-900">Yeni Fiyat Kuralı</h3>
             <button

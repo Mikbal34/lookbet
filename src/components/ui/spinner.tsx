@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils/cn";
 
 // Usage:
 // <Spinner />
-// <Spinner size="lg" className="text-blue-600" />
+// <Spinner size="lg" className="text-navy" />
 // <Spinner size="sm" />
 //
 // Full-page loading:
@@ -30,7 +30,7 @@ export const Spinner = ({ size = "md", className, label = "Loading..." }: Spinne
   <span role="status" aria-label={label} className="inline-flex">
     <Loader2
       className={cn(
-        "animate-spin text-blue-600",
+        "animate-spin text-navy",
         sizeClasses[size],
         className
       )}

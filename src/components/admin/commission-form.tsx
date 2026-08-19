@@ -38,7 +38,7 @@ export function CommissionForm({
         </label>
         <select
           {...register("agencyId")}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy"
         >
           <option value="">Seçin</option>
           {agencies.map((a) => (
@@ -61,7 +61,7 @@ export function CommissionForm({
           </label>
           <select
             {...register("type")}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy"
           >
             <option value="PERCENTAGE">Yüzde (%)</option>
             <option value="FIXED">Sabit Tutar</option>
@@ -75,7 +75,7 @@ export function CommissionForm({
             {...register("value", { valueAsNumber: true })}
             type="number"
             step="0.01"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy"
           />
           {errors.value && (
             <p className="text-red-500 text-xs mt-1">{errors.value.message}</p>
@@ -90,7 +90,7 @@ export function CommissionForm({
           </label>
           <input
             {...register("hotelCode")}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy"
             placeholder="Boş = tüm oteller"
           />
         </div>
@@ -100,7 +100,7 @@ export function CommissionForm({
           </label>
           <input
             {...register("boardType")}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy"
             placeholder="Boş = tüm tipler"
           />
         </div>
@@ -114,7 +114,7 @@ export function CommissionForm({
           <input
             {...register("startDate")}
             type="date"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy"
           />
         </div>
         <div>
@@ -124,7 +124,7 @@ export function CommissionForm({
           <input
             {...register("endDate")}
             type="date"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy"
           />
         </div>
       </div>
@@ -134,7 +134,7 @@ export function CommissionForm({
           <input
             {...register("isActive")}
             type="checkbox"
-            className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            className="w-4 h-4 rounded border-gray-300 text-navy focus:ring-navy"
           />
           <span className="text-sm text-gray-700">Aktif</span>
         </label>
@@ -143,7 +143,7 @@ export function CommissionForm({
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-blue-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+        className="w-full bg-navy text-white py-2.5 rounded-lg text-sm font-medium hover:bg-navy-dark disabled:opacity-50"
       >
         {loading ? "Kaydediliyor..." : "Kaydet"}
       </button>

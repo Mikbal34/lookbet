@@ -22,7 +22,7 @@ export interface GuestFormProps {
 const fieldClass = (hasError: boolean) =>
   cn(
     "h-9 w-full rounded-lg border px-3 text-sm text-gray-900 placeholder:text-gray-400 bg-white",
-    "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors",
+    "focus:outline-none focus:ring-2 focus:ring-navy focus:border-navy transition-colors",
     hasError
       ? "border-red-400 focus:ring-red-400"
       : "border-gray-300 hover:border-gray-400"
@@ -31,7 +31,7 @@ const fieldClass = (hasError: boolean) =>
 const selectClass = (hasError: boolean) =>
   cn(
     "h-9 w-full appearance-none rounded-lg border px-3 text-sm text-gray-900 bg-white",
-    "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors",
+    "focus:outline-none focus:ring-2 focus:ring-navy focus:border-navy transition-colors",
     hasError
       ? "border-red-400 focus:ring-red-400"
       : "border-gray-300 hover:border-gray-400"
@@ -57,7 +57,7 @@ export function GuestForm({
   return (
     <div
       className={cn(
-        "bg-white rounded-xl border border-gray-100 p-4 space-y-3",
+        "bg-white rounded-lg border border-gray-100 p-4 space-y-3",
         className
       )}
       aria-label={title}
@@ -72,7 +72,7 @@ export function GuestForm({
           className={cn(
             "ml-auto text-xs font-medium px-2 py-0.5 rounded-full",
             type === "Adult"
-              ? "bg-blue-50 text-blue-600"
+              ? "bg-chip-blue text-navy"
               : "bg-amber-50 text-amber-600"
           )}
         >

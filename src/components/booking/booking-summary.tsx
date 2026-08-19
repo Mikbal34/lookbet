@@ -105,7 +105,7 @@ export function BookingSummary({ bookingData, className }: BookingSummaryProps) 
       aria-label="Rezervasyon ozeti"
     >
       {/* Header */}
-      <div className="bg-blue-600 px-5 py-4">
+      <div className="bg-navy px-5 py-4">
         <h2 className="text-white font-semibold text-base">Rezervasyon Ozeti</h2>
       </div>
 
@@ -185,7 +185,7 @@ export function BookingSummary({ bookingData, className }: BookingSummaryProps) 
           )}
           <div className="flex justify-between items-center pt-2 border-t border-dashed border-gray-200">
             <span className="text-sm font-bold text-gray-900">Toplam</span>
-            <span className="text-xl font-bold text-blue-600">
+            <span className="text-xl font-bold text-navy">
               {formatCurrency(finalPrice, currency)}
             </span>
           </div>

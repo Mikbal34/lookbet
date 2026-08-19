@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
       where.isRead = isReadParam === "true";
     }
 
-    const [notifications, total] = await Promise.all([
+    const [notifications, total, unreadCount] = await Promise.all([
       prisma.notification.findMany({
         where,
         skip,
@@ -53,10 +53,12 @@ export async function GET(req: NextRequest) {
         },
       }),
       prisma.notification.count({ where }),
+      prisma.notification.count({ where: { isRead: false } }),
     ]);
 
     return NextResponse.json({
       notifications,
+      unreadCount,
       pagination: {
         page,
         limit,

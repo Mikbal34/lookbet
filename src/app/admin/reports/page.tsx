@@ -60,10 +60,10 @@ function RevenueTab() {
     return (
       <div className="space-y-6 animate-pulse">
         <div className="grid grid-cols-2 gap-4">
-          <div className="h-24 bg-white rounded-xl border border-gray-200" />
-          <div className="h-24 bg-white rounded-xl border border-gray-200" />
+          <div className="h-24 bg-white rounded-md border border-[rgb(26_24_20/0.08)]" />
+          <div className="h-24 bg-white rounded-md border border-[rgb(26_24_20/0.08)]" />
         </div>
-        <div className="h-80 bg-white rounded-xl border border-gray-200" />
+        <div className="h-80 bg-white rounded-md border border-[rgb(26_24_20/0.08)]" />
       </div>
     );
   }
@@ -73,13 +73,13 @@ function RevenueTab() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-white rounded-md border border-[rgb(26_24_20/0.08)] p-6">
           <p className="text-sm text-gray-500">Toplam Ciro</p>
           <p className="text-3xl font-bold text-gray-900 mt-1">
             {formatCurrency(data?.total ?? 0)}
           </p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-white rounded-md border border-[rgb(26_24_20/0.08)] p-6">
           <p className="text-sm text-gray-500">Aylık Ortalama</p>
           <p className="text-3xl font-bold text-gray-900 mt-1">
             {formatCurrency(data?.avgMonthly ?? 0)}
@@ -175,7 +175,7 @@ function AgencyPerformanceTab() {
   ];
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6">
+    <div className="bg-white rounded-md border border-[rgb(26_24_20/0.08)] p-6">
       {isLoading ? (
         <div className="space-y-3 animate-pulse">
           {[1, 2, 3, 4].map((i) => (
@@ -222,7 +222,7 @@ function HotelTab() {
   ];
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6">
+    <div className="bg-white rounded-md border border-[rgb(26_24_20/0.08)] p-6">
       {isLoading ? (
         <div className="space-y-3 animate-pulse">
           {[1, 2, 3, 4].map((i) => (
@@ -256,7 +256,7 @@ export default function ReportsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Raporlar</h1>
+        <h1 className="font-serif text-[28px] font-normal text-ink">Raporlar</h1>
         <p className="text-sm text-gray-500 mt-1">Performans ve ciro analizleri</p>
       </div>
 
@@ -269,7 +269,7 @@ export default function ReportsPage() {
               onClick={() => setActiveTab(tab.value)}
               className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === tab.value
-                  ? "border-blue-600 text-blue-600"
+                  ? "border-navy text-navy"
                   : "border-transparent text-gray-500 hover:text-gray-700"
               }`}
               aria-selected={activeTab === tab.value}

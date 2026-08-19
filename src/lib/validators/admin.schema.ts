@@ -32,6 +32,20 @@ export const agencyApproveSchema = z.object({
   notes: z.string().optional(),
 });
 
+// Başvuru onayı: admin hesap açarken opsiyonel şifre belirleyebilir;
+// verilmezse geçici şifre otomatik üretilir ve yanıtta bir kez döner.
+export const applicationApproveSchema = z.object({
+  password: z.string().min(6, "Şifre en az 6 karakter olmalı").optional(),
+  discountRate: z.number().min(0).max(100).optional(),
+  commission: z.number().min(0).max(100).optional(),
+  feedId: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+export const applicationRejectSchema = z.object({
+  reason: z.string().max(500).optional(),
+});
+
 export const systemSettingSchema = z.object({
   key: z.string().min(1),
   value: z.string().min(1),
@@ -49,5 +63,7 @@ export const userUpdateSchema = z.object({
 export type PriceRuleInput = z.input<typeof priceRuleSchema>;
 export type CommissionInput = z.input<typeof commissionSchema>;
 export type AgencyApproveInput = z.infer<typeof agencyApproveSchema>;
+export type ApplicationApproveInput = z.infer<typeof applicationApproveSchema>;
+export type ApplicationRejectInput = z.infer<typeof applicationRejectSchema>;
 export type SystemSettingInput = z.infer<typeof systemSettingSchema>;
 export type UserUpdateInput = z.infer<typeof userUpdateSchema>;

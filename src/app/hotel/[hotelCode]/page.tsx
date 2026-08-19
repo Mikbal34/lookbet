@@ -138,7 +138,7 @@ function HotelDetailContent({
 
                   {/* Quick date summary if params exist */}
                   {searchParams.get("checkIn") && (
-                    <div className="rounded-lg bg-blue-50 px-4 py-3 text-sm text-blue-800 space-y-1">
+                    <div className="rounded-lg bg-chip-blue px-4 py-3 text-sm text-navy-dark space-y-1">
                       <p>
                         <span className="font-medium">Giriş:</span>{" "}
                         {searchParams.get("checkIn")}

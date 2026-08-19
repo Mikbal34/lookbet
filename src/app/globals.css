@@ -1,26 +1,102 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
+/* LookBeds tasarım sistemi — CruiseScanner (Skyscanner-tarzı) tasarımının
+   TURUNCU versiyonu: dümdüz tek renk marka bandı, beyaz gövde, Manrope,
+   amber fiyat/CTA vurguları, keskin köşeler.
+   Marka turuncusu logodan örneklendi: #E06028 */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  /* Marka — turuncu ailesi (eski "navy" token adları geriye uyumluluk için
+     korunuyor; TÜM uygulama bu adları kullanıyor) */
+  --color-navy: #e06028; /* birincil — marka turuncusu */
+  --color-navy-dark: #c24e1d; /* hover */
+  --color-navy-deep: #8f3a12; /* koyu zemin / panel sidebar */
+  --color-navy-mid: #ed7b45;
+  --color-navy-bright: #f59468;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Vurgu — amber (CruiseScanner CTA/fiyat etiketi rengi) */
+  --color-gold: #ffc829;
+  --color-gold-dark: #f0b400;
+  --color-gold-text: #9a7300;
+  --color-gold-soft: #fff3cd;
+
+  /* Metin / zemin — sıcak nötrler (CruiseScanner warm-ink) */
+  --color-ink: #1a1814; /* ana metin */
+  --color-slate-text: #3f3a33; /* ikincil metin */
+  --color-muted: #8a8377; /* soluk metin */
+  --color-line: #e5e0d3; /* ince çizgi */
+  --color-line-strong: #ccc6b5; /* input border */
+  --color-row: #f1ede4; /* satır çizgisi / paper-strong */
+  --color-chip: #f1ede4; /* etiket zemini */
+  --color-chip-blue: #fdeae0; /* turuncu tonlu soft zemin */
+  --color-paper: #ffffff; /* gövde beyaz (Skyscanner-tarzı) */
+
+  /* Fontlar — Manrope her yerde (display dahil) */
+  --font-sans: var(--font-manrope), "Helvetica Neue", Helvetica, Arial,
+    sans-serif;
+  --font-serif: var(--font-manrope), "Helvetica Neue", Helvetica, Arial,
+    sans-serif;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: #ffffff;
+  color: #1a1814;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Başlık dili: eski font-serif başlıklar artık Manrope — CruiseScanner'daki
+   extrabold + sıkı tracking hissi için global düzeltme */
+.font-serif {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.6s ease both;
+}
+
+/* react-day-picker — LookBeds tasarım dili */
+.lookbet-daypicker .rdp-root {
+  --rdp-accent-color: #e06028;
+  --rdp-accent-background-color: #fdeae0;
+  --rdp-today-color: #9a7300;
+  --rdp-day_button-border-radius: 4px;
+  --rdp-selected-border: 2px solid #e06028;
+  --rdp-range_start-color: #ffffff;
+  --rdp-range_end-color: #ffffff;
+  --rdp-range_start-date-background-color: #e06028;
+  --rdp-range_end-date-background-color: #e06028;
+  --rdp-range_middle-background-color: #fdeae0;
+  --rdp-day-height: 30px;
+  --rdp-day-width: 30px;
+  --rdp-nav-height: 28px;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 12.5px;
+}
+.lookbet-daypicker .rdp-month_caption {
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #1a1814;
+}
+.lookbet-daypicker .rdp-weekday {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #8a8377;
+}
+.lookbet-daypicker .rdp-chevron {
+  fill: #e06028;
 }

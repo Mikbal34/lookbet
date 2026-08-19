@@ -7,7 +7,7 @@
 // />
 
 import * as React from "react";
-import { Minus, Plus, Users } from "lucide-react";
+import { Minus, Plus } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
 export interface GuestValue {
@@ -39,10 +39,10 @@ function CounterRow({
   onIncrement: () => void;
 }) {
   return (
-    <div className="flex items-center justify-between py-3">
+    <div className="flex items-center justify-between py-2.5">
       <div>
-        <p className="text-sm font-medium text-gray-900">{label}</p>
-        {subtitle && <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>}
+        <p className="text-sm font-bold text-ink">{label}</p>
+        {subtitle && <p className="text-xs text-muted mt-0.5">{subtitle}</p>}
       </div>
       <div className="flex items-center gap-3">
         <button
@@ -51,17 +51,17 @@ function CounterRow({
           disabled={value <= min}
           aria-label={`${label} azalt`}
           className={cn(
-            "h-8 w-8 rounded-full border border-gray-300 flex items-center justify-center",
-            "text-gray-600 transition-colors duration-150",
-            "hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50",
-            "focus:outline-none focus:ring-2 focus:ring-blue-500",
+            "h-8 w-8 rounded-md border border-line-strong flex items-center justify-center",
+            "text-slate-text transition-colors duration-150",
+            "hover:border-navy hover:text-navy",
+            "focus:outline-none focus:ring-2 focus:ring-navy",
             "disabled:opacity-40 disabled:pointer-events-none"
           )}
         >
           <Minus className="h-3.5 w-3.5" aria-hidden="true" />
         </button>
         <span
-          className="w-5 text-center text-sm font-semibold text-gray-900"
+          className="w-5 text-center text-sm font-bold text-ink"
           aria-live="polite"
         >
           {value}
@@ -72,10 +72,10 @@ function CounterRow({
           disabled={value >= max}
           aria-label={`${label} artır`}
           className={cn(
-            "h-8 w-8 rounded-full border border-gray-300 flex items-center justify-center",
-            "text-gray-600 transition-colors duration-150",
-            "hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50",
-            "focus:outline-none focus:ring-2 focus:ring-blue-500",
+            "h-8 w-8 rounded-md border border-line-strong flex items-center justify-center",
+            "text-slate-text transition-colors duration-150",
+            "hover:border-navy hover:text-navy",
+            "focus:outline-none focus:ring-2 focus:ring-navy",
             "disabled:opacity-40 disabled:pointer-events-none"
           )}
         >
@@ -145,27 +145,23 @@ export function GuestSelector({ value, onChange, className }: GuestSelectorProps
         aria-expanded={isOpen}
         aria-haspopup="true"
         className={cn(
-          "h-10 w-full flex items-center gap-2 rounded-lg border px-3 text-sm text-gray-900 bg-white",
-          "transition-colors duration-150",
-          "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
-          isOpen ? "border-blue-500 ring-2 ring-blue-500" : "border-gray-300 hover:border-gray-400"
+          "w-full flex items-center gap-2 text-[16px] font-semibold text-ink bg-transparent",
+          "cursor-pointer focus:outline-none"
         )}
       >
-        <Users className="h-4 w-4 text-gray-400 shrink-0" aria-hidden="true" />
         <span className="flex-1 text-left truncate">{label}</span>
-        <span className="text-xs text-gray-400">{totalGuests} kişi</span>
+        <span className="text-xs text-muted shrink-0">{totalGuests} kişi</span>
       </button>
 
       {isOpen && (
         <div
           className={cn(
-            "absolute left-0 top-full mt-2 z-50 w-72 bg-white rounded-xl border border-gray-200 shadow-lg",
-            "animate-in fade-in-0 zoom-in-95 duration-150"
+            "absolute left-0 top-full mt-3 z-50 w-72 bg-white rounded-md border border-line shadow-[0_12px_28px_-10px_rgb(11_13_20/0.25)]"
           )}
           role="dialog"
           aria-label="Misafir seçici"
         >
-          <div className="px-4 divide-y divide-gray-100">
+          <div className="px-4 divide-y divide-line">
             <CounterRow
               label="Yetişkin"
               subtitle="12 yaş ve üzeri"
@@ -187,7 +183,7 @@ export function GuestSelector({ value, onChange, className }: GuestSelectorProps
 
             {value.childAges.length > 0 && (
               <div className="py-3 space-y-2">
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                <p className="text-[11px] font-bold text-muted uppercase tracking-[1.5px]">
                   Çocuk Yaşları
                 </p>
                 <div className="grid grid-cols-2 gap-2">
@@ -195,7 +191,7 @@ export function GuestSelector({ value, onChange, className }: GuestSelectorProps
                     <div key={i} className="flex flex-col gap-1">
                       <label
                         htmlFor={`child-age-${i}`}
-                        className="text-xs text-gray-600"
+                        className="text-xs text-slate-text font-semibold"
                       >
                         {i + 1}. Çocuk
                       </label>
@@ -204,8 +200,8 @@ export function GuestSelector({ value, onChange, className }: GuestSelectorProps
                         value={age}
                         onChange={(e) => handleChildAge(i, Number(e.target.value))}
                         className={cn(
-                          "h-8 w-full appearance-none rounded-md border border-gray-300 px-2 text-sm text-gray-900 bg-white",
-                          "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          "h-8 w-full appearance-none rounded-md border border-line-strong px-2 text-sm text-ink bg-white",
+                          "focus:outline-none focus:border-navy"
                         )}
                       >
                         {Array.from({ length: 18 }, (_, n) => (
@@ -221,19 +217,6 @@ export function GuestSelector({ value, onChange, className }: GuestSelectorProps
             )}
           </div>
 
-          <div className="border-t border-gray-100 px-4 py-3 flex justify-end">
-            <button
-              type="button"
-              onClick={() => setIsOpen(false)}
-              className={cn(
-                "h-8 px-4 rounded-lg bg-blue-600 text-white text-sm font-medium",
-                "hover:bg-blue-700 transition-colors duration-150",
-                "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-              )}
-            >
-              Tamam
-            </button>
-          </div>
         </div>
       )}
     </div>

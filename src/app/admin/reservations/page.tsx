@@ -168,7 +168,7 @@ export default function ReservationsPage() {
           <button
             onClick={() => toast.info(`Rezervasyon: ${r.bookingNumber}`)}
             aria-label={`Detay: ${r.bookingNumber}`}
-            className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-navy-dark bg-chip-blue rounded-lg hover:bg-chip-blue transition-colors"
           >
             <Eye className="h-3.5 w-3.5" />
             Detay
@@ -183,7 +183,7 @@ export default function ReservationsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Rezervasyonlar</h1>
+          <h1 className="font-serif text-[28px] font-normal text-ink">Rezervasyonlar</h1>
           <p className="text-sm text-gray-500 mt-1">
             Toplam {data?.total ?? 0} rezervasyon
           </p>
@@ -200,7 +200,7 @@ export default function ReservationsPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4 flex flex-col sm:flex-row gap-3 flex-wrap">
+      <div className="bg-white rounded-md border border-[rgb(26_24_20/0.08)] p-4 flex flex-col sm:flex-row gap-3 flex-wrap">
         <div className="relative flex-1 min-w-48">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <input
@@ -208,14 +208,14 @@ export default function ReservationsPage() {
             placeholder="Rezervasyon no veya misafir adı..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            className="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy"
             aria-label="Rezervasyon ara"
           />
         </div>
         <select
           value={status}
           onChange={(e) => { setStatus(e.target.value); setPage(1); }}
-          className="w-full sm:w-44 py-2 px-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full sm:w-44 py-2 px-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy"
           aria-label="Duruma göre filtrele"
         >
           {STATUSES.map((s) => (
@@ -230,7 +230,7 @@ export default function ReservationsPage() {
             type="date"
             value={dateFrom}
             onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
-            className="py-2 px-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="py-2 px-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy"
             aria-label="Başlangıç tarihi"
           />
           <span className="text-gray-400 text-sm">–</span>
@@ -238,14 +238,14 @@ export default function ReservationsPage() {
             type="date"
             value={dateTo}
             onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
-            className="py-2 px-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="py-2 px-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy"
             aria-label="Bitiş tarihi"
           />
         </div>
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-white rounded-md border border-[rgb(26_24_20/0.08)] p-6">
         {isLoading ? (
           <div className="space-y-3 animate-pulse">
             {[1, 2, 3, 4, 5].map((i) => (

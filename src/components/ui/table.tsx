@@ -27,7 +27,7 @@ export interface TableProps extends React.HTMLAttributes<HTMLTableElement> {}
 
 export const Table = React.forwardRef<HTMLTableElement, TableProps>(
   ({ className, ...props }, ref) => (
-    <div className="w-full overflow-x-auto rounded-xl border border-gray-200">
+    <div className="w-full overflow-x-auto rounded-lg border border-gray-200">
       <table
         ref={ref}
         className={cn("w-full caption-bottom text-sm", className)}

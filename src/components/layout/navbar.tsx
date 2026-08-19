@@ -1,238 +1,196 @@
 "use client";
 
+// LookBeds üst bar — CruiseScanner (Skyscanner-tarzı) tasarımın turuncu hali:
+// dümdüz tek renk marka bandı, beyaz nav linkleri, outline auth butonları.
+// Acente kullanıcısı sitenin neresinde olursa olsun panel header'ını görür.
+
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { useState } from "react";
 import {
-  Hotel,
   Menu,
   X,
-  User,
+  CircleUserRound,
   LogOut,
   LayoutDashboard,
   CalendarCheck,
-  ChevronDown,
 } from "lucide-react";
+import { Logo } from "./logo";
+import { AgencyHeader } from "./agency-header";
+import { LocaleSwitcher } from "./locale-switcher";
 
-export function Navbar() {
+const navLinkCls =
+  "text-[15px] font-semibold tracking-[-0.005em] text-white/90 hover:text-white transition-colors";
+const ghostBtnCls =
+  "inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-[14.5px] font-semibold text-white/90 hover:bg-white/10 hover:text-white transition-colors";
+const outlineBtnCls =
+  "ml-1 inline-flex items-center gap-1.5 rounded-md border border-white/35 bg-transparent px-4 py-2 text-[14.5px] font-semibold text-white hover:border-white hover:bg-white/10 transition-colors";
+
+export function Navbar({
+  variant = "solid",
+}: {
+  /** "transparent": ana sayfada bant hero ile kesintisiz birleşir (gölgesiz) */
+  variant?: "solid" | "transparent";
+}) {
   const { data: session } = useSession();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
 
   const role = session?.user?.role;
 
+  if (role === "AGENCY") {
+    return <AgencyHeader />;
+  }
+
   return (
-    <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          {/* Logo */}
-          <div className="flex items-center">
-            <Link href="/" className="flex items-center gap-2">
-              <Hotel className="h-8 w-8 text-blue-600" />
-              <span className="text-xl font-bold text-gray-900">Lookbet</span>
-            </Link>
-          </div>
+    <header
+      className={
+        variant === "transparent"
+          ? "w-full bg-navy text-white"
+          : "sticky top-0 z-50 w-full bg-navy text-white shadow-[0_1px_0_rgb(0_0_0/0.15),0_4px_18px_-8px_rgb(0_0_0/0.3)]"
+      }
+    >
+      <div className="mx-auto flex h-[72px] max-w-[1200px] items-center gap-8 px-4 sm:px-6">
+        <Logo variant="light" size="md" />
 
-          {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-6">
-            <Link
-              href="/"
-              className="text-gray-600 hover:text-gray-900 text-sm font-medium"
-            >
-              Ana Sayfa
-            </Link>
+        <nav className="hidden flex-1 items-center gap-7 md:flex">
+          <Link href="/search" className={navLinkCls}>
+            Otel Ara
+          </Link>
+          <Link href="/kampanyalar" className={navLinkCls}>
+            Kampanyalar
+          </Link>
+          <Link href="/yardim" className={navLinkCls}>
+            Yardım
+          </Link>
+          <Link href="/register/agency" className={navLinkCls}>
+            Acenteler
+          </Link>
+        </nav>
 
-            {session ? (
-              <>
-                {role === "ADMIN" && (
-                  <Link
-                    href="/admin"
-                    className="text-gray-600 hover:text-gray-900 text-sm font-medium"
-                  >
-                    Admin Panel
-                  </Link>
-                )}
-                {role === "AGENCY" && (
-                  <Link
-                    href="/agency/dashboard"
-                    className="text-gray-600 hover:text-gray-900 text-sm font-medium"
-                  >
-                    Acente Panel
-                  </Link>
-                )}
-                <Link
-                  href="/reservations"
-                  className="text-gray-600 hover:text-gray-900 text-sm font-medium"
-                >
-                  Rezervasyonlarım
+        <div className="ml-auto hidden items-center gap-1 md:flex">
+          <LocaleSwitcher variant="transparent" />
+          {session ? (
+            <>
+              <Link href="/profile" className={ghostBtnCls}>
+                <CircleUserRound className="size-4" aria-hidden />
+                {session.user.name}
+              </Link>
+              {role === "ADMIN" && (
+                <Link href="/admin" className={ghostBtnCls}>
+                  <LayoutDashboard className="size-4" aria-hidden />
+                  Admin
                 </Link>
-
-                {/* Profile Dropdown */}
-                <div className="relative">
-                  <button
-                    onClick={() => setProfileOpen(!profileOpen)}
-                    className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900"
-                  >
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                      <User className="h-4 w-4 text-blue-600" />
-                    </div>
-                    <span>{session.user.name}</span>
-                    <ChevronDown className="h-4 w-4" />
-                  </button>
-
-                  {profileOpen && (
-                    <>
-                      <div
-                        className="fixed inset-0 z-10"
-                        onClick={() => setProfileOpen(false)}
-                      />
-                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border py-1 z-20">
-                        <Link
-                          href="/profile"
-                          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                          onClick={() => setProfileOpen(false)}
-                        >
-                          <User className="h-4 w-4" />
-                          Profil
-                        </Link>
-                        <Link
-                          href="/reservations"
-                          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                          onClick={() => setProfileOpen(false)}
-                        >
-                          <CalendarCheck className="h-4 w-4" />
-                          Rezervasyonlar
-                        </Link>
-                        {role === "ADMIN" && (
-                          <Link
-                            href="/admin"
-                            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                            onClick={() => setProfileOpen(false)}
-                          >
-                            <LayoutDashboard className="h-4 w-4" />
-                            Admin Panel
-                          </Link>
-                        )}
-                        <hr className="my-1" />
-                        <button
-                          onClick={() => signOut({ callbackUrl: "/" })}
-                          className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full"
-                        >
-                          <LogOut className="h-4 w-4" />
-                          Çıkış Yap
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </>
-            ) : (
-              <div className="flex items-center gap-3">
-                <Link
-                  href="/login"
-                  className="text-sm font-medium text-gray-700 hover:text-gray-900"
-                >
-                  Giriş Yap
-                </Link>
-                <Link
-                  href="/register"
-                  className="text-sm font-medium bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-                >
-                  Kayıt Ol
-                </Link>
-              </div>
-            )}
-          </div>
-
-          {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center">
-            <button
-              onClick={() => setMobileOpen(!mobileOpen)}
-              className="text-gray-600"
-            >
-              {mobileOpen ? (
-                <X className="h-6 w-6" />
-              ) : (
-                <Menu className="h-6 w-6" />
               )}
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={() => signOut({ callbackUrl: "/" })}
+                className={outlineBtnCls}
+              >
+                <LogOut className="size-4" aria-hidden />
+                Çıkış
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/agency/login" className={ghostBtnCls}>
+                Partner girişi
+              </Link>
+              <Link href="/login" className={outlineBtnCls}>
+                Giriş yap
+              </Link>
+            </>
+          )}
+        </div>
+
+        {/* Mobile */}
+        <div className="ml-auto flex items-center gap-1 md:hidden">
+          <button
+            type="button"
+            onClick={() => setMobileOpen((o) => !o)}
+            className="flex size-10 items-center justify-center rounded-md text-white/90 hover:bg-white/10"
+            aria-label="Menü"
+            aria-expanded={mobileOpen}
+          >
+            {mobileOpen ? (
+              <X className="size-[18px]" />
+            ) : (
+              <Menu className="size-[18px]" />
+            )}
+          </button>
         </div>
       </div>
 
-      {/* Mobile Menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t bg-white">
-          <div className="px-4 py-3 space-y-2">
-            <Link
-              href="/"
-              className="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50"
-              onClick={() => setMobileOpen(false)}
-            >
-              Ana Sayfa
-            </Link>
-            {session ? (
-              <>
-                {role === "ADMIN" && (
+        <div className="border-t border-white/10 bg-navy md:hidden">
+          <div className="mx-auto max-w-[1200px] px-4 py-2 sm:px-6">
+            <nav className="flex flex-col">
+              {[
+                { name: "Otel Ara", href: "/search" },
+                { name: "Kampanyalar", href: "/kampanyalar" },
+                { name: "Yardım", href: "/yardim" },
+                { name: "Acenteler", href: "/register/agency" },
+              ].map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="border-b border-white/10 py-3 text-[14px] font-semibold text-white/90 hover:text-white"
+                >
+                  {item.name}
+                </Link>
+              ))}
+              {session ? (
+                <>
                   <Link
-                    href="/admin"
-                    className="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50"
+                    href="/profile"
                     onClick={() => setMobileOpen(false)}
+                    className="mt-3 inline-flex items-center gap-1.5 py-2 text-[14px] font-semibold text-white/90"
                   >
-                    Admin Panel
+                    <CircleUserRound className="size-4" aria-hidden />
+                    {session.user.name}
                   </Link>
-                )}
-                {role === "AGENCY" && (
                   <Link
-                    href="/agency/dashboard"
-                    className="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50"
+                    href="/reservations"
                     onClick={() => setMobileOpen(false)}
+                    className="inline-flex items-center gap-1.5 py-2 text-[14px] font-semibold text-white/90"
                   >
-                    Acente Panel
+                    <CalendarCheck className="size-4" aria-hidden />
+                    Rezervasyonlarım
                   </Link>
-                )}
-                <Link
-                  href="/reservations"
-                  className="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  Rezervasyonlarım
-                </Link>
-                <Link
-                  href="/profile"
-                  className="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  Profil
-                </Link>
-                <button
-                  onClick={() => signOut({ callbackUrl: "/" })}
-                  className="block w-full text-left px-3 py-2 rounded-lg text-red-600 hover:bg-red-50"
-                >
-                  Çıkış Yap
-                </button>
-              </>
-            ) : (
-              <>
-                <Link
-                  href="/login"
-                  className="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  Giriş Yap
-                </Link>
-                <Link
-                  href="/register"
-                  className="block px-3 py-2 rounded-lg text-blue-600 hover:bg-blue-50"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  Kayıt Ol
-                </Link>
-              </>
-            )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false);
+                      signOut({ callbackUrl: "/" });
+                    }}
+                    className="mt-1 mb-3 inline-flex h-11 items-center justify-center gap-1.5 rounded border border-white/35 bg-transparent text-[14px] font-semibold text-white"
+                  >
+                    <LogOut className="size-4" aria-hidden />
+                    Çıkış yap
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/agency/login"
+                    onClick={() => setMobileOpen(false)}
+                    className="mt-3 py-2 text-[14px] text-white/90"
+                  >
+                    Partner girişi
+                  </Link>
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileOpen(false)}
+                    className="mt-1 mb-3 inline-flex h-11 items-center justify-center rounded border border-white/35 bg-transparent text-[14px] font-semibold text-white"
+                  >
+                    Giriş yap
+                  </Link>
+                </>
+              )}
+            </nav>
           </div>
         </div>
       )}
-    </nav>
+    </header>
   );
 }

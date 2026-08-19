@@ -18,23 +18,19 @@ export const registerSchema = z
     path: ["confirmPassword"],
   });
 
-export const agencyRegisterSchema = z
-  .object({
-    name: z.string().min(2, "İsim en az 2 karakter olmalı"),
-    email: z.string().email("Geçerli bir email adresi girin"),
-    phone: z.string().min(10, "Geçerli bir telefon numarası girin"),
-    password: z.string().min(6, "Şifre en az 6 karakter olmalı"),
-    confirmPassword: z.string(),
-    companyName: z.string().min(2, "Şirket adı gerekli"),
-    taxId: z.string().min(10, "Geçerli bir vergi numarası girin"),
-    address: z.string().optional(),
-    companyPhone: z.string().optional(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Şifreler eşleşmiyor",
-    path: ["confirmPassword"],
-  });
+// Acente BAŞVURU formu — hesap oluşturmaz, şifre içermez.
+// Başvuru admin panele düşer; hesap admin onayıyla oluşturulur.
+export const agencyApplicationSchema = z.object({
+  contactName: z.string().min(2, "İsim en az 2 karakter olmalı"),
+  email: z.string().email("Geçerli bir email adresi girin"),
+  phone: z.string().min(10, "Geçerli bir telefon numarası girin"),
+  companyName: z.string().min(2, "Şirket adı gerekli"),
+  taxId: z.string().min(10, "Geçerli bir vergi numarası girin"),
+  address: z.string().optional(),
+  companyPhone: z.string().optional(),
+  message: z.string().max(1000, "Mesaj en fazla 1000 karakter olabilir").optional(),
+});
 
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
-export type AgencyRegisterInput = z.infer<typeof agencyRegisterSchema>;
+export type AgencyApplicationInput = z.infer<typeof agencyApplicationSchema>;

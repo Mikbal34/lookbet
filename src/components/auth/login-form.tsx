@@ -3,13 +3,12 @@
 // Usage:
 // <LoginForm />
 // Renders email + password fields, calls NextAuth signIn("credentials") on submit.
-// Links to /register and /agency/register included.
+// Alt linkler sayfa tarafından render edilir (login/page.tsx).
 
 import * as React from "react";
-import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff, LogIn, AlertCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -44,9 +43,20 @@ export function LoginForm() {
       });
 
       if (result?.error) {
-        setServerError("Email veya sifre hatali. Lutfen tekrar deneyin.");
+        setServerError("Email veya şifre hatalı. Lütfen tekrar deneyin.");
       } else {
-        router.push(callbackUrl);
+        // Rol bazlı yönlendirme: admin panele, acente kendi paneline düşer.
+        const session = await getSession();
+        const role = session?.user?.role;
+        const target =
+          callbackUrl !== "/"
+            ? callbackUrl
+            : role === "ADMIN"
+              ? "/admin"
+              : role === "AGENCY"
+                ? "/agency/dashboard"
+                : "/";
+        router.push(target);
         router.refresh();
       }
     } catch {
@@ -65,7 +75,7 @@ export function LoginForm() {
       {serverError && (
         <div
           role="alert"
-          className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+          className="flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
         >
           <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" aria-hidden="true" />
           {serverError}
@@ -132,27 +142,8 @@ export function LoginForm() {
         size="lg"
       >
         <LogIn className="h-4 w-4" aria-hidden="true" />
-        Giris Yap
+        Giriş Yap
       </Button>
-
-      {/* Links */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-gray-500 pt-1">
-        <span>
-          Hesabiniz yok mu?{" "}
-          <Link
-            href="/register"
-            className="text-blue-600 font-medium hover:text-blue-700 hover:underline transition-colors"
-          >
-            Kayit Ol
-          </Link>
-        </span>
-        <Link
-          href="/agency/register"
-          className="text-blue-600 font-medium hover:text-blue-700 hover:underline transition-colors"
-        >
-          Acente Kaydi
-        </Link>
-      </div>
     </form>
   );
 }

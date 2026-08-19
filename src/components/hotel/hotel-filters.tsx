@@ -1,15 +1,12 @@
 "use client";
 
-// Usage:
-// <HotelFilters
-//   filters={filters}
-//   onFilterChange={setFilters}
-//   boardTypes={["BB", "HB", "FB", "AI"]}
-// />
+// Filtre paneli — lookbet. tasarım dili: beyaz kart, uppercase mikro
+// başlıklar, altın yıldızlar, keskin köşeli kutular.
 
 import * as React from "react";
-import { SlidersHorizontal, X } from "lucide-react";
+import { SlidersHorizontal, X, Globe } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
+import { NATIONALITIES } from "@/lib/constants/nationalities";
 
 export interface HotelFiltersValue {
   stars: number[];
@@ -34,11 +31,18 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
 
 const STAR_OPTIONS = [5, 4, 3];
 
+const sectionLabel =
+  "text-xs font-bold tracking-[1.5px] uppercase text-muted mb-2.5";
+const inputBox =
+  "h-10 w-full rounded-md border border-line-strong px-3 text-sm text-ink bg-white focus:outline-none focus:border-navy transition-colors placeholder:text-muted/70";
+
 export interface HotelFiltersProps {
   filters: HotelFiltersValue;
   onFilterChange: (filters: HotelFiltersValue) => void;
   boardTypes: string[];
   className?: string;
+  nationality?: string;
+  onNationalityChange?: (code: string) => void;
 }
 
 export function HotelFilters({
@@ -46,6 +50,8 @@ export function HotelFilters({
   onFilterChange,
   boardTypes,
   className,
+  nationality,
+  onNationalityChange,
 }: HotelFiltersProps) {
   const update = <K extends keyof HotelFiltersValue>(
     key: K,
@@ -87,25 +93,21 @@ export function HotelFilters({
   return (
     <aside
       className={cn(
-        "bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-6",
+        "bg-white rounded-md border border-[rgb(26_24_20/0.08)] p-[22px] space-y-[22px]",
         className
       )}
       aria-label="Otel filtreleri"
     >
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <SlidersHorizontal className="h-4 w-4 text-gray-500" aria-hidden="true" />
-          <h2 className="text-sm font-semibold text-gray-900">Filtreler</h2>
+          <SlidersHorizontal className="h-4 w-4 text-muted" aria-hidden="true" />
+          <h2 className="text-sm font-bold text-ink">Filtreler</h2>
         </div>
         {hasActiveFilters && (
           <button
             type="button"
             onClick={clearAll}
-            className={cn(
-              "flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 transition-colors",
-              "focus:outline-none focus:underline"
-            )}
+            className="flex items-center gap-1 text-xs text-navy font-semibold hover:text-gold transition-colors"
           >
             <X className="h-3 w-3" aria-hidden="true" />
             Temizle
@@ -113,75 +115,53 @@ export function HotelFilters({
         )}
       </div>
 
-      {/* Sort */}
+      {/* Sıralama */}
       <fieldset>
-        <legend className="text-sm font-medium text-gray-700 mb-2">Sıralama</legend>
-        <div className="relative">
-          <select
-            value={filters.sortBy}
-            onChange={(e) => update("sortBy", e.target.value as SortOption)}
-            aria-label="Sıralama seçin"
-            className={cn(
-              "h-9 w-full appearance-none rounded-lg border border-gray-300 px-3 pr-8 text-sm text-gray-900 bg-white",
-              "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-            )}
-          >
-            {SORT_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-          <svg
-            className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            aria-hidden="true"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </div>
+        <legend className={sectionLabel}>Sıralama</legend>
+        <select
+          value={filters.sortBy}
+          onChange={(e) => update("sortBy", e.target.value as SortOption)}
+          aria-label="Sıralama seçin"
+          className={cn(inputBox, "appearance-none cursor-pointer pr-8")}
+        >
+          {SORT_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
       </fieldset>
 
-      <hr className="border-gray-100" />
+      <hr className="border-line" />
 
-      {/* Stars */}
+      {/* Yıldız */}
       <fieldset>
-        <legend className="text-sm font-medium text-gray-700 mb-3">Yıldız</legend>
+        <legend className={sectionLabel}>Yıldız</legend>
         <div className="space-y-2">
           {STAR_OPTIONS.map((star) => {
-            const id = `star-${star}`;
+            const checked = filters.stars.includes(star);
             return (
               <label
                 key={star}
-                htmlFor={id}
-                className="flex items-center gap-2.5 cursor-pointer group"
+                className="flex items-center gap-2.5 cursor-pointer text-sm font-medium"
               >
                 <input
-                  id={id}
                   type="checkbox"
-                  checked={filters.stars.includes(star)}
+                  checked={checked}
                   onChange={() => toggleStar(star)}
-                  className={cn(
-                    "h-4 w-4 rounded border-gray-300 text-blue-600",
-                    "focus:ring-2 focus:ring-blue-500 cursor-pointer"
-                  )}
+                  className="sr-only"
                 />
-                <span className="flex items-center gap-1">
-                  {Array.from({ length: star }, (_, i) => (
-                    <svg
-                      key={i}
-                      className="h-3.5 w-3.5 fill-amber-400 text-amber-400"
-                      viewBox="0 0 24 24"
-                      aria-hidden="true"
-                    >
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                    </svg>
-                  ))}
-                  <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors">
-                    {star} Yıldız
-                  </span>
+                <span
+                  className={cn(
+                    "w-[18px] h-[18px] rounded-sm border-[1.5px] inline-flex items-center justify-center text-white text-[11px]",
+                    checked ? "bg-navy border-navy" : "border-line-strong bg-white"
+                  )}
+                  aria-hidden="true"
+                >
+                  {checked ? "✓" : ""}
+                </span>
+                <span className="text-gold tracking-[1px]">
+                  {"★".repeat(star)}
                 </span>
               </label>
             );
@@ -189,77 +169,85 @@ export function HotelFilters({
         </div>
       </fieldset>
 
-      <hr className="border-gray-100" />
+      <hr className="border-line" />
 
-      {/* Price range */}
+      {/* Fiyat aralığı */}
       <fieldset>
-        <legend className="text-sm font-medium text-gray-700 mb-3">Fiyat Aralığı (EUR)</legend>
+        <legend className={sectionLabel}>Gecelik fiyat (EUR)</legend>
         <div className="flex items-center gap-2">
-          <div className="flex-1">
-            <label htmlFor="min-price" className="sr-only">Minimum fiyat</label>
-            <input
-              id="min-price"
-              type="number"
-              value={filters.minPrice}
-              onChange={(e) => update("minPrice", e.target.value)}
-              placeholder="Min"
-              min={0}
-              className={cn(
-                "h-9 w-full rounded-lg border border-gray-300 px-3 text-sm text-gray-900 bg-white",
-                "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors",
-                "placeholder:text-gray-400"
-              )}
-            />
-          </div>
-          <span className="text-gray-400 text-sm">-</span>
-          <div className="flex-1">
-            <label htmlFor="max-price" className="sr-only">Maksimum fiyat</label>
-            <input
-              id="max-price"
-              type="number"
-              value={filters.maxPrice}
-              onChange={(e) => update("maxPrice", e.target.value)}
-              placeholder="Max"
-              min={0}
-              className={cn(
-                "h-9 w-full rounded-lg border border-gray-300 px-3 text-sm text-gray-900 bg-white",
-                "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors",
-                "placeholder:text-gray-400"
-              )}
-            />
-          </div>
+          <input
+            type="number"
+            value={filters.minPrice}
+            onChange={(e) => update("minPrice", e.target.value)}
+            placeholder="Min"
+            min={0}
+            aria-label="Minimum fiyat"
+            className={inputBox}
+          />
+          <span className="text-muted text-sm">–</span>
+          <input
+            type="number"
+            value={filters.maxPrice}
+            onChange={(e) => update("maxPrice", e.target.value)}
+            placeholder="Max"
+            min={0}
+            aria-label="Maksimum fiyat"
+            className={inputBox}
+          />
         </div>
       </fieldset>
 
-      {/* Board type */}
+      {/* Misafir uyruğu */}
+      {nationality !== undefined && onNationalityChange && (
+        <>
+          <hr className="border-line" />
+          <fieldset>
+            <legend className={cn(sectionLabel, "flex items-center gap-1.5")}>
+              <Globe className="h-3.5 w-3.5" aria-hidden="true" />
+              Misafir uyruğu
+            </legend>
+            <select
+              value={nationality}
+              onChange={(e) => onNationalityChange(e.target.value)}
+              aria-label="Misafir uyruğu seçin"
+              className={cn(inputBox, "appearance-none cursor-pointer pr-8")}
+            >
+              {NATIONALITIES.map((n) => (
+                <option key={n.code} value={n.code}>
+                  {n.code} - {n.label}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1.5 text-xs text-muted">
+              Otel fiyatları misafir uyruğuna göre değişebilir
+            </p>
+          </fieldset>
+        </>
+      )}
+
+      {/* Pansiyon tipi */}
       {boardTypes.length > 0 && (
         <>
-          <hr className="border-gray-100" />
+          <hr className="border-line" />
           <fieldset>
-            <legend className="text-sm font-medium text-gray-700 mb-3">Pansiyon Tipi</legend>
-            <div className="space-y-2">
+            <legend className={sectionLabel}>Pansiyon tipi</legend>
+            <div className="flex flex-wrap gap-2">
               {boardTypes.map((bt) => {
-                const id = `bt-${bt}`;
+                const checked = filters.boardTypes.includes(bt);
                 return (
-                  <label
+                  <button
                     key={bt}
-                    htmlFor={id}
-                    className="flex items-center gap-2.5 cursor-pointer"
+                    type="button"
+                    onClick={() => toggleBoardType(bt)}
+                    className={cn(
+                      "rounded-sm px-3 py-1.5 text-[12.5px] font-semibold border transition-colors",
+                      checked
+                        ? "bg-navy border-navy text-paper"
+                        : "border-line-strong text-slate-text hover:border-navy"
+                    )}
                   >
-                    <input
-                      id={id}
-                      type="checkbox"
-                      checked={filters.boardTypes.includes(bt)}
-                      onChange={() => toggleBoardType(bt)}
-                      className={cn(
-                        "h-4 w-4 rounded border-gray-300 text-blue-600",
-                        "focus:ring-2 focus:ring-blue-500 cursor-pointer"
-                      )}
-                    />
-                    <span className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
-                      {bt}
-                    </span>
-                  </label>
+                    {bt}
+                  </button>
                 );
               })}
             </div>

@@ -44,12 +44,12 @@ export default async function ConfirmationPage({
 
             {/* Booking number */}
             {bookingNumber && (
-              <div className="mb-8 rounded-xl border border-blue-100 bg-blue-50 px-6 py-4">
-                <p className="text-xs font-medium text-blue-600 uppercase tracking-wider mb-1">
+              <div className="mb-8 rounded-lg border border-line bg-chip-blue px-6 py-4">
+                <p className="text-xs font-medium text-navy uppercase tracking-wider mb-1">
                   Rezervasyon Numarası
                 </p>
                 <p
-                  className="text-2xl font-bold font-mono text-blue-700"
+                  className="text-2xl font-bold font-mono text-navy-dark"
                   aria-label={`Rezervasyon numarası: ${bookingNumber}`}
                 >
                   #{bookingNumber}
@@ -62,14 +62,14 @@ export default async function ConfirmationPage({
 
             {/* Info boxes */}
             <div className="mb-8 grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
-              <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
+              <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
                 <p className="text-xs font-medium text-gray-500 mb-1">Sonraki Adım</p>
                 <p className="text-sm text-gray-700">
                   Rezervasyon detaylarınızı &quot;Rezervasyonlarım&quot; sayfasından
                   takip edebilirsiniz.
                 </p>
               </div>
-              <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
+              <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
                 <p className="text-xs font-medium text-gray-500 mb-1">İptal Politikası</p>
                 <p className="text-sm text-gray-700">
                   İptal koşulları rezervasyon detay sayfasında görüntülenebilir.
@@ -81,14 +81,14 @@ export default async function ConfirmationPage({
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link
                 href="/reservations"
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-navy px-5 py-3 text-sm font-semibold text-white hover:bg-navy-dark transition-colors"
               >
                 <CalendarCheck className="h-4 w-4" aria-hidden="true" />
                 Rezervasyonlarım
               </Link>
               <Link
                 href="/"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
               >
                 <Home className="h-4 w-4" aria-hidden="true" />
                 Ana Sayfa

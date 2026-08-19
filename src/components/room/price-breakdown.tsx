@@ -96,7 +96,7 @@ export function PriceBreakdown({
               onClick={() => setShowRules((v) => !v)}
               aria-expanded={showRules}
               className={cn(
-                "flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 transition-colors",
+                "flex items-center gap-1 text-xs text-navy hover:text-navy-dark transition-colors",
                 "focus:outline-none focus:underline"
               )}
             >
@@ -129,7 +129,7 @@ export function PriceBreakdown({
           <div className="flex items-center justify-between">
             <span className="text-sm font-semibold text-gray-900">Toplam</span>
             <div className="text-right">
-              <p className="text-xl font-bold text-blue-600">
+              <p className="text-xl font-bold text-navy">
                 {formatPrice(finalPrice, currency)}
               </p>
               {hasDiscount && (

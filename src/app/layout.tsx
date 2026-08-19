@@ -1,16 +1,18 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Manrope } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const manrope = Manrope({
+  variable: "--font-manrope",
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
-  title: "Lookbet - Otel Rezervasyon",
-  description: "10.000+ otel arasından en uygun fiyatlarla rezervasyon yapın",
+  title: "LookBeds — Otel Rezervasyon",
+  description:
+    "Türkiye'nin dört bir yanında 2.400+ otel. En iyi fiyat garantisi, ücretsiz iptal.",
 };
 
 export default function RootLayout({
@@ -20,7 +22,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="tr">
-      <body className={`${geistSans.variable} font-sans antialiased bg-gray-50`}>
+      <body
+        className={`${manrope.variable} font-sans antialiased bg-paper text-ink`}
+      >
         <Providers>{children}</Providers>
       </body>
     </html>
