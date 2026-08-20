@@ -15,12 +15,12 @@ import {
   CalendarDays,
   Moon,
   Users,
-  CreditCard,
   AlertCircle,
   XCircle,
 } from "lucide-react";
 import { Navbar, Footer } from "@/components/layout";
 import { StatusBadge, CancelDialog } from "@/components/reservation";
+import { PriceBreakdown } from "@/components/room";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { formatCurrency, formatDate, getNightCount } from "@/lib/utils";
@@ -45,6 +45,9 @@ interface CancellationPolicy {
 interface ReservationDetail {
   id: string;
   bookingNumber?: string | null;
+  hotelConfirmationNumber?: string | null;
+  cancellationFee?: number | null;
+  cancellationFeeCurrency?: string | null;
   clientReferenceId?: string | null;
   hotelCode: string;
   hotelName?: string | null;
@@ -63,6 +66,7 @@ interface ReservationDetail {
   guests?: Guest[] | null;
   cancellationPolicy?: CancellationPolicy[] | null;
   roomConfirmationCodes?: string[] | null;
+  appliedPriceRules?: { name: string }[] | null;
   createdAt: string;
 }
 
@@ -72,14 +76,22 @@ async function fetchReservation(id: string): Promise<ReservationDetail> {
   return res.json();
 }
 
-async function cancelReservation(id: string): Promise<void> {
+interface CancelResult {
+  cancellation?: {
+    cancellationFee?: number;
+    currency?: string;
+  };
+}
+
+async function cancelReservation(id: string): Promise<CancelResult> {
   const res = await fetch(`/api/reservations/${id}/cancel`, {
     method: "POST",
   });
+  const data = await res.json();
   if (!res.ok) {
-    const data = await res.json();
     throw new Error(data.error ?? "İptal işlemi başarısız");
   }
+  return data;
 }
 
 function DetailSkeleton() {
@@ -132,8 +144,18 @@ export default function ReservationDetailPage({
   });
 
   const handleCancel = async () => {
-    await cancelReservation(id);
-    toast.success("Rezervasyonunuz iptal edildi.");
+    const result = await cancelReservation(id);
+    const fee = result.cancellation?.cancellationFee ?? 0;
+    if (fee > 0) {
+      toast.success(
+        `Rezervasyonunuz iptal edildi. İptal ücreti: ${formatCurrency(
+          fee,
+          result.cancellation?.currency ?? "EUR"
+        )}`
+      );
+    } else {
+      toast.success("Rezervasyonunuz ücretsiz olarak iptal edildi.");
+    }
     setCancelOpen(false);
     queryClient.invalidateQueries({ queryKey: ["reservation-detail", id] });
     queryClient.invalidateQueries({ queryKey: ["reservations"] });
@@ -192,6 +214,11 @@ export default function ReservationDetailPage({
                         Rezervasyon No: #{data.bookingNumber}
                       </p>
                     )}
+                    {data.hotelConfirmationNumber && (
+                      <p className="text-sm font-mono text-gray-400">
+                        Otel Konfirmasyon No: #{data.hotelConfirmationNumber}
+                      </p>
+                    )}
                   </div>
                   <StatusBadge status={data.status} />
                 </div>
@@ -242,51 +269,13 @@ export default function ReservationDetailPage({
                 </div>
 
                 {/* Price info */}
-                <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-                  <h2 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-1.5">
-                    <CreditCard className="h-4 w-4 text-gray-400" aria-hidden="true" />
-                    Fiyat Detayları
-                  </h2>
-                  <div>
-                    {data.discountAmount && data.discountAmount > 0 ? (
-                      <>
-                        <InfoRow
-                          label="Orijinal Fiyat"
-                          value={
-                            <span className="line-through text-gray-400">
-                              {formatCurrency(data.totalPrice, data.currency)}
-                            </span>
-                          }
-                        />
-                        <InfoRow
-                          label="İndirim"
-                          value={
-                            <span className="text-green-600">
-                              -{formatCurrency(data.discountAmount, data.currency)}
-                            </span>
-                          }
-                        />
-                        <InfoRow
-                          label="Toplam"
-                          value={
-                            <span className="font-bold text-navy text-base">
-                              {formatCurrency(data.discountedPrice ?? data.totalPrice, data.currency)}
-                            </span>
-                          }
-                        />
-                      </>
-                    ) : (
-                      <InfoRow
-                        label="Toplam"
-                        value={
-                          <span className="font-bold text-navy text-base">
-                            {formatCurrency(data.totalPrice, data.currency)}
-                          </span>
-                        }
-                      />
-                    )}
-                  </div>
-                </div>
+                <PriceBreakdown
+                  originalPrice={data.totalPrice}
+                  finalPrice={data.discountedPrice ?? data.totalPrice}
+                  discount={data.discountAmount ?? 0}
+                  appliedRules={data.appliedPriceRules?.map((r) => r.name)}
+                  currency={data.currency}
+                />
               </div>
 
               {/* Contact + Guests */}
@@ -321,6 +310,27 @@ export default function ReservationDetailPage({
                 )}
               </div>
 
+              {/* Cancellation fee (after cancellation) */}
+              {data.status === "CANCELLED" &&
+                data.cancellationFee != null &&
+                data.cancellationFee > 0 && (
+                  <div className="rounded-2xl border border-red-100 bg-red-50 p-5">
+                    <h2 className="text-sm font-semibold text-red-900 mb-1">
+                      İptal Ücreti
+                    </h2>
+                    <p className="text-sm text-red-800">
+                      Bu rezervasyonun iptali için{" "}
+                      <span className="font-semibold">
+                        {formatCurrency(
+                          data.cancellationFee,
+                          data.cancellationFeeCurrency ?? data.currency
+                        )}
+                      </span>{" "}
+                      iptal ücreti uygulanmıştır.
+                    </p>
+                  </div>
+                )}
+
               {/* Cancellation policy */}
               {data.cancellationPolicy && Array.isArray(data.cancellationPolicy) &&
                 data.cancellationPolicy.length > 0 && (
@@ -331,11 +341,21 @@ export default function ReservationDetailPage({
                     <ul className="space-y-2">
                       {(data.cancellationPolicy as CancellationPolicy[]).map((policy, idx) => (
                         <li key={idx} className="text-sm text-amber-800">
-                          <span className="font-medium">{formatDate(policy.fromDate)}</span>
-                          {" "}tarihinden itibaren iptal ücreti:{" "}
+                          <span className="font-medium">
+                            {formatDate(policy.fromDate)}
+                            {policy.toDate && ` – ${formatDate(policy.toDate)}`}
+                          </span>{" "}
+                          tarihleri arasında iptal ücreti:{" "}
                           <span className="font-semibold">
-                            {formatCurrency(policy.penalty, policy.penaltyCurrency)}
+                            {policy.penalty > 0
+                              ? formatCurrency(policy.penalty, policy.penaltyCurrency || data.currency)
+                              : "Ücretsiz"}
                           </span>
+                          {policy.description && (
+                            <span className="block text-xs text-amber-700/80 mt-0.5">
+                              {policy.description}
+                            </span>
+                          )}
                         </li>
                       ))}
                     </ul>

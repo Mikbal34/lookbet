@@ -11,7 +11,9 @@ const globalForPrisma = globalThis as unknown as {
 function createPrismaClient() {
   const pool = new pg.Pool({
     connectionString,
-    ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
+    // SSL yalnızca DATABASE_SSL=true iken (ör. yönetilen RDS). Aynı sunucudaki
+    // Docker Postgres SSL sunmadığından varsayılan olarak kapalı.
+    ssl: process.env.DATABASE_SSL === "true" ? { rejectUnauthorized: false } : false,
   });
   const adapter = new PrismaPg(pool);
   return new PrismaClient({ adapter });

@@ -241,7 +241,7 @@ export function AgencyApplicationForm() {
       <p className="text-center text-sm text-gray-500">
         Zaten hesabınız var mı?{" "}
         <Link
-          href="/login"
+          href="/agency/login"
           className="text-blue-600 font-medium hover:text-blue-700 hover:underline transition-colors"
         >
           Giriş Yap

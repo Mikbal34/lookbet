@@ -77,11 +77,17 @@ body {
   --rdp-range_start-date-background-color: #e06028;
   --rdp-range_end-date-background-color: #e06028;
   --rdp-range_middle-background-color: #fdeae0;
-  --rdp-day-height: 30px;
-  --rdp-day-width: 30px;
-  --rdp-nav-height: 28px;
+  --rdp-day-height: 23px;
+  --rdp-day-width: 23px;
+  --rdp-nav-height: 24px;
   font-family: var(--font-manrope), sans-serif;
-  font-size: 12.5px;
+  font-size: 11px;
+}
+/* İki ay her zaman yan yana (dar popup'ta alt alta sarmasın) */
+.lookbet-daypicker .rdp-months {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 1.25rem;
 }
 .lookbet-daypicker .rdp-month_caption {
   font-family: var(--font-manrope), sans-serif;
@@ -99,4 +105,14 @@ body {
 }
 .lookbet-daypicker .rdp-chevron {
   fill: #e06028;
+}
+/* Canlı aralık önizlemesi: giriş seçildikten sonra fare gezdirilen güne kadar
+   olan günler açık turuncuyla vurgulanır (Booking tarzı). */
+.lookbet-daypicker .rdp-day_button {
+  transition: background-color 0.12s ease;
+}
+.lookbet-daypicker .range-preview,
+.lookbet-daypicker .range-preview .rdp-day_button {
+  background-color: #fdeae0 !important;
+  color: #1a1814;
 }

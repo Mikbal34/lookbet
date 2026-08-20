@@ -49,6 +49,8 @@ export function DateRangeField({
   onChange,
 }: DateRangeFieldProps) {
   const [open, setOpen] = React.useState(false);
+  // Giriş seçildikten sonra fare gezdirilen gün — canlı aralık önizlemesi için
+  const [hovered, setHovered] = React.useState<Date | undefined>(undefined);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   // Dışarı tıklayınca kapat
@@ -74,10 +76,7 @@ export function DateRangeField({
     const from = r?.from ? toISO(r.from) : "";
     const to = r?.to ? toISO(r.to) : "";
     onChange(from, to);
-    // Her iki tarih de seçilince kapan
-    if (r?.from && r?.to && toISO(r.from) !== toISO(r.to)) {
-      setOpen(false);
-    }
+    // Tarih seçince otomatik kapatma yok — kullanıcı takvim dışına tıklayınca kapanır.
   };
 
   const today = new Date();
@@ -87,7 +86,7 @@ export function DateRangeField({
     <button
       type="button"
       onClick={() => setOpen(!open)}
-      className="px-5 py-3.5 border-r border-line flex-[1_1_150px] min-w-0 text-left cursor-pointer"
+      className="px-5 py-2.5 border-r border-line flex-1 min-w-0 text-left cursor-pointer"
     >
       <div className={cellLabel}>
         <CalendarDays className="size-3.5" aria-hidden="true" />
@@ -104,8 +103,16 @@ export function DateRangeField({
     </button>
   );
 
+  // Giriş seçili, çıkış bekleniyorsa: giriş → fare üstündeki gün arası önizleme
+  const previewRange =
+    range?.from && !range?.to && hovered && hovered > range.from
+      ? { from: range.from, to: hovered }
+      : undefined;
+
   return (
-    <div ref={containerRef} className="contents">
+    // relative + flex-[2]: takvim popup'ı Giriş/Çıkış alanlarının hemen altına
+    // hizalanır (contents yerine gerçek konumlu bir kapsayıcı).
+    <div ref={containerRef} className="relative flex flex-[2] min-w-0">
       {cellButton("Giriş", checkIn, "Tarih seç")}
       {cellButton("Çıkış", checkOut, "Tarih seç")}
 
@@ -117,6 +124,10 @@ export function DateRangeField({
             numberOfMonths={2}
             selected={range}
             onSelect={handleSelect}
+            onDayMouseEnter={(day) => setHovered(day)}
+            onDayMouseLeave={() => setHovered(undefined)}
+            modifiers={previewRange ? { preview: previewRange } : undefined}
+            modifiersClassNames={{ preview: "range-preview" }}
             disabled={{ before: today }}
             showOutsideDays={false}
           />

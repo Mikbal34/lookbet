@@ -7,17 +7,17 @@
 import * as React from "react";
 
 export const LANGUAGES = [
-  { code: "tr", label: "Türkçe" },
-  { code: "en", label: "English" },
-  { code: "de", label: "Deutsch" },
-  { code: "ru", label: "Русский" },
+  { code: "tr", label: "Türkçe", flag: "🇹🇷" },
+  { code: "en", label: "English", flag: "🇬🇧" },
+  { code: "de", label: "Deutsch", flag: "🇩🇪" },
+  { code: "ru", label: "Русский", flag: "🇷🇺" },
 ] as const;
 
 export const CURRENCIES = [
-  { code: "TRY", symbol: "₺" },
-  { code: "USD", symbol: "$" },
-  { code: "EUR", symbol: "€" },
-  { code: "GBP", symbol: "£" },
+  { code: "TRY", symbol: "₺", flag: "🇹🇷" },
+  { code: "USD", symbol: "$", flag: "🇺🇸" },
+  { code: "EUR", symbol: "€", flag: "🇪🇺" },
+  { code: "GBP", symbol: "£", flag: "🇬🇧" },
 ] as const;
 
 interface LocalePrefs {

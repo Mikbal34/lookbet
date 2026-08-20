@@ -22,7 +22,7 @@ export function AgencyHeader() {
   const [profileOpen, setProfileOpen] = useState(false);
 
   return (
-    <header className="bg-white border-b border-line sticky top-0 z-50">
+    <header className="bg-white border-b border-line">
       <div className="px-4 sm:px-6 lg:px-10">
         <div className="flex justify-between items-center h-16">
           <Logo href="/agency/dashboard" suffix="PARTNER" size="md" />

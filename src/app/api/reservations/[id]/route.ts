@@ -2,9 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
+import { getReservationDetail } from "@/lib/royal-api";
+import type { ReservationStatus } from "@/generated/prisma/client";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
+}
+
+function mapApiStatus(apiStatus: string | undefined): ReservationStatus | null {
+  if (!apiStatus) return null;
+  if (/cancel/i.test(apiStatus)) return "CANCELLED";
+  if (/confirm/i.test(apiStatus)) return "CONFIRMED";
+  if (/fail|reject|error/i.test(apiStatus)) return "FAILED";
+  if (/pend|wait|request/i.test(apiStatus)) return "PENDING";
+  return null;
 }
 
 // GET /api/reservations/:id
@@ -30,7 +41,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "Rezervasyon ID gerekli" }, { status: 400 });
     }
 
-    const reservation = await prisma.reservation.findUnique({
+    let reservation = await prisma.reservation.findUnique({
       where: { id },
       include: {
         user: { select: { id: true, name: true, email: true } },
@@ -40,6 +51,42 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 
     if (!reservation) {
       return NextResponse.json({ error: "Rezervasyon bulunamadı" }, { status: 404 });
+    }
+
+    // Refresh non-final reservations from the supplier so hotel-side changes
+    // (cancellation, confirmation) are reflected locally. Failures are
+    // non-fatal — the local record is served as-is.
+    if (
+      reservation.bookingNumber &&
+      (reservation.status === "PENDING" || reservation.status === "CONFIRMED")
+    ) {
+      try {
+        const apiDetail = await getReservationDetail(reservation.bookingNumber);
+        const mappedStatus = mapApiStatus(apiDetail.status);
+
+        const statusChanged = mappedStatus && mappedStatus !== reservation.status;
+        const policyMissing =
+          !reservation.cancellationPolicy &&
+          (apiDetail.cancellationPolicies?.length ?? 0) > 0;
+
+        if (statusChanged || policyMissing) {
+          reservation = await prisma.reservation.update({
+            where: { id },
+            data: {
+              ...(statusChanged ? { status: mappedStatus } : {}),
+              ...(policyMissing
+                ? { cancellationPolicy: apiDetail.cancellationPolicies as any } // eslint-disable-line @typescript-eslint/no-explicit-any
+                : {}),
+            },
+            include: {
+              user: { select: { id: true, name: true, email: true } },
+              agency: { select: { id: true, companyName: true } },
+            },
+          });
+        }
+      } catch (refreshError) {
+        console.warn("[GET /api/reservations/[id]] supplier refresh failed", refreshError);
+      }
     }
 
     const role = session.user.role;

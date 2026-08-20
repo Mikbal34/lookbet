@@ -4,7 +4,7 @@
 // variant="transparent": ana sayfadaki foto üstü header için açık renk stil.
 
 import * as React from "react";
-import { Globe } from "lucide-react";
+import { X } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import {
   useLocale,
@@ -52,6 +52,20 @@ export function LocaleFooterLabel() {
   );
 }
 
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  TRY: "₺",
+  USD: "$",
+  EUR: "€",
+  GBP: "£",
+};
+
+const CURRENCY_FLAGS: Record<string, string> = {
+  TRY: "🇹🇷",
+  USD: "🇺🇸",
+  EUR: "🇪🇺",
+  GBP: "🇬🇧",
+};
+
 export function LocaleSwitcher({
   variant = "solid",
 }: {
@@ -60,14 +74,55 @@ export function LocaleSwitcher({
   const { lang, currency, setLang, setCurrency } = useLocale();
   const [open, setOpen] = React.useState(false);
 
-  const curSymbol = CURRENCIES.find((c) => c.code === currency)?.symbol ?? "€";
+  // Royal API'dan senkronize edilen para birimleri; tablo boş ya da istek
+  // başarısızsa yerleşik varsayılan listeye düşülür.
+  const [currencyOptions, setCurrencyOptions] = React.useState<
+    { code: string; symbol: string; name?: string }[]
+  >([...CURRENCIES]);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    fetch("/api/content/currencies")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { currencies?: { code: string; name: string }[] } | null) => {
+        if (cancelled || !data?.currencies?.length) return;
+        setCurrencyOptions(
+          data.currencies.map((c) => ({
+            code: c.code,
+            symbol: CURRENCY_SYMBOLS[c.code] ?? c.code,
+            name: c.name,
+          }))
+        );
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const curSymbol =
+    currencyOptions.find((c) => c.code === currency)?.symbol ??
+    CURRENCY_SYMBOLS[currency] ??
+    "€";
+  const currentFlag = LANGUAGES.find((l) => l.code === lang)?.flag ?? "🌐";
   const transparent = variant === "transparent";
 
+  // ESC ile kapat
+  React.useEffect(() => {
+    if (!open) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
   return (
-    <div className="relative">
+    <>
+      {/* Header tetikleyici — bayrak + dil kodu + para birimi */}
       <button
         type="button"
-        onClick={() => setOpen(!open)}
+        onClick={() => setOpen(true)}
         aria-haspopup="dialog"
         aria-expanded={open}
         className={cn(
@@ -77,52 +132,73 @@ export function LocaleSwitcher({
             : "bg-white border border-line-strong text-ink hover:border-navy"
         )}
       >
-        <Globe className="h-[15px] w-[15px]" aria-hidden="true" />
+        <span className="text-[15px] leading-none">{currentFlag}</span>
         {lang.toUpperCase()} · {curSymbol}
       </button>
 
+      {/* Ekranın ortasında açılan modal pop-up */}
       {open && (
-        <>
-          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+        <div
+          className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto bg-black/50 p-4 sm:items-center"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Dil ve para birimi"
+          onClick={() => setOpen(false)}
+        >
           <div
-            className="absolute top-[calc(100%+8px)] right-0 bg-white border border-line rounded-md shadow-[0_12px_28px_-10px_rgb(11_13_20/0.25)] p-[18px] z-20"
-            style={{ width: 300 }}
+            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
           >
-            <div className="text-[11px] font-bold tracking-[1.5px] uppercase text-muted mb-2.5">
+            <div className="mb-5 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-ink">Dil ve Para Birimi</h2>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                aria-label="Kapat"
+                className="flex h-8 w-8 items-center justify-center rounded-full text-muted hover:bg-gray-100"
+              >
+                <X className="h-5 w-5" aria-hidden="true" />
+              </button>
+            </div>
+
+            <div className="mb-2.5 text-[11px] font-bold uppercase tracking-[1.5px] text-muted">
               Dil
             </div>
-            <div className="grid grid-cols-2 gap-2 mb-4">
+            <div className="mb-6 grid grid-cols-2 gap-2">
               {LANGUAGES.map((l) => (
                 <Chip
                   key={l.code}
                   active={lang === l.code}
                   onClick={() => setLang(l.code)}
                 >
+                  <span className="mr-1.5 text-[15px] leading-none">{l.flag}</span>
                   {l.label}
                 </Chip>
               ))}
             </div>
 
-            <div className="text-[11px] font-bold tracking-[1.5px] uppercase text-muted mb-2.5">
+            <div className="mb-2.5 text-[11px] font-bold uppercase tracking-[1.5px] text-muted">
               Para birimi
             </div>
             <div className="grid grid-cols-2 gap-2">
-              {CURRENCIES.map((c) => (
+              {currencyOptions.map((c) => (
                 <Chip
                   key={c.code}
                   active={currency === c.code}
-                  onClick={() => {
-                    setCurrency(c.code);
-                    setOpen(false);
-                  }}
+                  onClick={() => setCurrency(c.code)}
                 >
+                  {CURRENCY_FLAGS[c.code] && (
+                    <span className="mr-1.5 text-[15px] leading-none">
+                      {CURRENCY_FLAGS[c.code]}
+                    </span>
+                  )}
                   {c.code} {c.symbol}
                 </Chip>
               ))}
             </div>
           </div>
-        </>
+        </div>
       )}
-    </div>
+    </>
   );
 }

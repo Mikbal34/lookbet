@@ -29,6 +29,10 @@ export interface HotelSearchResult {
   minPrice: number;
   currency: string;
   boardTypes: string[];
+  // Zenginleştirme (opsiyonel) — arama kartında puan rozeti için.
+  reviewScore?: number;
+  reviewCount?: number;
+  reviewLabel?: string;
 }
 
 export interface HotelDetailRequest {
@@ -47,6 +51,52 @@ export interface HotelDetailResponse {
   facilities: HotelFacilityItem[];
   phone: string;
   email: string;
+  // Zenginleştirme alanları (opsiyonel). Tedarikçi temel API'sinde bulunmaz;
+  // mock modda üretilir, ileride Google Places / detaylı content endpoint'i
+  // ile doldurulabilir. Gerçek API'de yoksa UI koşullu olarak gizler.
+  reviewSummary?: HotelReviewSummary;
+  reviews?: HotelReview[];
+  nearby?: NearbyPlace[];
+  policies?: HotelPolicies;
+}
+
+export interface HotelReviewSummary {
+  score: number; // 0-10
+  count: number;
+  label: string; // "Çok iyi", "Mükemmel"...
+  categories: ReviewCategoryScore[];
+  highlight?: string; // öne çıkan yorum alıntısı
+}
+
+export interface ReviewCategoryScore {
+  name: string; // "Temizlik", "Konum"...
+  score: number; // 0-10
+}
+
+export interface HotelReview {
+  author: string;
+  country?: string;
+  score: number; // 0-10
+  date: string; // ISO
+  travelerType?: string; // "Çift", "Aile", "İş"...
+  roomType?: string;
+  positive?: string;
+  negative?: string;
+}
+
+export interface NearbyPlace {
+  name: string;
+  category: "Turistik" | "Restoran" | "Toplu Taşıma" | "Havaalanı" | "Doğa";
+  distance: string; // "200 m", "1,3 km"
+}
+
+export interface HotelPolicies {
+  checkInFrom?: string; // "14:00"
+  checkOutUntil?: string; // "12:00"
+  cancellationText?: string;
+  childrenText?: string;
+  acceptedCards?: string[]; // "Visa", "Mastercard"...
+  importantInfo?: string[];
 }
 
 export interface HotelImage {

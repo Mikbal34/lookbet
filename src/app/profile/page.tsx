@@ -17,7 +17,6 @@ import {
   Eye,
   EyeOff,
   AlertCircle,
-  CheckCircle2,
   BadgeCheck,
 } from "lucide-react";
 import { Navbar, Footer } from "@/components/layout";
@@ -89,6 +88,10 @@ export default function ProfilePage() {
   const [agencyLoading, setAgencyLoading] = React.useState(false);
 
   const isAgency = session?.user?.role === "AGENCY";
+  // Müşteriler şifresiz (tek kullanımlık email kodu) giriş yapar; şifre
+  // değiştirme yalnızca şifreyle giren admin/acente için anlamlıdır.
+  const usesPassword =
+    session?.user?.role === "ADMIN" || session?.user?.role === "AGENCY";
   const roleLabel =
     session?.user?.role === "ADMIN"
       ? "Admin"
@@ -285,7 +288,8 @@ export default function ProfilePage() {
             </form>
           </SectionCard>
 
-          {/* Change password */}
+          {/* Change password — only for password-based accounts (admin/agency) */}
+          {usesPassword && (
           <SectionCard title="Şifre Değiştir" icon={Lock}>
             <form onSubmit={handlePasswordChange} noValidate className="space-y-4">
               {passErrors.general && (
@@ -405,6 +409,7 @@ export default function ProfilePage() {
               </div>
             </form>
           </SectionCard>
+          )}
 
           {/* Agency info section */}
           {isAgency && (

@@ -26,6 +26,9 @@ export function HotelCard({ hotel, searchParams, className }: HotelCardProps) {
     currency,
     boardTypes,
     address,
+    reviewScore,
+    reviewCount,
+    reviewLabel,
   } = hotel;
 
   const href = `/hotel/${hotelCode}${searchParams ? `?${searchParams}` : ""}`;
@@ -87,6 +90,20 @@ export function HotelCard({ hotel, searchParams, className }: HotelCardProps) {
             <MapPin className="h-3.5 w-3.5 mt-0.5 shrink-0" aria-hidden="true" />
             <p className="text-[13.5px] leading-snug line-clamp-2">{address}</p>
           </div>
+
+          {typeof reviewScore === "number" && (
+            <div className="flex items-center gap-2">
+              <span className="inline-flex h-7 min-w-7 items-center justify-center rounded-md rounded-bl-none bg-navy px-1.5 text-[13px] font-bold text-paper">
+                {reviewScore.toFixed(1)}
+              </span>
+              <span className="text-[13px] font-semibold text-ink">{reviewLabel}</span>
+              {typeof reviewCount === "number" && (
+                <span className="text-xs text-muted">
+                  · {reviewCount.toLocaleString("tr-TR")} değerlendirme
+                </span>
+              )}
+            </div>
+          )}
 
           {boardTypes && boardTypes.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-0.5">

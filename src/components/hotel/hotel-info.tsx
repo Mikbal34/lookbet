@@ -16,6 +16,7 @@ import {
   Dumbbell,
   Sparkles,
   CheckCircle2,
+  ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import type { HotelDetailResponse, HotelFacilityItem } from "@/lib/royal-api/types";
@@ -90,8 +91,53 @@ function FacilityGroup({
   );
 }
 
+function HotelMap({
+  latitude,
+  longitude,
+  name,
+}: {
+  latitude: number;
+  longitude: number;
+  name: string;
+}) {
+  const bbox = [
+    longitude - 0.012,
+    latitude - 0.007,
+    longitude + 0.012,
+    latitude + 0.007,
+  ].join(",");
+  const osmSrc = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${latitude},${longitude}`;
+  const gmapsHref = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+
+  return (
+    <section aria-labelledby="location-heading">
+      <div className="flex items-center justify-between mb-3">
+        <h2 id="location-heading" className="text-lg font-semibold text-gray-900">
+          Konum
+        </h2>
+        <a
+          href={gmapsHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1 text-xs font-medium text-navy hover:text-navy-dark transition-colors"
+        >
+          Google Maps&apos;te aç
+          <ExternalLink className="h-3 w-3" aria-hidden="true" />
+        </a>
+      </div>
+      <iframe
+        src={osmSrc}
+        title={`${name} harita konumu`}
+        className="w-full h-64 rounded-2xl border border-gray-100"
+        loading="lazy"
+      />
+    </section>
+  );
+}
+
 export function HotelInfo({ hotel, className }: HotelInfoProps) {
-  const { name, stars, address, description, facilities, phone, email } = hotel;
+  const { name, stars, address, description, facilities, phone, email, latitude, longitude } =
+    hotel;
 
   // Group facilities by category
   const facilityGroups = React.useMemo(() => {
@@ -105,10 +151,10 @@ export function HotelInfo({ hotel, className }: HotelInfoProps) {
   }, [facilities]);
 
   return (
-    <div className={cn("space-y-6", className)}>
+    <div className={cn("space-y-5", className)}>
       {/* Header */}
-      <div className="space-y-2">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{name}</h1>
+      <div className="space-y-1.5">
+        <h1 className="text-xl md:text-2xl font-bold text-gray-900">{name}</h1>
         <StarRating stars={stars} />
         <div className="flex items-start gap-1.5 text-gray-500">
           <MapPin className="h-4 w-4 mt-0.5 shrink-0 text-gray-400" aria-hidden="true" />
@@ -141,6 +187,14 @@ export function HotelInfo({ hotel, className }: HotelInfoProps) {
           </div>
         </section>
       )}
+
+      {/* Map */}
+      {typeof latitude === "number" &&
+        typeof longitude === "number" &&
+        latitude !== 0 &&
+        longitude !== 0 && (
+          <HotelMap latitude={latitude} longitude={longitude} name={name} />
+        )}
 
       {/* Contact */}
       {(phone || email) && (

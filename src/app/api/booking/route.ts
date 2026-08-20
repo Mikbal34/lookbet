@@ -54,16 +54,6 @@ export async function POST(request: NextRequest) {
         "";
     }
 
-    // Apply pricing engine
-    const priceResult = await calculatePrice({
-      basePrice: input.totalPrice,
-      userType: userRole,
-      agencyId,
-      hotelCode: input.hotelCode,
-      boardType: input.boardType,
-      currency: input.currency,
-    });
-
     const clientReferenceId = generateClientReferenceId();
 
     // Forward to Royal API
@@ -76,6 +66,33 @@ export async function POST(request: NextRequest) {
       rooms: input.rooms,
     });
 
+    // The supplier-confirmed price is authoritative; the client-supplied
+    // totalPrice comes from the URL and must not be trusted for billing.
+    const supplierPrice =
+      apiBooking.totalPrice && apiBooking.totalPrice > 0
+        ? apiBooking.totalPrice
+        : input.totalPrice;
+
+    // Apply pricing engine on the supplier price
+    const priceResult = await calculatePrice({
+      basePrice: supplierPrice,
+      userType: userRole,
+      agencyId,
+      hotelCode: input.hotelCode,
+      boardType: input.boardType,
+      currency: input.currency,
+    });
+
+    // Resolve hotel name from the local cache when the client didn't send one
+    let hotelName = input.hotelName ?? null;
+    if (!hotelName) {
+      const localHotel = await prisma.hotel.findUnique({
+        where: { hotelCode: input.hotelCode },
+        select: { name: true },
+      });
+      hotelName = localHotel?.name ?? null;
+    }
+
     // Flatten all guests from all rooms for the DB record
     const allGuests = input.rooms.flatMap((r) => r.guests);
 
@@ -85,13 +102,14 @@ export async function POST(request: NextRequest) {
         bookingNumber: apiBooking.bookingNumber ?? null,
         clientReferenceId,
         hotelCode: input.hotelCode,
-        hotelName: input.hotelName ?? null,
+        hotelName,
+        hotelConfirmationNumber: apiBooking.hotelConfirmationNumber ?? null,
         userId,
         agencyId: agencyId ?? null,
         checkIn: new Date(input.checkIn),
         checkOut: new Date(input.checkOut),
         status: apiBooking.status === "CONFIRMED" ? "CONFIRMED" : "PENDING",
-        totalPrice: input.totalPrice,
+        totalPrice: supplierPrice,
         discountedPrice: priceResult.finalPrice,
         discountAmount: priceResult.totalDiscount,
         currency: apiBooking.currency ?? input.currency,

@@ -129,6 +129,7 @@ function RoomsPageContent({
       roomSearchId,
       priceCode: room.priceCode,
       hotelCode,
+      hotelName: searchParams.get("hotelName") ?? "",
       roomName: room.roomName,
       boardType: room.boardType,
       boardTypeName: room.boardTypeName,
@@ -137,9 +138,13 @@ function RoomsPageContent({
       adults: searchParams.get("adults") ?? "2",
       childAges: searchParams.get("childAges") ?? "",
       nationality: searchParams.get("nationality") ?? "TR",
-      currency,
+      currency: room.currency || currency,
       totalPrice: String(room.pricing?.finalPrice ?? room.totalPrice),
+      originalPrice: String(room.pricing?.originalPrice ?? room.totalPrice),
     });
+    if (room.cancellationPolicies?.length) {
+      qs.set("cancellationPolicy", JSON.stringify(room.cancellationPolicies));
+    }
     router.push(`/booking?${qs.toString()}`);
   };
 
@@ -231,11 +236,11 @@ function RoomsPageContent({
             <div className="space-y-4">
               {data.rooms.map((room) => (
                 <RoomCard
-                  key={room.priceCode}
+                  key={`${room.roomCode}-${room.priceCode}`}
                   room={room}
                   calculatedPrice={room.pricing?.finalPrice ?? room.totalPrice}
                   originalPrice={room.pricing?.originalPrice ?? room.totalPrice}
-                  currency={currency}
+                  currency={room.currency || currency}
                   onSelect={() => handleSelectRoom(room, data.roomSearchId)}
                 />
               ))}

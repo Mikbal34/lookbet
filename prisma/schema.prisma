@@ -221,6 +221,7 @@ model Hotel {
   description String?
   images      Json?
   facilities  Json?
+  thumbnailImage String?
   locationId  String?
   phone       String?
   email       String?
@@ -304,6 +305,9 @@ model Reservation {
   guests                Json?
   cancellationPolicy    Json?
   roomConfirmationCodes Json?
+  hotelConfirmationNumber String?
+  cancellationFee         Float?
+  cancellationFeeCurrency String?
   appliedPriceRules     Json?
   source                ReservationSource @default(CUSTOMER)
   notes                 String?

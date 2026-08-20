@@ -112,11 +112,15 @@ export default function HomePage() {
       {/* ── TURUNCU BANT: header + hero + arama + chip'ler tek blok ── */}
       <Navbar variant="transparent" />
       <section className="bg-navy">
-        <div className="mx-auto max-w-[1200px] px-4 pt-7 pb-9 sm:px-6 sm:pt-9 sm:pb-11">
-          <h1 className="max-w-[24ch] text-[clamp(1.8rem,3.8vw,2.85rem)] leading-[1.06] font-extrabold tracking-[-0.03em] text-white">
+        <div className="mx-auto max-w-[1200px] px-4 pt-10 pb-24 sm:px-6 sm:pt-14 sm:pb-32">
+          <h1 className="max-w-[20ch] text-[clamp(1.9rem,4vw,3rem)] leading-[1.05] font-extrabold tracking-[-0.03em] text-white">
             Bir sonraki konaklamanı bul
           </h1>
-          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13.5px]">
+          <p className="mt-3 max-w-[48ch] text-[15px] sm:text-[16px] leading-relaxed text-white/85">
+            Türkiye&apos;nin dört bir yanında oteller, tatil köyleri ve butik
+            konaklamalar — en iyi fiyat garantisiyle, vergiler dahil.
+          </p>
+          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px]">
             <Link
               href="/search?destination=Antalya"
               className="group inline-flex items-center gap-1.5 font-semibold text-white underline-offset-[4px] hover:underline"
@@ -132,34 +136,39 @@ export default function HomePage() {
               <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
-
-          {/* Arama kartı */}
-          <div className="mt-6 sm:mt-7">
-            <SearchForm onSearch={handleSearch} />
-          </div>
-
-          {/* Hızlı chip'ler */}
-          <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2">
-            <span className="text-[11px] tracking-[0.14em] text-white/60 uppercase">
-              Popüler aramalar
-            </span>
-            <div className="flex flex-wrap gap-1.5">
-              {QUICK_LINKS.map((q) => (
-                <Link
-                  key={q.label}
-                  href={`/search?destination=${encodeURIComponent(q.query)}`}
-                  className="rounded-full border border-white/25 bg-white/5 px-3 py-1 text-[12.5px] font-medium text-white/90 transition-colors hover:border-white/60 hover:bg-white/10 hover:text-white"
-                >
-                  {q.label}
-                </Link>
-              ))}
-            </div>
-          </div>
         </div>
       </section>
 
+      {/* ── ARAMA BARI — hero'nun alt kenarına biner: üst yarısı turuncunun,
+             alt yarısı beyazın üstünde (Booking tarzı köprü) ──
+             w-full şart: bu blok doğrudan flex-col'un öğesi; mx-auto tek başına
+             öğeyi içerik genişliğine küçültür. */}
+      <div className="mx-auto w-full max-w-[1200px] px-4 sm:px-6">
+        <div className="relative z-20 -mt-10 sm:-mt-12">
+          <SearchForm onSearch={handleSearch} />
+        </div>
+
+        {/* Hızlı chip'ler — artık beyaz zeminde */}
+        <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+          <span className="text-[11px] tracking-[0.14em] text-muted uppercase">
+            Popüler aramalar
+          </span>
+          <div className="flex flex-wrap gap-1.5">
+            {QUICK_LINKS.map((q) => (
+              <Link
+                key={q.label}
+                href={`/search?destination=${encodeURIComponent(q.query)}`}
+                className="rounded-full border border-line-strong bg-white px-3 py-1 text-[12.5px] font-medium text-slate-text transition-colors hover:border-navy hover:text-navy"
+              >
+                {q.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* ── STATS ŞERİDİ — CruiseScanner tarzı büyük bloklar ── */}
-      <div className="border-b border-[rgb(26_24_20/0.1)] bg-[#f4f6fa]">
+      <div className="mt-8 border-y border-[rgb(26_24_20/0.1)] bg-[#f4f6fa]">
         <div className="mx-auto grid max-w-[1200px] grid-cols-2 lg:grid-cols-4 px-4 sm:px-6">
           {[
             { value: "2.400+", label: "Otel", sub: "TÜRKİYE GENELİNDE" },
@@ -169,12 +178,12 @@ export default function HomePage() {
           ].map((s, i) => (
             <div
               key={s.label}
-              className={`py-6 px-4 sm:px-8 ${
+              className={`pt-7 pb-5 px-4 sm:px-8 ${
                 i > 0 ? "border-l border-[rgb(26_24_20/0.1)]" : ""
               }`}
             >
               <div className="flex items-baseline gap-2">
-                <span className="text-[26px] sm:text-[30px] font-extrabold tracking-[-0.02em] text-ink">
+                <span className="text-[22px] sm:text-[26px] font-extrabold tracking-[-0.02em] text-ink">
                   {s.value}
                 </span>
                 <span className="text-[14px] font-semibold text-slate-text">
@@ -191,14 +200,14 @@ export default function HomePage() {
 
       <main className="flex-1">
         {/* ── POPÜLER DESTİNASYONLAR ── */}
-        <section className="bg-paper py-16 sm:py-20">
+        <section className="bg-paper py-10 sm:py-12">
           <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
-            <div className="mb-8 flex items-end justify-between gap-6 border-b border-[rgb(26_24_20/0.1)] pb-6">
+            <div className="mb-6 flex items-end justify-between gap-6 border-b border-[rgb(26_24_20/0.1)] pb-4">
               <div>
                 <span className="text-[11px] tracking-[0.14em] text-muted uppercase">
                   Nereye gitsek?
                 </span>
-                <h2 className="mt-1 text-[32px] leading-[1.05] font-extrabold tracking-[-0.025em] text-ink sm:text-[40px]">
+                <h2 className="mt-1 text-[24px] leading-[1.05] font-extrabold tracking-[-0.025em] text-ink sm:text-[30px]">
                   Popüler destinasyonlar
                 </h2>
               </div>
@@ -211,7 +220,7 @@ export default function HomePage() {
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 gap-x-5 gap-y-7 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
               {DESTINATIONS.map((d) => (
                 <Link
                   key={d.region}
@@ -257,7 +266,7 @@ export default function HomePage() {
         </section>
 
         {/* ── ÖZELLİKLER — editorial ── */}
-        <section className="border-y border-[rgb(26_24_20/0.1)] bg-row py-16 sm:py-20">
+        <section className="border-y border-[rgb(26_24_20/0.1)] bg-row py-10 sm:py-12">
           <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
             <div className="grid grid-cols-1 gap-0 md:grid-cols-2">
               {FEATURES.map((f, i) => (

@@ -84,15 +84,16 @@ export function SearchForm({
   const hasError = Object.values(errors).some(Boolean);
 
   return (
-    <div className={cn("relative", className)}>
+    <div className={cn("relative w-full", className)}>
       <form
         onSubmit={handleSubmit}
         noValidate
         aria-label="Otel arama formu"
-        className="bg-white rounded-[10px] overflow-hidden shadow-[0_12px_28px_-10px_rgb(11_13_20/0.35)] flex flex-wrap items-stretch"
+        style={{ width: "100%" }}
+        className="w-full bg-white rounded-[10px] shadow-[0_12px_28px_-10px_rgb(11_13_20/0.35)] flex flex-wrap md:flex-nowrap items-stretch"
       >
         {/* Destinasyon */}
-        <div className="px-5 py-3.5 border-r border-line flex-[1.3_1_180px] min-w-0">
+        <div className="px-5 py-2.5 border-r border-line flex-1 min-w-0 rounded-l-[10px]">
           <div className={cellLabel}>
             <MapPin className="size-3.5" aria-hidden="true" />
             Nereye
@@ -130,7 +131,7 @@ export function SearchForm({
         {/* Misafirler */}
         <div
           className={cn(
-            "px-5 py-3.5 flex-[1_1_150px] min-w-0",
+            "px-5 py-2.5 flex-1 min-w-0",
             nationalityVisible && "border-r border-line"
           )}
         >
@@ -145,7 +146,7 @@ export function SearchForm({
 
         {/* Uyruk — sadece acente */}
         {nationalityVisible && (
-          <div className="px-5 py-3.5 flex-[1_1_130px] min-w-0">
+          <div className="px-5 py-2.5 flex-1 min-w-0">
             <label htmlFor="nationality" className={cellLabel}>
               <Globe className="size-3.5" aria-hidden="true" />
               Uyruk
@@ -172,7 +173,7 @@ export function SearchForm({
           aria-busy={loading}
           className={cn(
             "bg-gold hover:bg-gold-dark text-ink font-sans text-[16px] font-bold",
-            "px-9 self-stretch min-h-[64px] flex-[1_0_150px] sm:flex-none flex items-center justify-center gap-2.5",
+            "px-9 self-stretch min-h-[54px] flex-none flex items-center justify-center gap-2.5 rounded-r-[10px]",
             "transition-colors cursor-pointer disabled:opacity-60 disabled:pointer-events-none"
           )}
         >

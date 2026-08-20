@@ -20,11 +20,16 @@ interface ContentStatus {
 
 interface SyncResult {
   success: boolean;
-  hotelsUpserted: number;
-  locationsUpserted: number;
-  currenciesUpserted: number;
-  errors: string[];
+  syncedAt: string;
   duration: number;
+  results: {
+    currencies: number;
+    boardTypes: number;
+    facilities: number;
+    roomAttributes: number;
+    locations: number;
+    hotels: number;
+  };
 }
 
 // ---- Page ----------------------------------------------------------------
@@ -151,11 +156,14 @@ export default function ContentSyncPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 mb-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
             {[
-              { label: "Otel", count: syncResult.hotelsUpserted },
-              { label: "Lokasyon", count: syncResult.locationsUpserted },
-              { label: "Para Birimi", count: syncResult.currenciesUpserted },
+              { label: "Otel", count: syncResult.results.hotels },
+              { label: "Lokasyon", count: syncResult.results.locations },
+              { label: "Para Birimi", count: syncResult.results.currencies },
+              { label: "Pansiyon Tipi", count: syncResult.results.boardTypes },
+              { label: "Tesis Olanağı", count: syncResult.results.facilities },
+              { label: "Oda Özelliği", count: syncResult.results.roomAttributes },
             ].map((item) => (
               <div
                 key={item.label}
@@ -166,24 +174,6 @@ export default function ContentSyncPage() {
               </div>
             ))}
           </div>
-
-          {syncResult.errors.length > 0 && (
-            <div className="mt-4">
-              <h4 className="text-sm font-semibold text-orange-700 mb-2">
-                Hatalar ({syncResult.errors.length})
-              </h4>
-              <ul className="space-y-1 max-h-40 overflow-y-auto">
-                {syncResult.errors.map((error, i) => (
-                  <li
-                    key={i}
-                    className="text-xs text-red-600 bg-red-50 px-3 py-1.5 rounded"
-                  >
-                    {error}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
         </div>
       )}
 

@@ -42,13 +42,25 @@ export async function POST(request: NextRequest) {
 
     // Resolve hotel codes for the requested destination from the local DB.
     // Match locations whose name contains the destination string (case-insensitive),
-    // then collect all hotels belonging to those locations.
-    const locations = await prisma.location.findMany({
+    // then collect all hotels belonging to those locations AND their descendants
+    // (e.g. "Antalya" should also surface hotels in Lara / Belek districts).
+    const matched = await prisma.location.findMany({
       where: { name: { contains: input.destination, mode: "insensitive" } },
       select: { id: true },
     });
 
-    const locationIds = locations.map((l: { id: string }) => l.id);
+    const matchedIds = matched.map((l: { id: string }) => l.id);
+
+    // Pull direct children of the matched locations so a city query includes
+    // hotels registered under its districts.
+    const children = matchedIds.length
+      ? await prisma.location.findMany({
+          where: { parentId: { in: matchedIds } },
+          select: { id: true },
+        })
+      : [];
+
+    const locationIds = [...matchedIds, ...children.map((l: { id: string }) => l.id)];
 
     const hotels = await prisma.hotel.findMany({
       where: locationIds.length > 0 ? { locationId: { in: locationIds } } : {},
@@ -73,7 +85,7 @@ export async function POST(request: NextRequest) {
       .create({
         data: {
           userId: session?.user.id ?? null,
-          params: input as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+          params: { ...input, searchId: results.searchId } as any, // eslint-disable-line @typescript-eslint/no-explicit-any
           resultCount: results.hotels?.length ?? 0,
         },
       })
@@ -81,7 +93,17 @@ export async function POST(request: NextRequest) {
         // Non-critical – do not surface history write failures to the caller.
       });
 
-    return NextResponse.json(results);
+    // Translate board type codes to display names using the synced content
+    // table; unknown codes fall through as-is.
+    const boardTypeRows = await prisma.boardType.findMany();
+    const boardTypeNames = new Map(boardTypeRows.map((b) => [b.code, b.name]));
+
+    const hotelsWithBoardNames = (results.hotels ?? []).map((h) => ({
+      ...h,
+      boardTypes: (h.boardTypes ?? []).map((code) => boardTypeNames.get(code) ?? code),
+    }));
+
+    return NextResponse.json({ ...results, hotels: hotelsWithBoardNames });
   } catch (error) {
     console.error("[POST /api/hotels/search]", error);
     return NextResponse.json(

@@ -76,14 +76,21 @@ export async function POST(_request: NextRequest, { params }: RouteParams) {
       bookingNumber: reservation.bookingNumber,
     });
 
+    // The API reports the resulting status; anything other than a cancelled
+    // state after a successful call is unexpected, so log it for follow-up.
+    if (cancelResult.status && !/cancel/i.test(cancelResult.status)) {
+      console.warn(
+        `[cancel] Royal API returned status "${cancelResult.status}" for booking ${cancelResult.bookingNumber}`
+      );
+    }
+
     // Update DB record
     const updated = await prisma.reservation.update({
       where: { id },
       data: {
         status: "CANCELLED",
-        notes: reservation.notes
-          ? `${reservation.notes}\nİptal ücreti: ${cancelResult.cancellationFee} ${cancelResult.currency}`
-          : `İptal ücreti: ${cancelResult.cancellationFee} ${cancelResult.currency}`,
+        cancellationFee: cancelResult.cancellationFee ?? null,
+        cancellationFeeCurrency: cancelResult.currency ?? null,
       },
     });
 

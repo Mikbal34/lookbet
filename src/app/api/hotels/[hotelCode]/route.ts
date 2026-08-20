@@ -34,11 +34,45 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "Otel bulunamadı" }, { status: 404 });
     }
 
+    // The local record stores images as plain URL strings and facilities as
+    // external IDs; the API returns rich objects. When the API leg fails,
+    // normalise the local data to the same shape the frontend expects.
+    let fallbackImages: { url: string; caption: string; isMain: boolean }[] = [];
+    let fallbackFacilities: { id: number; categoryName: string; name: string }[] = [];
+
+    if (!api && local) {
+      const localImageUrls = Array.isArray(local.images)
+        ? (local.images as string[]).filter((u) => typeof u === "string")
+        : [];
+      const urls = localImageUrls.length
+        ? localImageUrls
+        : local.thumbnailImage
+          ? [local.thumbnailImage]
+          : [];
+      fallbackImages = urls.map((url, i) => ({ url, caption: "", isMain: i === 0 }));
+
+      const facilityIds = Array.isArray(local.facilities)
+        ? (local.facilities as number[]).map(String)
+        : [];
+      if (facilityIds.length) {
+        const facilityRows = await prisma.hotelFacility.findMany({
+          where: { externalId: { in: facilityIds } },
+        });
+        fallbackFacilities = facilityRows.map((f) => ({
+          id: Number(f.externalId),
+          categoryName: f.category,
+          name: f.name,
+        }));
+      }
+    }
+
     // Merge: API data takes precedence for mutable fields; local record provides
     // relational context (location) and internal identifiers.
     const combined = {
       ...(local ?? {}),
       ...(api ?? {}),
+      images: api?.images ?? fallbackImages,
+      facilities: api?.facilities ?? fallbackFacilities,
       // Always preserve the local id so clients can reference the DB record.
       id: local?.id,
       location: local?.location ?? null,

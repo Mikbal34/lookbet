@@ -93,6 +93,7 @@ export async function syncHotels(feedId: string) {
         longitude: h.longitude,
         images: h.images,
         facilities: h.facilities,
+        thumbnailImage: h.thumbnailImage ?? null,
         locationId: location?.id,
       },
       create: {
@@ -104,6 +105,7 @@ export async function syncHotels(feedId: string) {
         longitude: h.longitude,
         images: h.images,
         facilities: h.facilities,
+        thumbnailImage: h.thumbnailImage ?? null,
         locationId: location?.id,
       },
     });

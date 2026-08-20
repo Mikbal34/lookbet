@@ -8,9 +8,17 @@ import { use } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, BedDouble, AlertCircle } from "lucide-react";
+import { ArrowLeft, BedDouble, AlertCircle, Star, LogIn, LogOut } from "lucide-react";
 import { Navbar, Footer } from "@/components/layout";
-import { HotelGallery, HotelInfo } from "@/components/hotel";
+import {
+  HotelGallery,
+  HotelInfo,
+  HotelReviews,
+  InlineScore,
+  HotelNearby,
+  HotelPoliciesSection,
+  HotelFaq,
+} from "@/components/hotel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import type { HotelDetailResponse, HotelImage } from "@/lib/royal-api/types";
@@ -67,7 +75,6 @@ function HotelDetailContent({
   const { hotelCode } = use(params);
   const searchParams = useSearchParams();
 
-  const roomsHref = `/hotel/${hotelCode}/rooms?${searchParams.toString()}`;
   const backHref = `/search?${searchParams.toString()}`;
 
   const { data, isLoading, isError } = useQuery<HotelDetailData>({
@@ -76,10 +83,19 @@ function HotelDetailContent({
     staleTime: 10 * 60 * 1000,
   });
 
-  // Normalise images to GalleryImage format
+  // Carry the hotel name into the rooms/booking flow so reservations don't
+  // fall back to the raw hotel code.
+  const roomsParams = new URLSearchParams(searchParams.toString());
+  if (data?.name) roomsParams.set("hotelName", data.name);
+  const roomsHref = `/hotel/${hotelCode}/rooms?${roomsParams.toString()}`;
+
+  // Normalise images to GalleryImage format, main image first
   const galleryImages = React.useMemo(() => {
     const imgs: HotelImage[] = data?.images ?? [];
-    return imgs.map((img) => ({ url: img.url, caption: img.caption ?? "" }));
+    return imgs
+      .slice()
+      .sort((a, b) => (b.isMain ? 1 : 0) - (a.isMain ? 1 : 0))
+      .map((img) => ({ url: img.url, caption: img.caption ?? "" }));
   }, [data?.images]);
 
   return (
@@ -87,11 +103,11 @@ function HotelDetailContent({
       <Navbar />
 
       <main className="flex-1">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
           {/* Back link */}
           <Link
             href={backHref}
-            className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 mb-6"
+            className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 mb-3"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Sonuçlara Dön
@@ -115,43 +131,79 @@ function HotelDetailContent({
           )}
 
           {!isLoading && !isError && data && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <>
+            {/* Üst blok: galeri + genel bilgi solda, rezervasyon kutusu sağda */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Main content */}
               <div className="lg:col-span-2 space-y-6">
                 <HotelGallery images={galleryImages} />
 
                 {data.name && (
-                  <HotelInfo hotel={data as HotelDetailResponse} />
+                  <div id="genel" className="scroll-mt-32 space-y-5">
+                    {data.reviewSummary && (
+                      <InlineScore summary={data.reviewSummary} />
+                    )}
+                    <HotelInfo hotel={data as HotelDetailResponse} />
+                  </div>
                 )}
               </div>
 
               {/* Sticky sidebar CTA */}
               <div className="lg:col-span-1">
-                <div className="sticky top-24 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm space-y-4">
-                  <h2 className="text-lg font-semibold text-gray-900">
-                    Bu otelde yer bulmak ister misiniz?
-                  </h2>
-                  <p className="text-sm text-gray-500">
-                    Müsait odaları görmek ve rezervasyon yapmak için tarihleri
-                    seçin.
-                  </p>
+                <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm space-y-3">
+                  {data.reviewSummary && (
+                    <div className="flex items-center gap-2.5">
+                      <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg rounded-bl-none bg-navy text-base font-bold text-white">
+                        {data.reviewSummary.score.toFixed(1)}
+                      </span>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-sm font-bold text-gray-900">
+                            {data.reviewSummary.label}
+                          </p>
+                          <div className="flex" aria-label={`${data.reviewSummary.score} / 10`}>
+                            {Array.from({ length: 5 }, (_, i) => (
+                              <Star
+                                key={i}
+                                className={
+                                  i < Math.round(data.reviewSummary!.score / 2)
+                                    ? "h-3.5 w-3.5 fill-amber-400 text-amber-400"
+                                    : "h-3.5 w-3.5 fill-gray-200 text-gray-200"
+                                }
+                                aria-hidden="true"
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          {data.reviewSummary.count.toLocaleString("tr-TR")} değerlendirme
+                        </p>
+                      </div>
+                    </div>
+                  )}
 
-                  {/* Quick date summary if params exist */}
+                  {/* Giriş / çıkış — sade, ikonlu, turuncu zemin yok */}
                   {searchParams.get("checkIn") && (
-                    <div className="rounded-lg bg-chip-blue px-4 py-3 text-sm text-navy-dark space-y-1">
-                      <p>
-                        <span className="font-medium">Giriş:</span>{" "}
-                        {searchParams.get("checkIn")}
-                      </p>
-                      <p>
-                        <span className="font-medium">Çıkış:</span>{" "}
-                        {searchParams.get("checkOut")}
-                      </p>
+                    <div className="divide-y divide-gray-100 rounded-lg border border-gray-200 text-[13px]">
+                      <div className="flex items-center gap-2 px-3 py-2">
+                        <LogIn className="h-4 w-4 text-navy" aria-hidden="true" />
+                        <span className="text-gray-500">Giriş</span>
+                        <span className="ml-auto font-medium text-gray-900">
+                          {searchParams.get("checkIn")}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 px-3 py-2">
+                        <LogOut className="h-4 w-4 text-navy" aria-hidden="true" />
+                        <span className="text-gray-500">Çıkış</span>
+                        <span className="ml-auto font-medium text-gray-900">
+                          {searchParams.get("checkOut")}
+                        </span>
+                      </div>
                     </div>
                   )}
 
                   <Link href={roomsHref} className="block">
-                    <Button className="w-full" size="lg">
+                    <Button className="w-full">
                       <BedDouble className="h-5 w-5" aria-hidden="true" />
                       Odaları Gör
                     </Button>
@@ -159,6 +211,28 @@ function HotelDetailContent({
                 </div>
               </div>
             </div>
+
+            {/* Alt bloklar tam genişlik — sağda boşluk kalmaz */}
+            {data.name && (
+              <div className="mt-8 space-y-8">
+                <div id="cevre" className="scroll-mt-32">
+                  <HotelNearby places={data.nearby} />
+                </div>
+                <div id="degerlendirme" className="scroll-mt-32">
+                  <HotelReviews
+                    summary={data.reviewSummary}
+                    reviews={data.reviews}
+                  />
+                </div>
+                <div id="sorular" className="scroll-mt-32">
+                  <HotelFaq facilities={data.facilities} policies={data.policies} />
+                </div>
+                <div id="kurallar" className="scroll-mt-32">
+                  <HotelPoliciesSection policies={data.policies} />
+                </div>
+              </div>
+            )}
+            </>
           )}
         </div>
       </main>

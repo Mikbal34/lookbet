@@ -72,11 +72,13 @@ export async function POST(_request: NextRequest) {
       );
     }
 
+    const startedAt = Date.now();
     const results = await syncAll(feedId);
 
     return NextResponse.json({
       success: true,
       syncedAt: new Date().toISOString(),
+      duration: Date.now() - startedAt,
       results,
     });
   } catch (error) {

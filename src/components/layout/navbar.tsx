@@ -14,6 +14,7 @@ import {
   LogOut,
   LayoutDashboard,
   CalendarCheck,
+  ChevronDown,
 } from "lucide-react";
 import { Logo } from "./logo";
 import { AgencyHeader } from "./agency-header";
@@ -34,6 +35,7 @@ export function Navbar({
 }) {
   const { data: session } = useSession();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const role = session?.user?.role;
 
@@ -46,7 +48,7 @@ export function Navbar({
       className={
         variant === "transparent"
           ? "w-full bg-navy text-white"
-          : "sticky top-0 z-50 w-full bg-navy text-white shadow-[0_1px_0_rgb(0_0_0/0.15),0_4px_18px_-8px_rgb(0_0_0/0.3)]"
+          : "w-full bg-navy text-white shadow-[0_1px_0_rgb(0_0_0/0.15),0_4px_18px_-8px_rgb(0_0_0/0.3)]"
       }
     >
       <div className="mx-auto flex h-[72px] max-w-[1200px] items-center gap-8 px-4 sm:px-6">
@@ -62,7 +64,7 @@ export function Navbar({
           <Link href="/yardim" className={navLinkCls}>
             Yardım
           </Link>
-          <Link href="/register/agency" className={navLinkCls}>
+          <Link href="/agency/login" className={navLinkCls}>
             Acenteler
           </Link>
         </nav>
@@ -70,26 +72,78 @@ export function Navbar({
         <div className="ml-auto hidden items-center gap-1 md:flex">
           <LocaleSwitcher variant="transparent" />
           {session ? (
-            <>
-              <Link href="/profile" className={ghostBtnCls}>
-                <CircleUserRound className="size-4" aria-hidden />
-                {session.user.name}
-              </Link>
-              {role === "ADMIN" && (
-                <Link href="/admin" className={ghostBtnCls}>
-                  <LayoutDashboard className="size-4" aria-hidden />
-                  Admin
-                </Link>
-              )}
+            <div className="relative">
               <button
                 type="button"
-                onClick={() => signOut({ callbackUrl: "/" })}
-                className={outlineBtnCls}
+                onClick={() => setUserMenuOpen((o) => !o)}
+                aria-haspopup="menu"
+                aria-expanded={userMenuOpen}
+                className={ghostBtnCls}
               >
-                <LogOut className="size-4" aria-hidden />
-                Çıkış
+                <CircleUserRound className="size-4" aria-hidden />
+                {session.user.name}
+                <ChevronDown
+                  className={`size-3.5 transition-transform ${userMenuOpen ? "rotate-180" : ""}`}
+                  aria-hidden
+                />
               </button>
-            </>
+
+              {userMenuOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setUserMenuOpen(false)}
+                  />
+                  <div
+                    role="menu"
+                    className="absolute right-0 top-[calc(100%+8px)] z-20 w-56 overflow-hidden rounded-lg border border-line bg-white py-1 text-ink shadow-[0_12px_28px_-10px_rgb(11_13_20/0.3)]"
+                  >
+                    <Link
+                      href="/profile"
+                      role="menuitem"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center gap-2.5 px-4 py-2.5 text-[14px] font-semibold text-ink hover:bg-chip-blue"
+                    >
+                      <CircleUserRound className="size-4 text-navy" aria-hidden />
+                      Profil Bilgileri
+                    </Link>
+                    <Link
+                      href="/reservations"
+                      role="menuitem"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center gap-2.5 px-4 py-2.5 text-[14px] font-semibold text-ink hover:bg-chip-blue"
+                    >
+                      <CalendarCheck className="size-4 text-navy" aria-hidden />
+                      Rezervasyonlarım
+                    </Link>
+                    {role === "ADMIN" && (
+                      <Link
+                        href="/admin"
+                        role="menuitem"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-2.5 px-4 py-2.5 text-[14px] font-semibold text-ink hover:bg-chip-blue"
+                      >
+                        <LayoutDashboard className="size-4 text-navy" aria-hidden />
+                        Admin Paneli
+                      </Link>
+                    )}
+                    <div className="my-1 border-t border-line" />
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        signOut({ callbackUrl: "/" });
+                      }}
+                      className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-[14px] font-semibold text-red-600 hover:bg-red-50"
+                    >
+                      <LogOut className="size-4" aria-hidden />
+                      Çıkış
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           ) : (
             <>
               <Link href="/agency/login" className={ghostBtnCls}>
@@ -128,7 +182,7 @@ export function Navbar({
                 { name: "Otel Ara", href: "/search" },
                 { name: "Kampanyalar", href: "/kampanyalar" },
                 { name: "Yardım", href: "/yardim" },
-                { name: "Acenteler", href: "/register/agency" },
+                { name: "Acenteler", href: "/agency/login" },
               ].map((item) => (
                 <Link
                   key={item.name}

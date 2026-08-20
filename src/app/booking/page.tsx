@@ -49,6 +49,21 @@ function BookingPageContent() {
   const nationality = searchParams.get("nationality") ?? "TR";
   const currency = searchParams.get("currency") ?? "EUR";
   const totalPrice = parseFloat(searchParams.get("totalPrice") ?? "0");
+  const originalPrice = parseFloat(
+    searchParams.get("originalPrice") ?? String(totalPrice)
+  );
+
+  // Cancellation policies selected on the rooms page, carried as JSON so they
+  // can be persisted with the reservation.
+  const cancellationPolicy = React.useMemo(() => {
+    const raw = searchParams.get("cancellationPolicy");
+    if (!raw) return undefined;
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return undefined;
+    }
+  }, [searchParams]);
 
   const totalGuests = adults + childAges.length;
 
@@ -71,6 +86,7 @@ function BookingPageContent() {
       checkOut,
       totalPrice,
       currency,
+      cancellationPolicy,
       contact: { name: "", surname: "", email: "", phone: "" },
       rooms: [
         {
@@ -251,8 +267,9 @@ function BookingPageContent() {
                     boardType: boardTypeName || boardType || undefined,
                     checkIn,
                     checkOut,
-                    originalPrice: totalPrice,
+                    originalPrice,
                     finalPrice: totalPrice,
+                    discount: Math.max(0, originalPrice - totalPrice),
                     currency,
                   }}
                 />
