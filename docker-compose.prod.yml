@@ -38,7 +38,7 @@ services:
     build:
       context: .
       target: builder
-    command: ["npx", "prisma", "db", "push", "--skip-generate"]
+    command: ["npx", "prisma", "db", "push"]
     env_file:
       - .env.production
     depends_on:
