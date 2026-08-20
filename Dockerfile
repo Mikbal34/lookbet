@@ -15,8 +15,9 @@ COPY . .
 # Generate Prisma client
 RUN npx prisma generate
 
-# Build Next.js
+# Build Next.js (standalone çıktı yalnızca Docker'da)
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV DOCKER_BUILD=1
 RUN npm run build
 
 # ============ Stage 3: Production ============
