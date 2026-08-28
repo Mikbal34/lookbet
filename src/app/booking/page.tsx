@@ -15,7 +15,8 @@ import { ContactForm, GuestForm, BookingSummary } from "@/components/booking";
 import { Stepper } from "@/components/ui/stepper";
 import { Button } from "@/components/ui/button";
 import { createBookingSchema, type CreateBookingInput } from "@/lib/validators/booking.schema";
-import { ArrowLeft, ArrowRight, Send } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeft, ArrowRight, CalendarX, Send } from "lucide-react";
 
 const STEPS = ["İletişim Bilgileri", "Misafir Bilgileri", "Özet"];
 
@@ -140,6 +141,40 @@ function BookingPageContent() {
       setLoading(false);
     }
   };
+
+  // Oda seçilmeden bu sayfaya düşülebiliyor: derin bağlantı, uygulamanın arka
+  // plandan dönüşü, ya da geri tuşuyla parametresiz gezinme. Eskiden boş bir
+  // form ("0 gece", "€0,00") render ediliyordu; doldurulup gönderilebilecek
+  // ama hiçbir şey ifade etmeyen bir ekrandı.
+  if (!roomSearchId || !priceCode) {
+    return (
+      <div className="flex min-h-screen flex-col bg-gray-50">
+        <Navbar />
+        <main className="flex-1">
+          <div className="mx-auto max-w-lg px-4 py-16 text-center sm:px-6">
+            <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-chip">
+              <CalendarX className="size-7 text-muted" aria-hidden="true" />
+            </div>
+            <h1 className="text-xl font-bold text-gray-900">
+              Rezervasyon bilgisi bulunamadı
+            </h1>
+            <p className="mx-auto mt-2 max-w-sm text-sm text-gray-500">
+              Bu sayfaya bir oda seçtikten sonra ulaşabilirsin. Oda seçimi
+              30 dakika geçerli olduğu için bekleyen bir seçimin süresi de
+              dolmuş olabilir.
+            </p>
+            <Link
+              href="/"
+              className="mt-6 inline-flex min-h-12 items-center justify-center rounded-lg bg-navy px-6 text-[15px] font-semibold text-white active:bg-navy-dark"
+            >
+              Otel aramaya dön
+            </Link>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">

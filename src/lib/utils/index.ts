@@ -7,20 +7,27 @@ export function formatCurrency(amount: number, currency: string = "EUR"): string
   }).format(amount);
 }
 
+// Geçersiz girdide boş string döner. Intl.format(new Date("")) "Invalid time
+// value" fırlatıyor; bu değer bir render sırasında gelirse tüm sayfa client
+// hatasıyla çöküyordu (ör. /booking'e parametresiz girilince).
 export function formatDate(date: Date | string): string {
+  const d = new Date(date);
+  if (Number.isNaN(d.getTime())) return "";
   return new Intl.DateTimeFormat("tr-TR", {
     year: "numeric",
     month: "long",
     day: "numeric",
-  }).format(new Date(date));
+  }).format(d);
 }
 
 export function formatShortDate(date: Date | string): string {
+  const d = new Date(date);
+  if (Number.isNaN(d.getTime())) return "";
   return new Intl.DateTimeFormat("tr-TR", {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-  }).format(new Date(date));
+  }).format(d);
 }
 
 /**
@@ -69,5 +76,7 @@ export function generateClientReferenceId(): string {
 export function getNightCount(checkIn: Date | string, checkOut: Date | string): number {
   const start = new Date(checkIn);
   const end = new Date(checkOut);
+  // Geçersiz tarihlerde NaN dönüp arayüzde "NaN gece" yazılmasın.
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return 0;
   return Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
 }
