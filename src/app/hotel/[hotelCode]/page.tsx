@@ -23,6 +23,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import type { HotelDetailResponse, HotelImage } from "@/lib/royal-api/types";
 import { formatDate, formatDateRange } from "@/lib/utils";
+import { ShowMore } from "@/components/ui/show-more";
 
 interface HotelDetailData extends Partial<HotelDetailResponse> {
   hotelCode: string;
@@ -219,17 +220,36 @@ function HotelDetailContent({
                 <div id="cevre" className="scroll-mt-32">
                   <HotelNearby places={data.nearby} />
                 </div>
+                {/* Yorumlar ve kurallar mobilde sayfanın üçte birini
+                    kaplıyordu (1044px + 705px). lg altında kırpılıp
+                    "devamını gör" ile açılıyor; masaüstünde tam görünür. */}
                 <div id="degerlendirme" className="scroll-mt-32">
-                  <HotelReviews
-                    summary={data.reviewSummary}
-                    reviews={data.reviews}
-                  />
+                  <ShowMore
+                    kapaliYukseklik={420}
+                    acEtiketi={
+                      data.reviews?.length
+                        ? `Tüm ${data.reviews.length} yorumu gör`
+                        : "Tüm yorumları gör"
+                    }
+                    kapatEtiketi="Yorumları kapat"
+                  >
+                    <HotelReviews
+                      summary={data.reviewSummary}
+                      reviews={data.reviews}
+                    />
+                  </ShowMore>
                 </div>
                 <div id="sorular" className="scroll-mt-32">
                   <HotelFaq facilities={data.facilities} policies={data.policies} />
                 </div>
                 <div id="kurallar" className="scroll-mt-32">
-                  <HotelPoliciesSection policies={data.policies} />
+                  <ShowMore
+                    kapaliYukseklik={300}
+                    acEtiketi="Tüm tesis kurallarını gör"
+                    kapatEtiketi="Kuralları kapat"
+                  >
+                    <HotelPoliciesSection policies={data.policies} />
+                  </ShowMore>
                 </div>
               </div>
             )}
