@@ -103,6 +103,23 @@ export async function POST(request: NextRequest) {
       boardTypes: (h.boardTypes ?? []).map((code) => boardTypeNames.get(code) ?? code),
     }));
 
+    // Arama geçmişi — analitik ve ileride kişiselleştirme için. Ekrandaki
+    // "son aramaların" listesi cihazdan besleniyor (girişsiz kullanıcıda da
+    // çalışsın diye), burası ondan bağımsız.
+    //
+    // Yazma bilerek await edilmiyor ve hatası yutuluyor: geçmiş kaydı
+    // tutmakta yaşanan bir sorun arama sonucunu geciktirmemeli ya da
+    // düşürmemeli.
+    void prisma.searchHistory
+      .create({
+        data: {
+          userId: session?.user?.id ?? null,
+          params: input as object,
+          resultCount: hotelsWithBoardNames.length,
+        },
+      })
+      .catch((e) => console.error("[SEARCH_HISTORY_WRITE]", e));
+
     return NextResponse.json({ ...results, hotels: hotelsWithBoardNames });
   } catch (error) {
     console.error("[POST /api/hotels/search]", error);

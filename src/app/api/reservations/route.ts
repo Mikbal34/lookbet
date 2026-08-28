@@ -75,12 +75,22 @@ export async function GET(request: NextRequest) {
       where.status = statusParam as ReservationStatus;
     }
 
+    // ?upcoming=true — konaklaması henüz bitmemiş, iptal/başarısız olmayan
+    // rezervasyonlar, girişe en yakın önce. Uygulama ana sayfasındaki
+    // "yaklaşan rezervasyonun" kartı bunu kullanıyor: aksi hâlde istemcinin
+    // sayfalarca kayıt çekip kendi ayıklaması gerekirdi.
+    const upcoming = searchParams.get("upcoming") === "true";
+    if (upcoming) {
+      where.checkOut = { gte: new Date() };
+      where.status = { in: ["PENDING", "CONFIRMED"] as ReservationStatus[] };
+    }
+
     const [reservations, total] = await Promise.all([
       prisma.reservation.findMany({
         where,
         skip,
         take: limit,
-        orderBy: { createdAt: "desc" },
+        orderBy: upcoming ? { checkIn: "asc" } : { createdAt: "desc" },
         include: {
           user: { select: { id: true, name: true, email: true } },
           agency: { select: { id: true, companyName: true } },

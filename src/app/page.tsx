@@ -15,6 +15,10 @@ import { AppHomeHero } from "@/components/search/app-home-hero";
 import { useLocale } from "@/components/providers/locale-provider";
 import { POPULAR_DESTINATIONS } from "@/lib/constants/destinations";
 import { cn } from "@/lib/utils/cn";
+import { UpcomingReservationCard } from "@/components/reservation/upcoming-reservation-card";
+import { addRecentSearch } from "@/lib/utils/recent-searches";
+import { RecentSearches } from "@/components/search/recent-searches";
+import { CAMPAIGNS } from "@/lib/constants/campaigns";
 
 // Ana sayfadaki chip'ler ve tam ekran akıştaki öneriler aynı listeden.
 const QUICK_LINKS = POPULAR_DESTINATIONS;
@@ -104,6 +108,14 @@ export default function HomePage() {
     }
     p.set("nationality", values.nationality);
     p.set("currency", currency);
+
+    addRecentSearch({
+      destination: values.destination,
+      checkIn: values.checkIn,
+      checkOut: values.checkOut,
+      adults: values.guests.adult,
+    });
+
     router.push(`/search?${p.toString()}`);
   };
 
@@ -117,6 +129,8 @@ export default function HomePage() {
       </div>
 
       <AppHomeHero onAc={() => setAramaAcik(true)} />
+      <UpcomingReservationCard />
+      <RecentSearches />
       <section className="web-only bg-navy">
         <div className="mx-auto max-w-[1200px] px-4 pt-10 pb-24 sm:px-6 sm:pt-14 sm:pb-32">
           <h1 className="max-w-[20ch] text-[clamp(1.9rem,4vw,3rem)] leading-[1.05] font-extrabold tracking-[-0.03em] text-white">
@@ -306,6 +320,46 @@ export default function HomePage() {
         </section>
 
         {/* ── ÖZELLİKLER — editorial ── */}
+        {/* Kampanyalar — app'te ana sayfanın altında da bir şerit.
+            Kampanyalar ayrı sekme olsa da Pegasus'ta da ana sayfada var. */}
+        <section className="b2c-only px-4 pt-2 pb-6" aria-label="Fırsatlar">
+          <div className="flex items-center justify-between pb-3">
+            <h2 className="text-[17px] font-extrabold tracking-[-0.02em] text-ink">
+              Fırsatlar
+            </h2>
+            <Link
+              href="/kampanyalar"
+              className="flex min-h-11 items-center gap-1 text-[13px] font-semibold text-navy"
+            >
+              Tümü
+              <ArrowRight className="size-3.5" />
+            </Link>
+          </div>
+
+          <div className="no-scrollbar -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4">
+            {CAMPAIGNS.map((k) => (
+              <Link
+                key={k.code}
+                href="/kampanyalar"
+                className="flex w-[74vw] max-w-[300px] shrink-0 snap-start flex-col justify-end rounded-xl p-4 pt-10"
+                style={{ background: k.bg }}
+              >
+                <span className="text-[10px] font-bold tracking-[0.14em] text-white/75 uppercase">
+                  {k.tag}
+                </span>
+                <div className="mt-0.5 flex items-end gap-2">
+                  <span className="text-[26px] leading-none font-extrabold text-gold">
+                    {k.amount}
+                  </span>
+                  <span className="pb-0.5 text-[13px] leading-tight font-bold text-white">
+                    {k.title}
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+
         <section className="web-only border-y border-[rgb(26_24_20/0.1)] bg-row py-10 sm:py-12">
           <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
             <div className="grid grid-cols-1 gap-0 md:grid-cols-2">

@@ -31,6 +31,7 @@ import { MobileSheet } from "@/components/ui/mobile-sheet";
 import { useMediaQuery } from "@/lib/utils/use-media-query";
 import { formatDateRange } from "@/lib/utils";
 import { cn } from "@/lib/utils/cn";
+import { addRecentSearch } from "@/lib/utils/recent-searches";
 import type { HotelSearchResult, HotelSearchResponse } from "@/lib/royal-api/types";
 
 // ---------- helpers ----------
@@ -196,6 +197,14 @@ function SearchPageContent() {
     p.set("nationality", values.nationality);
     // Mevcut para birimi tercihini koru
     p.set("currency", rawParams.get("currency") ?? "EUR");
+
+    addRecentSearch({
+      destination: values.destination,
+      checkIn: values.checkIn,
+      checkOut: values.checkOut,
+      adults: values.guests.adult,
+    });
+
     router.push(`/search?${p.toString()}`);
   };
 
