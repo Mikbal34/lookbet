@@ -152,7 +152,7 @@ export function HotelGallery({ images, className }: HotelGalleryProps) {
               type="button"
               onClick={close}
               aria-label="Kapat"
-              className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/10"
+              className="flex size-11 items-center justify-center rounded-full hover:bg-white/10 active:bg-white/10"
             >
               <X className="h-5 w-5" aria-hidden="true" />
             </button>

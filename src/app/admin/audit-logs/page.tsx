@@ -122,7 +122,7 @@ export default function AuditLogsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="font-serif text-[28px] font-normal text-ink">Denetim Logları</h1>
+        <h1 className="font-serif text-[22px] font-normal text-ink sm:text-[28px]">Denetim Logları</h1>
         <p className="text-sm text-gray-500 mt-1">
           Toplam {data?.total ?? 0} log kaydı
         </p>
@@ -192,7 +192,7 @@ export default function AuditLogsPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full min-w-[860px]">
               <thead>
                 <tr className="border-b border-gray-200">
                   {["Tarih", "Kullanıcı", "İşlem", "Varlık", "Varlık ID", "Detaylar"].map(

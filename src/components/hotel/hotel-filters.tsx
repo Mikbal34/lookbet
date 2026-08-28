@@ -34,7 +34,7 @@ const STAR_OPTIONS = [5, 4, 3];
 const sectionLabel =
   "text-xs font-bold tracking-[1.5px] uppercase text-muted mb-2.5";
 const inputBox =
-  "h-10 w-full rounded-md border border-line-strong px-3 text-sm text-ink bg-white focus:outline-none focus:border-navy transition-colors placeholder:text-muted/70";
+  "h-11 sm:h-10 w-full rounded-md border border-line-strong px-3 text-sm text-ink bg-white focus:outline-none focus:border-navy transition-colors placeholder:text-muted/70";
 
 export interface HotelFiltersProps {
   filters: HotelFiltersValue;
@@ -43,6 +43,8 @@ export interface HotelFiltersProps {
   className?: string;
   nationality?: string;
   onNationalityChange?: (code: string) => void;
+  /** Alt sayfa içinde başlık zaten panelin kendisinde — burada tekrarlanmasın */
+  hideTitle?: boolean;
 }
 
 export function HotelFilters({
@@ -52,6 +54,7 @@ export function HotelFilters({
   className,
   nationality,
   onNationalityChange,
+  hideTitle = false,
 }: HotelFiltersProps) {
   const update = <K extends keyof HotelFiltersValue>(
     key: K,
@@ -98,11 +101,19 @@ export function HotelFilters({
       )}
       aria-label="Otel filtreleri"
     >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <SlidersHorizontal className="h-4 w-4 text-muted" aria-hidden="true" />
-          <h2 className="text-sm font-bold text-ink">Filtreler</h2>
-        </div>
+      <div
+        className={cn(
+          "flex items-center justify-between",
+          hideTitle && !hasActiveFilters && "hidden"
+        )}
+      >
+        {!hideTitle && (
+          <div className="flex items-center gap-2">
+            <SlidersHorizontal className="h-4 w-4 text-muted" aria-hidden="true" />
+            <h2 className="text-sm font-bold text-ink">Filtreler</h2>
+          </div>
+        )}
+        {hideTitle && hasActiveFilters && <span />}
         {hasActiveFilters && (
           <button
             type="button"
@@ -143,7 +154,7 @@ export function HotelFilters({
             return (
               <label
                 key={star}
-                className="flex items-center gap-2.5 cursor-pointer text-sm font-medium"
+                className="flex min-h-11 cursor-pointer items-center gap-2.5 text-sm font-medium sm:min-h-0"
               >
                 <input
                   type="checkbox"
@@ -240,7 +251,7 @@ export function HotelFilters({
                     type="button"
                     onClick={() => toggleBoardType(bt)}
                     className={cn(
-                      "rounded-sm px-3 py-1.5 text-[12.5px] font-semibold border transition-colors",
+                      "min-h-10 rounded-sm border px-3 py-1.5 text-[12.5px] font-semibold transition-colors sm:min-h-0",
                       checked
                         ? "bg-navy border-navy text-paper"
                         : "border-line-strong text-slate-text hover:border-navy"

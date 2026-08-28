@@ -94,7 +94,7 @@ function CreateNotificationForm({ users, onClose, onCreated }: CreateFormProps) 
 
   return (
     <div className="bg-white rounded-lg border border-line shadow-sm overflow-hidden">
-      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-4 py-4 sm:px-6">
         <h3 className="text-base font-semibold text-gray-900">Yeni Bildirim Oluştur</h3>
         <button
           onClick={onClose}
@@ -271,9 +271,9 @@ export default function NotificationsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-serif text-[28px] font-normal text-ink">Bildirimler</h1>
+          <h1 className="font-serif text-[22px] font-normal text-ink sm:text-[28px]">Bildirimler</h1>
           <p className="text-sm text-gray-500 mt-1">
             {data?.unreadCount ?? 0} okunmamış bildirim
           </p>

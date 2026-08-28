@@ -66,7 +66,7 @@ export default function AgencyCompanyPage() {
   return (
     <div className="max-w-3xl space-y-6">
       <div>
-        <h1 className="font-serif text-[28px] font-normal text-ink">Şirket Bilgilerim</h1>
+        <h1 className="font-serif text-[22px] font-normal text-ink sm:text-[28px]">Şirket Bilgilerim</h1>
         <p className="text-sm text-gray-500 mt-1">
           Lookbet sisteminde kayıtlı şirket ve anlaşma bilgileriniz
         </p>

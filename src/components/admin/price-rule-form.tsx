@@ -50,7 +50,7 @@ export function PriceRuleForm({
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Tip
@@ -113,7 +113,7 @@ export function PriceRuleForm({
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Otel Kodu (opsiyonel)
@@ -136,7 +136,7 @@ export function PriceRuleForm({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Başlangıç Tarihi
@@ -159,7 +159,7 @@ export function PriceRuleForm({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Öncelik

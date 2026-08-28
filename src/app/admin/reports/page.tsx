@@ -59,7 +59,7 @@ function RevenueTab() {
   if (isLoading) {
     return (
       <div className="space-y-6 animate-pulse">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="h-24 bg-white rounded-md border border-[rgb(26_24_20/0.08)]" />
           <div className="h-24 bg-white rounded-md border border-[rgb(26_24_20/0.08)]" />
         </div>
@@ -256,7 +256,7 @@ export default function ReportsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="font-serif text-[28px] font-normal text-ink">Raporlar</h1>
+        <h1 className="font-serif text-[22px] font-normal text-ink sm:text-[28px]">Raporlar</h1>
         <p className="text-sm text-gray-500 mt-1">Performans ve ciro analizleri</p>
       </div>
 

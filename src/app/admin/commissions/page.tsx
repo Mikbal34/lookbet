@@ -212,9 +212,9 @@ export default function CommissionsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-serif text-[28px] font-normal text-ink">Komisyonlar</h1>
+          <h1 className="font-serif text-[22px] font-normal text-ink sm:text-[28px]">Komisyonlar</h1>
           <p className="text-sm text-gray-500 mt-1">
             Toplam {data?.total ?? 0} komisyon kaydı
           </p>
@@ -231,7 +231,7 @@ export default function CommissionsPage() {
       {/* Create Form Panel */}
       {showForm && (
         <div className="bg-white rounded-lg border border-line shadow-sm overflow-hidden">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-4 py-4 sm:px-6">
             <h3 className="text-base font-semibold text-gray-900">Yeni Komisyon</h3>
             <button
               onClick={() => setShowForm(false)}
@@ -253,14 +253,14 @@ export default function CommissionsPage() {
 
       {/* Agency Filter */}
       <div className="bg-white rounded-md border border-[rgb(26_24_20/0.08)] p-4">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
           <label className="text-sm font-medium text-gray-700 whitespace-nowrap">
             Acente Filtrele:
           </label>
           <select
             value={agencyFilter}
             onChange={(e) => setAgencyFilter(e.target.value)}
-            className="w-64 py-2 px-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-navy sm:w-64 sm:py-2"
             aria-label="Acenteye göre filtrele"
           >
             <option value="">Tüm Acenteler</option>

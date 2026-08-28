@@ -144,7 +144,7 @@ export default function UsersPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="font-serif text-[28px] font-normal text-ink">Kullanıcılar</h1>
+        <h1 className="font-serif text-[22px] font-normal text-ink sm:text-[28px]">Kullanıcılar</h1>
         <p className="text-sm text-gray-500 mt-1">
           Toplam {data?.pagination.total ?? 0} kullanıcı
         </p>

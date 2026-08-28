@@ -146,17 +146,17 @@ function BookingPageContent() {
       <Navbar />
 
       <main className="flex-1">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
           {/* Stepper */}
-          <div className="mb-8">
+          <div className="mb-6 sm:mb-8">
             <Stepper steps={STEPS} currentStep={currentStep} />
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="flex flex-col lg:flex-row gap-6 items-start">
-              {/* Form area */}
-              <div className="flex-1 min-w-0">
-                <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+              {/* Form area — mobilde özet kartının altında (order-2) */}
+              <div className="order-2 w-full flex-1 min-w-0 lg:order-1">
+                <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-6">
                   {currentStep === 0 && (
                     <ContactForm register={register} errors={errors} />
                   )}
@@ -233,10 +233,11 @@ function BookingPageContent() {
                 </div>
 
                 {/* Navigation buttons */}
-                <div className="mt-4 flex items-center justify-between">
+                <div className="mt-4 flex items-center justify-between gap-3 [&>button]:flex-1 sm:[&>button]:flex-none">
                   <Button
                     type="button"
                     variant="outline"
+                    size="lg"
                     onClick={() => setCurrentStep((s) => Math.max(s - 1, 0))}
                     disabled={currentStep === 0}
                   >
@@ -245,12 +246,12 @@ function BookingPageContent() {
                   </Button>
 
                   {currentStep < STEPS.length - 1 ? (
-                    <Button type="button" onClick={handleNext}>
+                    <Button type="button" size="lg" onClick={handleNext}>
                       İleri
                       <ArrowRight className="h-4 w-4" aria-hidden="true" />
                     </Button>
                   ) : (
-                    <Button type="submit" loading={loading}>
+                    <Button type="submit" size="lg" loading={loading}>
                       <Send className="h-4 w-4" aria-hidden="true" />
                       Rezervasyonu Tamamla
                     </Button>
@@ -258,8 +259,8 @@ function BookingPageContent() {
                 </div>
               </div>
 
-              {/* Sidebar */}
-              <div className="w-full lg:w-80 shrink-0">
+              {/* Sidebar — mobilde formdan önce görünür ki fiyat gözden kaçmasın */}
+              <div className="order-1 w-full shrink-0 lg:order-2 lg:sticky lg:top-6 lg:w-80">
                 <BookingSummary
                   bookingData={{
                     hotelName: hotelName || hotelCode,

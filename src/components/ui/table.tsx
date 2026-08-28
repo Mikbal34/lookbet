@@ -27,10 +27,10 @@ export interface TableProps extends React.HTMLAttributes<HTMLTableElement> {}
 
 export const Table = React.forwardRef<HTMLTableElement, TableProps>(
   ({ className, ...props }, ref) => (
-    <div className="w-full overflow-x-auto rounded-lg border border-gray-200">
+    <div className="w-full overflow-x-auto overscroll-x-contain rounded-lg border border-gray-200">
       <table
         ref={ref}
-        className={cn("w-full caption-bottom text-sm", className)}
+        className={cn("w-full min-w-[640px] caption-bottom text-sm", className)}
         {...props}
       />
     </div>
@@ -96,8 +96,8 @@ export const TableHead = React.forwardRef<
     ref={ref}
     scope="col"
     className={cn(
-      "h-11 px-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-500",
-      "first:pl-6 last:pr-6",
+      "h-11 px-3 text-left text-xs font-semibold uppercase tracking-wide whitespace-nowrap text-gray-500 sm:px-4",
+      "first:pl-4 last:pr-4 sm:first:pl-6 sm:last:pr-6",
       className
     )}
     {...props}
@@ -115,8 +115,8 @@ export const TableCell = React.forwardRef<
   <td
     ref={ref}
     className={cn(
-      "px-4 py-3.5 text-sm text-gray-700 align-middle",
-      "first:pl-6 last:pr-6",
+      "px-3 py-3.5 text-sm text-gray-700 align-middle sm:px-4",
+      "first:pl-4 last:pr-4 sm:first:pl-6 sm:last:pr-6",
       className
     )}
     {...props}

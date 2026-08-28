@@ -34,9 +34,9 @@ export default function AgencyReservationsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-serif text-[28px] font-normal text-ink">Rezervasyonlar</h1>
+          <h1 className="font-serif text-[22px] font-normal text-ink sm:text-[28px]">Rezervasyonlar</h1>
           <p className="text-sm text-gray-500 mt-1">
             Acenteniz üzerinden yapılan tüm rezervasyonlar
           </p>
@@ -91,7 +91,7 @@ export default function AgencyReservationsPage() {
               Rezervasyon bulunamadı
             </div>
           ) : (
-            <table className="w-full">
+            <table className="w-full min-w-[820px]">
               <thead>
                 <tr className="border-b border-gray-200">
                   <th className="text-left text-xs font-semibold text-gray-500 uppercase py-3 px-6">
