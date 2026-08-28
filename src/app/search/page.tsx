@@ -277,13 +277,22 @@ function SearchPageContent() {
             {/* Results */}
             <div className="flex-1 min-w-0">
               {/* Sonuç başlığı + mobil filtre tetikleyicisi */}
-              <div className="mb-4 flex items-center justify-between gap-3">
+              {/* lg altı: yapışkan eylem satırı. Liste uzadığında Filtreler
+                  ve Harita kaydırmayla erişilemez kalıyordu; kenarlara
+                  taşırılıp kendi zeminini alıyor ki altındaki kartlar
+                  üstünden geçerken okunur kalsın. */}
+              <div className="sticky top-0 z-20 -mx-4 mb-4 flex items-center justify-between gap-3 border-b border-line bg-paper px-4 py-2 sm:-mx-6 sm:px-6 lg:static lg:mx-0 lg:border-0 lg:bg-transparent lg:px-0 lg:py-0">
                 {!isLoading && !isError && data ? (
-                  <p className="min-w-0 text-[14.5px] text-slate-text">
+                  <p className="min-w-0 truncate text-[14.5px] text-slate-text">
                     <b className="text-ink">{filteredHotels.length}</b> otel
-                    bulundu
+                    {/* "bulundu — İstanbul" 375px'te iki satıra sarıyordu;
+                        destinasyon zaten üstteki arama özetinde yazıyor. */}
+                    <span className="hidden lg:inline"> bulundu</span>
                     {destination && (
-                      <span className="text-muted"> — {destination}</span>
+                      <span className="hidden text-muted lg:inline">
+                        {" "}
+                        — {destination}
+                      </span>
                     )}
                   </p>
                 ) : (
