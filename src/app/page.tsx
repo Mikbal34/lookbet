@@ -13,6 +13,7 @@ import { Navbar, Footer } from "@/components/layout";
 import { SearchForm, SearchOverlay } from "@/components/search";
 import { useLocale } from "@/components/providers/locale-provider";
 import { POPULAR_DESTINATIONS } from "@/lib/constants/destinations";
+import { cn } from "@/lib/utils/cn";
 
 // Ana sayfadaki chip'ler ve tam ekran akıştaki öneriler aynı listeden.
 const QUICK_LINKS = POPULAR_DESTINATIONS;
@@ -200,7 +201,10 @@ export default function HomePage() {
                 i > 0 ? "border-l border-[rgb(26_24_20/0.1)]" : ""
               }`}
             >
-              <div className="flex items-baseline gap-2">
+              {/* lg altı: değer ve etiket alt alta. Yan yana "4,8/5 Müşteri
+                  puanı" iki kolonda sığmayıp sarıyor ve dördünün hizası
+                  bozuluyordu. */}
+              <div className="flex flex-col gap-0.5 lg:flex-row lg:items-baseline lg:gap-2">
                 <span className="text-[22px] sm:text-[26px] font-extrabold tracking-[-0.02em] text-ink">
                   {s.value}
                 </span>
@@ -231,19 +235,28 @@ export default function HomePage() {
               </div>
               <Link
                 href="/search"
-                className="group hidden items-center gap-1.5 text-[13.5px] font-semibold whitespace-nowrap text-navy underline-offset-[4px] hover:underline sm:inline-flex"
+                className="group inline-flex items-center gap-1.5 text-[13.5px] font-semibold whitespace-nowrap text-navy underline-offset-[4px] hover:underline"
               >
-                Tüm oteller
+                <span className="lg:hidden">Tümü</span>
+                <span className="hidden lg:inline">Tüm oteller</span>
                 <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div
+              className={cn(
+                // lg altı: yatay snap şerit. Kenarlara taşırıp (-mx/px)
+                // kartların ekran kenarının altına kaymasını sağlıyoruz.
+                "no-scrollbar -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-1 sm:-mx-6 sm:px-6",
+                // lg üstü: eski üç kolonlu ızgara
+                "lg:mx-0 lg:grid lg:grid-cols-3 lg:gap-x-4 lg:gap-y-6 lg:overflow-visible lg:px-0 lg:pb-0"
+              )}
+            >
               {DESTINATIONS.map((d) => (
                 <Link
                   key={d.region}
                   href={`/search?destination=${encodeURIComponent(d.region)}`}
-                  className="group block"
+                  className="group block w-[72vw] max-w-[300px] shrink-0 snap-start lg:w-auto lg:max-w-none"
                 >
                   <div className="relative aspect-[4/3] overflow-hidden rounded-md border border-[rgb(26_24_20/0.08)]">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
