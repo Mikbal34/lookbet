@@ -46,7 +46,7 @@ export function AppHomeHero({
     checkIn && checkOut ? formatDateRange(checkIn, checkOut) : "Tarih seç";
 
   return (
-    <div className="b2c-only relative bg-navy">
+    <div className="b2c-only relative bg-paper">
       {/* Karusel — kimlik çubuğunun altından başlar */}
       <div className="relative">
       <div
@@ -58,19 +58,40 @@ export function AppHomeHero({
         {CAMPAIGNS.map((k) => (
           <div
             key={k.code}
-            className="flex h-60 w-full shrink-0 snap-center flex-col justify-end px-4 pt-14 pb-[68px]"
-            style={{ background: k.bg }}
+            className="relative h-72 w-full shrink-0 snap-center bg-navy"
           >
-            <span className="text-[10px] font-bold tracking-[0.14em] text-white/70 uppercase">
-              {k.tag} · {k.until}
-            </span>
-            <div className="mt-1 flex items-end gap-2">
-              <span className="text-[30px] leading-none font-extrabold text-gold">
-                {k.amount}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={k.image}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 h-full w-full object-cover"
+              loading="lazy"
+            />
+            {/* İki ayrı okunabilirlik maskesi. Tek bir baştan sona gradyan,
+                ortada zayıf kalıp metni parlak gökyüzünün üstünde okunmaz
+                bırakıyordu. */}
+            <div
+              aria-hidden="true"
+              className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-ink/55 to-transparent"
+            />
+            <div
+              aria-hidden="true"
+              className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-ink/90 via-ink/55 to-transparent"
+            />
+
+            <div className="relative flex h-full flex-col justify-end px-4 pt-14 pb-[68px]">
+              <span className="text-[10px] font-bold tracking-[0.14em] text-white/90 uppercase">
+                {k.tag} · {k.until}
               </span>
-              <span className="pb-0.5 text-[14px] leading-tight font-bold text-white">
-                {k.title}
-              </span>
+              <div className="mt-1 flex items-end gap-2">
+                <span className="text-[32px] leading-none font-extrabold text-gold">
+                  {k.amount}
+                </span>
+                <span className="pb-0.5 text-[15px] leading-tight font-bold text-white">
+                  {k.title}
+                </span>
+              </div>
             </div>
           </div>
         ))}
