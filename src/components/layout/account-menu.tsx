@@ -4,7 +4,9 @@
 //
 // App modunda üst menü kaldırıldığı için (bkz. navbar.tsx `web-only`) oradaki
 // maddelerin gidecek bir yeri lazım. Booking'in yaptığı gibi "Hesabım"
-// sekmesinin içine taşındılar: Yardım, dil/para birimi ve çıkış.
+// sekmesinin içine taşındılar: Yardım, yasal sayfalar, dil/para birimi ve
+// çıkış. App'te footer tamamen kaldırıldığı için yasal sayfaların tek
+// erişim noktası burası — app store'lar erişilebilir olmasını istiyor.
 //
 // `b2c-only`: web'de üst menü zaten bunları taşıyor (tekrar olurdu), partner
 // uygulaması ise acente panelinin kendi düzenini kullanıyor.
@@ -12,12 +14,17 @@
 import * as React from "react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
-import { ChevronRight, HelpCircle, LogOut } from "lucide-react";
+import { ChevronRight, FileText, HelpCircle, LogOut, Scale, Shield } from "lucide-react";
 import { LocaleSwitcher } from "./locale-switcher";
 
 // Partner girişi bilerek YOK: tüketici uygulaması B2C-only. Acenteler web'den
 // ya da ileride ayrı "LookBeds Partner" uygulamasından girecek.
-const BAGLANTILAR = [{ etiket: "Yardım", href: "/yardim", ikon: HelpCircle }];
+const BAGLANTILAR = [
+  { etiket: "Yardım", href: "/yardim", ikon: HelpCircle },
+  { etiket: "Gizlilik politikası", href: "/yardim", ikon: Shield },
+  { etiket: "Kullanım koşulları", href: "/yardim", ikon: FileText },
+  { etiket: "KVKK", href: "/yardim", ikon: Scale },
+];
 
 export function AccountMenu({ girisli }: { girisli: boolean }) {
   return (

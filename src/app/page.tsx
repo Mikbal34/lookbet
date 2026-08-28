@@ -9,8 +9,9 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight, Calendar, Search } from "lucide-react";
-import { Navbar, Footer } from "@/components/layout";
+import { AppHeader, Navbar, Footer } from "@/components/layout";
 import { SearchForm, SearchOverlay } from "@/components/search";
+import { AppHomeHero } from "@/components/search/app-home-hero";
 import { useLocale } from "@/components/providers/locale-provider";
 import { POPULAR_DESTINATIONS } from "@/lib/constants/destinations";
 import { cn } from "@/lib/utils/cn";
@@ -109,8 +110,14 @@ export default function HomePage() {
   return (
     <div className="min-h-screen flex flex-col bg-paper">
       {/* ── TURUNCU BANT: header + hero + arama + chip'ler tek blok ── */}
-      <Navbar variant="transparent" />
-      <section className="bg-navy">
+      {/* App'te üst menü yerine sabit kimlik çubuğu, web'de normal navbar. */}
+      <AppHeader />
+      <div className="web-only">
+        <Navbar variant="transparent" />
+      </div>
+
+      <AppHomeHero onAc={() => setAramaAcik(true)} />
+      <section className="web-only bg-navy">
         <div className="mx-auto max-w-[1200px] px-4 pt-10 pb-24 sm:px-6 sm:pt-14 sm:pb-32">
           <h1 className="max-w-[20ch] text-[clamp(1.9rem,4vw,3rem)] leading-[1.05] font-extrabold tracking-[-0.03em] text-white">
             Bir sonraki konaklamanı bul
@@ -142,7 +149,7 @@ export default function HomePage() {
              alt yarısı beyazın üstünde (Booking tarzı köprü) ──
              w-full şart: bu blok doğrudan flex-col'un öğesi; mx-auto tek başına
              öğeyi içerik genişliğine küçültür. */}
-      <div className="mx-auto w-full max-w-[1200px] px-4 sm:px-6">
+      <div className="web-only mx-auto w-full max-w-[1200px] px-4 sm:px-6">
         <div className="relative z-20 -mt-10 sm:-mt-12">
           {/* lg altı: Booking tarzı tam ekran akışı açan tetikleyici.
               Sayfa içinde form açmak yerine tek dokunuşla odaklı ekran. */}
@@ -187,7 +194,9 @@ export default function HomePage() {
       </div>
 
       {/* ── STATS ŞERİDİ — CruiseScanner tarzı büyük bloklar ── */}
-      <div className="mt-8 border-y border-[rgb(26_24_20/0.1)] bg-[#f4f6fa]">
+      {/* Kurumsal istatistikler ve özellik bandı web'de kalıyor: uygulamayı
+          indiren kullanıcı "bu firma gerçek mi" aşamasını çoktan geçti. */}
+      <div className="web-only mt-8 border-y border-[rgb(26_24_20/0.1)] bg-[#f4f6fa]">
         <div className="mx-auto grid max-w-[1200px] grid-cols-2 lg:grid-cols-4 px-4 sm:px-6">
           {[
             { value: "2.400+", label: "Otel", sub: "TÜRKİYE GENELİNDE" },
@@ -297,7 +306,7 @@ export default function HomePage() {
         </section>
 
         {/* ── ÖZELLİKLER — editorial ── */}
-        <section className="border-y border-[rgb(26_24_20/0.1)] bg-row py-10 sm:py-12">
+        <section className="web-only border-y border-[rgb(26_24_20/0.1)] bg-row py-10 sm:py-12">
           <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
             <div className="grid grid-cols-1 gap-0 md:grid-cols-2">
               {FEATURES.map((f, i) => (
@@ -326,7 +335,9 @@ export default function HomePage() {
         </section>
       </main>
 
-      <Footer />
+      <div className="web-only">
+        <Footer />
+      </div>
 
       <SearchOverlay
         open={aramaAcik}

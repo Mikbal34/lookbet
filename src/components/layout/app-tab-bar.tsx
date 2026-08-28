@@ -7,17 +7,19 @@
 // devam eder. Booking'in kendisi de böyle: mobil sitesinde sekme çubuğu yok,
 // uygulamasında var.
 //
-// lg (1024px) üstünde de gizli: proje kuralına göre tek düzen sınırı lg'dir,
-// üstü masaüstü düzenidir ve orada üst navbar zaten tam menüyü taşıyor.
+// Genişlikten bağımsız: app modundaysan app tasarımını görürsün.
 //
 // Rezervasyon hunisinde (otel detayı, odalar, ödeme) bilerek gizleniyor:
 // o sayfaların kendi sabit alt CTA'ları var ve üst üste binerlerdi. Huniye
 // girince tek eylem kalması zaten istenen davranış.
+//
+// "Hesabım" bilerek burada YOK: hesaba üst kimlik çubuğundaki karşılama
+// hapından giriliyor (bkz. app-header.tsx), Pegasus'ta olduğu gibi.
 
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarCheck, Percent, Search, User } from "lucide-react";
+import { CalendarCheck, Percent, Search } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
 type Sekme = {
@@ -46,12 +48,6 @@ const SEKMELER: Sekme[] = [
     ikon: CalendarCheck,
     aktif: (y) => y.startsWith("/reservations"),
   },
-  {
-    href: "/profile",
-    etiket: "Hesabım",
-    ikon: User,
-    aktif: (y) => y.startsWith("/profile"),
-  },
 ];
 
 /**
@@ -78,13 +74,13 @@ export function AppTabBar() {
     // çubuğun altında kalmaması için ayırdığı yer.
     <>
       <div
-        className="b2c-only h-[calc(3.5rem+env(safe-area-inset-bottom))] lg:hidden"
+        className="b2c-only h-[calc(3.5rem+env(safe-area-inset-bottom))]"
         aria-hidden="true"
       />
       <nav
         aria-label="Ana gezinme"
         className={cn(
-          "b2c-only fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/95 backdrop-blur lg:hidden",
+          "b2c-only fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/95 backdrop-blur",
           "pb-[env(safe-area-inset-bottom)]"
         )}
       >
