@@ -119,7 +119,7 @@ function HotelMap({
           href={gmapsHref}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1 text-xs font-medium text-navy hover:text-navy-dark transition-colors"
+          className="flex min-h-11 items-center gap-1 text-xs font-medium text-navy hover:text-navy-dark transition-colors"
         >
           Google Maps&apos;te aç
           <ExternalLink className="h-3 w-3" aria-hidden="true" />
@@ -208,7 +208,7 @@ export function HotelInfo({ hotel, className }: HotelInfoProps) {
           {phone && (
             <a
               href={`tel:${phone}`}
-              className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
+              className="flex min-h-11 items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
             >
               <Phone className="h-4 w-4 text-gray-400" aria-hidden="true" />
               {phone}
@@ -217,7 +217,7 @@ export function HotelInfo({ hotel, className }: HotelInfoProps) {
           {email && (
             <a
               href={`mailto:${email}`}
-              className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
+              className="flex min-h-11 items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
             >
               <Mail className="h-4 w-4 text-gray-400" aria-hidden="true" />
               {email}

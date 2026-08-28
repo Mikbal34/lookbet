@@ -14,6 +14,7 @@ import { RoomCard, CountdownTimer } from "@/components/room";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import type { RoomResult } from "@/lib/royal-api/types";
+import { formatDateRange } from "@/lib/utils";
 
 interface RoomSearchResponse {
   roomSearchId: string;
@@ -160,7 +161,7 @@ function RoomsPageContent({
           <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
             <Link
               href={backHref}
-              className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800"
+              className="inline-flex min-h-11 items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800"
             >
               <ArrowLeft className="h-4 w-4" aria-hidden="true" />
               Otel Detayına Dön
@@ -182,9 +183,11 @@ function RoomsPageContent({
             </h1>
             {searchParams.get("checkIn") && (
               <p className="text-sm text-gray-500 mt-1">
-                {searchParams.get("checkIn")} &ndash;{" "}
-                {searchParams.get("checkOut")} &bull;{" "}
-                {searchParams.get("adults") ?? 2} yetişkin
+                {formatDateRange(
+                  searchParams.get("checkIn")!,
+                  searchParams.get("checkOut")!
+                )}{" "}
+                &bull; {searchParams.get("adults") ?? 2} yetişkin
               </p>
             )}
           </div>

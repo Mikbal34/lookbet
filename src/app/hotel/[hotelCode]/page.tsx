@@ -22,6 +22,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import type { HotelDetailResponse, HotelImage } from "@/lib/royal-api/types";
+import { formatDate, formatDateRange } from "@/lib/utils";
 
 interface HotelDetailData extends Partial<HotelDetailResponse> {
   hotelCode: string;
@@ -107,7 +108,7 @@ function HotelDetailContent({
           {/* Back link */}
           <Link
             href={backHref}
-            className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 mb-3"
+            className="inline-flex min-h-11 items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 mb-1"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Sonuçlara Dön
@@ -148,9 +149,9 @@ function HotelDetailContent({
                 )}
               </div>
 
-              {/* Sticky sidebar CTA */}
+              {/* Sticky sidebar CTA — mobilde alttaki sabit çubuk devralır */}
               <div className="lg:col-span-1">
-                <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm space-y-3">
+                <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm space-y-3 lg:sticky lg:top-6">
                   {data.reviewSummary && (
                     <div className="flex items-center gap-2.5">
                       <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg rounded-bl-none bg-navy text-base font-bold text-white">
@@ -189,20 +190,20 @@ function HotelDetailContent({
                         <LogIn className="h-4 w-4 text-navy" aria-hidden="true" />
                         <span className="text-gray-500">Giriş</span>
                         <span className="ml-auto font-medium text-gray-900">
-                          {searchParams.get("checkIn")}
+                          {formatDate(searchParams.get("checkIn")!)}
                         </span>
                       </div>
                       <div className="flex items-center gap-2 px-3 py-2">
                         <LogOut className="h-4 w-4 text-navy" aria-hidden="true" />
                         <span className="text-gray-500">Çıkış</span>
                         <span className="ml-auto font-medium text-gray-900">
-                          {searchParams.get("checkOut")}
+                          {formatDate(searchParams.get("checkOut")!)}
                         </span>
                       </div>
                     </div>
                   )}
 
-                  <Link href={roomsHref} className="block">
+                  <Link href={roomsHref} className="hidden lg:block">
                     <Button className="w-full">
                       <BedDouble className="h-5 w-5" aria-hidden="true" />
                       Odaları Gör
@@ -235,6 +236,32 @@ function HotelDetailContent({
             </>
           )}
         </div>
+        {/* Mobil sabit CTA — sayfanın neresinde olursan ol rezervasyona bir dokunuş */}
+        {!isLoading && !isError && data && (
+          <div className="sticky bottom-0 z-30 border-t border-line bg-white/95 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur lg:hidden">
+            <div className="flex items-center gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[13px] font-bold text-ink">
+                  {data.name}
+                </p>
+                <p className="truncate text-[12px] text-muted">
+                  {searchParams.get("checkIn") && searchParams.get("checkOut")
+                    ? formatDateRange(
+                        searchParams.get("checkIn")!,
+                        searchParams.get("checkOut")!
+                      )
+                    : "Tarih seçilmedi"}
+                </p>
+              </div>
+              <Link href={roomsHref} className="shrink-0">
+                <Button className="min-h-12 px-6">
+                  <BedDouble className="h-5 w-5" aria-hidden="true" />
+                  Odaları Gör
+                </Button>
+              </Link>
+            </div>
+          </div>
+        )}
       </main>
 
       <Footer />

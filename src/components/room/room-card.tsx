@@ -157,7 +157,7 @@ export function RoomCard({
                   <button
                     type="button"
                     onClick={() => setShowModal(true)}
-                    className="text-left text-sm font-semibold text-gray-900 leading-snug hover:text-navy hover:underline"
+                    className="-my-2 py-2 text-left text-sm font-semibold text-gray-900 leading-snug hover:text-navy hover:underline"
                   >
                     {room.roomName}
                   </button>
@@ -184,7 +184,7 @@ export function RoomCard({
             <button
               type="button"
               onClick={() => setShowModal(true)}
-              className="self-start text-xs font-semibold text-navy hover:underline"
+              className="inline-flex min-h-11 items-center self-start text-xs font-semibold text-navy hover:underline"
             >
               Oda detaylarını gör
             </button>
@@ -218,7 +218,7 @@ export function RoomCard({
                 onClick={() => onSelect?.(room.priceCode)}
                 aria-pressed={isSelected}
                 className={cn(
-                  "shrink-0 h-10 px-5 rounded-lg text-sm font-semibold transition-all duration-150",
+                  "shrink-0 h-11 px-5 rounded-lg text-sm font-semibold transition-all duration-150",
                   "focus:outline-none focus:ring-2 focus:ring-offset-2",
                   isSelected
                     ? "bg-navy text-white focus:ring-navy"
