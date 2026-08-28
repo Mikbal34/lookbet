@@ -117,7 +117,7 @@ export function LoginForm() {
           <button
             type="button"
             onClick={() => setShowPassword((v) => !v)}
-            aria-label={showPassword ? "Sifreyi gizle" : "Sifreyi goster"}
+            aria-label={showPassword ? "Şifreyi gizle" : "Şifreyi göster"}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
           >
             {showPassword ? (

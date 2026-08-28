@@ -118,7 +118,7 @@ export function CancelDialog({
               id="cancel-dialog-title"
               className="text-lg font-semibold text-gray-900"
             >
-              Rezervasyon Iptali
+              Rezervasyon İptali
             </h2>
           </div>
 
@@ -128,16 +128,16 @@ export function CancelDialog({
                 <span className="font-mono font-semibold text-gray-800">
                   #{bookingNumber}
                 </span>{" "}
-                numarali rezervasyonunuzu iptal etmek istediginizden emin misiniz?
+                numaralı rezervasyonunuzu iptal etmek istediğinizden emin misiniz?
               </>
             ) : (
-              "Bu rezervasyonu iptal etmek istediginizden emin misiniz?"
+              "Bu rezervasyonu iptal etmek istediğinizden emin misiniz?"
             )}
           </p>
 
           <div className="mt-3 rounded-lg bg-amber-50 border border-amber-100 px-3 py-2.5">
             <p className="text-xs text-amber-700 leading-relaxed">
-              Iptal politikasina bagli olarak ucret alinabilir. Bu islem geri alinamaz.
+              İptal politikasına bağlı olarak ücret alınabilir. Bu işlem geri alınamaz.
             </p>
           </div>
         </div>
@@ -149,13 +149,13 @@ export function CancelDialog({
             onClick={onClose}
             disabled={loading}
             className={cn(
-              "h-9 px-4 rounded-lg text-sm font-medium text-gray-700 bg-gray-100",
+              "h-11 px-4 rounded-lg text-sm font-medium text-gray-700 bg-gray-100",
               "hover:bg-gray-200 transition-colors duration-150",
               "focus:outline-none focus:ring-2 focus:ring-navy focus:ring-offset-2",
               "disabled:opacity-50 disabled:pointer-events-none"
             )}
           >
-            Vazgec
+            Vazgeç
           </button>
           <button
             type="button"
@@ -163,7 +163,7 @@ export function CancelDialog({
             disabled={loading}
             aria-busy={loading}
             className={cn(
-              "h-9 px-5 rounded-lg text-sm font-semibold text-white bg-red-600",
+              "h-11 px-5 rounded-lg text-sm font-semibold text-white bg-red-600",
               "hover:bg-red-700 active:bg-red-800 transition-colors duration-150",
               "focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2",
               "disabled:opacity-50 disabled:pointer-events-none",
@@ -173,7 +173,7 @@ export function CancelDialog({
             {loading && (
               <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
             )}
-            {loading ? "Iptal ediliyor..." : "Iptal Et"}
+            {loading ? "İptal ediliyor…" : "İptal Et"}
           </button>
         </div>
       </div>

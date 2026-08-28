@@ -102,11 +102,11 @@ export function BookingSummary({ bookingData, className }: BookingSummaryProps) 
         "bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden sticky top-24",
         className
       )}
-      aria-label="Rezervasyon ozeti"
+      aria-label="Rezervasyon özeti"
     >
       {/* Header */}
       <div className="bg-navy px-5 py-4">
-        <h2 className="text-white font-semibold text-base">Rezervasyon Ozeti</h2>
+        <h2 className="text-white font-semibold text-base">Rezervasyon Özeti</h2>
       </div>
 
       <div className="p-5 space-y-5">
@@ -134,7 +134,7 @@ export function BookingSummary({ bookingData, className }: BookingSummaryProps) 
           />
           <SummaryRow
             icon={Moon}
-            label="Konaklama suresi"
+            label="Konaklama süresi"
             value={`${nights} gece`}
           />
         </div>
@@ -145,7 +145,7 @@ export function BookingSummary({ bookingData, className }: BookingSummaryProps) 
             <hr className="border-gray-100" />
             <div className="space-y-3">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                Iletisim
+                İletişim
               </p>
               <SummaryRow
                 icon={User}
@@ -167,7 +167,7 @@ export function BookingSummary({ bookingData, className }: BookingSummaryProps) 
           {hasDiscount && (
             <>
               <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-500">Liste fiyati</span>
+                <span className="text-gray-500">Liste fiyatı</span>
                 <span className="text-gray-400 line-through">
                   {formatCurrency(originalPrice, currency)}
                 </span>

@@ -102,7 +102,7 @@ export function CountdownTimer({
               : "text-navy"
           )}
         >
-          {isExpired ? "Sure doldu" : "Fiyat gecerlilik suresi"}
+          {isExpired ? "Süre doldu" : "Fiyat geçerlilik süresi"}
         </p>
         <p
           className={cn(

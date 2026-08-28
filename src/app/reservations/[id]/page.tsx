@@ -177,7 +177,7 @@ export default function ReservationDetailPage({
           {/* Back */}
           <Link
             href="/reservations"
-            className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 mb-6"
+            className="inline-flex min-h-11 items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 mb-4"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Rezervasyonlarım
@@ -242,7 +242,6 @@ export default function ReservationDetailPage({
                   <div className="mt-4 pt-4 border-t border-gray-50">
                     <Button
                       variant="destructive"
-                      size="sm"
                       onClick={() => setCancelOpen(true)}
                     >
                       <XCircle className="h-4 w-4" aria-hidden="true" />

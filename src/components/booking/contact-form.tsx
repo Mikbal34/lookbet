@@ -47,7 +47,7 @@ function FieldWrapper({ label, error, htmlFor, icon: Icon, children }: FieldWrap
 
 const inputClass = (hasError: boolean) =>
   cn(
-    "h-10 w-full rounded-lg border pl-9 pr-3 text-sm text-gray-900 placeholder:text-gray-400 bg-white",
+    "h-11 w-full rounded-lg border pl-9 pr-3 text-sm text-gray-900 placeholder:text-gray-400 bg-white",
     "focus:outline-none focus:ring-2 focus:ring-navy focus:border-navy transition-colors",
     hasError
       ? "border-red-400 focus:ring-red-400"
@@ -70,7 +70,7 @@ export function ContactForm({ register, errors, className }: ContactFormProps) {
         className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2"
       >
         <User className="h-4 w-4 text-blue-500" aria-hidden="true" />
-        Iletisim Bilgileri
+        İletişim Bilgileri
       </h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -84,7 +84,7 @@ export function ContactForm({ register, errors, className }: ContactFormProps) {
           <input
             id="contact-name"
             type="text"
-            placeholder="Adiniz"
+            placeholder="Adınız"
             autoComplete="given-name"
             aria-invalid={!!contactErrors?.name}
             className={inputClass(!!contactErrors?.name)}
@@ -102,7 +102,7 @@ export function ContactForm({ register, errors, className }: ContactFormProps) {
           <input
             id="contact-surname"
             type="text"
-            placeholder="Soyadiniz"
+            placeholder="Soyadınız"
             autoComplete="family-name"
             aria-invalid={!!contactErrors?.surname}
             className={inputClass(!!contactErrors?.surname)}

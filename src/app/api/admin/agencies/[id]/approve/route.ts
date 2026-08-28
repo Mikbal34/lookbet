@@ -79,8 +79,8 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
         data: {
           userId: agency.user.id,
           type: "AGENCY_APPROVED",
-          title: "Acente Hesabiniz Onaylandi",
-          message: `Tebrikler! ${agency.companyName} acente hesabiniz onaylandi. Artik rezervasyon yapabilirsiniz.`,
+          title: "Acente Hesabınız Onaylandı",
+          message: `Tebrikler! ${agency.companyName} acente hesabınız onaylandı. Artık rezervasyon yapabilirsiniz.`,
         },
       }),
     ]);
