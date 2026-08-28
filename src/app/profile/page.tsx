@@ -7,7 +7,6 @@
 
 import * as React from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   User,
@@ -19,7 +18,8 @@ import {
   AlertCircle,
   BadgeCheck,
 } from "lucide-react";
-import { Navbar, Footer } from "@/components/layout";
+import Link from "next/link";
+import { AccountMenu, Navbar, Footer } from "@/components/layout";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -59,7 +59,6 @@ interface AgencyInfo {
 
 export default function ProfilePage() {
   const { data: session, status, update: updateSession } = useSession();
-  const router = useRouter();
 
   // Profile form
   const [name, setName] = React.useState("");
@@ -126,13 +125,6 @@ export default function ProfilePage() {
       .catch(() => {})
       .finally(() => setAgencyLoading(false));
   }, [isAgency, session?.user?.agencyId]);
-
-  // Redirect unauthenticated users
-  React.useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/login?callbackUrl=/profile");
-    }
-  }, [status, router]);
 
   // Profile save
   const handleProfileSave = async (e: React.FormEvent) => {
@@ -222,7 +214,40 @@ export default function ProfilePage() {
     );
   }
 
-  if (status === "unauthenticated") return null;
+  // Girişsiz hesap ekranı. Sayfa middleware'den çıkarıldı: app modunda
+  // "Hesabım" sekmesi herkese açık olmalı, yoksa girişsiz kullanıcı Yardım /
+  // Partner girişi / dil-para birimi maddelerine hiç ulaşamıyor (o maddeler
+  // app modunda kaldırılan hamburger menüden buraya taşındı).
+  if (status === "unauthenticated") {
+    return (
+      <div className="flex min-h-screen flex-col bg-gray-50">
+        <Navbar />
+        <main className="flex-1">
+          <div className="mx-auto max-w-3xl space-y-5 px-4 py-8 sm:px-6 lg:px-8">
+            <div className="rounded-2xl border border-gray-100 bg-white p-6 text-center shadow-sm">
+              <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-chip-blue">
+                <User className="size-7 text-navy" aria-hidden="true" />
+              </div>
+              <h1 className="text-xl font-bold text-gray-900">Hesabım</h1>
+              <p className="mx-auto mt-1.5 max-w-sm text-sm text-gray-500">
+                Giriş yaptığında rezervasyonlarını görebilir, bilgilerini
+                kaydedip daha hızlı rezervasyon yapabilirsin.
+              </p>
+              <Link
+                href="/login?callbackUrl=/profile"
+                className="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-lg bg-navy px-6 text-[15px] font-semibold text-white active:bg-navy-dark sm:w-auto"
+              >
+                Giriş yap veya kayıt ol
+              </Link>
+            </div>
+
+            <AccountMenu girisli={false} />
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -479,6 +504,9 @@ export default function ProfilePage() {
               )}
             </SectionCard>
           )}
+
+          {/* App modunda hamburger'den buraya taşınan maddeler + çıkış */}
+          <AccountMenu girisli />
         </div>
       </main>
 

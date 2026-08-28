@@ -44,10 +44,10 @@ export function Footer() {
   ] as const;
 
   return (
-    <footer className="mt-16 bg-navy text-white">
-      <div className="mx-auto max-w-[1200px] px-4 py-12 sm:px-6 lg:py-16">
+    <footer className="site-footer mt-16 bg-navy text-white">
+      <div className="mx-auto max-w-[1200px] px-4 pt-10 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:px-6 sm:py-12 lg:py-16">
         {/* Üst — logo + tagline + telefon */}
-        <div className="flex flex-col gap-6 border-b border-white/10 pb-8 md:flex-row md:items-end md:justify-between">
+        <div className="web-only flex flex-col gap-6 border-b border-white/10 pb-8 md:flex-row md:items-end md:justify-between">
           <div className="max-w-xl">
             <Logo variant="light" size="md" />
             <p className="mt-4 text-[14.5px] leading-relaxed text-white/75">
@@ -76,7 +76,7 @@ export function Footer() {
         </div>
 
         {/* Kolonlar */}
-        <div className="grid grid-cols-2 gap-x-6 gap-y-10 pt-10 sm:grid-cols-4 lg:gap-x-10">
+        <div className="web-only grid grid-cols-2 gap-x-6 gap-y-10 pt-10 sm:grid-cols-4 lg:gap-x-10">
           {columns.map((col) => (
             <div key={col.heading}>
               <h4 className="text-[12.5px] font-semibold tracking-[0.04em] text-white uppercase">
@@ -98,8 +98,26 @@ export function Footer() {
           ))}
         </div>
 
+        {/* App modunda kolonlar gizli; yasal sayfalar yine de tek dokunuş uzakta */}
+        <nav className="app-only flex flex-wrap items-center gap-x-4 gap-y-2 pb-1">
+          {[
+            { label: "Gizlilik politikası", href: "/yardim" },
+            { label: "Kullanım koşulları", href: "/yardim" },
+            { label: "KVKK", href: "/yardim" },
+            { label: "Yardım", href: "/yardim" },
+          ].map((l) => (
+            <Link
+              key={l.label}
+              href={l.href}
+              className="text-[13px] text-white/75 underline-offset-[3px] active:text-white"
+            >
+              {l.label}
+            </Link>
+          ))}
+        </nav>
+
         {/* Fine print */}
-        <div className="mt-12 flex flex-col gap-2 border-t border-white/10 pt-6">
+        <div className="site-footer-fine mt-10 flex flex-col gap-2 border-t border-white/10 pt-6 sm:mt-12">
           <p className="text-[12px] font-semibold tracking-[0.01em] text-white/80">
             LookBeds Turizm A.Ş. · TÜRSAB Belge No: 0000
           </p>

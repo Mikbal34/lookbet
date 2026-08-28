@@ -106,8 +106,11 @@ export function CustomerLogin() {
 
   return (
     <div className="space-y-5">
-      {/* Sosyal girişler */}
-      <div className="space-y-2.5">
+      {/* Sosyal girişler — app modunda gizli:
+          Google gömülü WebView'lardan OAuth'u reddediyor
+          (disallowed_useragent), Apple da kısıtlıyor. Uygulamada kullanıcı
+          doğrudan email + kod akışını görür. */}
+      <div className="web-only space-y-2.5">
         <button
           type="button"
           onClick={() => signIn("google", { callbackUrl })}
@@ -152,8 +155,8 @@ export function CustomerLogin() {
         </button>
       </div>
 
-      {/* Ayraç */}
-      <div className="relative">
+      {/* Ayraç — sosyal girişlerle birlikte gizlenir */}
+      <div className="web-only relative">
         <hr className="border-gray-200" />
         <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-3 text-xs text-gray-400">
           veya email ile

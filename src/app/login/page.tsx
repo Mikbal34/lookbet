@@ -36,7 +36,9 @@ export default function LoginPage() {
             <CustomerLogin />
           </Suspense>
 
-          <div className="text-xs text-muted text-center mt-6 border-t border-line pt-4">
+          {/* Acente yönlendirmesi yalnızca web: tüketici uygulaması B2C-only,
+              içinden acente paneline giden bir yol olmamalı. */}
+          <div className="web-only text-xs text-muted text-center mt-6 border-t border-line pt-4">
             Acente misin?{" "}
             <Link
               href="/agency/login"

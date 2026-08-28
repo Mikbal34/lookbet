@@ -54,7 +54,7 @@ export function Navbar({
       <div className="mx-auto flex h-[72px] max-w-[1200px] items-center gap-8 px-4 sm:px-6">
         <Logo variant="light" size="md" />
 
-        <nav className="hidden flex-1 items-center gap-7 md:flex">
+        <nav className="hidden flex-1 items-center gap-7 lg:flex">
           <Link href="/search" className={navLinkCls}>
             Otel Ara
           </Link>
@@ -69,7 +69,7 @@ export function Navbar({
           </Link>
         </nav>
 
-        <div className="ml-auto hidden items-center gap-1 md:flex">
+        <div className="ml-auto hidden items-center gap-1 lg:flex">
           <LocaleSwitcher variant="transparent" />
           {session ? (
             <div className="relative">
@@ -157,26 +157,28 @@ export function Navbar({
         </div>
 
         {/* Mobile */}
-        <div className="ml-auto flex items-center gap-1 md:hidden">
+        {/* Hamburger yalnızca web: app modunda gezinme alt sekme
+            çubuğunda, kalan maddeler Hesabım sekmesinde. */}
+        <div className="web-only ml-auto flex items-center gap-1 lg:hidden">
           <button
             type="button"
             onClick={() => setMobileOpen((o) => !o)}
-            className="flex size-10 items-center justify-center rounded-md text-white/90 hover:bg-white/10"
+            className="-mr-2 flex size-11 items-center justify-center rounded-md text-white/90 active:bg-white/10"
             aria-label="Menü"
             aria-expanded={mobileOpen}
           >
             {mobileOpen ? (
-              <X className="size-[18px]" />
+              <X className="size-5" />
             ) : (
-              <Menu className="size-[18px]" />
+              <Menu className="size-5" />
             )}
           </button>
         </div>
       </div>
 
       {mobileOpen && (
-        <div className="border-t border-white/10 bg-navy md:hidden">
-          <div className="mx-auto max-w-[1200px] px-4 py-2 sm:px-6">
+        <div className="web-only max-h-[calc(100dvh-72px)] overflow-y-auto overscroll-contain border-t border-white/10 bg-navy lg:hidden">
+          <div className="mx-auto max-w-[1200px] px-4 py-2 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:px-6">
             <nav className="flex flex-col">
               {[
                 { name: "Otel Ara", href: "/search" },
@@ -188,17 +190,21 @@ export function Navbar({
                   key={item.name}
                   href={item.href}
                   onClick={() => setMobileOpen(false)}
-                  className="border-b border-white/10 py-3 text-[14px] font-semibold text-white/90 hover:text-white"
+                  className="flex min-h-12 items-center border-b border-white/10 text-[15px] font-semibold text-white/90 active:text-white"
                 >
                   {item.name}
                 </Link>
               ))}
+              <div className="py-3">
+                <LocaleSwitcher variant="transparent" />
+              </div>
+
               {session ? (
                 <>
                   <Link
                     href="/profile"
                     onClick={() => setMobileOpen(false)}
-                    className="mt-3 inline-flex items-center gap-1.5 py-2 text-[14px] font-semibold text-white/90"
+                    className="mt-2 inline-flex min-h-12 items-center gap-1.5 text-[15px] font-semibold text-white/90"
                   >
                     <CircleUserRound className="size-4" aria-hidden />
                     {session.user.name}
@@ -206,7 +212,7 @@ export function Navbar({
                   <Link
                     href="/reservations"
                     onClick={() => setMobileOpen(false)}
-                    className="inline-flex items-center gap-1.5 py-2 text-[14px] font-semibold text-white/90"
+                    className="inline-flex min-h-12 items-center gap-1.5 text-[15px] font-semibold text-white/90"
                   >
                     <CalendarCheck className="size-4" aria-hidden />
                     Rezervasyonlarım
@@ -217,7 +223,7 @@ export function Navbar({
                       setMobileOpen(false);
                       signOut({ callbackUrl: "/" });
                     }}
-                    className="mt-1 mb-3 inline-flex h-11 items-center justify-center gap-1.5 rounded border border-white/35 bg-transparent text-[14px] font-semibold text-white"
+                    className="mt-1 mb-3 inline-flex h-12 items-center justify-center gap-1.5 rounded border border-white/35 bg-transparent text-[14px] font-semibold text-white"
                   >
                     <LogOut className="size-4" aria-hidden />
                     Çıkış yap
@@ -228,14 +234,14 @@ export function Navbar({
                   <Link
                     href="/agency/login"
                     onClick={() => setMobileOpen(false)}
-                    className="mt-3 py-2 text-[14px] text-white/90"
+                    className="mt-2 inline-flex min-h-12 items-center text-[15px] font-semibold text-white/90"
                   >
                     Partner girişi
                   </Link>
                   <Link
                     href="/login"
                     onClick={() => setMobileOpen(false)}
-                    className="mt-1 mb-3 inline-flex h-11 items-center justify-center rounded border border-white/35 bg-transparent text-[14px] font-semibold text-white"
+                    className="mt-1 mb-3 inline-flex h-12 items-center justify-center rounded border border-white/35 bg-transparent text-[14px] font-semibold text-white"
                   >
                     Giriş yap
                   </Link>
