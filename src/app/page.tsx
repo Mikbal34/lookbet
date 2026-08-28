@@ -341,19 +341,33 @@ export default function HomePage() {
               <Link
                 key={k.code}
                 href="/kampanyalar"
-                className="flex w-[74vw] max-w-[300px] shrink-0 snap-start flex-col justify-end rounded-xl p-4 pt-10"
-                style={{ background: k.bg }}
+                className="relative h-36 w-[74vw] max-w-[300px] shrink-0 snap-start overflow-hidden rounded-xl bg-navy"
               >
-                <span className="text-[10px] font-bold tracking-[0.14em] text-white/75 uppercase">
-                  {k.tag}
-                </span>
-                <div className="mt-0.5 flex items-end gap-2">
-                  <span className="text-[26px] leading-none font-extrabold text-gold">
-                    {k.amount}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={k.image}
+                  alt=""
+                  aria-hidden="true"
+                  className="absolute inset-0 h-full w-full object-cover"
+                  loading="lazy"
+                />
+                {/* Metnin fotoğraf üstünde okunması için alt maske */}
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/45 to-ink/10"
+                />
+                <div className="relative flex h-full flex-col justify-end p-3.5">
+                  <span className="text-[10px] font-bold tracking-[0.14em] text-white/85 uppercase">
+                    {k.tag}
                   </span>
-                  <span className="pb-0.5 text-[13px] leading-tight font-bold text-white">
-                    {k.title}
-                  </span>
+                  <div className="mt-0.5 flex items-end gap-2">
+                    <span className="text-[26px] leading-none font-extrabold text-gold">
+                      {k.amount}
+                    </span>
+                    <span className="pb-0.5 text-[13px] leading-tight font-bold text-white">
+                      {k.title}
+                    </span>
+                  </div>
                 </div>
               </Link>
             ))}
