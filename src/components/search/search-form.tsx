@@ -27,6 +27,10 @@ export interface SearchFormProps {
   loading?: boolean;
   className?: string;
   showNationality?: boolean;
+  /** Destinasyon alanının altında öneri chip'leri göster (tam ekran akış). */
+  suggestions?: readonly { label: string; query: string }[];
+  /** Açılışta destinasyon alanına odaklan (tam ekran akış). */
+  autoFocusDestination?: boolean;
 }
 
 const defaultGuests: GuestValue = { adult: 2, childAges: [] };
@@ -43,6 +47,8 @@ export function SearchForm({
   loading = false,
   className,
   showNationality,
+  suggestions,
+  autoFocusDestination = false,
 }: SearchFormProps) {
   const { data: session } = useSession();
   const nationalityVisible =
@@ -90,10 +96,10 @@ export function SearchForm({
         noValidate
         aria-label="Otel arama formu"
         style={{ width: "100%" }}
-        className="w-full bg-white rounded-[10px] shadow-[0_12px_28px_-10px_rgb(11_13_20/0.35)] flex flex-wrap md:flex-nowrap items-stretch"
+        className="w-full bg-white rounded-[10px] shadow-[0_12px_28px_-10px_rgb(11_13_20/0.35)] flex flex-col lg:flex-row lg:flex-nowrap items-stretch"
       >
         {/* Destinasyon */}
-        <div className="px-5 py-2.5 border-r border-line flex-1 min-w-0 rounded-l-[10px]">
+        <div className="w-full lg:flex-1 min-w-0 px-5 py-3 lg:py-2.5 border-b border-line lg:border-b-0 lg:border-r">
           <div className={cellLabel}>
             <MapPin className="size-3.5" aria-hidden="true" />
             Nereye
@@ -108,9 +114,30 @@ export function SearchForm({
             }}
             placeholder="Şehir, bölge veya otel"
             autoComplete="off"
+            autoFocus={autoFocusDestination}
             aria-invalid={!!errors.destination}
             className={cellInput}
           />
+
+          {/* Öneriler — yalnızca tam ekran akışta ve alan boşken.
+              Dolduktan sonra gizleniyor ki klavye açıkken yer kaplamasın. */}
+          {suggestions && suggestions.length > 0 && !destination.trim() && (
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {suggestions.map((sg) => (
+                <button
+                  key={sg.query}
+                  type="button"
+                  onClick={() => {
+                    setDestination(sg.query);
+                    setErrors((prev) => ({ ...prev, destination: undefined }));
+                  }}
+                  className="rounded-full border border-line-strong px-3 py-1.5 text-[13px] font-medium text-slate-text active:bg-chip"
+                >
+                  {sg.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Giriş + Çıkış — özel takvim popup'ı */}
@@ -131,8 +158,8 @@ export function SearchForm({
         {/* Misafirler */}
         <div
           className={cn(
-            "px-5 py-2.5 flex-1 min-w-0",
-            nationalityVisible && "border-r border-line"
+            "w-full lg:flex-1 min-w-0 px-5 py-3 lg:py-2.5",
+            nationalityVisible && "border-b border-line lg:border-b-0 lg:border-r"
           )}
         >
           <div className={cellLabel}>
@@ -146,7 +173,7 @@ export function SearchForm({
 
         {/* Uyruk — sadece acente */}
         {nationalityVisible && (
-          <div className="px-5 py-2.5 flex-1 min-w-0">
+          <div className="w-full lg:flex-1 min-w-0 px-5 py-3 lg:py-2.5 border-b border-line lg:border-b-0">
             <label htmlFor="nationality" className={cellLabel}>
               <Globe className="size-3.5" aria-hidden="true" />
               Uyruk
@@ -173,7 +200,8 @@ export function SearchForm({
           aria-busy={loading}
           className={cn(
             "bg-gold hover:bg-gold-dark text-ink font-sans text-[16px] font-bold",
-            "px-9 self-stretch min-h-[54px] flex-none flex items-center justify-center gap-2.5 rounded-r-[10px]",
+            "w-full lg:w-auto px-9 self-stretch min-h-[54px] flex-none flex items-center justify-center gap-2.5",
+            "rounded-b-[10px] lg:rounded-b-none lg:rounded-r-[10px]",
             "transition-colors cursor-pointer disabled:opacity-60 disabled:pointer-events-none"
           )}
         >

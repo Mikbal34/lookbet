@@ -5,21 +5,17 @@
 // beyaz gövde, amber fiyat etiketli 4:3 destinasyon kartları, editorial
 // özellik bandı.
 
+import * as React from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowRight, Calendar } from "lucide-react";
+import { ArrowRight, Calendar, Search } from "lucide-react";
 import { Navbar, Footer } from "@/components/layout";
-import { SearchForm } from "@/components/search";
+import { SearchForm, SearchOverlay } from "@/components/search";
 import { useLocale } from "@/components/providers/locale-provider";
+import { POPULAR_DESTINATIONS } from "@/lib/constants/destinations";
 
-const QUICK_LINKS = [
-  { label: "İstanbul", query: "İstanbul" },
-  { label: "Antalya", query: "Antalya" },
-  { label: "Kapadokya", query: "Kapadokya" },
-  { label: "Bodrum", query: "Bodrum" },
-  { label: "Çeşme", query: "Çeşme" },
-  { label: "Uludağ", query: "Uludağ" },
-];
+// Ana sayfadaki chip'ler ve tam ekran akıştaki öneriler aynı listeden.
+const QUICK_LINKS = POPULAR_DESTINATIONS;
 
 const DESTINATIONS = [
   {
@@ -87,6 +83,8 @@ export default function HomePage() {
   const router = useRouter();
   const { currency } = useLocale();
 
+  const [aramaAcik, setAramaAcik] = React.useState(false);
+
   const handleSearch = (values: {
     destination: string;
     checkIn: string;
@@ -145,7 +143,27 @@ export default function HomePage() {
              öğeyi içerik genişliğine küçültür. */}
       <div className="mx-auto w-full max-w-[1200px] px-4 sm:px-6">
         <div className="relative z-20 -mt-10 sm:-mt-12">
-          <SearchForm onSearch={handleSearch} />
+          {/* lg altı: Booking tarzı tam ekran akışı açan tetikleyici.
+              Sayfa içinde form açmak yerine tek dokunuşla odaklı ekran. */}
+          <button
+            type="button"
+            onClick={() => setAramaAcik(true)}
+            className="flex w-full items-center gap-3 rounded-[10px] bg-white px-4 py-3.5 text-left shadow-[0_12px_28px_-10px_rgb(11_13_20/0.35)] active:bg-chip lg:hidden"
+          >
+            <Search className="size-5 shrink-0 text-navy" aria-hidden="true" />
+            <span className="min-w-0">
+              <span className="block text-[15px] font-bold text-ink">
+                Nereye gitmek istersin?
+              </span>
+              <span className="block text-[12.5px] text-muted">
+                Tarih ve misafir seç
+              </span>
+            </span>
+          </button>
+
+          <div className="hidden lg:block">
+            <SearchForm onSearch={handleSearch} />
+          </div>
         </div>
 
         {/* Hızlı chip'ler — artık beyaz zeminde */}
@@ -296,6 +314,12 @@ export default function HomePage() {
       </main>
 
       <Footer />
+
+      <SearchOverlay
+        open={aramaAcik}
+        onClose={() => setAramaAcik(false)}
+        onSearch={handleSearch}
+      />
     </div>
   );
 }
