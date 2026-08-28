@@ -30,6 +30,16 @@ export function formatShortDate(date: Date | string): string {
   }).format(d);
 }
 
+/** Tek tarihi kısa yazar: "10 Eyl". Geçersiz girdide boş string. */
+export function formatDayMonth(date: Date | string): string {
+  const d = new Date(date);
+  if (Number.isNaN(d.getTime())) return "";
+  return new Intl.DateTimeFormat("tr-TR", {
+    day: "numeric",
+    month: "short",
+  }).format(d);
+}
+
 /**
  * Tarih aralığını mobil çubuklara sığacak kısalıkta yazar:
  *   aynı ay   → "10–13 Eyl"

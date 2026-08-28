@@ -1,28 +1,35 @@
 "use client";
 
-// "Yaklaşan rezervasyonun" — uygulama ana sayfasında arama kartının hemen
-// altında duran vurgulu kart.
+// "Yaklaşan konaklaman" — uygulama ana sayfasında arama kartının altındaki
+// kart. Pegasus'un yaklaşan uçuş kartının konaklama karşılığı: düz beyaz
+// kart, fotoğraf ve renkli bant yok; doğal bir cümle + kalın sayı, altında
+// giriş/çıkış kolonları, sonra tam genişlik CTA.
 //
-// Neden akış içinde, perde değil: Pegasus bunu her açılışta tam ekran perde
-// olarak gösteriyor, ama o perde 86 gün sonrası için bile çıkıp yeni arama
-// yapmak isteyeni durduruyor. Otelde aciliyet uçaktakinden farklı; kart
-// gövdenin ilk öğesi olduğu için zaten kaçırılmıyor.
+// Uçuştaki "kalkış — uçak — varış" düzeninin yerini "giriş — gece sayısı —
+// çıkış" alıyor.
 //
-// Veri yoksa (girişsiz kullanıcı, rezervasyonu olmayan kullanıcı) hiçbir şey
-// render edilmiyor — boş bir "henüz rezervasyonun yok" kutusu ana sayfada
-// yer kaplamasın.
+// Akış içinde duruyor, perde değil: Pegasus bunu her açılışta tam ekran
+// perde olarak gösteriyor ama o perde 86 gün sonrası için bile çıkıp yeni
+// arama yapmak isteyeni durduruyor. Otelde aciliyet uçaktakinden farklı.
+//
+// Kart tıklanabilir bir blok değil, içinde iki ayrı bağlantı var (Pegasus'ta
+// da öyle): birincil "Rezervasyon detayı", ikincil "Otel bilgileri".
+//
+// Veri yoksa hiçbir şey render edilmiyor — boş bir kutu yer kaplamasın.
 
 import * as React from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
-import { CalendarCheck, ChevronRight, Moon } from "lucide-react";
-import { formatDateRange, getNightCount } from "@/lib/utils";
+import { BedDouble, Building2 } from "lucide-react";
+import { getNightCount } from "@/lib/utils";
 
 type Rezervasyon = {
   id: string;
+  bookingNumber: string | null;
   hotelName: string | null;
   hotelCode: string;
+  roomType: string | null;
   checkIn: string;
   checkOut: string;
   status: string;
@@ -33,6 +40,18 @@ async function yaklasaniGetir(): Promise<Rezervasyon | null> {
   if (!res.ok) return null;
   const json = await res.json();
   return json?.data?.[0] ?? null;
+}
+
+/** "10 Eyl, Per" — gün, kısa ay, kısa gün adı. */
+function gunAyGun(tarih: string): string {
+  const d = new Date(tarih);
+  if (Number.isNaN(d.getTime())) return "";
+  const gunAy = new Intl.DateTimeFormat("tr-TR", {
+    day: "numeric",
+    month: "short",
+  }).format(d);
+  const gunAdi = new Intl.DateTimeFormat("tr-TR", { weekday: "short" }).format(d);
+  return `${gunAy}, ${gunAdi}`;
 }
 
 export function UpcomingReservationCard() {
@@ -55,33 +74,70 @@ export function UpcomingReservationCard() {
   const kalanGun = Math.ceil(
     (new Date(data.checkIn).getTime() - simdi) / 86_400_000
   );
+  const otelAdi = data.hotelName || data.hotelCode;
 
   return (
-    <section className="b2c-only px-4 pt-5" aria-label="Yaklaşan rezervasyonun">
-      <Link
-        href={`/reservations/${data.id}`}
-        className="flex items-center gap-3 rounded-xl border border-navy/15 bg-chip-blue px-4 py-3.5 active:bg-chip"
-      >
-        <CalendarCheck className="size-5 shrink-0 text-navy" aria-hidden="true" />
+    <section className="b2c-only px-4 pt-5" aria-label="Yaklaşan konaklaman">
+      <div className="rounded-xl border border-line bg-white p-4">
+        <p className="text-[15px] leading-snug text-ink">
+          {otelAdi}
+          {"'de konaklamana "}
+          <b className="font-extrabold">
+            {kalanGun > 0 ? `${kalanGun} gün` : "bugün"}
+          </b>
+          {kalanGun > 0 ? " kaldı!" : " giriş yapıyorsun!"}
+        </p>
 
-        <div className="min-w-0 flex-1">
-          <p className="text-[11px] font-bold tracking-[0.1em] text-navy uppercase">
-            {kalanGun > 0
-              ? `Konaklamana ${kalanGun} gün kaldı`
-              : "Konaklaman devam ediyor"}
-          </p>
-          <p className="mt-0.5 truncate text-[15px] font-bold text-ink">
-            {data.hotelName || data.hotelCode}
-          </p>
-          <p className="mt-0.5 flex items-center gap-1.5 text-[12.5px] text-slate-text">
-            {formatDateRange(data.checkIn, data.checkOut)}
-            <Moon className="size-3" aria-hidden="true" />
-            {geceler} gece
-          </p>
+        <div className="mt-3 flex items-baseline justify-between gap-3 border-t border-line pt-3">
+          <span className="text-[13px] font-semibold text-slate-text">
+            {gunAyGun(data.checkIn)}, {new Date(data.checkIn).getFullYear()}
+          </span>
+          {data.bookingNumber && (
+            <span className="font-mono text-[12.5px] text-muted">
+              #{data.bookingNumber}
+            </span>
+          )}
         </div>
 
-        <ChevronRight className="size-5 shrink-0 text-navy" aria-hidden="true" />
-      </Link>
+        {/* Uçuştaki kalkış — uçak — varış düzeninin konaklama karşılığı */}
+        <div className="mt-3 flex items-end justify-between gap-2">
+          <div className="min-w-0">
+            <p className="text-[11.5px] text-muted">Giriş</p>
+            <p className="mt-0.5 text-[15px] font-bold text-ink">
+              {gunAyGun(data.checkIn)}
+            </p>
+          </div>
+
+          <div className="flex shrink-0 flex-col items-center pb-0.5">
+            <BedDouble className="size-[18px] text-navy" aria-hidden="true" />
+            <span className="mt-0.5 text-[11px] font-semibold text-muted">
+              {geceler} gece
+            </span>
+          </div>
+
+          <div className="min-w-0 text-right">
+            <p className="text-[11.5px] text-muted">Çıkış</p>
+            <p className="mt-0.5 text-[15px] font-bold text-ink">
+              {gunAyGun(data.checkOut)}
+            </p>
+          </div>
+        </div>
+
+        <Link
+          href={`/reservations/${data.id}`}
+          className="mt-4 flex h-12 w-full items-center justify-center rounded-lg bg-gold text-[15px] font-bold text-ink active:bg-gold-dark"
+        >
+          Rezervasyon Detayı
+        </Link>
+
+        <Link
+          href={`/hotel/${data.hotelCode}`}
+          className="mt-1 flex min-h-11 w-full items-center justify-center gap-2 text-[13.5px] font-semibold text-slate-text active:text-ink"
+        >
+          <Building2 className="size-4" aria-hidden="true" />
+          Otel bilgileri
+        </Link>
+      </div>
     </section>
   );
 }
