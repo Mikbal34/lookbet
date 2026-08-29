@@ -109,7 +109,7 @@ export function UpcomingReservationCard() {
           </div>
 
           <div className="flex shrink-0 flex-col items-center pb-0.5">
-            <LbYatak size={18} className="text-navy-text" />
+            <LbYatak size={18} className="text-navy" />
             <span className="mt-0.5 text-[11px] font-semibold text-muted">
               {geceler} gece
             </span>

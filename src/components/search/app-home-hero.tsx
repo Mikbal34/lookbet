@@ -187,7 +187,7 @@ function SatirDugmesi({
         !sonSatir && "border-b border-line"
       )}
     >
-      <Ikon size={16} className="text-navy-text" />
+      <Ikon size={16} className="text-navy" />
       <span className="w-12 shrink-0 text-[11.5px] font-semibold text-muted">
         {etiket}
       </span>

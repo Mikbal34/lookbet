@@ -12,11 +12,15 @@
   --color-navy-deep: #8f3a12; /* koyu zemin / panel sidebar */
   --color-navy-mid: #ed7b45;
   --color-navy-bright: #f59468;
-  /* Turuncu METİN olarak açık zeminde kullanılacaksa bu ton.
-     Marka turuncusu (#e06028) beyazda 3.58 kontrast veriyor; zemin ve düğme
-     dolgusu olarak sorun değil (üstüne beyaz yazılıyor) ama metin/bağlantı
-     rengi olarak 4.5 sınırının altında. Bu ton beyazda 5.48, canvas'ta 4.99,
-     chip'te 4.69 — geçenlerin en açığı, marka hissi korunuyor.
+  /* YALNIZCA METİN için. İkonlarda kullanma.
+     Marka turuncusu (#e06028) beyazda 3.58 kontrast veriyor. Metin için AA
+     sınırı 4.5, o yüzden bağlantı/vurgu yazısı bu koyu tonu kullanır (beyazda
+     5.48, canvas'ta 4.99, chip'te 4.69 — geçenlerin en açığı).
+     İkon ise grafik öğe; WCAG 1.4.11 sınırı 3:1 ve marka turuncusu ikonların
+     durduğu her zeminde bunu geçiyor (beyaz 3.58, canvas 3.26, chip 3.06,
+     chip-blue 3.07). Dolayısıyla İKONLAR text-navy kullanır — logodaki
+     turuncunun aynısı. Bir öğe hem ikon hem yazı taşıyorsa (ör. "Yol tarifi"
+     bağlantısı) yazı belirleyicidir, ikisi de bu tonu alır.
      Altındaki --color-gold-text ile aynı mantık. */
   --color-navy-text: #b34718;
 

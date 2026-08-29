@@ -173,7 +173,7 @@ function Baslik({
 }) {
   return (
     <h2 className="mb-3 flex items-center gap-2 text-[15px] font-extrabold text-ink">
-      <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-chip-blue text-navy-text">
+      <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-chip-blue text-navy">
         <Ikon size={16} />
       </span>
       {children}
@@ -443,7 +443,7 @@ export default function ReservationDetailPage({
                     href={`tel:${otel.phone.replace(/\s/g, "")}`}
                     className="flex min-h-11 flex-1 items-center justify-center gap-2 py-3 text-[13px] font-semibold text-slate-text active:bg-chip"
                   >
-                    <LbTelefon size={16} className="text-navy-text" />
+                    <LbTelefon size={16} className="text-navy" />
                     Oteli ara
                   </a>
                 )}
@@ -451,7 +451,7 @@ export default function ReservationDetailPage({
                   href={`/hotel/${data.hotelCode}`}
                   className="flex min-h-11 flex-1 items-center justify-center gap-2 py-3 text-[13px] font-semibold text-slate-text active:bg-chip"
                 >
-                  <LbBina size={16} className="text-navy-text" />
+                  <LbBina size={16} className="text-navy" />
                   Otel sayfası
                 </Link>
               </div>

@@ -259,7 +259,7 @@ function SearchPageContent() {
                     : "Tarih ve misafir seç"}
                 </span>
               </span>
-              <LbKalem size={16} className="text-navy-text" />
+              <LbKalem size={16} className="text-navy" />
             </button>
 
             {/* Tam form yalnızca masaüstünde satır içi; lg altında aynı

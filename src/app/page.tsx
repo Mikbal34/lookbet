@@ -172,7 +172,7 @@ export default function HomePage() {
             onClick={() => setAramaAcik(true)}
             className="flex w-full items-center gap-3 rounded-[10px] bg-white px-4 py-3.5 text-left shadow-[0_12px_28px_-10px_rgb(11_13_20/0.35)] active:bg-chip lg:hidden"
           >
-            <LbAra size={20} className="text-navy-text" />
+            <LbAra size={20} className="text-navy" />
             <span className="min-w-0">
               <span className="block text-[15px] font-bold text-ink">
                 Nereye gitmek istersin?

@@ -41,7 +41,7 @@ export function RecentSearches() {
     <section className="b2c-only pt-5" aria-label="Son aramaların">
       <div className="flex items-center justify-between px-4 pb-2.5">
         <h2 className="flex items-center gap-1.5 text-[13px] font-bold text-ink">
-          <LbSaat size={16} className="text-navy-text" />
+          <LbSaat size={16} className="text-navy" />
           Son aramaların
         </h2>
         <button

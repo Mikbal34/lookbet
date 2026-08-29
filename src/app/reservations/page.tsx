@@ -123,7 +123,7 @@ function TabContent({ zaman }: { zaman: Zaman }) {
             aria-hidden="true"
           />
           <div className="absolute inset-0 flex items-center justify-center">
-            <LbYatak size={52} className="text-navy-text/70" />
+            <LbYatak size={52} className="text-navy/70" />
           </div>
         </div>
         <h3 className="text-base font-semibold text-gray-900 mb-2">
@@ -177,7 +177,7 @@ export default function ReservationsPage() {
               de var — sekmelerin neyi böldüğünü söyleyen tek cümle o. */}
           <div className="mb-5">
             <h1 className="web-only mb-1 text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <LbYatak size={22} className="text-navy-text" />
+              <LbYatak size={22} className="text-navy" />
               Rezervasyonlarım
             </h1>
             <p className="text-sm text-muted">

@@ -112,7 +112,7 @@ export function ReservationCard({
 
         {/* Gövde */}
         <div className="px-4 pt-4 pb-3.5">
-          <h3 className="truncate text-[15px] font-bold text-ink transition-colors group-hover:text-navy">
+          <h3 className="truncate text-[15px] font-bold text-ink transition-colors group-hover:text-navy-text">
             {r.hotelName ?? r.hotelCode}
           </h3>
           {(r.roomType || pansiyon) && (
@@ -172,7 +172,7 @@ export function ReservationCard({
           </div>
           <LbSagOk
             size={18}
-            className="text-muted transition-colors group-hover:text-navy-text"
+            className="text-muted transition-colors group-hover:text-navy"
           />
         </div>
       </Link>

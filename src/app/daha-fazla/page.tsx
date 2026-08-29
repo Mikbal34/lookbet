@@ -70,7 +70,7 @@ export default function DahaFazlaPage() {
                     i < b.satirlar.length - 1 ? "border-b border-line" : ""
                   }`}
                 >
-                  <Ikon size={20} className="text-navy-text" />
+                  <Ikon size={20} className="text-navy" />
                   <span className="flex-1">{etiket}</span>
                   <LbSagOk size={16} className="text-muted" />
                 </Link>
