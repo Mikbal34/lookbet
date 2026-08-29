@@ -67,7 +67,7 @@ export function AppHeader({ saydam = false, geri, baslik }: AppHeaderProps) {
         "b2c-only sticky top-0 z-30 pt-[env(safe-area-inset-top)] transition-colors duration-200",
         saydam && !kaydi
           ? "bg-gradient-to-b from-ink/35 to-transparent"
-          : "bg-navy"
+          : "bg-navy/85 backdrop-blur-md"
       )}
     >
       <div className="flex items-center gap-2 px-4 py-2">
@@ -101,7 +101,7 @@ export function AppHeader({ saydam = false, geri, baslik }: AppHeaderProps) {
 
             <Link
               href="/profile"
-              className="ml-auto flex min-h-11 min-w-0 items-center gap-1.5 rounded-full bg-white/20 py-1.5 pr-1.5 pl-2.5 text-white backdrop-blur-sm active:bg-white/30"
+              className="ml-auto flex min-h-11 min-w-0 items-center gap-1.5 rounded-full bg-ink/35 py-1.5 pr-1.5 pl-2.5 text-white backdrop-blur-sm active:bg-ink/50"
             >
               <CircleUserRound
                 className="size-[18px] shrink-0"
