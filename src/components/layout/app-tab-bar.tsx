@@ -145,7 +145,7 @@ export function AppTabBar() {
                 >
                   <Ikon
                     size={daralt ? 22 : 24}
-                    strokeWidth={aktif ? 3.25 : 2.25}
+                    strokeWidth={aktif ? 2.75 : 2}
                   />
                   <span
                     className={cn(

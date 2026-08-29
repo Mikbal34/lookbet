@@ -199,7 +199,9 @@ export function LbUyari(p: IkonProps) {
 
 // ── Alt sekme çubuğu ────────────────────────────────────────────────────
 //
-// Aktif sekmede doluya geçmiyoruz, kalınlaşıyoruz (strokeWidth 2.25 → 3.25).
+// Aktif sekmede doluya geçmiyoruz, kalınlaşıyoruz (strokeWidth 2 → 2.75).
+// Çubuk 24px'lik ikonları yan yana diziyor; setin varsayılan 2.25'i orada
+// gereğinden kalın duruyordu, o yüzden çubuk kendi ölçüsünü veriyor.
 // Setin grameri çizgi üzerine kurulu; dolu varyant üretmek ya iç detayları
 // silmeyi (takvimin tiki kaybolur) ya da iç boşlukları sayfa rengine boyamayı
 // gerektirirdi — ikincisi ikonu durduğu zeminin rengine bağımlı yapar ve
