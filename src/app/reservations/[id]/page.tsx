@@ -152,7 +152,14 @@ function Baslik({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** Beyaz bölüm kartı — sayfadaki tüm bloklar aynı kabuğu kullanıyor. */
+/**
+ * Bölüm — kart kabuğu yok, yalnızca üstünde ince bir ayraç.
+ *
+ * Eskiden her bölüm aynı beyaz karttaydı: altı özdeş kabuk alt alta, hiçbiri
+ * diğerinden önemli değil. Kabuk artık bir şey söylüyor — sayfada çerçeveli
+ * duran iki şey var, bilet (sayfanın nesnesi) ve adres satırı (tek dokunulur
+ * öğe). Gerisi düz metin.
+ */
 function Bolum({
   baslik,
   children,
@@ -161,7 +168,7 @@ function Bolum({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-xl border border-line bg-white p-4">
+    <section className="border-t border-line pt-5">
       <Baslik>{baslik}</Baslik>
       {children}
     </section>
@@ -203,8 +210,8 @@ export default function ReservationDetailPage({
       toast.success(
         `Rezervasyonunuz iptal edildi. İptal ücreti: ${formatCurrency(
           fee,
-          result.cancellation?.currency ?? "EUR"
-        )}`
+          result.cancellation?.currency ?? "EUR",
+        )}`,
       );
     } else {
       toast.success("Rezervasyonunuz ücretsiz olarak iptal edildi.");
@@ -228,7 +235,7 @@ export default function ReservationDetailPage({
   const pansiyon = data?.boardTypeName ?? data?.boardType;
 
   return (
-    <div className="flex min-h-screen flex-col bg-gray-50">
+    <div className="flex min-h-screen flex-col bg-paper">
       <AppHeader geri="/reservations" baslik="Rezervasyon detayı" saydam />
       <div className="web-only">
         <Navbar />
@@ -243,7 +250,10 @@ export default function ReservationDetailPage({
 
         {isError && (
           <div className="flex flex-col items-center justify-center px-4 py-20 text-center">
-            <AlertCircle className="mb-4 h-12 w-12 text-red-400" aria-hidden="true" />
+            <AlertCircle
+              className="mb-4 h-12 w-12 text-red-400"
+              aria-hidden="true"
+            />
             <h2 className="mb-2 text-lg font-semibold text-gray-900">
               Rezervasyon yüklenemedi
             </h2>
@@ -336,7 +346,7 @@ export default function ReservationDetailPage({
                   )}
                 </div>
 
-                <TicketPerforation />
+                <TicketPerforation zemin="bg-paper" />
 
                 <div className="flex items-end justify-between gap-2 px-4 pt-4 pb-4">
                   <div className="min-w-0">
@@ -387,7 +397,8 @@ export default function ReservationDetailPage({
                     )}
                     {data.roomConfirmationCodes?.map((code) => (
                       <p key={code} className="text-[13px] text-muted">
-                        Oda kodu <span className="font-mono text-ink">{code}</span>
+                        Oda kodu{" "}
+                        <span className="font-mono text-ink">{code}</span>
                       </p>
                     ))}
                   </div>
@@ -409,104 +420,113 @@ export default function ReservationDetailPage({
                 </Link>
               )}
 
-              <PriceBreakdown
-                originalPrice={data.totalPrice}
-                finalPrice={data.discountedPrice ?? data.totalPrice}
-                discount={data.discountAmount ?? 0}
-                appliedRules={data.appliedPriceRules?.map((r) => r.name)}
-                currency={data.currency}
-              />
+              <div className="space-y-5 pt-2">
+                <Bolum baslik="Fiyat">
+                  <PriceBreakdown
+                    originalPrice={data.totalPrice}
+                    finalPrice={data.discountedPrice ?? data.totalPrice}
+                    discount={data.discountAmount ?? 0}
+                    appliedRules={data.appliedPriceRules?.map((r) => r.name)}
+                    currency={data.currency}
+                  />
+                </Bolum>
 
-              <Bolum baslik="Misafirler">
-                {data.guests && data.guests.length > 0 && (
-                  <ul className="space-y-1.5">
-                    {data.guests.map((guest, idx) => (
-                      <li key={idx} className="text-[14px] text-ink">
-                        {guest.name} {guest.surname}{" "}
-                        <span className="text-[13px] text-muted">
-                          {guest.type === "Adult"
-                            ? "Yetişkin"
-                            : `Çocuk, ${guest.age} yaş`}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                {data.contactName && (
-                  <div className="mt-3 border-t border-line/60 pt-3">
-                    <p className="text-[13px] text-muted">İletişim</p>
-                    <p className="mt-0.5 text-[14px] text-ink">
-                      {data.contactName}
-                    </p>
-                    {data.contactEmail && (
-                      <p className="text-[13px] text-muted">{data.contactEmail}</p>
-                    )}
-                    {data.contactPhone && (
-                      <p className="text-[13px] text-muted">{data.contactPhone}</p>
-                    )}
-                  </div>
-                )}
-              </Bolum>
+                <Bolum baslik="Misafirler">
+                  {data.guests && data.guests.length > 0 && (
+                    <ul className="space-y-1.5">
+                      {data.guests.map((guest, idx) => (
+                        <li key={idx} className="text-[14px] text-ink">
+                          {guest.name} {guest.surname}{" "}
+                          <span className="text-[13px] text-muted">
+                            {guest.type === "Adult"
+                              ? "Yetişkin"
+                              : `Çocuk, ${guest.age} yaş`}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {data.contactName && (
+                    <div className="mt-4">
+                      <p className="text-[13px] text-muted">İletişim</p>
+                      <p className="mt-0.5 text-[14px] text-ink">
+                        {data.contactName}
+                      </p>
+                      {data.contactEmail && (
+                        <p className="text-[13px] text-muted">
+                          {data.contactEmail}
+                        </p>
+                      )}
+                      {data.contactPhone && (
+                        <p className="text-[13px] text-muted">
+                          {data.contactPhone}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </Bolum>
 
-              {/* İptal koşulları ve ücreti: renkli dolgu yok.
+                {/* İptal koşulları ve ücreti: renkli dolgu yok.
                   Sarı ve kırmızı kutular sayfayı trafik lambasına çeviriyordu
                   ve hiçbiri acil değil — biri geçmiş bir işlemin faturası,
                   öbürü sözleşme metni. Rakam kalın, gerisi düz. */}
-              {data.status === "CANCELLED" &&
-                data.cancellationFee != null &&
-                data.cancellationFee > 0 && (
-                  <Bolum baslik="İptal ücreti">
-                    <p className="text-[14px] text-slate-text">
-                      Bu rezervasyonun iptali için{" "}
-                      <span className="font-semibold text-ink">
-                        {formatCurrency(
-                          data.cancellationFee,
-                          data.cancellationFeeCurrency ?? data.currency
-                        )}
-                      </span>{" "}
-                      tahsil edildi.
-                    </p>
-                  </Bolum>
-                )}
+                {data.status === "CANCELLED" &&
+                  data.cancellationFee != null &&
+                  data.cancellationFee > 0 && (
+                    <Bolum baslik="İptal ücreti">
+                      <p className="text-[14px] text-slate-text">
+                        Bu rezervasyonun iptali için{" "}
+                        <span className="font-semibold text-ink">
+                          {formatCurrency(
+                            data.cancellationFee,
+                            data.cancellationFeeCurrency ?? data.currency,
+                          )}
+                        </span>{" "}
+                        tahsil edildi.
+                      </p>
+                    </Bolum>
+                  )}
 
-              {data.cancellationPolicy &&
-                Array.isArray(data.cancellationPolicy) &&
-                data.cancellationPolicy.length > 0 && (
-                  <Bolum baslik="İptal koşulları">
-                    <ul className="space-y-2.5">
-                      {(data.cancellationPolicy as CancellationPolicy[]).map(
-                        (policy, idx) => (
-                          <li key={idx}>
-                            <p className="text-[14px] text-slate-text">
-                              {formatDate(policy.fromDate)}
-                              {policy.toDate &&
-                                ` – ${formatDate(policy.toDate)}`}{" "}
-                              arası iptalde{" "}
-                              <span className="font-semibold text-ink">
-                                {policy.penalty > 0
-                                  ? formatCurrency(
-                                      policy.penalty,
-                                      policy.penaltyCurrency || data.currency
-                                    )
-                                  : "ücret alınmaz"}
-                              </span>
-                              {policy.penalty > 0 && " kesilir"}
-                            </p>
-                            {policy.description && (
-                              <p className="mt-0.5 text-[13px] text-muted">
-                                {policy.description}
+                {data.cancellationPolicy &&
+                  Array.isArray(data.cancellationPolicy) &&
+                  data.cancellationPolicy.length > 0 && (
+                    <Bolum baslik="İptal koşulları">
+                      <ul className="space-y-2.5">
+                        {(data.cancellationPolicy as CancellationPolicy[]).map(
+                          (policy, idx) => (
+                            <li key={idx}>
+                              <p className="text-[14px] text-slate-text">
+                                {formatDate(policy.fromDate)}
+                                {policy.toDate &&
+                                  ` – ${formatDate(policy.toDate)}`}{" "}
+                                arası iptalde{" "}
+                                <span className="font-semibold text-ink">
+                                  {policy.penalty > 0
+                                    ? formatCurrency(
+                                        policy.penalty,
+                                        policy.penaltyCurrency || data.currency,
+                                      )
+                                    : "ücret alınmaz"}
+                                </span>
+                                {policy.penalty > 0 && " kesilir"}
                               </p>
-                            )}
-                          </li>
-                        )
-                      )}
-                    </ul>
-                  </Bolum>
-                )}
+                              {policy.description && (
+                                <p className="mt-0.5 text-[13px] text-muted">
+                                  {policy.description}
+                                </p>
+                              )}
+                            </li>
+                          ),
+                        )}
+                      </ul>
+                    </Bolum>
+                  )}
 
-              {/* İptal: kutusuz ve ikonsuz. Geri alınamayan bir işlem sayfada
+                {/* İptal: kutusuz ve ikonsuz. Geri alınamayan bir işlem sayfada
                   düğme gibi durup davet etmemeli; uyarının ağırlığını onay
                   penceresi taşıyor. */}
+              </div>
+
               {canCancel && (
                 <button
                   type="button"
