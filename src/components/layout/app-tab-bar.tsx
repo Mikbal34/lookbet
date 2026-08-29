@@ -69,6 +69,9 @@ function cubukGorunur(yol: string): boolean {
   // (bu sayfalarda geri bağlantısı yok ve app modunda hamburger de yok).
   // Rezervasyon listesi görünür, tek rezervasyon detayı gizli.
   if (/^\/reservations\/.+/.test(yol)) return false;
+  // Kampanya listesi sekme sayfası; tek kampanya sayfasının kendi sabit
+  // CTA'sı var, çubuk onun üstüne biniyordu.
+  if (/^\/kampanyalar\/.+/.test(yol)) return false;
   return true;
 }
 

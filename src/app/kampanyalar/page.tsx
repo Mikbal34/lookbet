@@ -1,5 +1,5 @@
-// Kampanyalar — lookbet. tasarım dili: koyu gradyan kupon kartları,
-// kesikli çizgili kod kutuları, altın CTA.
+// Kampanyalar listesi — fotoğraflı kartlar, köşede kurdele rozet.
+// Detay, indirim kodu ve CTA tek kampanya sayfasında (./[kod]).
 
 import Link from "next/link";
 import {AppHeader, Navbar, Footer } from "@/components/layout";
@@ -31,42 +31,46 @@ export default function DealsPage() {
           Kodu rezervasyonda gir, indirim anında uygulansın.
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {/* Fotoğraflı kartlar — köşede kurdele rozet, altta başlık.
+            Dokununca kampanya sayfası açılıyor; detay, indirim kodu ve CTA
+            orada. Eskiden hepsi kartın içine sıkıştırılmıştı. */}
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           {deals.map((d) => (
-            <div
+            <Link
               key={d.code}
-              className="rounded-md px-8 py-[30px] text-paper relative overflow-hidden flex flex-col gap-2"
-              style={{ background: d.bg }}
+              href={`/kampanyalar/${d.code.toLowerCase()}`}
+              className="group relative block h-52 overflow-hidden rounded-xl bg-navy"
             >
-              <div
-                className="absolute -right-10 -top-10 w-[180px] h-[180px] rounded-full bg-paper/[0.08]"
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={d.image}
+                alt=""
                 aria-hidden="true"
+                className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                loading="lazy"
               />
-              <div className="flex justify-between items-center">
-                <span className="bg-paper/15 rounded-sm px-3 py-[5px] text-xs font-bold tracking-[1px]">
-                  {d.tag}
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/35 to-transparent"
+              />
+
+              {/* Kurdele rozet */}
+              <span className="absolute top-4 right-0 rounded-l-sm bg-gold px-3 py-1.5 text-[11px] font-bold tracking-[0.1em] text-ink uppercase shadow-[0_2px_0_rgb(11_13_20/0.2)]">
+                {d.tag}
+              </span>
+
+              <div className="absolute inset-x-0 bottom-0 p-4">
+                {/* Tutar üstte, başlık altında: yan yana dizilince iki
+                    satırlık başlıklarda hiza bozuluyordu. */}
+                <span className="block text-[32px] leading-none font-extrabold text-gold">
+                  {d.amount}
                 </span>
-                <span className="text-[12.5px] text-paper/65">{d.until}</span>
+                <h2 className="mt-1 text-[17px] leading-tight font-extrabold text-white">
+                  {d.title}
+                </h2>
+                <p className="mt-1 text-[12.5px] text-white/75">{d.until}</p>
               </div>
-              <div className="font-serif text-[42px] text-gold mt-2">
-                {d.amount}
-              </div>
-              <div className="text-[17px] font-bold">{d.title}</div>
-              <div className="text-[13.5px] text-paper/70 leading-relaxed max-w-[380px]">
-                {d.desc}
-              </div>
-              <div className="flex justify-between items-center mt-3.5 flex-wrap gap-3">
-                <span className="border border-dashed border-paper/40 rounded-sm px-4 py-2 text-sm font-bold tracking-[2px]">
-                  {d.code}
-                </span>
-                <Link
-                  href="/search"
-                  className="inline-flex min-h-11 items-center bg-gold text-ink rounded-md px-5 text-[13px] font-bold hover:bg-gold-dark transition-colors"
-                >
-                  Otelleri gör
-                </Link>
-              </div>
-            </div>
+            </Link>
           ))}
         </div>
       </main>
