@@ -375,6 +375,30 @@ export function LbAramaBos(p: IkonProps) {
   );
 }
 
+/** Bilgi — açıklama bölümü. */
+export function LbBilgi(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 11v5.25" />
+      <path d="M12 7.75h.01" />
+    </Ikon>
+  );
+}
+
+/** Resepsiyon zili — otel olanakları. */
+export function LbZil(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <path d="M4 16.5h16" />
+      <path d="M5.75 16.5a6.25 6.25 0 0 1 12.5 0" />
+      <path d="M12 6.5v3.75" />
+      <path d="M12 4.5h.01" />
+      <path d="M3.5 19.75h17" />
+    </Ikon>
+  );
+}
+
 /** Soru işareti — yardım. */
 export function LbYardim(p: IkonProps) {
   return (

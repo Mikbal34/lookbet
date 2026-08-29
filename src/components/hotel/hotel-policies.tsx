@@ -4,18 +4,31 @@
 // kabul edilen kartlar ve önemli notlar.
 
 import * as React from "react";
-import { LogIn, LogOut, Baby, Info, CreditCard, AlertCircle } from "lucide-react";
+import {
+  LogIn,
+  LogOut,
+  Baby,
+  Info,
+  CreditCard,
+  AlertCircle,
+} from "lucide-react";
 import { cn } from "@/lib/utils/cn";
+import { LbBelge } from "@/components/ui/icons";
 import type { HotelPolicies } from "@/lib/royal-api/types";
 
 // Kart markası logoları (basit, tanınır temsili görseller)
 function CardLogo({ card }: { card: string }) {
   const key = card.toLowerCase();
-  const box = "h-7 w-11 shrink-0 rounded border border-gray-200";
+  const box = "h-7 w-11 shrink-0 rounded border border-line";
 
   if (key.includes("visa")) {
     return (
-      <svg viewBox="0 0 48 32" className={cn(box, "bg-white")} role="img" aria-label="Visa">
+      <svg
+        viewBox="0 0 48 32"
+        className={cn(box, "bg-white")}
+        role="img"
+        aria-label="Visa"
+      >
         <text
           x="24"
           y="21"
@@ -33,7 +46,12 @@ function CardLogo({ card }: { card: string }) {
   }
   if (key.includes("master")) {
     return (
-      <svg viewBox="0 0 48 32" className={cn(box, "bg-white")} role="img" aria-label="Mastercard">
+      <svg
+        viewBox="0 0 48 32"
+        className={cn(box, "bg-white")}
+        role="img"
+        aria-label="Mastercard"
+      >
         <circle cx="20" cy="16" r="9" fill="#EB001B" />
         <circle cx="28" cy="16" r="9" fill="#F79E1B" fillOpacity="0.85" />
       </svg>
@@ -41,18 +59,31 @@ function CardLogo({ card }: { card: string }) {
   }
   if (key.includes("american") || key.includes("amex")) {
     return (
-      <svg viewBox="0 0 48 32" className={cn(box, "border-[#2E77BC] bg-[#2E77BC]")} role="img" aria-label="American Express">
-        <text x="24" y="14" textAnchor="middle" fill="white" fontSize="5.5" fontWeight="bold" fontFamily="Arial, sans-serif">
-          AMERICAN
-        </text>
-        <text x="24" y="22" textAnchor="middle" fill="white" fontSize="5.5" fontWeight="bold" fontFamily="Arial, sans-serif">
-          EXPRESS
+      <svg
+        viewBox="0 0 48 32"
+        className={cn(box, "border-[#2E77BC] bg-[#2E77BC]")}
+        role="img"
+        aria-label="American Express"
+      >
+        {/* Kısa form: uzun ad 48×32 kutuya ancak 5.5px ile sığıyordu ve o
+            boyutta hiç okunmuyor. "AMEX" markanın kendi kısaltması. */}
+        <text
+          x="24"
+          y="20"
+          textAnchor="middle"
+          fill="white"
+          fontSize="11"
+          fontWeight="bold"
+          letterSpacing="0.5"
+          fontFamily="Arial, sans-serif"
+        >
+          AMEX
         </text>
       </svg>
     );
   }
   return (
-    <span className="rounded border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700">
+    <span className="rounded border border-line bg-canvas px-2 py-1 text-xs font-medium text-slate-text">
       {card}
     </span>
   );
@@ -68,11 +99,11 @@ function Row({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex gap-3 border-b border-gray-50 py-3 last:border-0">
+    <div className="flex gap-3 border-b border-line/60 py-3 last:border-0">
       <Icon className="mt-0.5 h-4 w-4 shrink-0 text-navy" aria-hidden="true" />
       <div className="min-w-0">
-        <p className="text-sm font-semibold text-gray-900">{label}</p>
-        <div className="mt-0.5 text-sm text-gray-600">{children}</div>
+        <p className="text-sm font-semibold text-ink">{label}</p>
+        <div className="mt-0.5 text-sm text-slate-text">{children}</div>
       </div>
     </div>
   );
@@ -83,7 +114,10 @@ export interface HotelPoliciesProps {
   className?: string;
 }
 
-export function HotelPoliciesSection({ policies, className }: HotelPoliciesProps) {
+export function HotelPoliciesSection({
+  policies,
+  className,
+}: HotelPoliciesProps) {
   if (!policies) return null;
 
   const {
@@ -96,12 +130,19 @@ export function HotelPoliciesSection({ policies, className }: HotelPoliciesProps
   } = policies;
 
   return (
-    <section aria-labelledby="policies-heading" className={cn("space-y-4", className)}>
-      <h2 id="policies-heading" className="text-lg font-semibold text-gray-900">
-        Tesis Kuralları
+    <section
+      aria-labelledby="policies-heading"
+      className={cn("space-y-4", className)}
+    >
+      <h2
+        id="policies-heading"
+        className="flex items-center gap-2 text-[15px] font-extrabold text-ink"
+      >
+        <LbBelge size={18} className="text-navy" />
+        Tesis kuralları
       </h2>
 
-      <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+      <div className="rounded-2xl bg-paper p-4 shadow-[0_1px_2px_rgb(11_13_20/0.04),0_6px_16px_-12px_rgb(11_13_20/0.18)]">
         {(checkInFrom || checkOutUntil) && (
           <div className="grid grid-cols-1 sm:grid-cols-2">
             {checkInFrom && (
@@ -141,15 +182,15 @@ export function HotelPoliciesSection({ policies, className }: HotelPoliciesProps
       </div>
 
       {importantInfo && importantInfo.length > 0 && (
-        <div className="rounded-2xl border border-amber-100 bg-amber-50 p-5">
-          <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-amber-900">
+        <div className="rounded-2xl bg-paper p-4 shadow-[0_1px_2px_rgb(11_13_20/0.04),0_6px_16px_-12px_rgb(11_13_20/0.18)]">
+          <h3 className="mb-2 flex items-center gap-1.5 text-[15px] font-extrabold text-ink">
             <AlertCircle className="h-4 w-4" aria-hidden="true" />
             Şu ayrıntılara dikkat
           </h3>
           <ul className="space-y-1.5">
             {importantInfo.map((info, i) => (
-              <li key={i} className="flex gap-2 text-sm text-amber-800">
-                <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-amber-400" />
+              <li key={i} className="flex gap-2 text-[13.5px] text-slate-text">
+                <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-navy" />
                 {info}
               </li>
             ))}

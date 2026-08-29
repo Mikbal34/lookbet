@@ -4,8 +4,15 @@
 // Koordinattan türetilir (mock / ileride Google Places / OSM).
 
 import * as React from "react";
-import { Landmark, UtensilsCrossed, TrainFront, Plane, Trees } from "lucide-react";
+import {
+  Landmark,
+  UtensilsCrossed,
+  TrainFront,
+  Plane,
+  Trees,
+} from "lucide-react";
 import { cn } from "@/lib/utils/cn";
+import { LbKonum } from "@/components/ui/icons";
 import type { NearbyPlace } from "@/lib/royal-api/types";
 
 const CATEGORY_META: Record<
@@ -46,26 +53,36 @@ export function HotelNearby({ places, className }: HotelNearbyProps) {
   if (!places || places.length === 0) return null;
 
   return (
-    <section aria-labelledby="nearby-heading" className={cn("space-y-4", className)}>
-      <h2 id="nearby-heading" className="text-lg font-semibold text-gray-900">
-        Otel Çevresi
+    <section
+      aria-labelledby="nearby-heading"
+      className={cn("space-y-4", className)}
+    >
+      <h2
+        id="nearby-heading"
+        className="flex items-center gap-2 text-[15px] font-extrabold text-ink"
+      >
+        <LbKonum size={18} className="text-navy" />
+        Otel çevresi
       </h2>
 
-      <div className="grid grid-cols-1 gap-x-8 gap-y-6 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-x-8 gap-y-6 rounded-2xl bg-paper p-4 shadow-[0_1px_2px_rgb(11_13_20/0.04),0_6px_16px_-12px_rgb(11_13_20/0.18)] sm:grid-cols-2 lg:grid-cols-3">
         {CATEGORY_ORDER.filter((c) => groups.has(c)).map((category) => {
           const meta = CATEGORY_META[category];
           const Icon = meta.icon;
           return (
             <div key={category}>
-              <h3 className="mb-2.5 flex items-center gap-1.5 text-sm font-semibold text-gray-800">
+              <h3 className="mb-2.5 flex items-center gap-1.5 text-sm font-semibold text-ink">
                 <Icon className="h-4 w-4 text-navy" aria-hidden="true" />
                 {meta.label}
               </h3>
               <ul className="space-y-1.5">
                 {groups.get(category)!.map((p, i) => (
-                  <li key={i} className="flex items-baseline justify-between gap-3 text-sm">
-                    <span className="text-gray-600">{p.name}</span>
-                    <span className="shrink-0 text-gray-400">{p.distance}</span>
+                  <li
+                    key={i}
+                    className="flex items-baseline justify-between gap-3 text-sm"
+                  >
+                    <span className="text-slate-text">{p.name}</span>
+                    <span className="shrink-0 text-muted">{p.distance}</span>
                   </li>
                 ))}
               </ul>
@@ -73,7 +90,7 @@ export function HotelNearby({ places, className }: HotelNearbyProps) {
           );
         })}
       </div>
-      <p className="text-xs text-gray-400">
+      <p className="text-xs text-muted">
         Tahmini en kısa yürüme/sürüş mesafeleri gösterilmiştir; gerçek mesafeler
         farklılık gösterebilir.
       </p>

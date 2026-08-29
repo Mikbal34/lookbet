@@ -19,7 +19,16 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
-import type { HotelDetailResponse, HotelFacilityItem } from "@/lib/royal-api/types";
+import {
+  LbBilgi,
+  LbKonum,
+  LbTelefon,
+  LbZil,
+} from "@/components/ui/icons";
+import type {
+  HotelDetailResponse,
+  HotelFacilityItem,
+} from "@/lib/royal-api/types";
 
 export interface HotelInfoProps {
   hotel: HotelDetailResponse;
@@ -56,12 +65,16 @@ function StarRating({ stars }: { stars: number }) {
           key={i}
           className={cn(
             "h-4 w-4",
-            i < stars ? "fill-amber-400 text-amber-400" : "fill-gray-200 text-gray-200"
+            i < stars
+              ? "fill-gold text-gold"
+              : "fill-line-strong text-line-strong",
           )}
           aria-hidden="true"
         />
       ))}
-      <span className="text-sm font-medium text-gray-600 ml-1">{stars} Yıldız</span>
+      <span className="text-sm font-medium text-slate-text ml-1">
+        {stars} Yıldız
+      </span>
     </div>
   );
 }
@@ -75,13 +88,16 @@ function FacilityGroup({
 }) {
   return (
     <div>
-      <h4 className="text-sm font-semibold text-gray-700 mb-2">{category}</h4>
+      <h4 className="text-sm font-semibold text-slate-text mb-2">{category}</h4>
       <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
         {items.map((facility) => {
           const Icon = getFacilityIcon(facility.name);
           return (
-            <li key={facility.id} className="flex items-center gap-2 text-sm text-gray-600">
-              <Icon className="h-4 w-4 text-blue-500 shrink-0" aria-hidden="true" />
+            <li
+              key={facility.id}
+              className="flex items-center gap-2 text-sm text-slate-text"
+            >
+              <Icon className="h-4 w-4 shrink-0 text-navy" aria-hidden="true" />
               {facility.name}
             </li>
           );
@@ -110,9 +126,16 @@ function HotelMap({
   const gmapsHref = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
 
   return (
-    <section aria-labelledby="location-heading">
+    <section
+      aria-labelledby="location-heading"
+      className="rounded-2xl bg-paper p-4 shadow-[0_1px_2px_rgb(11_13_20/0.04),0_6px_16px_-12px_rgb(11_13_20/0.18)]"
+    >
       <div className="flex items-center justify-between mb-3">
-        <h2 id="location-heading" className="text-lg font-semibold text-gray-900">
+        <h2
+          id="location-heading"
+          className="flex items-center gap-2 text-[15px] font-extrabold text-ink"
+        >
+          <LbKonum size={18} className="text-navy" />
           Konum
         </h2>
         <a
@@ -128,7 +151,7 @@ function HotelMap({
       <iframe
         src={osmSrc}
         title={`${name} harita konumu`}
-        className="w-full h-64 rounded-2xl border border-gray-100"
+        className="w-full h-64 rounded-2xl border border-line/60"
         loading="lazy"
       />
     </section>
@@ -136,8 +159,17 @@ function HotelMap({
 }
 
 export function HotelInfo({ hotel, className }: HotelInfoProps) {
-  const { name, stars, address, description, facilities, phone, email, latitude, longitude } =
-    hotel;
+  const {
+    name,
+    stars,
+    address,
+    description,
+    facilities,
+    phone,
+    email,
+    latitude,
+    longitude,
+  } = hotel;
 
   // Group facilities by category
   const facilityGroups = React.useMemo(() => {
@@ -154,21 +186,33 @@ export function HotelInfo({ hotel, className }: HotelInfoProps) {
     <div className={cn("space-y-5", className)}>
       {/* Header */}
       <div className="space-y-1.5">
-        <h1 className="text-xl md:text-2xl font-bold text-gray-900">{name}</h1>
+        <h1 className="text-xl md:text-2xl font-bold text-ink">{name}</h1>
         <StarRating stars={stars} />
-        <div className="flex items-start gap-1.5 text-gray-500">
-          <MapPin className="h-4 w-4 mt-0.5 shrink-0 text-gray-400" aria-hidden="true" />
-          <address className="text-sm not-italic leading-snug">{address}</address>
+        <div className="flex items-start gap-1.5 text-muted">
+          <MapPin
+            className="h-4 w-4 mt-0.5 shrink-0 text-muted"
+            aria-hidden="true"
+          />
+          <address className="text-sm not-italic leading-snug">
+            {address}
+          </address>
         </div>
       </div>
 
       {/* Description */}
       {description && (
-        <section aria-labelledby="hotel-desc-heading">
-          <h2 id="hotel-desc-heading" className="text-lg font-semibold text-gray-900 mb-2">
+        <section
+          aria-labelledby="hotel-desc-heading"
+          className="rounded-2xl bg-paper p-4 shadow-[0_1px_2px_rgb(11_13_20/0.04),0_6px_16px_-12px_rgb(11_13_20/0.18)]"
+        >
+          <h2
+            id="hotel-desc-heading"
+            className="mb-2 flex items-center gap-2 text-[15px] font-extrabold text-ink"
+          >
+            <LbBilgi size={18} className="text-navy" />
             Hakkında
           </h2>
-          <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+          <p className="text-sm text-slate-text leading-relaxed whitespace-pre-line">
             {description}
           </p>
         </section>
@@ -176,8 +220,15 @@ export function HotelInfo({ hotel, className }: HotelInfoProps) {
 
       {/* Facilities */}
       {facilityGroups.size > 0 && (
-        <section aria-labelledby="facilities-heading">
-          <h2 id="facilities-heading" className="text-lg font-semibold text-gray-900 mb-4">
+        <section
+          aria-labelledby="facilities-heading"
+          className="rounded-2xl bg-paper p-4 shadow-[0_1px_2px_rgb(11_13_20/0.04),0_6px_16px_-12px_rgb(11_13_20/0.18)]"
+        >
+          <h2
+            id="facilities-heading"
+            className="mb-4 flex items-center gap-2 text-[15px] font-extrabold text-ink"
+          >
+            <LbZil size={18} className="text-navy" />
             Olanaklar
           </h2>
           <div className="space-y-5">
@@ -200,26 +251,30 @@ export function HotelInfo({ hotel, className }: HotelInfoProps) {
       {(phone || email) && (
         <section
           aria-labelledby="contact-heading"
-          className="rounded-lg border border-gray-100 bg-gray-50 p-4 space-y-2"
+          className="rounded-2xl bg-paper p-4 shadow-[0_1px_2px_rgb(11_13_20/0.04),0_6px_16px_-12px_rgb(11_13_20/0.18)]"
         >
-          <h2 id="contact-heading" className="text-sm font-semibold text-gray-700">
+          <h2
+            id="contact-heading"
+            className="mb-3 flex items-center gap-2 text-[15px] font-extrabold text-ink"
+          >
+            <LbTelefon size={18} className="text-navy" />
             İletişim
           </h2>
           {phone && (
             <a
               href={`tel:${phone}`}
-              className="flex min-h-11 items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
+              className="flex min-h-11 items-center gap-2 text-sm text-slate-text hover:text-navy-text transition-colors"
             >
-              <Phone className="h-4 w-4 text-gray-400" aria-hidden="true" />
+              <Phone className="h-4 w-4 text-muted" aria-hidden="true" />
               {phone}
             </a>
           )}
           {email && (
             <a
               href={`mailto:${email}`}
-              className="flex min-h-11 items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
+              className="flex min-h-11 items-center gap-2 text-sm text-slate-text hover:text-navy-text transition-colors"
             >
-              <Mail className="h-4 w-4 text-gray-400" aria-hidden="true" />
+              <Mail className="h-4 w-4 text-muted" aria-hidden="true" />
               {email}
             </a>
           )}

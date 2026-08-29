@@ -8,7 +8,7 @@ import { use } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, BedDouble, AlertCircle, Star, LogIn, LogOut } from "lucide-react";
+import { BedDouble, AlertCircle, Star, LogIn, LogOut } from "lucide-react";
 import {AppHeader, Navbar, Footer } from "@/components/layout";
 import {
   HotelGallery,
@@ -101,8 +101,8 @@ function HotelDetailContent({
   }, [data?.images]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <AppHeader geri={backHref} />
+    <div className="min-h-screen flex flex-col bg-canvas">
+      <AppHeader geri={backHref} baslik="Otel" />
       <div className="web-only">
         <Navbar />
       </div>
@@ -150,7 +150,7 @@ function HotelDetailContent({
                 <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm space-y-3 lg:sticky lg:top-6">
                   {data.reviewSummary && (
                     <div className="flex items-center gap-2.5">
-                      <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg rounded-bl-none bg-navy text-base font-bold text-white">
+                      <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg rounded-bl-none bg-navy-text text-base font-bold text-white">
                         {data.reviewSummary.score.toFixed(1)}
                       </span>
                       <div>

@@ -6,6 +6,7 @@
 import * as React from "react";
 import { ChevronDown, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
+import { LbYardim } from "@/components/ui/icons";
 import type { HotelFacilityItem, HotelPolicies } from "@/lib/royal-api/types";
 
 export interface HotelFaqProps {
@@ -60,31 +61,44 @@ export function HotelFaq({ facilities, policies, className }: HotelFaqProps) {
   if (faqs.length === 0) return null;
 
   return (
-    <section aria-labelledby="faq-heading" className={cn("space-y-4", className)}>
-      <h2 id="faq-heading" className="text-lg font-semibold text-gray-900">
-        Gezginlerden Gelen Sorular
+    <section
+      aria-labelledby="faq-heading"
+      className={cn("space-y-4", className)}
+    >
+      <h2
+        id="faq-heading"
+        className="flex items-center gap-2 text-[15px] font-extrabold text-ink"
+      >
+        <LbYardim size={18} className="text-navy" />
+        Sık sorulanlar
       </h2>
       <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
         {faqs.map((f, i) => (
-          <div key={i} className="rounded-xl border border-gray-100 bg-white shadow-sm">
+          <div
+            key={i}
+            className="rounded-2xl bg-paper shadow-[0_1px_2px_rgb(11_13_20/0.04),0_6px_16px_-12px_rgb(11_13_20/0.18)]"
+          >
             <button
               type="button"
               onClick={() => setOpen(open === i ? null : i)}
               aria-expanded={open === i}
               className="flex w-full items-center gap-2 px-4 py-3 text-left"
             >
-              <HelpCircle className="h-4 w-4 shrink-0 text-navy" aria-hidden="true" />
-              <span className="flex-1 text-sm font-medium text-gray-800">{f.q}</span>
+              <HelpCircle
+                className="h-4 w-4 shrink-0 text-navy"
+                aria-hidden="true"
+              />
+              <span className="flex-1 text-sm font-medium text-ink">{f.q}</span>
               <ChevronDown
                 className={cn(
-                  "h-4 w-4 shrink-0 text-gray-400 transition-transform",
-                  open === i && "rotate-180"
+                  "h-4 w-4 shrink-0 text-muted transition-transform",
+                  open === i && "rotate-180",
                 )}
                 aria-hidden="true"
               />
             </button>
             {open === i && (
-              <p className="px-4 pb-3 pl-10 text-sm leading-relaxed text-gray-600">
+              <p className="px-4 pb-3 pl-10 text-sm leading-relaxed text-slate-text">
                 {f.a}
               </p>
             )}

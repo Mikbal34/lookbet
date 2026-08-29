@@ -31,6 +31,7 @@ import {
 } from "@/components/reservation";
 import { PriceBreakdown } from "@/components/room";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Bolum } from "@/components/ui/section";
 import {
   LbAy,
   LbBelge,
@@ -42,7 +43,6 @@ import {
   LbCarpi,
   LbUyari,
   LbYildiz,
-  type IkonProps,
 } from "@/components/ui/icons";
 import { Button } from "@/components/ui/button";
 import { formatCurrency, formatDate, getNightCount } from "@/lib/utils";
@@ -150,60 +150,6 @@ function DetailSkeleton() {
         ))}
       </div>
     </div>
-  );
-}
-
-/**
- * Bölüm başlığı.
- *
- * Küçük soluk büyük harf etiketti; başlık gibi değil dipnot gibi duruyordu.
- * Başlık kalın ve koyu yazılır — 15px, 800, ink. Yanında kendi ikon
- * setimizden bir işaret (bkz. ui/icons.tsx), rozet zemini olmadan: kart
- * zaten beyaz bir kutu, ikonun arkasına ikinci bir kutu koymak kalabalık.
- *
- * Cümle düzeni: "İptal koşulları", "İptal Koşulları" değil. Her kelimeyi
- * büyük harfle başlatmak İngilizce geleneği, Türkçe arayüzde makine
- * çevirisi gibi okunuyor.
- */
-function Baslik({
-  ikon: Ikon,
-  children,
-}: {
-  ikon: React.ComponentType<IkonProps>;
-  children: React.ReactNode;
-}) {
-  return (
-    <h2 className="mb-3 flex items-center gap-2 text-[15px] font-extrabold text-ink">
-      <Ikon size={18} className="text-navy" />
-      {children}
-    </h2>
-  );
-}
-
-/**
- * Bölüm kutusu.
- *
- * Kutuyu çerçeve değil zemin farkı yapıyor: sayfa bej (canvas), kartlar
- * beyaz. Çerçeveli kartları beyaz sayfaya koyduğunuzda ekran çizgi
- * kalabalığına dönüyor — kutuyu görmek için her kenarına bir çizgi çekmek
- * gerekiyor. Zemin ayrımıyla tek bir çizgi bile gerekmiyor.
- *
- * Gölge çok hafif: kartı zeminden koparmak değil, kenarını belli etmek için.
- */
-function Bolum({
-  baslik,
-  ikon,
-  children,
-}: {
-  baslik: string;
-  ikon: React.ComponentType<IkonProps>;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="rounded-2xl bg-paper p-4 shadow-[0_1px_2px_rgb(11_13_20/0.04),0_6px_16px_-12px_rgb(11_13_20/0.18)]">
-      <Baslik ikon={ikon}>{baslik}</Baslik>
-      {children}
-    </section>
   );
 }
 
