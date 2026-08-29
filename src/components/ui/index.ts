@@ -71,6 +71,9 @@ export type { InputProps } from "./input";
 export { Pagination } from "./pagination";
 export type { PaginationProps } from "./pagination";
 
+export { SegmentedTabs } from "./segmented-tabs";
+export type { SegmentedTabsProps, SegmentedOption } from "./segmented-tabs";
+
 export { Select } from "./select";
 export type { SelectProps } from "./select";
 

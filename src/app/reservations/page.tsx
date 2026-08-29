@@ -1,15 +1,21 @@
 "use client";
 
-// My Reservations page
-// Fetches /api/reservations with optional status filter
-// Tabs: Tümü, Onaylı, Beklemede, İptal
+// Rezervasyonlarım.
+//
+// Sekmeler alt çubuktaki kapsülün aynısı: başlığın hemen altında, ince ve
+// kayan haplı. Eskiden alt çizgili klasik web sekmeleriydi — uygulamanın geri
+// kalanıyla aynı dili konuşmuyordu.
+//
+// İki panel yerine tek panel var; içerik seçime göre değişiyor. React Query
+// her iki dönemi ayrı anahtarda tuttuğu için geçiş, veri bir kez geldikten
+// sonra ağa çıkmadan oluyor.
 
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { CalendarCheck, AlertCircle } from "lucide-react";
 import {AppHeader, Navbar, Footer } from "@/components/layout";
 import { ReservationCard } from "@/components/reservation";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { SegmentedTabs } from "@/components/ui/segmented-tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type Zaman = "gelecek" | "gecmis";
@@ -155,6 +161,8 @@ function TabContent({ zaman }: { zaman: Zaman }) {
 }
 
 export default function ReservationsPage() {
+  const [zaman, setZaman] = React.useState<Zaman>("gelecek");
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <AppHeader baslik="Rezervasyonlarım" />
@@ -163,10 +171,9 @@ export default function ReservationsPage() {
       </div>
 
       <main className="flex-1">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-8">
-          {/* Page header */}
-          <div className="mb-6">
-            <h1 className="web-only text-2xl font-bold text-gray-900 flex items-center gap-2">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 pt-4 pb-8 sm:pt-8">
+          <div className="web-only mb-6">
+            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
               <CalendarCheck className="h-6 w-6 text-navy" aria-hidden="true" />
               Rezervasyonlarım
             </h1>
@@ -175,22 +182,18 @@ export default function ReservationsPage() {
             </p>
           </div>
 
-          {/* Tabs */}
-          <Tabs defaultValue="gelecek">
-            <TabsList className="mb-6">
-              {ZAMAN_SEKMELERI.map((tab) => (
-                <TabsTrigger key={tab.value} value={tab.value}>
-                  {tab.label}
-                </TabsTrigger>
-              ))}
-            </TabsList>
+          <SegmentedTabs
+            className="mb-5 w-full max-w-sm"
+            ariaLabel="Rezervasyon dönemi"
+            panelId="rezervasyon-listesi"
+            options={ZAMAN_SEKMELERI}
+            value={zaman}
+            onChange={setZaman}
+          />
 
-            {ZAMAN_SEKMELERI.map((tab) => (
-              <TabsContent key={tab.value} value={tab.value}>
-                <TabContent zaman={tab.value} />
-              </TabsContent>
-            ))}
-          </Tabs>
+          <div id="rezervasyon-listesi" role="tabpanel">
+            <TabContent zaman={zaman} />
+          </div>
         </div>
       </main>
 

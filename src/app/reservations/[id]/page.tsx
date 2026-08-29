@@ -59,6 +59,8 @@ interface ReservationDetail {
   discountAmount?: number | null;
   currency: string;
   boardType?: string | null;
+  /** API'nin çevirdiği görünen ad ("Sadece Oda"); kod yedek. */
+  boardTypeName?: string | null;
   roomType?: string | null;
   contactName?: string | null;
   contactEmail?: string | null;
@@ -258,7 +260,12 @@ export default function ReservationDetailPage({
                     <InfoRow label="Çıkış" value={formatDate(data.checkOut)} />
                     <InfoRow label="Gece" value={`${nights} gece`} />
                     {data.roomType && <InfoRow label="Oda Tipi" value={data.roomType} />}
-                    {data.boardType && <InfoRow label="Pansiyon" value={data.boardType} />}
+                    {(data.boardTypeName || data.boardType) && (
+                      <InfoRow
+                        label="Pansiyon"
+                        value={data.boardTypeName ?? data.boardType!}
+                      />
+                    )}
                   </div>
                 </div>
 

@@ -6,8 +6,15 @@
 // altında kesikli ayraç ve iki yanda çentik (kartı "bilet" yapan şey bu),
 // sonra kalkış–varış hattı. Konaklama karşılığı: giriş — gece sayısı — çıkış.
 //
+// Üst bloğun arkasında duruma göre renklenen çok açık bir gradyan var
+// (onaylıda yeşil). Bilette koçanın renkli basılması gibi: kart daha ilk
+// bakışta "her şey yolunda" veya "bir sorun var" diyor, rozeti okumadan.
+//
 // Çentikler sayfanın zemin rengiyle (bg-gray-50) boyanmış yarım daireler;
-// kartın dışına taşıp kenardan ısırık almış izlenimi veriyor.
+// kartın kenarındaki çizgiyi tam o noktada kesip ısırık izlenimi veriyor.
+// Ayraç Tailwind'in border-dashed'i değil, repeating-linear-gradient: tire ve
+// boşluk uzunluğunu kendimiz veriyoruz, böylece perforasyon her genişlikte
+// aynı ritimde çıkıyor (border-dashed'te tarayıcı tireleri uzatıp kısaltıyor).
 //
 // Tek düzen: masaüstünde de aynı kart. Eskiden yatay bir liste satırıydı ve
 // her bilgi aynı ağırlıktaydı, göz nereye bakacağını bilmiyordu.
@@ -17,7 +24,7 @@ import Link from "next/link";
 import { ChevronRight, Moon } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { formatCurrency, getNightCount } from "@/lib/utils";
-import { StatusBadge } from "./status-badge";
+import { StatusBadge, statusTint } from "./status-badge";
 
 export interface ReservationItem {
   id: string;
@@ -76,35 +83,46 @@ export function ReservationCard({
         className="group block overflow-hidden rounded-xl border border-line bg-white transition-shadow hover:shadow-[0_10px_26px_-12px_rgb(11_13_20/0.28)] focus-visible:ring-2 focus-visible:ring-navy focus-visible:ring-offset-2 focus-visible:outline-none"
         aria-label={`Rezervasyon ${r.bookingNumber ?? r.id} — ${r.hotelName ?? r.hotelCode}`}
       >
-        {/* Üst şerit — rezervasyon numarası ve durum */}
-        <div className="px-4 pt-3.5 pb-3">
-          <div className="flex items-center justify-between gap-3">
-            <p className="min-w-0 truncate text-[13px] text-muted">
-              Rezervasyon No:{" "}
-              <span className="font-mono font-bold text-ink">
-                {r.bookingNumber ?? "—"}
-              </span>
-            </p>
-            <StatusBadge status={r.status} />
+        {/* Üst şerit — rezervasyon numarası ve durum, arkasında durum rengi */}
+        <div className="relative">
+          <div
+            aria-hidden="true"
+            className={cn(
+              "pointer-events-none absolute inset-0 bg-gradient-to-b to-transparent",
+              statusTint(r.status)
+            )}
+          />
+          <div className="relative px-4 pt-3.5 pb-3.5">
+            <div className="flex items-center justify-between gap-3">
+              <p className="min-w-0 truncate text-[13px] text-slate-text">
+                Rezervasyon No:{" "}
+                <span className="font-mono font-bold text-ink">
+                  {r.bookingNumber ?? "—"}
+                </span>
+              </p>
+              <StatusBadge status={r.status} />
+            </div>
+            {misafir !== null && (
+              <p className="mt-1 text-[12.5px] text-slate-text/80">
+                {misafir} misafir
+              </p>
+            )}
           </div>
-          {misafir !== null && (
-            <p className="mt-1 text-[12.5px] text-muted">{misafir} misafir</p>
-          )}
         </div>
 
         {/* Kesikli ayraç + iki yanda çentik */}
         <div className="relative h-0">
           <span
             aria-hidden="true"
-            className="absolute -left-2 -top-2 size-4 rounded-full bg-gray-50"
+            className="absolute -top-2 -left-2 size-4 rounded-full bg-gray-50"
           />
           <span
             aria-hidden="true"
-            className="absolute -right-2 -top-2 size-4 rounded-full bg-gray-50"
+            className="absolute -top-2 -right-2 size-4 rounded-full bg-gray-50"
           />
           <div
             aria-hidden="true"
-            className="mx-3 border-t border-dashed border-line-strong"
+            className="mx-3.5 h-px bg-[repeating-linear-gradient(to_right,var(--color-line-strong)_0_4px,transparent_4px_8px)]"
           />
         </div>
 
