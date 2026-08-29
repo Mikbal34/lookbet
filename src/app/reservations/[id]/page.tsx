@@ -158,7 +158,8 @@ function DetailSkeleton() {
  *
  * Küçük soluk büyük harf etiketti; başlık gibi değil dipnot gibi duruyordu.
  * Başlık kalın ve koyu yazılır — 15px, 800, ink. Yanında kendi ikon
- * setimizden bir işaret, yumuşak turuncu rozette (bkz. ui/icons.tsx).
+ * setimizden bir işaret (bkz. ui/icons.tsx), rozet zemini olmadan: kart
+ * zaten beyaz bir kutu, ikonun arkasına ikinci bir kutu koymak kalabalık.
  *
  * Cümle düzeni: "İptal koşulları", "İptal Koşulları" değil. Her kelimeyi
  * büyük harfle başlatmak İngilizce geleneği, Türkçe arayüzde makine
@@ -173,9 +174,7 @@ function Baslik({
 }) {
   return (
     <h2 className="mb-3 flex items-center gap-2 text-[15px] font-extrabold text-ink">
-      <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-chip-blue text-navy">
-        <Ikon size={16} />
-      </span>
+      <Ikon size={18} className="text-navy" />
       {children}
     </h2>
   );
