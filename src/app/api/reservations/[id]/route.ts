@@ -122,6 +122,9 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
           images: true,
           stars: true,
           address: true,
+          phone: true,
+          latitude: true,
+          longitude: true,
           location: { select: { name: true } },
         },
       }),
@@ -141,6 +144,10 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
             stars: otel.stars,
             address: otel.address,
             city: otel.location?.name ?? null,
+            // Detay sayfasındaki hızlı eylemler (ara / yol tarifi) için.
+            phone: otel.phone,
+            latitude: otel.latitude,
+            longitude: otel.longitude,
           }
         : null,
     });

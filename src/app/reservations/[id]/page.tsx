@@ -22,12 +22,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Building2, ChevronRight, Moon, Star, AlertCircle } from "lucide-react";
+import { Building2, Moon, Phone, Star, AlertCircle } from "lucide-react";
 import { AppHeader, Navbar, Footer } from "@/components/layout";
 import {
   StatusBadge,
   CancelDialog,
   TicketPerforation,
+  StayTimeline,
 } from "@/components/reservation";
 import { PriceBreakdown } from "@/components/room";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -85,6 +86,9 @@ interface ReservationDetail {
     stars?: number | null;
     address?: string | null;
     city?: string | null;
+    phone?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
   } | null;
 }
 
@@ -405,22 +409,51 @@ export default function ReservationDetailPage({
                 )}
               </div>
 
-              {otel?.address && (
+              {/* Hızlı eylemler — Pegasus'un bilet altındaki "Bagaj Ekle |
+                  Paket Yükselt" şeridinin karşılığı. Yalnızca gerçekten
+                  yapılabilenler: otelin telefonu yoksa arama satırı hiç
+                  çıkmıyor, uydurma bir düğme koymaktansa yer boş kalsın.
+                  Adres burada değil, çizelgedeki "Giriş" adımında — oraya
+                  giriş günü gidiliyor. */}
+              <div className="flex divide-x divide-line overflow-hidden rounded-xl border border-line bg-white">
+                {otel?.phone && (
+                  <a
+                    href={`tel:${otel.phone.replace(/\s/g, "")}`}
+                    className="flex min-h-11 flex-1 items-center justify-center gap-2 py-3 text-[13px] font-semibold text-slate-text active:bg-chip"
+                  >
+                    <Phone className="size-4 text-navy" aria-hidden="true" />
+                    Oteli ara
+                  </a>
+                )}
                 <Link
                   href={`/hotel/${data.hotelCode}`}
-                  className="flex items-center gap-3 rounded-xl border border-line bg-white px-4 py-3.5 active:bg-chip"
+                  className="flex min-h-11 flex-1 items-center justify-center gap-2 py-3 text-[13px] font-semibold text-slate-text active:bg-chip"
                 >
-                  <span className="min-w-0 flex-1 truncate text-[14px] text-slate-text">
-                    {otel.address}
-                  </span>
-                  <ChevronRight
-                    className="size-4 shrink-0 text-muted"
-                    aria-hidden="true"
-                  />
+                  <Building2 className="size-4 text-navy" aria-hidden="true" />
+                  Otel sayfası
                 </Link>
-              )}
+              </div>
 
               <div className="space-y-5 pt-2">
+                {/* İptal/başarısızda çizelge yok: olmayacak bir konaklamanın
+                    adımlarını saymak yanıltıcı olur. */}
+                {(data.status === "CONFIRMED" || data.status === "PENDING") && (
+                  <Bolum baslik="Konaklaman">
+                    <StayTimeline
+                      status={data.status}
+                      createdAt={data.createdAt}
+                      checkIn={data.checkIn}
+                      checkOut={data.checkOut}
+                      nights={nights}
+                      roomType={data.roomType}
+                      boardType={pansiyon}
+                      address={otel?.address}
+                      latitude={otel?.latitude}
+                      longitude={otel?.longitude}
+                    />
+                  </Bolum>
+                )}
+
                 <Bolum baslik="Fiyat">
                   <PriceBreakdown
                     originalPrice={data.totalPrice}

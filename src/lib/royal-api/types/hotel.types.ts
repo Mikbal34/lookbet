@@ -127,4 +127,6 @@ export interface HotelListItem {
   locationId: number;
   facilities: number[];
   images: string[];
+  phone?: string;
+  email?: string;
 }

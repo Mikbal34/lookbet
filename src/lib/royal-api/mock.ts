@@ -482,6 +482,7 @@ export function mockGetHotelList(): Promise<HotelListItem[]> {
       locationId: h.locationId,
       facilities: h.facilityIds,
       images: imagesFor(h.hotelCode, 5),
+      phone: h.phone,
     }))
   );
 }
