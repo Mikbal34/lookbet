@@ -9,7 +9,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, BedDouble, AlertCircle } from "lucide-react";
-import { Navbar, Footer } from "@/components/layout";
+import {AppHeader, Navbar, Footer } from "@/components/layout";
 import { RoomCard, CountdownTimer } from "@/components/room";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -153,19 +153,15 @@ function RoomsPageContent({
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <Navbar />
+      <AppHeader geri={backHref} baslik="Müsait odalar" />
+      <div className="web-only">
+        <Navbar />
+      </div>
 
       <main className="flex-1">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-6">
           {/* Back + timer row */}
           <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
-            <Link
-              href={backHref}
-              className="inline-flex min-h-11 items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800"
-            >
-              <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-              Otel Detayına Dön
-            </Link>
 
             {data?.expiresAt && !isLoading && (
               <CountdownTimer
@@ -177,7 +173,9 @@ function RoomsPageContent({
 
           {/* Heading */}
           <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            {/* App'te başlığı kimlik çubuğu taşıyor; burada tekrar
+                yazılmasın. Web'de çubuk olmadığı için görünür. */}
+            <h1 className="web-only text-2xl font-bold text-gray-900 flex items-center gap-2">
               <BedDouble className="h-6 w-6 text-navy" aria-hidden="true" />
               Müsait Odalar
             </h1>

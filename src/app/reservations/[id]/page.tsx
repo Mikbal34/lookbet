@@ -18,7 +18,7 @@ import {
   AlertCircle,
   XCircle,
 } from "lucide-react";
-import { Navbar, Footer } from "@/components/layout";
+import {AppHeader, Navbar, Footer } from "@/components/layout";
 import { StatusBadge, CancelDialog } from "@/components/reservation";
 import { PriceBreakdown } from "@/components/room";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -170,18 +170,13 @@ export default function ReservationDetailPage({
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <Navbar />
+      <AppHeader geri="/reservations" baslik="Rezervasyon detayı" />
+      <div className="web-only">
+        <Navbar />
+      </div>
 
       <main className="flex-1">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-8">
-          {/* Back */}
-          <Link
-            href="/reservations"
-            className="inline-flex min-h-11 items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 mb-4"
-          >
-            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-            Rezervasyonlarım
-          </Link>
 
           {isLoading && <DetailSkeleton />}
 

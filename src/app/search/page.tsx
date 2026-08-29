@@ -7,7 +7,7 @@ import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { List, Map as MapIcon, SearchX, SlidersHorizontal, Pencil } from "lucide-react";
-import { Navbar, Footer } from "@/components/layout";
+import {AppHeader, Navbar, Footer } from "@/components/layout";
 import { SearchForm, SearchOverlay } from "@/components/search";
 import { HotelCard, HotelFilters } from "@/components/hotel";
 import dynamic from "next/dynamic";
@@ -228,7 +228,10 @@ function SearchPageContent() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <Navbar />
+      <AppHeader geri="/" />
+      <div className="web-only">
+        <Navbar />
+      </div>
 
       <main className="flex-1">
         {/* Arama barı — mobilde önce tek satırlık özet, dokununca tam form */}

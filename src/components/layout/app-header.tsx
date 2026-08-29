@@ -1,41 +1,49 @@
 "use client";
 
-// Uygulama kimlik çubuğu — kampanya karuselinin ÜSTÜNE binen saydam şerit.
+// Uygulama kimlik çubuğu — iki kılıkta çalışır:
+//
+//  • Sekme sayfaları (ana sayfa, kampanyalar, rezervasyonlar, daha fazla):
+//    solda logo, sağda karşılama hapı. Hesabın kapısı o hap; alt sekme
+//    çubuğunda "Hesabım" sekmesi yok (bkz. app-tab-bar.tsx).
+//
+//  • Derin sayfalar (otel, odalar, rezervasyon detayı, ödeme): solda geri
+//    oku, yanında ekran başlığı. Sayfa içi "Sonuçlara Dön" gibi metin
+//    bağlantıları buraya taşındı — uygulamalarda geri hep aynı yerde durur.
 //
 // `saydam` verilen sayfalarda (ana sayfa — arkasında kampanya karuseli var)
-// yalnızca yukarıdan aşağı hafifleyen bir karartma taşır, altındaki görsel
-// görünmeye devam eder. Kullanıcı karuseli geçtiğinde altına beyaz içerik
-// geldiği için kaydırma eşiği aşılınca dolu turuncuya döner.
-//
-// Fotoğrafsız sayfalarda (Daha Fazla gibi) saydam bırakılırsa beyaz logo ve
-// hap beyaz zeminde kaybolur; oralarda baştan dolu turuncu kalır.
-//
-// Karşılama hapı hesabın kapısı: alt sekme çubuğunda "Hesabım" sekmesi yok
-// (bkz. app-tab-bar.tsx).
+// çubuk yalnızca yukarıdan aşağı hafifleyen bir karartma taşır. Kullanıcı
+// karuseli geçtiğinde altına beyaz içerik geldiği için kaydırma eşiği
+// aşılınca dolu turuncuya döner. Fotoğrafsız sayfalarda saydam bırakılırsa
+// beyaz logo ve metin kaybolur; oralarda baştan dolu turuncu kalır.
 //
 // Yalnızca b2c uygulamasında görünür; web'de yerini normal Navbar alıyor.
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { ChevronRight, CircleUserRound } from "lucide-react";
+import { ArrowLeft, ChevronRight, CircleUserRound } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { Logo } from "./logo";
 
 /** Karuselin altına inildiği kabul edilen kaydırma miktarı (px). */
 const ESIK = 150;
 
-export function AppHeader({
-  /**
-   * Arkasında kampanya karuseli varken saydam durur. Fotoğrafsız
-   * sayfalarda (beyaz zemin) saydam bırakılırsa beyaz logo ve hap
-   * okunmaz hâle gelir; oralarda dolu turuncu kalır.
-   */
-  saydam = false,
-}: {
+export interface AppHeaderProps {
   saydam?: boolean;
-}) {
+  /**
+   * Geri oku göster. String verilirse o adrese gider, `true` verilirse
+   * tarayıcı geçmişinde bir adım geri alır (nereden gelindiği belli
+   * olmayan sayfalarda).
+   */
+  geri?: string | true;
+  /** Geri oku yanındaki ekran başlığı. */
+  baslik?: string;
+}
+
+export function AppHeader({ saydam = false, geri, baslik }: AppHeaderProps) {
   const { data: session, status } = useSession();
+  const router = useRouter();
   const [kaydi, setKaydi] = React.useState(false);
 
   React.useEffect(() => {
@@ -45,6 +53,13 @@ export function AppHeader({
   }, []);
 
   const ad = session?.user?.name;
+  const derin = geri !== undefined;
+
+  const geriIkonu = (
+    <ArrowLeft className="size-5" aria-hidden="true" />
+  );
+  const geriSinifi =
+    "-ml-2 flex size-11 shrink-0 items-center justify-center rounded-full text-white active:bg-white/20";
 
   return (
     <header
@@ -55,24 +70,53 @@ export function AppHeader({
           : "bg-navy"
       )}
     >
-      <div className="flex items-center gap-3 px-4 py-2">
-        {/* Logo kendi bağlantısını üretiyor; <Link> ile sarmak iç içe
-            anchor olurdu. */}
-        <Logo href="/" variant="light" size="sm" />
+      <div className="flex items-center gap-2 px-4 py-2">
+        {derin ? (
+          <>
+            {typeof geri === "string" ? (
+              <Link href={geri} aria-label="Geri" className={geriSinifi}>
+                {geriIkonu}
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => router.back()}
+                aria-label="Geri"
+                className={geriSinifi}
+              >
+                {geriIkonu}
+              </button>
+            )}
+            {baslik && (
+              <h1 className="min-w-0 truncate text-[16px] font-bold text-white">
+                {baslik}
+              </h1>
+            )}
+          </>
+        ) : (
+          <>
+            {/* Logo kendi bağlantısını üretiyor; <Link> ile sarmak iç içe
+                anchor olurdu. */}
+            <Logo href="/" variant="light" size="sm" />
 
-        <Link
-          href="/profile"
-          className="ml-auto flex min-h-11 min-w-0 items-center gap-1.5 rounded-full bg-white/20 py-1.5 pr-1.5 pl-2.5 text-white backdrop-blur-sm active:bg-white/30"
-        >
-          <CircleUserRound className="size-[18px] shrink-0" aria-hidden="true" />
-          <span className="min-w-0 truncate text-[12.5px] font-semibold">
-            {status === "authenticated" && ad ? ad : "Giriş yap"}
-          </span>
-          <ChevronRight
-            className="size-3.5 shrink-0 opacity-70"
-            aria-hidden="true"
-          />
-        </Link>
+            <Link
+              href="/profile"
+              className="ml-auto flex min-h-11 min-w-0 items-center gap-1.5 rounded-full bg-white/20 py-1.5 pr-1.5 pl-2.5 text-white backdrop-blur-sm active:bg-white/30"
+            >
+              <CircleUserRound
+                className="size-[18px] shrink-0"
+                aria-hidden="true"
+              />
+              <span className="min-w-0 truncate text-[12.5px] font-semibold">
+                {status === "authenticated" && ad ? ad : "Giriş yap"}
+              </span>
+              <ChevronRight
+                className="size-3.5 shrink-0 opacity-70"
+                aria-hidden="true"
+              />
+            </Link>
+          </>
+        )}
       </div>
     </header>
   );

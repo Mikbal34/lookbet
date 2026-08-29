@@ -1,4 +1,4 @@
-import { Navbar, Footer } from "@/components/layout";
+import {AppHeader, Navbar, Footer } from "@/components/layout";
 import Link from "next/link";
 import { CheckCircle2, CalendarCheck, Home } from "lucide-react";
 import type { Metadata } from "next";
@@ -18,7 +18,10 @@ export default async function ConfirmationPage({
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <Navbar />
+      <AppHeader geri="/reservations" baslik="Rezervasyon onayı" />
+      <div className="web-only">
+        <Navbar />
+      </div>
 
       <main className="flex flex-1 items-center justify-center px-4 py-12">
         <div className="w-full max-w-lg">

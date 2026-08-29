@@ -10,7 +10,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Navbar, Footer } from "@/components/layout";
+import {AppHeader, Navbar, Footer } from "@/components/layout";
 import { ContactForm, GuestForm, BookingSummary } from "@/components/booking";
 import { Stepper } from "@/components/ui/stepper";
 import { Button } from "@/components/ui/button";
@@ -149,7 +149,10 @@ function BookingPageContent() {
   if (!roomSearchId || !priceCode) {
     return (
       <div className="flex min-h-screen flex-col bg-gray-50">
-        <Navbar />
+        <AppHeader geri baslik="Rezervasyon" />
+        <div className="web-only">
+          <Navbar />
+        </div>
         <main className="flex-1">
           <div className="mx-auto max-w-lg px-4 py-16 text-center sm:px-6">
             <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-chip">
@@ -178,7 +181,10 @@ function BookingPageContent() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <Navbar />
+      <AppHeader geri baslik="Rezervasyon" />
+      <div className="web-only">
+        <Navbar />
+      </div>
 
       <main className="flex-1">
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">

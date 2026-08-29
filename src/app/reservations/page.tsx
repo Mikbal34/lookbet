@@ -7,7 +7,7 @@
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { CalendarCheck, AlertCircle } from "lucide-react";
-import { Navbar, Footer } from "@/components/layout";
+import {AppHeader, Navbar, Footer } from "@/components/layout";
 import { ReservationCard } from "@/components/reservation";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -153,7 +153,10 @@ function TabContent({ status }: { status: ReservationStatus }) {
 export default function ReservationsPage() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <Navbar />
+      <AppHeader />
+      <div className="web-only">
+        <Navbar />
+      </div>
 
       <main className="flex-1">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-8">

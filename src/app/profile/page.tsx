@@ -19,7 +19,7 @@ import {
   BadgeCheck,
 } from "lucide-react";
 import Link from "next/link";
-import { Navbar, Footer } from "@/components/layout";
+import {AppHeader, Navbar, Footer } from "@/components/layout";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -196,7 +196,10 @@ export default function ProfilePage() {
   if (status === "loading") {
     return (
       <div className="min-h-screen flex flex-col bg-gray-50">
-        <Navbar />
+        <AppHeader geri baslik="Hesabım" />
+        <div className="web-only">
+          <Navbar />
+        </div>
         <main className="flex-1">
           <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-8 space-y-4">
             <Skeleton className="h-8 w-32 mb-6" />
@@ -221,7 +224,10 @@ export default function ProfilePage() {
   if (status === "unauthenticated") {
     return (
       <div className="flex min-h-screen flex-col bg-gray-50">
-        <Navbar />
+        <AppHeader geri baslik="Hesabım" />
+        <div className="web-only">
+          <Navbar />
+        </div>
         <main className="flex-1">
           <div className="mx-auto max-w-3xl space-y-5 px-4 py-8 sm:px-6 lg:px-8">
             <div className="rounded-2xl border border-gray-100 bg-white p-6 text-center shadow-sm">
@@ -250,7 +256,10 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <Navbar />
+      <AppHeader geri baslik="Hesabım" />
+      <div className="web-only">
+        <Navbar />
+      </div>
 
       <main className="flex-1">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-8 space-y-5">

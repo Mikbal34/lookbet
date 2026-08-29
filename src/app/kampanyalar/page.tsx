@@ -2,7 +2,7 @@
 // kesikli çizgili kod kutuları, altın CTA.
 
 import Link from "next/link";
-import { Navbar, Footer } from "@/components/layout";
+import {AppHeader, Navbar, Footer } from "@/components/layout";
 import type { Metadata } from "next";
 import { CAMPAIGNS } from "@/lib/constants/campaigns";
 
@@ -18,7 +18,10 @@ const deals = CAMPAIGNS;
 export default function DealsPage() {
   return (
     <div className="min-h-screen flex flex-col bg-paper">
-      <Navbar />
+      <AppHeader />
+      <div className="web-only">
+        <Navbar />
+      </div>
 
       <main className="flex-1 max-w-[1280px] w-full mx-auto px-4 sm:px-6 lg:px-10 py-11">
         <h1 className="font-serif text-3xl lg:text-4xl font-normal mb-1.5">

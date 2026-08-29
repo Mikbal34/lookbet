@@ -4,7 +4,7 @@
 // kategori kartları, akordeon SSS, iletişim kartı.
 
 import { useState } from "react";
-import { Navbar, Footer } from "@/components/layout";
+import {AppHeader, Navbar, Footer } from "@/components/layout";
 
 const helpCats = [
   { title: "Rezervasyon işlemleri", count: 12 },
@@ -43,7 +43,10 @@ export default function HelpPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-paper">
-      <Navbar />
+      <AppHeader geri baslik="Yardım" />
+      <div className="web-only">
+        <Navbar />
+      </div>
 
       {/* Arama bandı */}
       <div
