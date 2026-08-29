@@ -59,10 +59,13 @@ export default async function KampanyaPage({ params }: RouteParams) {
             className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/40 to-ink/45"
           />
 
+          {/* z-10 şart: altındaki başlık bloğu da konumlandırılmış ve DOM'da
+              sonra geliyor; z-index verilmezse onun üstünde kalıp tıklamayı
+              yutuyor. */}
           <Link
             href="/kampanyalar"
             aria-label="Kapat"
-            className="b2c-only absolute top-[calc(0.75rem+env(safe-area-inset-top))] right-3 flex size-11 items-center justify-center rounded-full bg-ink/40 text-white backdrop-blur active:bg-ink/60"
+            className="b2c-only absolute top-[calc(0.75rem+env(safe-area-inset-top))] right-3 z-10 flex size-11 items-center justify-center rounded-full bg-ink/40 text-white backdrop-blur active:bg-ink/60"
           >
             <X className="size-5" aria-hidden="true" />
           </Link>
