@@ -78,7 +78,7 @@ export function ReservationCard({
     <article className={className}>
       <Link
         href={`/reservations/${r.id}`}
-        className="group block overflow-hidden rounded-xl border border-line bg-white transition-shadow hover:shadow-[0_10px_26px_-12px_rgb(11_13_20/0.28)] focus-visible:ring-2 focus-visible:ring-navy focus-visible:ring-offset-2 focus-visible:outline-none"
+        className="group block overflow-hidden rounded-2xl bg-paper shadow-[0_1px_2px_rgb(11_13_20/0.04),0_6px_16px_-12px_rgb(11_13_20/0.18)] transition-shadow hover:shadow-[0_10px_26px_-12px_rgb(11_13_20/0.28)] focus-visible:ring-2 focus-visible:ring-navy focus-visible:ring-offset-2 focus-visible:outline-none"
         aria-label={`Rezervasyon ${r.bookingNumber ?? r.id} — ${r.hotelName ?? r.hotelCode}`}
       >
         {/* Üst şerit — rezervasyon numarası ve durum, arkasında durum rengi */}
@@ -159,7 +159,7 @@ export function ReservationCard({
         </div>
 
         {/* Alt — fiyat */}
-        <div className="flex items-center justify-between gap-3 border-t border-line px-4 py-3">
+        <div className="flex items-center justify-between gap-3 border-t border-line/70 px-4 py-3">
           <div className="flex items-baseline gap-2">
             {indirimli && (
               <span className="text-[12px] text-muted line-through">

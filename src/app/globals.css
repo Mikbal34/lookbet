@@ -12,6 +12,13 @@
   --color-navy-deep: #8f3a12; /* koyu zemin / panel sidebar */
   --color-navy-mid: #ed7b45;
   --color-navy-bright: #f59468;
+  /* Turuncu METİN olarak açık zeminde kullanılacaksa bu ton.
+     Marka turuncusu (#e06028) beyazda 3.58 kontrast veriyor; zemin ve düğme
+     dolgusu olarak sorun değil (üstüne beyaz yazılıyor) ama metin/bağlantı
+     rengi olarak 4.5 sınırının altında. Bu ton beyazda 5.48, canvas'ta 4.99,
+     chip'te 4.69 — geçenlerin en açığı, marka hissi korunuyor.
+     Altındaki --color-gold-text ile aynı mantık. */
+  --color-navy-text: #b34718;
 
   /* Vurgu — amber (CruiseScanner CTA/fiyat etiketi rengi) */
   --color-gold: #ffc829;
@@ -22,10 +29,17 @@
   /* Metin / zemin — sıcak nötrler (CruiseScanner warm-ink) */
   --color-ink: #1a1814; /* ana metin */
   --color-slate-text: #3f3a33; /* ikincil metin */
-  --color-muted: #8a8377; /* soluk metin */
+  --color-muted: #6f685c; /* soluk metin.
+     Eskiden #8a8377 idi: beyazda 3.75 kontrast veriyordu ve 13px ikincil
+     metin için AA sınırı 4.5. Uygulamanın en çok kullanılan ikincil rengi
+     (93 yer), bu yüzden düzeltme jetonun kendisinde yapıldı.
+     Bu ton kullanıldığı dört zeminde de geçiyor: beyaz 5.51, canvas 5.02,
+     chip 4.72, chip-blue 4.73 — ve geçenlerin en açığı. */
   --color-line: #e5e0d3; /* ince çizgi */
   --color-line-strong: #ccc6b5; /* input border */
   --color-row: #f1ede4; /* satır çizgisi / paper-strong */
+  --color-canvas: #f7f4ed; /* sayfa zemini — beyaz kartların üstünde durduğu
+     ton. Beyaza yakın bir zeminde beyaz kart kart gibi durmuyor. */
   --color-chip: #f1ede4; /* etiket zemini */
   --color-chip-blue: #fdeae0; /* turuncu tonlu soft zemin */
   --color-paper: #ffffff; /* gövde beyaz (Skyscanner-tarzı) */

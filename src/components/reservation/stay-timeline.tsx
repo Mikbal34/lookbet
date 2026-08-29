@@ -111,7 +111,7 @@ export function StayTimeline({
             href={yolTarifi}
             target="_blank"
             rel="noopener noreferrer"
-            className="-mb-2 inline-flex min-h-11 items-center gap-1.5 text-[13px] font-semibold text-navy active:text-navy-dark"
+            className="-mb-2 inline-flex min-h-11 items-center gap-1.5 text-[13px] font-semibold text-navy-text active:text-navy-deep"
           >
             <MapPin className="size-3.5" aria-hidden="true" />
             Yol tarifi
@@ -186,7 +186,7 @@ function Adim({
             {baslik}
           </h3>
           {vurgu && (
-            <span className="text-[13px] font-bold text-navy">{vurgu}</span>
+            <span className="text-[13px] font-bold text-navy-text">{vurgu}</span>
           )}
         </div>
         {alt && <p className="mt-0.5 text-[13px] text-muted">{alt}</p>}

@@ -2,7 +2,8 @@
 
 // Bilet perforasyonu — kesikli ayraç ve iki yanda çentik.
 //
-// Çentikler sayfanın zemin rengiyle boyanmış yarım daireler; kartın
+// Çentikler sayfanın zemin rengiyle (varsayılan: bg-canvas) boyanmış
+// yarım daireler; kartın
 // kenarındaki çizgiyi tam o noktada kesip ısırık izlenimi veriyor. Bu yüzden
 // `zemin`, kartın üstünde durduğu yüzeyin rengiyle aynı olmalı — beyaz bir
 // yüzeye konursa çentikler gri leke gibi görünür.
@@ -22,7 +23,7 @@ export interface TicketPerforationProps {
 }
 
 export function TicketPerforation({
-  zemin = "bg-gray-50",
+  zemin = "bg-canvas",
   className,
 }: TicketPerforationProps) {
   return (

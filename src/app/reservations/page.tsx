@@ -65,7 +65,7 @@ async function fetchReservations(zaman: Zaman): Promise<ReservationsResponse> {
 
 function ReservationSkeleton() {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-5">
+    <div className="rounded-2xl bg-paper p-5 shadow-[0_1px_2px_rgb(11_13_20/0.04),0_6px_16px_-12px_rgb(11_13_20/0.18)]">
       <div className="flex items-start justify-between">
         <div className="flex-1 space-y-2">
           <div className="flex items-center gap-3">
@@ -164,7 +164,7 @@ export default function ReservationsPage() {
   const [zaman, setZaman] = React.useState<Zaman>("gelecek");
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-canvas">
       <AppHeader baslik="Rezervasyonlarım" />
       <div className="web-only">
         <Navbar />
@@ -180,7 +180,7 @@ export default function ReservationsPage() {
               <CalendarCheck className="h-6 w-6 text-navy" aria-hidden="true" />
               Rezervasyonlarım
             </h1>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted">
               Tüm rezervasyon geçmişinizi buradan yönetebilirsiniz.
             </p>
           </div>

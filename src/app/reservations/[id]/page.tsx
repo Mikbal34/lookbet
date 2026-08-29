@@ -157,12 +157,14 @@ function Baslik({ children }: { children: React.ReactNode }) {
 }
 
 /**
- * Bölüm — kart kabuğu yok, yalnızca üstünde ince bir ayraç.
+ * Bölüm kutusu.
  *
- * Eskiden her bölüm aynı beyaz karttaydı: altı özdeş kabuk alt alta, hiçbiri
- * diğerinden önemli değil. Kabuk artık bir şey söylüyor — sayfada çerçeveli
- * duran iki şey var, bilet (sayfanın nesnesi) ve adres satırı (tek dokunulur
- * öğe). Gerisi düz metin.
+ * Kutuyu çerçeve değil zemin farkı yapıyor: sayfa bej (canvas), kartlar
+ * beyaz. Çerçeveli kartları beyaz sayfaya koyduğunuzda ekran çizgi
+ * kalabalığına dönüyor — kutuyu görmek için her kenarına bir çizgi çekmek
+ * gerekiyor. Zemin ayrımıyla tek bir çizgi bile gerekmiyor.
+ *
+ * Gölge çok hafif: kartı zeminden koparmak değil, kenarını belli etmek için.
  */
 function Bolum({
   baslik,
@@ -172,7 +174,7 @@ function Bolum({
   children: React.ReactNode;
 }) {
   return (
-    <section className="border-t border-line pt-5">
+    <section className="rounded-2xl bg-paper p-4 shadow-[0_1px_2px_rgb(11_13_20/0.04),0_6px_16px_-12px_rgb(11_13_20/0.18)]">
       <Baslik>{baslik}</Baslik>
       {children}
     </section>
@@ -239,7 +241,7 @@ export default function ReservationDetailPage({
   const pansiyon = data?.boardTypeName ?? data?.boardType;
 
   return (
-    <div className="flex min-h-screen flex-col bg-paper">
+    <div className="flex min-h-screen flex-col bg-canvas">
       <AppHeader geri="/reservations" baslik="Rezervasyon detayı" saydam />
       <div className="web-only">
         <Navbar />
@@ -332,7 +334,7 @@ export default function ReservationDetailPage({
                   biletin hemen altında ikinci kez, başka bir tipografiyle
                   tekrar ediyordu. Üretilen sayfa elindeki her alanı döker;
                   neyin gösterileceğine karar vermek gerekiyordu. */}
-              <div className="relative -mt-5 overflow-hidden rounded-xl border border-line bg-white shadow-[0_8px_20px_-10px_rgb(11_13_20/0.3)]">
+              <div className="relative -mt-5 overflow-hidden rounded-2xl bg-paper shadow-[0_2px_6px_rgb(11_13_20/0.06),0_12px_28px_-14px_rgb(11_13_20/0.35)]">
                 <div className="px-4 pt-3.5 pb-3.5">
                   <div className="flex items-center justify-between gap-3">
                     <p className="min-w-0 truncate text-[13px] text-muted">
@@ -350,7 +352,7 @@ export default function ReservationDetailPage({
                   )}
                 </div>
 
-                <TicketPerforation zemin="bg-paper" />
+                <TicketPerforation zemin="bg-canvas" />
 
                 <div className="flex items-end justify-between gap-2 px-4 pt-4 pb-4">
                   <div className="min-w-0">
@@ -390,7 +392,7 @@ export default function ReservationDetailPage({
                 {/* Otelde sorulan kodlar — biletin koçanı gibi, altta ve sessiz */}
                 {(data.hotelConfirmationNumber ||
                   (data.roomConfirmationCodes?.length ?? 0) > 0) && (
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 border-t border-line bg-chip/40 px-4 py-2.5">
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 bg-canvas px-4 py-2.5">
                     {data.hotelConfirmationNumber && (
                       <p className="text-[13px] text-muted">
                         Otel konfirmasyon{" "}
@@ -415,7 +417,7 @@ export default function ReservationDetailPage({
                   çıkmıyor, uydurma bir düğme koymaktansa yer boş kalsın.
                   Adres burada değil, çizelgedeki "Giriş" adımında — oraya
                   giriş günü gidiliyor. */}
-              <div className="flex divide-x divide-line overflow-hidden rounded-xl border border-line bg-white">
+              <div className="flex divide-x divide-line overflow-hidden rounded-2xl bg-paper shadow-[0_1px_2px_rgb(11_13_20/0.04),0_6px_16px_-12px_rgb(11_13_20/0.18)]">
                 {otel?.phone && (
                   <a
                     href={`tel:${otel.phone.replace(/\s/g, "")}`}
@@ -434,7 +436,7 @@ export default function ReservationDetailPage({
                 </Link>
               </div>
 
-              <div className="space-y-5 pt-2">
+              <div className="space-y-3 pt-1">
                 {/* İptal/başarısızda çizelge yok: olmayacak bir konaklamanın
                     adımlarını saymak yanıltıcı olur. */}
                 {(data.status === "CONFIRMED" || data.status === "PENDING") && (

@@ -78,7 +78,7 @@ export function PriceBreakdown({
             type="button"
             onClick={() => setShowRules((v) => !v)}
             aria-expanded={showRules}
-            className="flex min-h-11 items-center gap-1 text-[13px] font-semibold text-navy focus:underline focus:outline-none"
+            className="flex min-h-11 items-center gap-1 text-[13px] font-semibold text-navy-text focus:underline focus:outline-none"
           >
             {appliedRules.length} indirim kuralı uygulandı
             {showRules ? (
