@@ -268,9 +268,10 @@ export default function HomePage() {
 
             <div
               className={cn(
-                // lg altı: yatay snap şerit. Kenarlara taşırıp (-mx/px)
-                // kartların ekran kenarının altına kaymasını sağlıyoruz.
-                "no-scrollbar -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-1 sm:-mx-6 sm:px-6",
+                // lg altı: yatay snap şerit. Kenar boşluğu korunuyor —
+                // kartlar arama kartı ve rezervasyon kartıyla aynı hizada
+                // başlıyor.
+                "no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1",
                 // lg üstü: eski üç kolonlu ızgara
                 "lg:mx-0 lg:grid lg:grid-cols-3 lg:gap-x-4 lg:gap-y-6 lg:overflow-visible lg:px-0 lg:pb-0"
               )}
@@ -279,27 +280,51 @@ export default function HomePage() {
                 <Link
                   key={d.region}
                   href={`/search?destination=${encodeURIComponent(d.region)}`}
-                  className="group block w-[72vw] max-w-[300px] shrink-0 snap-start lg:w-auto lg:max-w-none"
+                  className={cn(
+                    "group relative block shrink-0 snap-start overflow-hidden",
+                    // lg altı: Fırsatlar şeridiyle aynı ölçü ve dil — metin
+                    // fotoğrafın üstünde, kart 144px.
+                    "h-36 w-[74vw] max-w-[300px] rounded-xl bg-navy",
+                    // lg üstü: eski dikey kart (görsel üstte, metin altta)
+                    "lg:h-auto lg:w-auto lg:max-w-none lg:rounded-md lg:bg-transparent"
+                  )}
                 >
-                  <div className="relative aspect-[4/3] overflow-hidden rounded-md border border-[rgb(26_24_20/0.08)]">
+                  <div className="relative h-full w-full lg:aspect-[4/3] lg:h-auto lg:overflow-hidden lg:rounded-md lg:border lg:border-[rgb(26_24_20/0.08)]">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={d.image}
                       alt={d.region}
-                      className="h-full w-full object-cover transition-transform duration-[600ms] group-hover:scale-[1.04]"
+                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-[600ms] group-hover:scale-[1.04] lg:relative"
                       loading="lazy"
                     />
+                    {/* Metin fotoğrafın üstünde okunsun — yalnızca lg altı */}
+                    <div
+                      aria-hidden="true"
+                      className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/30 to-transparent lg:hidden"
+                    />
                     {/* amber fiyat etiketi */}
-                    <div className="absolute bottom-3 left-3 inline-flex items-baseline gap-1 rounded-sm bg-gold px-2.5 py-1.5 shadow-[0_2px_0_rgb(11_13_20/0.2)]">
-                      <span className="text-[11px] font-semibold tracking-wider text-ink uppercase">
+                    <div className="absolute top-2.5 left-2.5 inline-flex items-baseline gap-1 rounded-sm bg-gold px-2 py-1 shadow-[0_2px_0_rgb(11_13_20/0.2)] lg:top-auto lg:bottom-3 lg:left-3 lg:px-2.5 lg:py-1.5">
+                      <span className="text-[10px] font-semibold tracking-wider text-ink uppercase lg:text-[11px]">
                         gecelik
                       </span>
-                      <span className="text-[14px] font-bold text-ink">
+                      <span className="text-[13px] font-bold text-ink lg:text-[14px]">
                         {d.fromPrice}
                       </span>
                     </div>
+
+                    {/* lg altı: ad ve bölgeler fotoğrafın üstünde */}
+                    <div className="absolute inset-x-0 bottom-0 p-3 lg:hidden">
+                      <h3 className="text-[16px] leading-tight font-bold text-white">
+                        {d.region}
+                      </h3>
+                      <p className="mt-0.5 truncate text-[12px] text-white/80">
+                        {d.ports}
+                      </p>
+                    </div>
                   </div>
-                  <div className="mt-3 flex items-baseline justify-between gap-4">
+
+                  {/* lg üstü: metin görselin altında */}
+                  <div className="mt-3 hidden items-baseline justify-between gap-4 lg:flex">
                     <div>
                       <h3 className="text-[18px] leading-tight font-bold tracking-[-0.015em] text-ink group-hover:text-navy">
                         {d.region}
@@ -336,7 +361,7 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="no-scrollbar -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4">
+          <div className="no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto">
             {CAMPAIGNS.map((k) => (
               <Link
                 key={k.code}
