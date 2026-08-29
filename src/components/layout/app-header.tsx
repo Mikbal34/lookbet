@@ -2,10 +2,13 @@
 
 // Uygulama kimlik çubuğu — kampanya karuselinin ÜSTÜNE binen saydam şerit.
 //
-// Karuselin üstündeyken saydam: yalnızca yukarıdan aşağı hafifleyen bir
-// karartma var, altındaki görsel görünmeye devam ediyor. Kullanıcı karuseli
-// geçtiğinde altına beyaz içerik geliyor ve beyaz metin okunmaz hâle
-// gelirdi; o yüzden kaydırma eşiği aşılınca çubuk dolu turuncuya dönüyor.
+// `saydam` verilen sayfalarda (ana sayfa — arkasında kampanya karuseli var)
+// yalnızca yukarıdan aşağı hafifleyen bir karartma taşır, altındaki görsel
+// görünmeye devam eder. Kullanıcı karuseli geçtiğinde altına beyaz içerik
+// geldiği için kaydırma eşiği aşılınca dolu turuncuya döner.
+//
+// Fotoğrafsız sayfalarda (Daha Fazla gibi) saydam bırakılırsa beyaz logo ve
+// hap beyaz zeminde kaybolur; oralarda baştan dolu turuncu kalır.
 //
 // Karşılama hapı hesabın kapısı: alt sekme çubuğunda "Hesabım" sekmesi yok
 // (bkz. app-tab-bar.tsx).
@@ -22,7 +25,16 @@ import { Logo } from "./logo";
 /** Karuselin altına inildiği kabul edilen kaydırma miktarı (px). */
 const ESIK = 150;
 
-export function AppHeader() {
+export function AppHeader({
+  /**
+   * Arkasında kampanya karuseli varken saydam durur. Fotoğrafsız
+   * sayfalarda (beyaz zemin) saydam bırakılırsa beyaz logo ve hap
+   * okunmaz hâle gelir; oralarda dolu turuncu kalır.
+   */
+  saydam = false,
+}: {
+  saydam?: boolean;
+}) {
   const { data: session, status } = useSession();
   const [kaydi, setKaydi] = React.useState(false);
 
@@ -38,7 +50,9 @@ export function AppHeader() {
     <header
       className={cn(
         "b2c-only sticky top-0 z-30 pt-[env(safe-area-inset-top)] transition-colors duration-200",
-        kaydi ? "bg-navy" : "bg-gradient-to-b from-ink/35 to-transparent"
+        saydam && !kaydi
+          ? "bg-gradient-to-b from-ink/35 to-transparent"
+          : "bg-navy"
       )}
     >
       <div className="flex items-center gap-3 px-4 py-2">

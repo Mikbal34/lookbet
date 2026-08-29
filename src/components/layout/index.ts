@@ -2,7 +2,6 @@ export { Navbar } from "./navbar";
 export { Footer } from "./footer";
 export { AppTabBar } from "./app-tab-bar";
 export { AppHeader } from "./app-header";
-export { AccountMenu } from "./account-menu";
 export { Container } from "./container";
 export { AdminSidebar } from "./admin-sidebar";
 export { AgencyHeader } from "./agency-header";

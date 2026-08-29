@@ -78,8 +78,8 @@ export function UpcomingReservationCard() {
 
   return (
     <section className="b2c-only px-4 pt-5" aria-label="Yaklaşan konaklaman">
-      <div className="rounded-xl border border-line bg-white p-4">
-        <p className="text-[15px] leading-snug text-ink">
+      <div className="rounded-xl border border-line bg-white p-3.5">
+        <p className="text-[14px] leading-snug text-ink">
           {otelAdi}
           {"'de konaklamana "}
           <b className="font-extrabold">
@@ -88,8 +88,8 @@ export function UpcomingReservationCard() {
           {kalanGun > 0 ? " kaldı!" : " giriş yapıyorsun!"}
         </p>
 
-        <div className="mt-3 flex items-baseline justify-between gap-3 border-t border-line pt-3">
-          <span className="text-[13px] font-semibold text-slate-text">
+        <div className="mt-2.5 flex items-baseline justify-between gap-3 border-t border-line pt-2.5">
+          <span className="text-[12.5px] font-semibold text-slate-text">
             {gunAyGun(data.checkIn)}, {new Date(data.checkIn).getFullYear()}
           </span>
           {data.bookingNumber && (
@@ -100,10 +100,10 @@ export function UpcomingReservationCard() {
         </div>
 
         {/* Uçuştaki kalkış — uçak — varış düzeninin konaklama karşılığı */}
-        <div className="mt-3 flex items-end justify-between gap-2">
+        <div className="mt-2.5 flex items-end justify-between gap-2">
           <div className="min-w-0">
             <p className="text-[11.5px] text-muted">Giriş</p>
-            <p className="mt-0.5 text-[15px] font-bold text-ink">
+            <p className="mt-0.5 text-[14px] font-bold text-ink">
               {gunAyGun(data.checkIn)}
             </p>
           </div>
@@ -117,7 +117,7 @@ export function UpcomingReservationCard() {
 
           <div className="min-w-0 text-right">
             <p className="text-[11.5px] text-muted">Çıkış</p>
-            <p className="mt-0.5 text-[15px] font-bold text-ink">
+            <p className="mt-0.5 text-[14px] font-bold text-ink">
               {gunAyGun(data.checkOut)}
             </p>
           </div>
@@ -125,14 +125,14 @@ export function UpcomingReservationCard() {
 
         <Link
           href={`/reservations/${data.id}`}
-          className="mt-4 flex h-12 w-full items-center justify-center rounded-lg bg-gold text-[15px] font-bold text-ink active:bg-gold-dark"
+          className="mt-3.5 flex h-11 w-full items-center justify-center rounded-lg bg-gold text-[14.5px] font-bold text-ink active:bg-gold-dark"
         >
           Rezervasyon Detayı
         </Link>
 
         <Link
           href={`/hotel/${data.hotelCode}`}
-          className="mt-1 flex min-h-11 w-full items-center justify-center gap-2 text-[13.5px] font-semibold text-slate-text active:text-ink"
+          className="mt-0.5 flex min-h-11 w-full items-center justify-center gap-2 text-[13px] font-semibold text-slate-text active:text-ink"
         >
           <Building2 className="size-4" aria-hidden="true" />
           Otel bilgileri

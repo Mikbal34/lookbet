@@ -19,7 +19,7 @@ import {
   BadgeCheck,
 } from "lucide-react";
 import Link from "next/link";
-import { AccountMenu, Navbar, Footer } from "@/components/layout";
+import { Navbar, Footer } from "@/components/layout";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -241,7 +241,6 @@ export default function ProfilePage() {
               </Link>
             </div>
 
-            <AccountMenu girisli={false} />
           </div>
         </main>
         <Footer />
@@ -505,8 +504,6 @@ export default function ProfilePage() {
             </SectionCard>
           )}
 
-          {/* App modunda hamburger'den buraya taşınan maddeler + çıkış */}
-          <AccountMenu girisli />
         </div>
       </main>
 

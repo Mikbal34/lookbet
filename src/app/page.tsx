@@ -123,7 +123,7 @@ export default function HomePage() {
     <div className="min-h-screen flex flex-col bg-paper">
       {/* ── TURUNCU BANT: header + hero + arama + chip'ler tek blok ── */}
       {/* App'te üst menü yerine sabit kimlik çubuğu, web'de normal navbar. */}
-      <AppHeader />
+      <AppHeader saydam />
       <div className="web-only">
         <Navbar variant="transparent" />
       </div>
@@ -403,9 +403,7 @@ export default function HomePage() {
         </section>
       </main>
 
-      <div className="web-only">
-        <Footer />
-      </div>
+      <Footer />
 
       <SearchOverlay
         open={aramaAcik}

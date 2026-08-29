@@ -13,13 +13,14 @@
 // o sayfaların kendi sabit alt CTA'ları var ve üst üste binerlerdi. Huniye
 // girince tek eylem kalması zaten istenen davranış.
 //
-// "Hesabım" bilerek burada YOK: hesaba üst kimlik çubuğundaki karşılama
-// hapından giriliyor (bkz. app-header.tsx), Pegasus'ta olduğu gibi.
+// "Hesabım" sekme olarak yok: hesaba üst kimlik çubuğundaki karşılama
+// hapından giriliyor (bkz. app-header.tsx). Yardım ve yasal sayfalar ise
+// "Daha Fazla" sekmesinde — app'te footer olmadığı için tek kapıları orası.
 
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarCheck, Percent, Search } from "lucide-react";
+import { CalendarCheck, MoreHorizontal, Percent, Search } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
 type Sekme = {
@@ -47,6 +48,12 @@ const SEKMELER: Sekme[] = [
     etiket: "Rezervasyonlar",
     ikon: CalendarCheck,
     aktif: (y) => y.startsWith("/reservations"),
+  },
+  {
+    href: "/daha-fazla",
+    etiket: "Daha Fazla",
+    ikon: MoreHorizontal,
+    aktif: (y) => y.startsWith("/daha-fazla"),
   },
 ];
 
