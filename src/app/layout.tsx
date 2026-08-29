@@ -1,14 +1,20 @@
 import type { Metadata, Viewport } from "next";
-import { Manrope } from "next/font/google";
+import { Nunito } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { AppTabBar } from "@/components/layout";
 import { APP_MODE_SCRIPT } from "@/lib/utils/app-mode";
 
-const manrope = Manrope({
-  variable: "--font-manrope",
+// Nunito — yuvarlak uçlu. Logonun kendi yazı tipi yığını zaten bunu istiyor
+// (Arial Rounded MT Bold → Nunito → Quicksand); arayüz Manrope ile düz uçlu
+// kalınca marka ile ekran farklı dil konuşuyordu.
+//
+// latin-ext şart: ı ğ ş İ Ğ Ş o alt kümede. next/font dosyayı derlemeye
+// gömüyor, WebView'de dışarı istek çıkmıyor ve çevrimdışı da çalışıyor.
+const nunito = Nunito({
+  variable: "--font-nunito",
   subsets: ["latin", "latin-ext"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["400", "600", "700", "800", "900"],
 });
 
 export const metadata: Metadata = {
@@ -44,7 +50,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: APP_MODE_SCRIPT }} />
       </head>
       <body
-        className={`${manrope.variable} font-sans antialiased bg-paper text-ink min-h-dvh`}
+        className={`${nunito.variable} font-sans antialiased bg-paper text-ink min-h-dvh`}
       >
         <Providers>
           {children}

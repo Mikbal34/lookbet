@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* LookBeds tasarım sistemi — CruiseScanner (Skyscanner-tarzı) tasarımının
-   TURUNCU versiyonu: dümdüz tek renk marka bandı, beyaz gövde, Manrope,
+   TURUNCU versiyonu: dümdüz tek renk marka bandı, beyaz gövde, Nunito,
    amber fiyat/CTA vurguları, keskin köşeler.
    Marka turuncusu logodan örneklendi: #E06028 */
 @theme inline {
@@ -44,10 +44,10 @@
   --color-chip-blue: #fdeae0; /* turuncu tonlu soft zemin */
   --color-paper: #ffffff; /* gövde beyaz (Skyscanner-tarzı) */
 
-  /* Fontlar — Manrope her yerde (display dahil) */
-  --font-sans: var(--font-manrope), "Helvetica Neue", Helvetica, Arial,
+  /* Fontlar — Nunito her yerde (display dahil) */
+  --font-sans: var(--font-nunito), "Helvetica Neue", Helvetica, Arial,
     sans-serif;
-  --font-serif: var(--font-manrope), "Helvetica Neue", Helvetica, Arial,
+  --font-serif: var(--font-nunito), "Helvetica Neue", Helvetica, Arial,
     sans-serif;
 }
 
@@ -57,7 +57,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Başlık dili: eski font-serif başlıklar artık Manrope — CruiseScanner'daki
+/* Başlık dili: eski font-serif başlıklar artık Nunito — CruiseScanner'daki
    extrabold + sıkı tracking hissi için global düzeltme */
 .font-serif {
   font-weight: 800;
@@ -94,7 +94,7 @@ body {
   --rdp-day-height: 23px;
   --rdp-day-width: 23px;
   --rdp-nav-height: 24px;
-  font-family: var(--font-manrope), sans-serif;
+  font-family: var(--font-nunito), sans-serif;
   font-size: 11px;
 }
 /* İki ay her zaman yan yana (dar popup'ta alt alta sarmasın) */
@@ -104,7 +104,7 @@ body {
   gap: 1.25rem;
 }
 .lookbet-daypicker .rdp-month_caption {
-  font-family: var(--font-manrope), sans-serif;
+  font-family: var(--font-nunito), sans-serif;
   font-size: 14px;
   font-weight: 800;
   letter-spacing: -0.01em;

@@ -21,7 +21,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
-import { BedDouble, Building2 } from "lucide-react";
+import { LbBina, LbYatak } from "@/components/ui/icons";
 import { getNightCount } from "@/lib/utils";
 
 type Rezervasyon = {
@@ -109,7 +109,7 @@ export function UpcomingReservationCard() {
           </div>
 
           <div className="flex shrink-0 flex-col items-center pb-0.5">
-            <BedDouble className="size-[18px] text-navy" aria-hidden="true" />
+            <LbYatak size={18} className="text-navy-text" />
             <span className="mt-0.5 text-[11px] font-semibold text-muted">
               {geceler} gece
             </span>
@@ -134,7 +134,7 @@ export function UpcomingReservationCard() {
           href={`/hotel/${data.hotelCode}`}
           className="mt-0.5 flex min-h-11 w-full items-center justify-center gap-2 text-[13px] font-semibold text-slate-text active:text-ink"
         >
-          <Building2 className="size-4" aria-hidden="true" />
+          <LbBina size={16} />
           Otel bilgileri
         </Link>
       </div>
