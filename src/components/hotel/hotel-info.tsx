@@ -263,7 +263,7 @@ export function HotelInfo({ hotel, className }: HotelInfoProps) {
           {phone && (
             <a
               href={`tel:${phone}`}
-              className="flex min-h-11 items-center gap-2 text-sm text-slate-text hover:text-navy-text transition-colors"
+              className="flex min-h-11 items-center gap-2 text-sm text-slate-text hover:text-navy transition-colors"
             >
               <Phone className="h-4 w-4 text-muted" aria-hidden="true" />
               {phone}
@@ -272,7 +272,7 @@ export function HotelInfo({ hotel, className }: HotelInfoProps) {
           {email && (
             <a
               href={`mailto:${email}`}
-              className="flex min-h-11 items-center gap-2 text-sm text-slate-text hover:text-navy-text transition-colors"
+              className="flex min-h-11 items-center gap-2 text-sm text-slate-text hover:text-navy transition-colors"
             >
               <Mail className="h-4 w-4 text-muted" aria-hidden="true" />
               {email}

@@ -112,7 +112,7 @@ export function ReservationCard({
 
         {/* Gövde */}
         <div className="px-4 pt-4 pb-3.5">
-          <h3 className="truncate text-[15px] font-bold text-ink transition-colors group-hover:text-navy-text">
+          <h3 className="truncate text-[15px] font-bold text-ink transition-colors group-hover:text-navy">
             {r.hotelName ?? r.hotelCode}
           </h3>
           {(r.roomType || pansiyon) && (

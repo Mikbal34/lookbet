@@ -71,7 +71,7 @@ export function HotelCard({ hotel, searchParams, className }: HotelCardProps) {
               className="absolute inset-0"
               style={{
                 background:
-                  "linear-gradient(150deg,#2F74C4,#1D5BA6 60%,#123A6B)",
+                  "linear-gradient(150deg,#3D85EE,#0B63E5 60%,#0A1F44)",
               }}
             />
           )}

@@ -150,7 +150,7 @@ function HotelDetailContent({
                 <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm space-y-3 lg:sticky lg:top-6">
                   {data.reviewSummary && (
                     <div className="flex items-center gap-2.5">
-                      <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg rounded-bl-none bg-navy-text text-base font-bold text-white">
+                      <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg rounded-bl-none bg-navy text-base font-bold text-white">
                         {data.reviewSummary.score.toFixed(1)}
                       </span>
                       <div>

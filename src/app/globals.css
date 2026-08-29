@@ -1,30 +1,31 @@
 @import "tailwindcss";
 
 /* LookBeds tasarım sistemi — CruiseScanner (Skyscanner-tarzı) tasarımının
-   LACİVERT versiyonu: dümdüz tek renk marka bandı, beyaz gövde, Nunito,
-   altın fiyat/CTA vurguları.
-   Marka turuncuydu (#E06028) ama üstünde beyaz yazı 3.58 kontrast veriyordu
-   (sınır 4.5) ve saydam çubukta 3.01'e düşüyordu; her beyaz-yazılı yüzey için
-   ayrı koyu ton türetmek gerekiyordu. Lacivertte bu sorun yok: #1d5ba6
-   üstünde beyaz 6.78, beyaz zeminde ikon olarak da 6.78. */
+   Palet CruiseScanner ile hizalı — jetonları siteden okundu:
+     --brand   #0a1f44   koyu lacivert, yüzey ve başlık
+     --primary #0b63e5   canlı mavi, eylem
+     --accent  #ffc829   altın
+   Altın (#ffc829) ve chip (#f1ede4) zaten birebir aynıydı; bu projede
+   yalnızca lacivert ailesi turuncuya boyanmış, nötrler olduğu gibi kalmıştı.
+
+   Turuncunun ölçülen sorunu: #e06028 üstünde beyaz yazı 3.58 (sınır 4.5),
+   saydam çubukta 3.01. Beyaz yazı taşıyan her yüzey için ayrı koyu ton
+   türetmek gerekiyordu. İki mavili sistemde bu sorun yok. */
 @theme inline {
   /* Marka — lacivert ailesi. Jeton adları zaten "navy"ydi: tasarım baştan
-     lacivertti, bir ara turuncuya boyanmış ama adlar kalmıştı. */
-  --color-navy: #1d5ba6; /* birincil — marka laciverti */
-  --color-navy-dark: #17457f; /* hover */
-  --color-navy-deep: #123a6b; /* koyu zemin / panel sidebar */
-  --color-navy-mid: #2f74c4;
-  --color-navy-bright: #5a97dd;
-  /* Kimlik çubuğunun dolu hâli — birincilden bir tık koyu.
+     lacivertti, bir ara turuncuya boyanmış ama adlar kalmıştı.
+
+     İki rol ayrı: navy EYLEM (düğme, ikon, bağlantı, aktif sekme),
+     navy-deep/navy-bar YÜZEY (kimlik çubuğu, koyu bloklar). */
+  --color-navy: #0b63e5; /* eylem — CruiseScanner --primary */
+  --color-navy-dark: #094fba; /* hover */
+  --color-navy-deep: #0a1f44; /* koyu yüzey — CruiseScanner --brand */
+  --color-navy-mid: #3d85ee;
+  --color-navy-bright: #74a8f5;
+  /* Kimlik çubuğunun dolu hâli — CruiseScanner'ın hero bloğuyla aynı ton.
      Çubuk %95 saydam olduğu için altındaki açık zemin renge karışıyor;
-     bu tonla beyaz başlık 8.44 kontrast alıyor. */
-  --color-navy-bar: #17457f;
-  /* Açık zeminde metin/bağlantı vurgusu — birincilden bir tık koyu.
-     Turuncu dönemde bu jeton zorunluydu: marka rengi metin olarak 3.58
-     veriyordu ve sınırın altındaydı. Lacivertte birincil renk (#1d5ba6)
-     metin olarak da 6.78 alıyor, yani jeton artık zorunlu değil; yalnızca
-     bağlantılara bir tık ağırlık vermek için duruyor (beyazda 7.78). */
-  --color-navy-text: #1a5297;
+     bu tonla beyaz başlık 14.6 kontrast alıyor. */
+  --color-navy-bar: #0a1f44;
 
   /* Vurgu — amber (CruiseScanner CTA/fiyat etiketi rengi) */
   --color-gold: #ffc829;
@@ -47,7 +48,7 @@
   --color-canvas: #f7f4ed; /* sayfa zemini — beyaz kartların üstünde durduğu
      ton. Beyaza yakın bir zeminde beyaz kart kart gibi durmuyor. */
   --color-chip: #f1ede4; /* etiket zemini */
-  --color-chip-blue: #e4edf9; /* lacivert tonlu soft zemin */
+  --color-chip-blue: #e7effc; /* lacivert tonlu soft zemin */
   --color-paper: #ffffff; /* gövde beyaz (Skyscanner-tarzı) */
 
   /* Fontlar — Nunito her yerde (display dahil) */

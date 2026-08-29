@@ -28,7 +28,7 @@ function ScoreBadge({
         // Zemin marka turuncusu değil koyu tonu: beyaz metin #e06028 üstünde
         // 3.58 kontrast veriyor, 12px ve 16px puanlar için sınır 4.5.
         // #b34718 üstünde 5.48.
-        "inline-flex items-center justify-center rounded-lg rounded-bl-none bg-navy-text font-bold text-white",
+        "inline-flex items-center justify-center rounded-lg rounded-bl-none bg-navy font-bold text-white",
         cls,
       )}
     >
@@ -60,7 +60,7 @@ function ReviewCard({ review }: { review: HotelReview }) {
     <div className="rounded-2xl bg-paper p-4 shadow-[0_1px_2px_rgb(11_13_20/0.04),0_6px_16px_-12px_rgb(11_13_20/0.18)]">
       <div className="mb-2 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5 min-w-0">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-chip-blue text-sm font-semibold text-navy-text">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-chip-blue text-sm font-semibold text-navy">
             {initial}
           </span>
           <div className="min-w-0">
