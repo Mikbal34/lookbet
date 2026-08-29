@@ -12,7 +12,7 @@ import { ReservationCard } from "@/components/reservation";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 
-type ReservationStatus = "ALL" | "CONFIRMED" | "PENDING" | "CANCELLED";
+type Zaman = "gelecek" | "gecmis";
 
 interface Reservation {
   id: string;
@@ -39,16 +39,20 @@ interface ReservationsResponse {
   };
 }
 
-const STATUS_TABS: { value: ReservationStatus; label: string }[] = [
-  { value: "ALL", label: "Tümü" },
-  { value: "CONFIRMED", label: "Onaylı" },
-  { value: "PENDING", label: "Beklemede" },
-  { value: "CANCELLED", label: "İptal" },
+// Durum ekseni yerine zaman ekseni: insan "gelecek konaklamam ne" veya
+// "nerede kalmıştım" diye bakar, "beklemede olanlar hangileri" diye değil.
+// Durum zaten her kartın üstünde rozet olarak duruyor.
+//
+// İptal ve başarısız kayıtlar tarihi ne olursa olsun "Geçmiş" tarafında
+// (bkz. /api/reservations ?zaman) — eskiden FAILED'ın hiç sekmesi yoktu ve
+// yalnızca "Tümü"de görünüyordu.
+const ZAMAN_SEKMELERI: { value: Zaman; label: string }[] = [
+  { value: "gelecek", label: "Gelecek konaklamalar" },
+  { value: "gecmis", label: "Geçmiş" },
 ];
 
-async function fetchReservations(status: ReservationStatus): Promise<ReservationsResponse> {
-  const qs = status !== "ALL" ? `?status=${status}` : "";
-  const res = await fetch(`/api/reservations${qs}`);
+async function fetchReservations(zaman: Zaman): Promise<ReservationsResponse> {
+  const res = await fetch(`/api/reservations?zaman=${zaman}`);
   if (!res.ok) throw new Error("Rezervasyonlar alınamadı");
   return res.json();
 }
@@ -76,10 +80,10 @@ function ReservationSkeleton() {
   );
 }
 
-function TabContent({ status }: { status: ReservationStatus }) {
+function TabContent({ zaman }: { zaman: Zaman }) {
   const { data, isLoading, isError } = useQuery<ReservationsResponse>({
-    queryKey: ["reservations", status],
-    queryFn: () => fetchReservations(status),
+    queryKey: ["reservations", zaman],
+    queryFn: () => fetchReservations(zaman),
     staleTime: 2 * 60 * 1000,
   });
 
@@ -120,11 +124,11 @@ function TabContent({ status }: { status: ReservationStatus }) {
           Rezervasyon bulunamadı
         </h3>
         <p className="text-sm text-gray-500 max-w-xs">
-          {status === "ALL"
-            ? "Henüz bir rezervasyonunuz bulunmuyor. Hemen otel arayın!"
-            : `${STATUS_TABS.find((t) => t.value === status)?.label} durumunda rezervasyon yok.`}
+          {zaman === "gelecek"
+            ? "Yaklaşan bir konaklaman yok. Hemen otel ara!"
+            : "Geçmiş konaklaman bulunmuyor."}
         </p>
-        {status === "ALL" && (
+        {zaman === "gelecek" && (
           <a
             href="/search"
             className="mt-4 inline-block bg-navy text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-navy-dark transition-colors"
@@ -172,18 +176,18 @@ export default function ReservationsPage() {
           </div>
 
           {/* Tabs */}
-          <Tabs defaultValue="ALL">
+          <Tabs defaultValue="gelecek">
             <TabsList className="mb-6">
-              {STATUS_TABS.map((tab) => (
+              {ZAMAN_SEKMELERI.map((tab) => (
                 <TabsTrigger key={tab.value} value={tab.value}>
                   {tab.label}
                 </TabsTrigger>
               ))}
             </TabsList>
 
-            {STATUS_TABS.map((tab) => (
+            {ZAMAN_SEKMELERI.map((tab) => (
               <TabsContent key={tab.value} value={tab.value}>
-                <TabContent status={tab.value} />
+                <TabContent zaman={tab.value} />
               </TabsContent>
             ))}
           </Tabs>

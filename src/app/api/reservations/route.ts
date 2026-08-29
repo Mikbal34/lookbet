@@ -86,12 +86,32 @@ export async function GET(request: NextRequest) {
       where.status = { in: ["PENDING", "CONFIRMED"] as ReservationStatus[] };
     }
 
+    // ?zaman=gelecek|gecmis — arayüzdeki iki sekme.
+    //
+    // İptal ve başarısız kayıtlar tarihi ne olursa olsun "geçmiş" tarafında:
+    // gelecek haftaya ait iptal edilmiş bir rezervasyon "gelecek konaklamam"
+    // değil. Kullanıcı onu "artık aktif olmayan" diye arar.
+    const zaman = searchParams.get("zaman");
+    if (zaman === "gelecek") {
+      where.checkOut = { gte: new Date() };
+      where.status = { in: ["PENDING", "CONFIRMED"] as ReservationStatus[] };
+    } else if (zaman === "gecmis") {
+      where.OR = [
+        { checkOut: { lt: new Date() } },
+        { status: { in: ["CANCELLED", "FAILED"] as ReservationStatus[] } },
+      ];
+    }
+
     const [reservations, total] = await Promise.all([
       prisma.reservation.findMany({
         where,
         skip,
         take: limit,
-        orderBy: upcoming ? { checkIn: "asc" } : { createdAt: "desc" },
+        // Gelecek: girişe en yakın önce. Geçmiş ve varsayılan: en yeni önce.
+        orderBy:
+          upcoming || zaman === "gelecek"
+            ? { checkIn: "asc" }
+            : { createdAt: "desc" },
         include: {
           user: { select: { id: true, name: true, email: true } },
           agency: { select: { id: true, companyName: true } },
