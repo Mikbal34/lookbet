@@ -2,9 +2,14 @@
 
 // Uygulama kimlik çubuğu — iki kılıkta çalışır:
 //
-//  • Sekme sayfaları (ana sayfa, kampanyalar, rezervasyonlar, daha fazla):
-//    solda logo, sağda karşılama hapı. Hesabın kapısı o hap; alt sekme
-//    çubuğunda "Hesabım" sekmesi yok (bkz. app-tab-bar.tsx).
+//  • Ana sayfa: solda logo, sağda karşılama hapı. Hesabın kapısı o hap; alt
+//    sekme çubuğunda "Hesabım" sekmesi yok (bkz. app-tab-bar.tsx).
+//
+//  • Diğer sekme sayfaları (kampanyalar, rezervasyonlar, daha fazla):
+//    yalnızca ortalanmış ekran başlığı. Logo her sekmede tekrar edince yer
+//    kaplıyor ve hiçbir şey söylemiyor; kimlik çubuğu kişisel ekranın
+//    çubuğu. Kaydırınca gövdedeki başlık kaçtığında da çubuk nerede
+//    olduğunu söylemeye devam ediyor.
 //
 //  • Derin sayfalar (otel, odalar, rezervasyon detayı, ödeme): solda geri
 //    oku, yanında ekran başlığı. Sayfa içi "Sonuçlara Dön" gibi metin
@@ -54,6 +59,8 @@ export function AppHeader({ saydam = false, geri, baslik }: AppHeaderProps) {
 
   const ad = session?.user?.name;
   const derin = geri !== undefined;
+  // Geri oku yok ama başlık verilmişse: ortalanmış başlık çubuğu.
+  const ortaBaslik = !derin && !!baslik;
 
   const geriIkonu = (
     <ArrowLeft className="size-5" aria-hidden="true" />
@@ -70,8 +77,17 @@ export function AppHeader({ saydam = false, geri, baslik }: AppHeaderProps) {
           : "bg-navy/85 backdrop-blur-md"
       )}
     >
-      <div className="flex items-center gap-2 px-4 py-2">
-        {derin ? (
+      <div
+        className={cn(
+          "flex items-center gap-2 px-4 py-2",
+          ortaBaslik && "justify-center"
+        )}
+      >
+        {ortaBaslik ? (
+          <h1 className="min-w-0 truncate py-2.5 text-[17px] font-extrabold text-white">
+            {baslik}
+          </h1>
+        ) : derin ? (
           <>
             {typeof geri === "string" ? (
               <Link href={geri} aria-label="Geri" className={geriSinifi}>

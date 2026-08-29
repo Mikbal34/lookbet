@@ -18,13 +18,13 @@ const deals = CAMPAIGNS;
 export default function DealsPage() {
   return (
     <div className="min-h-screen flex flex-col bg-paper">
-      <AppHeader />
+      <AppHeader baslik="Kampanyalar" />
       <div className="web-only">
         <Navbar />
       </div>
 
       <main className="flex-1 max-w-[1280px] w-full mx-auto px-4 sm:px-6 lg:px-10 py-11">
-        <h1 className="font-serif text-3xl lg:text-4xl font-normal mb-1.5">
+        <h1 className="web-only font-serif text-3xl lg:text-4xl font-normal mb-1.5">
           Kampanyalar
         </h1>
         <p className="text-[14.5px] text-muted mb-8">

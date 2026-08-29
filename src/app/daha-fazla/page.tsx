@@ -49,10 +49,10 @@ export default function DahaFazlaPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-paper">
-      <AppHeader />
+      <AppHeader baslik="Daha fazla" />
 
       <main className="flex-1 px-4 pt-4 pb-8">
-        <h1 className="mb-4 text-[22px] font-extrabold tracking-[-0.02em] text-ink">
+        <h1 className="web-only mb-4 text-[22px] font-extrabold tracking-[-0.02em] text-ink">
           Daha fazla
         </h1>
 

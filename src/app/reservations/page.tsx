@@ -153,7 +153,7 @@ function TabContent({ status }: { status: ReservationStatus }) {
 export default function ReservationsPage() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <AppHeader />
+      <AppHeader baslik="Rezervasyonlarım" />
       <div className="web-only">
         <Navbar />
       </div>
@@ -162,7 +162,7 @@ export default function ReservationsPage() {
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-8">
           {/* Page header */}
           <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <h1 className="web-only text-2xl font-bold text-gray-900 flex items-center gap-2">
               <CalendarCheck className="h-6 w-6 text-navy" aria-hidden="true" />
               Rezervasyonlarım
             </h1>
