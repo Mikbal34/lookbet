@@ -15,6 +15,10 @@
 //    oku, yanında ekran başlığı. Sayfa içi "Sonuçlara Dön" gibi metin
 //    bağlantıları buraya taşındı — uygulamalarda geri hep aynı yerde durur.
 //
+// Dolu hâlin rengi marka turuncusu değil --color-navy-bar: çubuk saydam
+// olduğu için altındaki açık zemin turuncuya karışıyor ve üstündeki beyaz
+// yazı 3.01 kontrasta düşüyordu (sınır 4.5). Yeni tonla %95 opaklıkta 5.52.
+//
 // `saydam` verilen sayfalarda (ana sayfa — arkasında kampanya karuseli var)
 // çubuk yalnızca yukarıdan aşağı hafifleyen bir karartma taşır. Kullanıcı
 // karuseli geçtiğinde altına beyaz içerik geldiği için kaydırma eşiği
@@ -74,7 +78,7 @@ export function AppHeader({ saydam = false, geri, baslik }: AppHeaderProps) {
         "b2c-only sticky top-0 z-30 pt-[env(safe-area-inset-top)] transition-colors duration-200",
         saydam && !kaydi
           ? "bg-gradient-to-b from-ink/35 to-transparent"
-          : "bg-navy/85 backdrop-blur-md"
+          : "bg-navy-bar/95 backdrop-blur-md"
       )}
     >
       <div

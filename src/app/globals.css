@@ -12,6 +12,12 @@
   --color-navy-deep: #8f3a12; /* koyu zemin / panel sidebar */
   --color-navy-mid: #ed7b45;
   --color-navy-bright: #f59468;
+  /* Kimlik çubuğunun dolu hâli. Marka turuncusu (#e06028) üstünde beyaz yazı
+     3.58 kontrast veriyor; çubuk %85 saydam olduğu için altındaki açık zemin
+     karışıyor ve değer 3.01'e düşüyordu. Sınır 4.5.
+     Bu ton %95 opaklıkta 5.52 veriyor — 4.5'i rahat geçen tonların markaya
+     en yakını, yani çubuk turuncudan gerektiğinden fazla uzaklaşmıyor. */
+  --color-navy-bar: #a84314;
   /* YALNIZCA METİN için. İkonlarda kullanma.
      Marka turuncusu (#e06028) beyazda 3.58 kontrast veriyor. Metin için AA
      sınırı 4.5, o yüzden bağlantı/vurgu yazısı bu koyu tonu kullanır (beyazda
