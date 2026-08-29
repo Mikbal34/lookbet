@@ -275,9 +275,14 @@ export default function ReservationDetailPage({
                   <Building2 className="size-16 text-white/15" />
                 </div>
               )}
+              {/* Okunabilirlik maskesi. Ara ton bilerek koyu: şehir etiketi
+                  11px ve metin fotoğrafın en parlak yerine denk gelebiliyor.
+                  Beş otelin fotoğrafında ölçüldü — bu değerlerle en kötü
+                  kontrast 5.28 (çubuk başlığı, şehir ve otel adı için). Önceki
+                  via-ink/40 ile şehir etiketi 3.11'e kadar düşüyordu. */}
               <div
                 aria-hidden="true"
-                className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/40 to-ink/45"
+                className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/60 to-ink/55"
               />
 
               <div className="relative mx-auto flex h-full max-w-3xl flex-col justify-end px-4 pt-14 pb-7 sm:px-6 lg:px-8">

@@ -207,11 +207,107 @@ function nightsBetween(checkIn: string, checkOut: string): number {
   return n > 0 ? n : 1;
 }
 
+// ---- Görseller -----------------------------------------------------------
+//
+// Önceden picsum.photos'tan tohuma göre rastgele fotoğraf çekiliyordu; otel
+// kartında ve rezervasyon detayının tepesinde otelle hiç ilgisi olmayan
+// kareler çıkıyordu (bir portre, bir sokak fotoğrafı). Mock veri de olsa
+// ekranda otel görünmesi gerekiyor: aşağıdaki kareler elle seçildi ve her
+// otele karakterine uyanlar verildi (sahil tesisi havuz, şehir oteli cephe,
+// butik otel klasik oda). Beşinin de ilk karesi — yani listede görünen
+// küçük görsel — birbirinden farklı.
+
+function unsplash(id: string): string {
+  return `https://images.unsplash.com/photo-${id}?w=900&q=80&auto=format&fit=crop`;
+}
+
+const OTEL_GORSELLERI: Record<string, string[]> = {
+  // Lara Beach Resort & Spa — sahil tesisi
+  HTL001: [
+    "1551882547-ff40c63fe5fa",
+    "1571003123894-1f0594d2b5d9",
+    "1540541338287-41700207dee6",
+    "1564501049412-61c2a3083791",
+    "1584132967334-10e028bd69f7",
+    "1611892440504-42a792e24d32",
+  ].map(unsplash),
+  // Antalya City Hotel — şehir oteli
+  HTL002: [
+    "1455587734955-081b22074882",
+    "1517840901100-8179e982acb7",
+    "1445019980597-93fa8acb246c",
+    "1631049307264-da0ec9d70304",
+    "1560448204-e02f11c3d0e2",
+    "1618773928121-c32242e63f39",
+  ].map(unsplash),
+  // Bodrum Bay Resort — koy manzarası
+  HTL003: [
+    "1582719508461-905c673771fd",
+    "1520250497591-112f2f40a3f4",
+    "1542314831-068cd1dbfeeb",
+    "1584132967334-10e028bd69f7",
+    "1596394516093-501ba68a0ba6",
+    "1578683010236-d716f9a3f461",
+  ].map(unsplash),
+  // İstanbul Bosphorus Palace — lüks şehir oteli
+  HTL004: [
+    "1578683010236-d716f9a3f461",
+    "1524231757912-21f4fe3a7200",
+    "1542314831-068cd1dbfeeb",
+    "1560448204-e02f11c3d0e2",
+    "1590490360182-c33d57733427",
+    "1631049307264-da0ec9d70304",
+  ].map(unsplash),
+  // Sultanahmet Boutique Hotel — butik, klasik
+  HTL005: [
+    "1590490360182-c33d57733427",
+    "1524231757912-21f4fe3a7200",
+    "1618773928121-c32242e63f39",
+    "1517840901100-8179e982acb7",
+    "1560448204-e02f11c3d0e2",
+    "1611892440504-42a792e24d32",
+  ].map(unsplash),
+};
+
+/** Listede olmayan bir kod gelirse — ekran boş kalmasın. */
+const YEDEK_OTEL_GORSELLERI = [
+  "1566073771259-6a8506099945",
+  "1445019980597-93fa8acb246c",
+  "1631049307264-da0ec9d70304",
+  "1564501049412-61c2a3083791",
+  "1540541338287-41700207dee6",
+  "1590490360182-c33d57733427",
+].map(unsplash);
+
+/** Oda görselleri — otelden bağımsız ortak havuz. */
+const ODA_GORSELLERI = [
+  "1611892440504-42a792e24d32",
+  "1590490360182-c33d57733427",
+  "1631049307264-da0ec9d70304",
+  "1618773928121-c32242e63f39",
+  "1596394516093-501ba68a0ba6",
+  "1578683010236-d716f9a3f461",
+  "1560448204-e02f11c3d0e2",
+].map(unsplash);
+
 function imagesFor(hotelCode: string, count = 5): string[] {
-  const base = seedNum(hotelCode);
+  const havuz = OTEL_GORSELLERI[hotelCode] ?? YEDEK_OTEL_GORSELLERI;
+  return Array.from({ length: count }, (_, i) => havuz[i % havuz.length]);
+}
+
+/**
+ * Odanın görselleri. Aynı oteldeki iki oda aynı kareyle başlamasın diye
+ * havuza otel koduna ve oda sırasına göre farklı yerden giriliyor.
+ */
+function roomImagesFor(
+  hotelCode: string,
+  roomIndex: number,
+  count = 3
+): string[] {
+  const bas = (seedNum(hotelCode) + roomIndex * 2) % ODA_GORSELLERI.length;
   return Array.from(
     { length: count },
-    (_, i) => `https://picsum.photos/seed/${base + i}/800/600`
+    (_, i) => ODA_GORSELLERI[(bas + i) % ODA_GORSELLERI.length]
   );
 }
 
@@ -519,7 +615,7 @@ export function mockSearchRooms(
         .map((id) => ROOM_ATTRIBUTES.find((a) => a.id === id))
         .filter((a): a is RoomAttributeDto => Boolean(a))
         .map((a) => ({ id: a.id, categoryName: a.categoryName, name: a.name })),
-      images: imagesFor(`${h.hotelCode}-R${i + 1}`, 3),
+      images: roomImagesFor(h.hotelCode, i, 3),
       allotment: [8, 3, 1][i] ?? 5,
     };
   });
