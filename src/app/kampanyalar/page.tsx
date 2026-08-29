@@ -61,7 +61,7 @@ export default function DealsPage() {
                 </span>
                 <Link
                   href="/search"
-                  className="bg-gold text-ink rounded-md px-5 py-[11px] text-[13px] font-bold hover:bg-gold-dark transition-colors"
+                  className="inline-flex min-h-11 items-center bg-gold text-ink rounded-md px-5 text-[13px] font-bold hover:bg-gold-dark transition-colors"
                 >
                   Otelleri gör
                 </Link>
