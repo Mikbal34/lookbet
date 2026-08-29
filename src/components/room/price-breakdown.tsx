@@ -10,7 +10,7 @@
 // />
 
 import * as React from "react";
-import { Tag, ChevronDown, ChevronUp, CheckCircle2 } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
 export interface PriceBreakdownProps {
@@ -53,69 +53,60 @@ export function PriceBreakdown({
       )}
       aria-label="Fiyat detayı"
     >
-      {/* Header */}
-      <div className="border-b border-line/60 px-4 py-3.5">
-        <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
-          <Tag className="h-4 w-4 text-navy" aria-hidden="true" />
-          Fiyat Detayı
+      {/* Başlık — dekoratif ikon yok, sayfadaki diğer bölümlerle aynı etiket */}
+      <div className="border-b border-line/60 px-4 py-3">
+        <h3 className="text-[10.5px] font-bold tracking-[0.08em] text-muted uppercase">
+          Fiyat
         </h3>
       </div>
 
-      <div className="px-5 py-4 space-y-3">
-        {/* Original price */}
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-500">Liste fiyatı</span>
+      {/* Renkler sayfanın jetonlarından: burada gray-500/gray-900 vardı ve
+          onlar maviye çalan griler. Sıcak ink/muted paletinin yanında kart
+          gözle seçilir biçimde daha soğuk duruyordu. */}
+      <div className="space-y-2.5 px-4 py-3.5">
+        <div className="flex items-center justify-between">
+          <span className="text-[13px] text-muted">Liste fiyatı</span>
           <span
             className={cn(
-              "font-medium",
-              hasDiscount ? "text-gray-400 line-through" : "text-gray-900"
+              "text-[14px] font-semibold",
+              hasDiscount ? "text-muted line-through" : "text-ink"
             )}
           >
             {formatPrice(originalPrice, currency)}
           </span>
         </div>
 
-        {/* Discount */}
         {hasDiscount && (
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-green-600 font-medium flex items-center gap-1">
-              <Tag className="h-3.5 w-3.5" aria-hidden="true" />
-              İndirim ({discountPct}%)
+          <div className="flex items-center justify-between">
+            <span className="text-[13px] text-emerald-700">
+              İndirim (%{discountPct})
             </span>
-            <span className="text-green-600 font-semibold">
+            <span className="text-[14px] font-semibold text-emerald-700">
               -{formatPrice(discount, currency)}
             </span>
           </div>
         )}
 
-        {/* Applied rules toggle */}
         {appliedRules && appliedRules.length > 0 && (
           <div>
             <button
               type="button"
               onClick={() => setShowRules((v) => !v)}
               aria-expanded={showRules}
-              className={cn(
-                "flex items-center gap-1 text-xs text-navy hover:text-navy-dark transition-colors",
-                "focus:outline-none focus:underline"
-              )}
+              className="flex min-h-11 items-center gap-1 text-[13px] font-semibold text-navy focus:underline focus:outline-none"
             >
-              {showRules ? (
-                <ChevronUp className="h-3.5 w-3.5" aria-hidden="true" />
-              ) : (
-                <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
-              )}
               {appliedRules.length} indirim kuralı uygulandı
+              {showRules ? (
+                <ChevronUp className="size-3.5" aria-hidden="true" />
+              ) : (
+                <ChevronDown className="size-3.5" aria-hidden="true" />
+              )}
             </button>
 
             {showRules && (
-              <ul className="mt-2 space-y-1.5 pl-1">
+              <ul className="space-y-1 pb-1">
                 {appliedRules.map((rule, i) => (
-                  <li key={i} className="flex items-start gap-1.5 text-xs text-gray-600">
-                    <CheckCircle2
-                      className="h-3.5 w-3.5 text-green-500 mt-0.5 shrink-0"
-                      aria-hidden="true"
-                    />
+                  <li key={i} className="text-[13px] text-muted">
                     {rule}
                   </li>
                 ))}
@@ -124,20 +115,17 @@ export function PriceBreakdown({
           </div>
         )}
 
-        {/* Separator */}
-        <div className="border-t border-dashed border-gray-200 pt-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold text-gray-900">Toplam</span>
-            <div className="text-right">
-              <p className="text-xl font-bold text-navy">
-                {formatPrice(finalPrice, currency)}
+        <div className="flex items-center justify-between border-t border-line pt-2.5">
+          <span className="text-[14px] font-semibold text-ink">Toplam</span>
+          <div className="text-right">
+            <p className="text-[17px] leading-none font-extrabold text-ink">
+              {formatPrice(finalPrice, currency)}
+            </p>
+            {hasDiscount && (
+              <p className="mt-1 text-[13px] text-emerald-700">
+                {formatPrice(discount, currency)} tasarruf ettin
               </p>
-              {hasDiscount && (
-                <p className="text-xs text-green-600 font-medium">
-                  {formatPrice(discount, currency)} tasarruf ettiniz
-                </p>
-              )}
-            </div>
+            )}
           </div>
         </div>
       </div>
