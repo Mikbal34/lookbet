@@ -6,7 +6,13 @@
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { List, Map as MapIcon, SearchX, SlidersHorizontal, Pencil } from "lucide-react";
+import {
+  LbAramaBos,
+  LbFiltre,
+  LbHarita,
+  LbKalem,
+  LbListe,
+} from "@/components/ui/icons";
 import {AppHeader, Navbar, Footer } from "@/components/layout";
 import { SearchForm, SearchOverlay } from "@/components/search";
 import { HotelCard, HotelFilters } from "@/components/hotel";
@@ -253,7 +259,7 @@ function SearchPageContent() {
                     : "Tarih ve misafir seç"}
                 </span>
               </span>
-              <Pencil className="size-4 shrink-0 text-navy" aria-hidden="true" />
+              <LbKalem size={16} className="text-navy-text" />
             </button>
 
             {/* Tam form yalnızca masaüstünde satır içi; lg altında aynı
@@ -322,12 +328,12 @@ function SearchPageContent() {
                 >
                   {gorunum === "liste" ? (
                     <>
-                      <MapIcon className="size-4" aria-hidden="true" />
+                      <LbHarita size={16} />
                       Harita
                     </>
                   ) : (
                     <>
-                      <List className="size-4" aria-hidden="true" />
+                      <LbListe size={16} />
                       Liste
                     </>
                   )}
@@ -338,7 +344,7 @@ function SearchPageContent() {
                   onClick={() => setFiltersOpen(true)}
                   className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-md border border-line-strong px-3.5 py-2.5 text-[13.5px] font-bold text-ink active:bg-chip lg:hidden"
                 >
-                  <SlidersHorizontal className="size-4" aria-hidden="true" />
+                  <LbFiltre size={16} />
                   Filtreler
                   {activeFilterCount > 0 && (
                     <span className="inline-flex size-5 items-center justify-center rounded-full bg-navy text-[11px] font-bold text-white">
@@ -371,7 +377,7 @@ function SearchPageContent() {
               {/* Error state */}
               {isError && (
                 <div className="flex flex-col items-center justify-center py-20 text-center">
-                  <SearchX className="h-12 w-12 text-red-400 mb-4" aria-hidden="true" />
+                  <LbAramaBos size={44} className="mb-4 text-red-400" />
                   <h2 className="text-lg font-semibold text-gray-900 mb-2">
                     Arama sırasında hata oluştu
                   </h2>
@@ -392,7 +398,7 @@ function SearchPageContent() {
                       aria-hidden="true"
                     />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <SearchX className="h-14 w-14 text-gray-500" aria-hidden="true" />
+                      <LbAramaBos size={52} className="text-muted" />
                     </div>
                   </div>
                   <h2 className="text-lg font-semibold text-gray-900 mb-2">

@@ -7,7 +7,7 @@
 // />
 
 import * as React from "react";
-import { Minus, Plus } from "lucide-react";
+import { LbArti, LbEksi } from "@/components/ui/icons";
 import { cn } from "@/lib/utils/cn";
 import { useMediaQuery } from "@/lib/utils/use-media-query";
 import { MobileSheet } from "@/components/ui/mobile-sheet";
@@ -60,7 +60,7 @@ function CounterRow({
             "disabled:opacity-40 disabled:pointer-events-none"
           )}
         >
-          <Minus className="h-4 w-4 lg:h-3.5 lg:w-3.5" aria-hidden="true" />
+          <LbEksi className="h-4 w-4 lg:h-3.5 lg:w-3.5" />
         </button>
         <span
           className="w-5 text-center text-sm font-bold text-ink"
@@ -81,7 +81,7 @@ function CounterRow({
             "disabled:opacity-40 disabled:pointer-events-none"
           )}
         >
-          <Plus className="h-4 w-4 lg:h-3.5 lg:w-3.5" aria-hidden="true" />
+          <LbArti className="h-4 w-4 lg:h-3.5 lg:w-3.5" />
         </button>
       </div>
     </div>

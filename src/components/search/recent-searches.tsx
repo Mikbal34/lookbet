@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Clock, X } from "lucide-react";
+import { LbKapat, LbSaat } from "@/components/ui/icons";
 import {
   clearRecentSearches,
   getRecentSearches,
@@ -41,7 +41,7 @@ export function RecentSearches() {
     <section className="b2c-only pt-5" aria-label="Son aramaların">
       <div className="flex items-center justify-between px-4 pb-2.5">
         <h2 className="flex items-center gap-1.5 text-[13px] font-bold text-ink">
-          <Clock className="size-4 text-navy" aria-hidden="true" />
+          <LbSaat size={16} className="text-navy-text" />
           Son aramaların
         </h2>
         <button
@@ -53,7 +53,7 @@ export function RecentSearches() {
           className="-mr-2 flex min-h-11 items-center gap-1 px-2 text-[12.5px] font-semibold text-muted active:text-ink"
         >
           Temizle
-          <X className="size-3.5" aria-hidden="true" />
+          <LbKapat size={14} />
         </button>
       </div>
 

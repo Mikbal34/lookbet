@@ -15,7 +15,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { MapPin } from "lucide-react";
+import { LbKonum } from "@/components/ui/icons";
 import { cn } from "@/lib/utils/cn";
 import type { HotelSearchResult } from "@/lib/royal-api/types";
 
@@ -92,10 +92,7 @@ export function HotelCard({ hotel, searchParams, className }: HotelCardProps) {
           </div>
 
           <div className="flex items-start gap-1 text-muted">
-            <MapPin
-              className="mt-0.5 size-3 shrink-0 lg:size-3.5"
-              aria-hidden="true"
-            />
+            <LbKonum className="mt-0.5 size-3 lg:size-3.5" />
             <p className="line-clamp-1 text-[12px] leading-snug lg:line-clamp-2 lg:text-[13.5px]">
               {address}
             </p>

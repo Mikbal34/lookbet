@@ -4,7 +4,7 @@
 // lookbet. tasarım diline uygun özel takvim popup'ı (react-day-picker, range).
 
 import * as React from "react";
-import { CalendarDays } from "lucide-react";
+import { LbTakvimDuz } from "@/components/ui/icons";
 import { DayPicker, type DateRange } from "react-day-picker";
 import { tr } from "react-day-picker/locale";
 import "react-day-picker/style.css";
@@ -100,7 +100,7 @@ export function DateRangeField({
       className="flex-1 min-w-0 px-5 py-3 lg:py-2.5 border-r border-line last:border-r-0 lg:last:border-r text-left cursor-pointer"
     >
       <div className={cellLabel}>
-        <CalendarDays className="size-3.5" aria-hidden="true" />
+        <LbTakvimDuz size={14} />
         {label}
       </div>
       <div

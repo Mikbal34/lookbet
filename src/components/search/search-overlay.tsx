@@ -14,7 +14,7 @@
 
 import * as React from "react";
 import { createPortal } from "react-dom";
-import { ArrowLeft } from "lucide-react";
+import { LbSolOk } from "@/components/ui/icons";
 import { POPULAR_DESTINATIONS } from "@/lib/constants/destinations";
 import { SearchForm, type SearchFormValues } from "./search-form";
 
@@ -72,7 +72,7 @@ export function SearchOverlay({
           aria-label="Geri"
           className="flex size-11 items-center justify-center rounded-md text-ink active:bg-chip"
         >
-          <ArrowLeft className="size-5" />
+          <LbSolOk size={20} />
         </button>
         <h2 className="text-[16px] font-extrabold tracking-[-0.01em] text-ink">
           Nereye gidiyorsun?

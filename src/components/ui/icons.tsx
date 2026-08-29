@@ -253,6 +253,190 @@ export function LbDahaFazla(p: IkonProps) {
   );
 }
 
+// ── Arama akışı ─────────────────────────────────────────────────────────
+
+/** Düz takvim — tarih seçimi. Sekmedeki LbTakvim'den farkı: tik yok. */
+export function LbTakvimDuz(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <rect x="3.5" y="5.5" width="17" height="15" rx="3.5" />
+      <path d="M8 3.25v4.5M16 3.25v4.5" />
+      <path d="M3.5 10.5h17" />
+    </Ikon>
+  );
+}
+
+/** Kapat. Daire içindeki LbCarpi'den farklı: bu bir eylem, o bir durum. */
+export function LbKapat(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <path d="m6.75 6.75 10.5 10.5M17.25 6.75 6.75 17.25" />
+    </Ikon>
+  );
+}
+
+/** Artı — sayaç arttırma. */
+export function LbArti(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <path d="M12 5.5v13M5.5 12h13" />
+    </Ikon>
+  );
+}
+
+/** Eksi — sayaç azaltma. */
+export function LbEksi(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <path d="M5.5 12h13" />
+    </Ikon>
+  );
+}
+
+/** Sol ok — geri. */
+export function LbSolOk(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <path d="M19 12H5.25" />
+      <path d="m11 5.5-5.75 6.5L11 18.5" />
+    </Ikon>
+  );
+}
+
+/** Aşağı ok — açılır liste, akordiyon. */
+export function LbAsagiOk(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <path d="m5.5 9.25 6.5 6 6.5-6" />
+    </Ikon>
+  );
+}
+
+/** Küre — uyruk, dil. */
+export function LbKure(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M3.5 12h17" />
+      <path d="M12 3.5a13.5 13.5 0 0 1 0 17 13.5 13.5 0 0 1 0-17Z" />
+    </Ikon>
+  );
+}
+
+/** Liste görünümü. */
+export function LbListe(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <path d="M9.5 6.5h10.5M9.5 12h10.5M9.5 17.5h10.5" />
+      <path d="M4.5 6.5h.01M4.5 12h.01M4.5 17.5h.01" />
+    </Ikon>
+  );
+}
+
+/** Harita görünümü — katlanmış harita. */
+export function LbHarita(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <path d="m3.5 7 5.75-2.5 5.5 2.5L20.5 4.5v12.5L14.75 19.5l-5.5-2.5L3.5 19.5V7Z" />
+      <path d="M9.25 4.5V17M14.75 7v12.5" />
+    </Ikon>
+  );
+}
+
+/** Filtreler — sürgüler. */
+export function LbFiltre(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <path d="M4 7.5h14.5M4 16.5h9.5" />
+      <circle cx="17" cy="16.5" r="2.75" />
+      <circle cx="8.5" cy="7.5" r="2.75" />
+    </Ikon>
+  );
+}
+
+/** Kalem — düzenle. */
+export function LbKalem(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <path d="m4.5 19.5 1-4 9.3-9.3 3 3-9.3 9.3-4 1Z" />
+      <path d="m14.8 6.2 1.9-1.9a1.6 1.6 0 0 1 2.2 0l.8.8a1.6 1.6 0 0 1 0 2.2l-1.9 1.9" />
+    </Ikon>
+  );
+}
+
+/** Sonuç yok — büyüteç içinde çarpı. */
+export function LbAramaBos(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <circle cx="10.5" cy="10.5" r="6.75" />
+      <path d="m15.4 15.4 4.6 4.6" />
+      <path d="m8.4 8.4 4.2 4.2M12.6 8.4l-4.2 4.2" />
+    </Ikon>
+  );
+}
+
+/** Soru işareti — yardım. */
+export function LbYardim(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M9.6 9.4a2.5 2.5 0 0 1 4.9.6c0 1.7-2.5 2-2.5 3.5" />
+      <path d="M12 16.6h.01" />
+    </Ikon>
+  );
+}
+
+/** Kalkan — gizlilik. */
+export function LbKalkan(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <path d="M12 3.5 5 6v6c0 4.2 3 7.2 7 8.5 4-1.3 7-4.3 7-8.5V6l-7-2.5Z" />
+    </Ikon>
+  );
+}
+
+/** Terazi — yasal metinler. */
+export function LbTerazi(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <path d="M12 4.5v15M7 19.5h10" />
+      <path d="M5 8.5h14" />
+      <path d="M5 8.5 2.75 14h4.5L5 8.5ZM19 8.5 16.75 14h4.5L19 8.5Z" />
+    </Ikon>
+  );
+}
+
+/** Çıkış — oturumu kapat. */
+export function LbCikis(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <path d="M14.5 4.5h2A2.5 2.5 0 0 1 19 7v10a2.5 2.5 0 0 1-2.5 2.5h-2" />
+      <path d="M10 8.25 13.75 12 10 15.75" />
+      <path d="M13.5 12H4.75" />
+    </Ikon>
+  );
+}
+
+/** Kullanıcı — hesap kapısı. */
+export function LbKullanici(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <circle cx="12" cy="12" r="8.5" />
+      <circle cx="12" cy="10" r="2.75" />
+      <path d="M6.4 18.6a6.2 6.2 0 0 1 11.2 0" />
+    </Ikon>
+  );
+}
+
+/** Menü — web navbar'ındaki hamburger. */
+export function LbMenu(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <path d="M4 7h16M4 12h16M4 17h16" />
+    </Ikon>
+  );
+}
+
 /** Sağ ok — satır bağlantıları. */
 export function LbSagOk(p: IkonProps) {
   return (

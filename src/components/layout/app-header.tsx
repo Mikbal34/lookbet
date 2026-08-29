@@ -27,7 +27,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { ArrowLeft, ChevronRight, CircleUserRound } from "lucide-react";
+import { LbKullanici, LbSagOk, LbSolOk } from "@/components/ui/icons";
 import { cn } from "@/lib/utils/cn";
 import { Logo } from "./logo";
 
@@ -63,7 +63,7 @@ export function AppHeader({ saydam = false, geri, baslik }: AppHeaderProps) {
   const ortaBaslik = !derin && !!baslik;
 
   const geriIkonu = (
-    <ArrowLeft className="size-5" aria-hidden="true" />
+    <LbSolOk size={20} />
   );
   const geriSinifi =
     "-ml-2 flex size-11 shrink-0 items-center justify-center rounded-full text-white active:bg-white/20";
@@ -119,17 +119,11 @@ export function AppHeader({ saydam = false, geri, baslik }: AppHeaderProps) {
               href="/profile"
               className="ml-auto flex min-h-11 min-w-0 items-center gap-1.5 rounded-full bg-ink/35 py-1.5 pr-1.5 pl-2.5 text-white backdrop-blur-sm active:bg-ink/50"
             >
-              <CircleUserRound
-                className="size-[18px] shrink-0"
-                aria-hidden="true"
-              />
+              <LbKullanici size={18} />
               <span className="min-w-0 truncate text-[12.5px] font-semibold">
                 {status === "authenticated" && ad ? ad : "Giriş yap"}
               </span>
-              <ChevronRight
-                className="size-3.5 shrink-0 opacity-70"
-                aria-hidden="true"
-              />
+              <LbSagOk size={14} className="opacity-70" />
             </Link>
           </>
         )}

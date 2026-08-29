@@ -8,7 +8,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowRight, Calendar, Search } from "lucide-react";
+import { LbAra, LbSagOk, LbTakvimDuz } from "@/components/ui/icons";
 import { AppHeader, Navbar, Footer } from "@/components/layout";
 import { SearchForm, SearchOverlay } from "@/components/search";
 import { AppHomeHero } from "@/components/search/app-home-hero";
@@ -146,14 +146,14 @@ export default function HomePage() {
               className="group inline-flex items-center gap-1.5 font-semibold text-white underline-offset-[4px] hover:underline"
             >
               Tatil otelleri
-              <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+              <LbSagOk className="size-3.5 transition-transform group-hover:translate-x-0.5" />
             </Link>
             <Link
               href="/kampanyalar"
               className="group inline-flex items-center gap-1.5 font-semibold text-white underline-offset-[4px] hover:underline"
             >
               Kampanyalar
-              <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+              <LbSagOk className="size-3.5 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
         </div>
@@ -172,7 +172,7 @@ export default function HomePage() {
             onClick={() => setAramaAcik(true)}
             className="flex w-full items-center gap-3 rounded-[10px] bg-white px-4 py-3.5 text-left shadow-[0_12px_28px_-10px_rgb(11_13_20/0.35)] active:bg-chip lg:hidden"
           >
-            <Search className="size-5 shrink-0 text-navy" aria-hidden="true" />
+            <LbAra size={20} className="text-navy-text" />
             <span className="min-w-0">
               <span className="block text-[15px] font-bold text-ink">
                 Nereye gitmek istersin?
@@ -262,7 +262,7 @@ export default function HomePage() {
               >
                 <span className="lg:hidden">Tümü</span>
                 <span className="hidden lg:inline">Tüm oteller</span>
-                <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+                <LbSagOk className="size-3.5 transition-transform group-hover:translate-x-0.5" />
               </Link>
             </div>
 
@@ -334,7 +334,7 @@ export default function HomePage() {
                       </p>
                     </div>
                     <span className="flex shrink-0 items-center gap-1 text-[11.5px] tracking-[0.08em] whitespace-nowrap text-muted uppercase">
-                      <Calendar className="size-3" aria-hidden />
+                      <LbTakvimDuz className="size-3" />
                       {d.stay}
                     </span>
                   </div>
@@ -357,7 +357,7 @@ export default function HomePage() {
               className="flex min-h-11 items-center gap-1 text-[13px] font-semibold text-navy"
             >
               Tümü
-              <ArrowRight className="size-3.5" />
+              <LbSagOk className="size-3.5" />
             </Link>
           </div>
 

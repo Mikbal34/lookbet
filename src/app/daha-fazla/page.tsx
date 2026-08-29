@@ -10,15 +10,15 @@ import * as React from "react";
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import {
-  Building2,
-  ChevronRight,
-  CircleUserRound,
-  FileText,
-  HelpCircle,
-  LogOut,
-  Scale,
-  Shield,
-} from "lucide-react";
+  LbBelge,
+  LbBina,
+  LbCikis,
+  LbKalkan,
+  LbKullanici,
+  LbSagOk,
+  LbTerazi,
+  LbYardim,
+} from "@/components/ui/icons";
 import { AppHeader } from "@/components/layout";
 import { LocaleSwitcher } from "@/components/layout/locale-switcher";
 
@@ -26,20 +26,20 @@ const BOLUMLER = [
   {
     baslik: "Hesap",
     satirlar: [
-      { etiket: "Hesabım", href: "/profile", ikon: CircleUserRound },
-      { etiket: "Rezervasyonlarım", href: "/reservations", ikon: Building2 },
+      { etiket: "Hesabım", href: "/profile", ikon: LbKullanici },
+      { etiket: "Rezervasyonlarım", href: "/reservations", ikon: LbBina },
     ],
   },
   {
     baslik: "Destek",
-    satirlar: [{ etiket: "Yardım", href: "/yardim", ikon: HelpCircle }],
+    satirlar: [{ etiket: "Yardım", href: "/yardim", ikon: LbYardim }],
   },
   {
     baslik: "Yasal",
     satirlar: [
-      { etiket: "Gizlilik politikası", href: "/yardim", ikon: Shield },
-      { etiket: "Kullanım koşulları", href: "/yardim", ikon: FileText },
-      { etiket: "KVKK", href: "/yardim", ikon: Scale },
+      { etiket: "Gizlilik politikası", href: "/yardim", ikon: LbKalkan },
+      { etiket: "Kullanım koşulları", href: "/yardim", ikon: LbBelge },
+      { etiket: "KVKK", href: "/yardim", ikon: LbTerazi },
     ],
   },
 ];
@@ -70,12 +70,9 @@ export default function DahaFazlaPage() {
                     i < b.satirlar.length - 1 ? "border-b border-line" : ""
                   }`}
                 >
-                  <Ikon className="size-5 shrink-0 text-navy" aria-hidden="true" />
+                  <Ikon size={20} className="text-navy-text" />
                   <span className="flex-1">{etiket}</span>
-                  <ChevronRight
-                    className="size-4 shrink-0 text-muted"
-                    aria-hidden="true"
-                  />
+                  <LbSagOk size={16} className="text-muted" />
                 </Link>
               ))}
             </nav>
@@ -100,7 +97,7 @@ export default function DahaFazlaPage() {
             onClick={() => signOut({ callbackUrl: "/" })}
             className="flex min-h-13 w-full items-center justify-center gap-2 rounded-xl border border-line bg-white px-4 py-3 text-[15px] font-semibold text-red-600 active:bg-chip"
           >
-            <LogOut className="size-5" aria-hidden="true" />
+            <LbCikis size={20} />
             Çıkış yap
           </button>
         )}

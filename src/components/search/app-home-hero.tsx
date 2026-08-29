@@ -13,7 +13,13 @@
 // odaklı bir ekrana geçmek, Pegasus'un ve Booking'in yaptığı.
 
 import * as React from "react";
-import { CalendarDays, MapPin, Search, Users } from "lucide-react";
+import {
+  LbAra,
+  LbKonum,
+  LbMisafir,
+  LbTakvimDuz,
+  type IkonProps,
+} from "@/components/ui/icons";
 import { CAMPAIGNS } from "@/lib/constants/campaigns";
 import { cn } from "@/lib/utils/cn";
 import { formatDateRange } from "@/lib/utils";
@@ -119,21 +125,21 @@ export function AppHomeHero({
       <div className="relative -mt-8 px-4 pb-4">
         <div className="overflow-hidden rounded-xl bg-white shadow-[0_10px_26px_-8px_rgb(11_13_20/0.4)]">
           <SatirDugmesi
-            ikon={MapPin}
+            ikon={LbKonum}
             etiket="Nereye"
             deger={destination || "Şehir, bölge veya otel"}
             dolu={!!destination}
             onClick={onAc}
           />
           <SatirDugmesi
-            ikon={CalendarDays}
+            ikon={LbTakvimDuz}
             etiket="Tarih"
             deger={tarihMetni}
             dolu={!!(checkIn && checkOut)}
             onClick={onAc}
           />
           <SatirDugmesi
-            ikon={Users}
+            ikon={LbMisafir}
             etiket="Kişi"
             deger={`${adults} Yetişkin`}
             dolu
@@ -146,7 +152,7 @@ export function AppHomeHero({
             onClick={onAc}
             className="flex h-12 w-full items-center justify-center gap-2 bg-gold text-[15px] font-bold text-ink active:bg-gold-dark"
           >
-            <Search className="size-4" aria-hidden="true" />
+            <LbAra size={16} />
             Otel Ara
           </button>
         </div>
@@ -163,7 +169,7 @@ function SatirDugmesi({
   onClick,
   sonSatir = false,
 }: {
-  ikon: React.ComponentType<{ className?: string }>;
+  ikon: React.ComponentType<IkonProps>;
   etiket: string;
   deger: string;
   dolu: boolean;
@@ -181,7 +187,7 @@ function SatirDugmesi({
         !sonSatir && "border-b border-line"
       )}
     >
-      <Ikon className="size-4 shrink-0 text-navy" aria-hidden="true" />
+      <Ikon size={16} className="text-navy-text" />
       <span className="w-12 shrink-0 text-[11.5px] font-semibold text-muted">
         {etiket}
       </span>
