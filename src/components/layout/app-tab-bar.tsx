@@ -22,16 +22,19 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarCheck } from "@phosphor-icons/react/dist/csr/CalendarCheck";
-import { DotsThree } from "@phosphor-icons/react/dist/csr/DotsThree";
-import { MagnifyingGlass } from "@phosphor-icons/react/dist/csr/MagnifyingGlass";
-import { Percent } from "@phosphor-icons/react/dist/csr/Percent";
+import {
+  LbAra,
+  LbDahaFazla,
+  LbTakvim,
+  LbYuzde,
+  type IkonProps,
+} from "@/components/ui/icons";
 import { cn } from "@/lib/utils/cn";
 
 type Sekme = {
   href: string;
   etiket: string;
-  ikon: React.ComponentType<{ size?: number; weight?: "regular" | "fill" }>;
+  ikon: React.ComponentType<IkonProps>;
   aktif: (yol: string) => boolean;
 };
 
@@ -39,25 +42,25 @@ const SEKMELER: Sekme[] = [
   {
     href: "/",
     etiket: "Ara",
-    ikon: MagnifyingGlass,
+    ikon: LbAra,
     aktif: (y) => y === "/" || y.startsWith("/search"),
   },
   {
     href: "/kampanyalar",
     etiket: "Kampanyalar",
-    ikon: Percent,
+    ikon: LbYuzde,
     aktif: (y) => y.startsWith("/kampanyalar"),
   },
   {
     href: "/reservations",
     etiket: "Rezervasyonlar",
-    ikon: CalendarCheck,
+    ikon: LbTakvim,
     aktif: (y) => y.startsWith("/reservations"),
   },
   {
     href: "/daha-fazla",
     etiket: "Daha Fazla",
-    ikon: DotsThree,
+    ikon: LbDahaFazla,
     aktif: (y) => y.startsWith("/daha-fazla"),
   },
 ];
@@ -140,7 +143,10 @@ export function AppTabBar() {
                     aktif ? "text-navy" : "text-muted active:text-ink"
                   )}
                 >
-                  <Ikon size={daralt ? 22 : 24} weight={aktif ? "fill" : "regular"} />
+                  <Ikon
+                    size={daralt ? 22 : 24}
+                    strokeWidth={aktif ? 3.25 : 2.25}
+                  />
                   <span
                     className={cn(
                       "max-w-full truncate transition-all duration-200",

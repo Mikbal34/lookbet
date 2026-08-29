@@ -197,6 +197,62 @@ export function LbUyari(p: IkonProps) {
   );
 }
 
+// ── Alt sekme çubuğu ────────────────────────────────────────────────────
+//
+// Aktif sekmede doluya geçmiyoruz, kalınlaşıyoruz (strokeWidth 2.25 → 3.25).
+// Setin grameri çizgi üzerine kurulu; dolu varyant üretmek ya iç detayları
+// silmeyi (takvimin tiki kaybolur) ya da iç boşlukları sayfa rengine boyamayı
+// gerektirirdi — ikincisi ikonu durduğu zeminin rengine bağımlı yapar ve
+// yüzen kapsül yarı saydam olduğu için orada zaten yanlış görünür.
+// Kalınlık, çizgi tabanlı bir sette vurgunun doğal ekseni.
+
+/** Arama. */
+export function LbAra(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <circle cx="10.5" cy="10.5" r="6.75" />
+      <path d="m15.4 15.4 4.6 4.6" />
+    </Ikon>
+  );
+}
+
+/** Yüzde — kampanyalar. */
+export function LbYuzde(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <path d="M18 6 6 18" />
+      <circle cx="8" cy="8" r="2.4" />
+      <circle cx="16" cy="16" r="2.4" />
+    </Ikon>
+  );
+}
+
+/**
+ * Takvim — rezervasyonlar.
+ *
+ * Başlık çizgisi bilerek yok: aktif sekmede çizgi 3.25'e kalınlaşıyor ve
+ * kutu + iki askı + başlık çizgisi + tik aynı anda 24px'e sığmıyordu, ikon
+ * turuncu bir lekeye dönüşüyordu. İki askı takvimi zaten anlatıyor.
+ */
+export function LbTakvim(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <rect x="3.5" y="5.5" width="17" height="15" rx="3.5" />
+      <path d="M8 3.25v4.5M16 3.25v4.5" />
+      <path d="m9 13.75 2.2 2.2 4-4.2" />
+    </Ikon>
+  );
+}
+
+/** Üç nokta — daha fazla. */
+export function LbDahaFazla(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <path d="M5.75 12h.01M12 12h.01M18.25 12h.01" />
+    </Ikon>
+  );
+}
+
 /** Sağ ok — satır bağlantıları. */
 export function LbSagOk(p: IkonProps) {
   return (

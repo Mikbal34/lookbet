@@ -39,6 +39,7 @@ import {
   LbMisafir,
   LbTelefon,
   LbYatak,
+  LbCarpi,
   LbUyari,
   LbYildiz,
   type IkonProps,
@@ -455,6 +456,24 @@ export default function ReservationDetailPage({
                 </Link>
               </div>
 
+              {/* Rezervasyonu yönet — Pegasus'un bilet altındaki eylem
+                  kutucukları gibi, sayfanın üst yarısında.
+                  Önce en alttaydı: yıkıcı bir işlem sayfada düğme gibi durup
+                  davet etmesin diye. Ama iptal etmeye gelen kişi onu arayarak
+                  sayfanın dibine iniyordu — gömmek korumak değil, zorlaştırmak
+                  oluyordu. Yukarıda ama sessiz: kendi satırı, dolgusuz, kırmızı
+                  metin. Uyarının ağırlığını onay penceresi taşıyor. */}
+              {canCancel && (
+                <button
+                  type="button"
+                  onClick={() => setCancelOpen(true)}
+                  className="flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl bg-paper py-3.5 text-[14px] font-bold text-red-700 shadow-[0_1px_2px_rgb(11_13_20/0.04),0_6px_16px_-12px_rgb(11_13_20/0.18)] active:bg-red-50"
+                >
+                  <LbCarpi size={16} />
+                  Rezervasyonu iptal et
+                </button>
+              )}
+
               <div className="space-y-3 pt-1">
                 {/* İptal/başarısızda çizelge yok: olmayacak bir konaklamanın
                     adımlarını saymak yanıltıcı olur. */}
@@ -576,20 +595,7 @@ export default function ReservationDetailPage({
                     </Bolum>
                   )}
 
-                {/* İptal: kutusuz ve ikonsuz. Geri alınamayan bir işlem sayfada
-                  düğme gibi durup davet etmemeli; uyarının ağırlığını onay
-                  penceresi taşıyor. */}
               </div>
-
-              {canCancel && (
-                <button
-                  type="button"
-                  onClick={() => setCancelOpen(true)}
-                  className="flex min-h-11 w-full items-center justify-center text-[13px] font-semibold text-red-700 active:text-red-900"
-                >
-                  Rezervasyonu iptal et
-                </button>
-              )}
             </div>
           </>
         )}
