@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
 import { getReservationDetail } from "@/lib/royal-api";
 import type { ReservationStatus } from "@/generated/prisma/client";
+import { boardTypeAdi, boardTypeAdlari } from "@/lib/board-types";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -107,7 +108,12 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
       }
     }
 
-    return NextResponse.json(reservation);
+    // Liste ucundaki gibi pansiyon kodunu görünen ada çevir.
+    const pansiyonAdlari = await boardTypeAdlari();
+    return NextResponse.json({
+      ...reservation,
+      boardTypeName: boardTypeAdi(reservation.boardType, pansiyonAdlari),
+    });
   } catch (error) {
     console.error("[GET /api/reservations/[id]]", error);
     return NextResponse.json(

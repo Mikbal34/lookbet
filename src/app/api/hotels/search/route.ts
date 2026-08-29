@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
 import { hotelSearchSchema } from "@/lib/validators";
 import { searchHotels } from "@/lib/royal-api";
+import { boardTypeAdlari } from "@/lib/board-types";
 
 // POST /api/hotels/search
 // Searches hotels by destination via Royal API.
@@ -95,8 +96,7 @@ export async function POST(request: NextRequest) {
 
     // Translate board type codes to display names using the synced content
     // table; unknown codes fall through as-is.
-    const boardTypeRows = await prisma.boardType.findMany();
-    const boardTypeNames = new Map(boardTypeRows.map((b) => [b.code, b.name]));
+    const boardTypeNames = await boardTypeAdlari();
 
     const hotelsWithBoardNames = (results.hotels ?? []).map((h) => ({
       ...h,

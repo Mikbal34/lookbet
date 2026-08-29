@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
+import { boardTypeAdi, boardTypeAdlari } from "@/lib/board-types";
 
 type ReservationStatus = "PENDING" | "CONFIRMED" | "CANCELLED" | "FAILED";
 
@@ -99,8 +100,16 @@ export async function GET(request: NextRequest) {
       prisma.reservation.count({ where }),
     ]);
 
+    // Pansiyon kodunu görünen ada çevir; arayüzde kullanıcıya "RO" yerine
+    // "Sadece Oda" yazsın. Arama ucu bunu zaten yapıyordu.
+    const pansiyonAdlari = await boardTypeAdlari();
+    const cikti = reservations.map((r) => ({
+      ...r,
+      boardTypeName: boardTypeAdi(r.boardType, pansiyonAdlari),
+    }));
+
     return NextResponse.json({
-      data: reservations,
+      data: cikti,
       pagination: {
         total,
         page,
