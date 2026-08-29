@@ -12,7 +12,7 @@
 
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { CalendarCheck, AlertCircle } from "lucide-react";
+import { LbUyari, LbYatak } from "@/components/ui/icons";
 import {AppHeader, Navbar, Footer } from "@/components/layout";
 import { ReservationCard } from "@/components/reservation";
 import { SegmentedTabs } from "@/components/ui/segmented-tabs";
@@ -106,7 +106,7 @@ function TabContent({ zaman }: { zaman: Zaman }) {
   if (isError) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
-        <AlertCircle className="h-10 w-10 text-red-400 mb-3" aria-hidden="true" />
+        <LbUyari size={38} className="mb-3 text-red-400" />
         <p className="text-sm text-gray-500">Rezervasyonlar yüklenirken hata oluştu.</p>
       </div>
     );
@@ -123,7 +123,7 @@ function TabContent({ zaman }: { zaman: Zaman }) {
             aria-hidden="true"
           />
           <div className="absolute inset-0 flex items-center justify-center">
-            <CalendarCheck className="h-14 w-14 text-blue-400" aria-hidden="true" />
+            <LbYatak size={52} className="text-navy-text/70" />
           </div>
         </div>
         <h3 className="text-base font-semibold text-gray-900 mb-2">
@@ -177,7 +177,7 @@ export default function ReservationsPage() {
               de var — sekmelerin neyi böldüğünü söyleyen tek cümle o. */}
           <div className="mb-5">
             <h1 className="web-only mb-1 text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <CalendarCheck className="h-6 w-6 text-navy" aria-hidden="true" />
+              <LbYatak size={22} className="text-navy-text" />
               Rezervasyonlarım
             </h1>
             <p className="text-sm text-muted">

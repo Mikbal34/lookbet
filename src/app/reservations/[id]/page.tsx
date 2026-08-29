@@ -22,7 +22,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Building2, Moon, Phone, Star, AlertCircle } from "lucide-react";
 import { AppHeader, Navbar, Footer } from "@/components/layout";
 import {
   StatusBadge,
@@ -32,6 +31,18 @@ import {
 } from "@/components/reservation";
 import { PriceBreakdown } from "@/components/room";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  LbAy,
+  LbBelge,
+  LbBina,
+  LbEtiket,
+  LbMisafir,
+  LbTelefon,
+  LbYatak,
+  LbUyari,
+  LbYildiz,
+  type IkonProps,
+} from "@/components/ui/icons";
 import { Button } from "@/components/ui/button";
 import { formatCurrency, formatDate, getNightCount } from "@/lib/utils";
 
@@ -142,15 +153,28 @@ function DetailSkeleton() {
 }
 
 /**
- * Bölüm başlığı — bilet kartındaki GİRİŞ/ÇIKIŞ etiketiyle aynı tipografi.
+ * Bölüm başlığı.
  *
- * Büyük harf, Türkçedeki "Her Kelime Büyük" sorununu da çözüyor: o yazım
- * İngilizce geleneği, Türkçe arayüzde makine çevirisi gibi okunuyor.
- * Başlıkların yanında ikon yok — ikon eyleme, başlığa değil.
+ * Küçük soluk büyük harf etiketti; başlık gibi değil dipnot gibi duruyordu.
+ * Başlık kalın ve koyu yazılır — 15px, 800, ink. Yanında kendi ikon
+ * setimizden bir işaret, yumuşak turuncu rozette (bkz. ui/icons.tsx).
+ *
+ * Cümle düzeni: "İptal koşulları", "İptal Koşulları" değil. Her kelimeyi
+ * büyük harfle başlatmak İngilizce geleneği, Türkçe arayüzde makine
+ * çevirisi gibi okunuyor.
  */
-function Baslik({ children }: { children: React.ReactNode }) {
+function Baslik({
+  ikon: Ikon,
+  children,
+}: {
+  ikon: React.ComponentType<IkonProps>;
+  children: React.ReactNode;
+}) {
   return (
-    <h2 className="mb-2.5 text-[10.5px] font-bold tracking-[0.08em] text-muted uppercase">
+    <h2 className="mb-3 flex items-center gap-2 text-[15px] font-extrabold text-ink">
+      <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-chip-blue text-navy-text">
+        <Ikon size={16} />
+      </span>
       {children}
     </h2>
   );
@@ -168,14 +192,16 @@ function Baslik({ children }: { children: React.ReactNode }) {
  */
 function Bolum({
   baslik,
+  ikon,
   children,
 }: {
   baslik: string;
+  ikon: React.ComponentType<IkonProps>;
   children: React.ReactNode;
 }) {
   return (
     <section className="rounded-2xl bg-paper p-4 shadow-[0_1px_2px_rgb(11_13_20/0.04),0_6px_16px_-12px_rgb(11_13_20/0.18)]">
-      <Baslik>{baslik}</Baslik>
+      <Baslik ikon={ikon}>{baslik}</Baslik>
       {children}
     </section>
   );
@@ -256,10 +282,7 @@ export default function ReservationDetailPage({
 
         {isError && (
           <div className="flex flex-col items-center justify-center px-4 py-20 text-center">
-            <AlertCircle
-              className="mb-4 h-12 w-12 text-red-400"
-              aria-hidden="true"
-            />
+            <LbUyari size={44} className="mb-4 text-red-400" />
             <h2 className="mb-2 text-lg font-semibold text-gray-900">
               Rezervasyon yüklenemedi
             </h2>
@@ -288,7 +311,7 @@ export default function ReservationDetailPage({
                   aria-hidden="true"
                   className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-navy to-navy-deep"
                 >
-                  <Building2 className="size-16 text-white/15" />
+                  <LbBina size={64} className="text-white/15" />
                 </div>
               )}
               {/* Okunabilirlik maskesi. Ara ton bilerek koyu: şehir etiketi
@@ -316,11 +339,7 @@ export default function ReservationDetailPage({
                     aria-label={`${otel.stars} yıldız`}
                   >
                     {Array.from({ length: otel.stars }, (_, i) => (
-                      <Star
-                        key={i}
-                        className="size-3.5 fill-gold text-gold"
-                        aria-hidden="true"
-                      />
+                      <LbYildiz key={i} size={14} className="text-gold" />
                     ))}
                   </div>
                 )}
@@ -369,7 +388,7 @@ export default function ReservationDetailPage({
                     <div className="flex items-center gap-1.5">
                       <span className="size-1.5 rounded-full bg-line-strong" />
                       <span className="h-px w-6 bg-line-strong" />
-                      <Moon className="size-3.5 text-navy" aria-hidden="true" />
+                      <LbAy size={14} className="text-navy" />
                       <span className="h-px w-6 bg-line-strong" />
                       <span className="size-1.5 rounded-full bg-line-strong" />
                     </div>
@@ -423,7 +442,7 @@ export default function ReservationDetailPage({
                     href={`tel:${otel.phone.replace(/\s/g, "")}`}
                     className="flex min-h-11 flex-1 items-center justify-center gap-2 py-3 text-[13px] font-semibold text-slate-text active:bg-chip"
                   >
-                    <Phone className="size-4 text-navy" aria-hidden="true" />
+                    <LbTelefon size={16} className="text-navy-text" />
                     Oteli ara
                   </a>
                 )}
@@ -431,7 +450,7 @@ export default function ReservationDetailPage({
                   href={`/hotel/${data.hotelCode}`}
                   className="flex min-h-11 flex-1 items-center justify-center gap-2 py-3 text-[13px] font-semibold text-slate-text active:bg-chip"
                 >
-                  <Building2 className="size-4 text-navy" aria-hidden="true" />
+                  <LbBina size={16} className="text-navy-text" />
                   Otel sayfası
                 </Link>
               </div>
@@ -440,7 +459,7 @@ export default function ReservationDetailPage({
                 {/* İptal/başarısızda çizelge yok: olmayacak bir konaklamanın
                     adımlarını saymak yanıltıcı olur. */}
                 {(data.status === "CONFIRMED" || data.status === "PENDING") && (
-                  <Bolum baslik="Konaklaman">
+                  <Bolum baslik="Konaklaman" ikon={LbYatak}>
                     <StayTimeline
                       status={data.status}
                       createdAt={data.createdAt}
@@ -456,7 +475,7 @@ export default function ReservationDetailPage({
                   </Bolum>
                 )}
 
-                <Bolum baslik="Fiyat">
+                <Bolum baslik="Fiyat" ikon={LbEtiket}>
                   <PriceBreakdown
                     originalPrice={data.totalPrice}
                     finalPrice={data.discountedPrice ?? data.totalPrice}
@@ -466,7 +485,7 @@ export default function ReservationDetailPage({
                   />
                 </Bolum>
 
-                <Bolum baslik="Misafirler">
+                <Bolum baslik="Misafirler" ikon={LbMisafir}>
                   {data.guests && data.guests.length > 0 && (
                     <ul className="space-y-1.5">
                       {data.guests.map((guest, idx) => (
@@ -508,7 +527,7 @@ export default function ReservationDetailPage({
                 {data.status === "CANCELLED" &&
                   data.cancellationFee != null &&
                   data.cancellationFee > 0 && (
-                    <Bolum baslik="İptal ücreti">
+                    <Bolum baslik="İptal ücreti" ikon={LbBelge}>
                       <p className="text-[14px] text-slate-text">
                         Bu rezervasyonun iptali için{" "}
                         <span className="font-semibold text-ink">
@@ -525,7 +544,7 @@ export default function ReservationDetailPage({
                 {data.cancellationPolicy &&
                   Array.isArray(data.cancellationPolicy) &&
                   data.cancellationPolicy.length > 0 && (
-                    <Bolum baslik="İptal koşulları">
+                    <Bolum baslik="İptal koşulları" ikon={LbBelge}>
                       <ul className="space-y-2.5">
                         {(data.cancellationPolicy as CancellationPolicy[]).map(
                           (policy, idx) => (

@@ -65,6 +65,8 @@ export type {
   DropdownMenuLabelProps,
 } from "./dropdown-menu";
 
+export * from "./icons";
+
 export { Input } from "./input";
 export type { InputProps } from "./input";
 

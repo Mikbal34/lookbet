@@ -17,7 +17,7 @@
 // adımlarını saymak yanıltıcı olur.
 
 import * as React from "react";
-import { MapPin } from "lucide-react";
+import { LbKonum } from "@/components/ui/icons";
 import { cn } from "@/lib/utils/cn";
 import { formatDate } from "@/lib/utils";
 
@@ -113,7 +113,7 @@ export function StayTimeline({
             rel="noopener noreferrer"
             className="-mb-2 inline-flex min-h-11 items-center gap-1.5 text-[13px] font-semibold text-navy-text active:text-navy-deep"
           >
-            <MapPin className="size-3.5" aria-hidden="true" />
+            <LbKonum size={14} />
             Yol tarifi
           </a>
         )}

@@ -1,0 +1,207 @@
+// LookBeds ikon seti.
+//
+// Bir ikon setini "bizim" yapan şey yeni semboller uydurmak değil — yatak
+// yatak, telefon telefondur — tek bir çizim gramerine uymalarıdır. Buradaki
+// gramer logodan çıkarıldı: logo yuvarlak uçlu kalın çubuklardan kuruluyor
+// (rect'lerin rx'i genişliğin yarısı) ve yazı yığını da yuvarlak bir harf
+// formu istiyor (Arial Rounded → Nunito → Quicksand).
+//
+// Kurallar, hepsi istisnasız:
+//   • 24×24 kutu, içerik 4–20 arasında (2px optik pay)
+//   • stroke 2.25, fill yok
+//   • linecap ve linejoin: round — logonun yuvarlak uçları
+//   • köşe yarıçapı en az 2, asla keskin dönüş yok
+//   • boyut currentColor'dan gelir; renk sınıfla verilir
+//
+// Ölçü `size` ile piksel olarak da verilebilir ama varsayılan 1em: ikon
+// yanındaki metinle birlikte büyür.
+
+import * as React from "react";
+import { cn } from "@/lib/utils/cn";
+
+export interface IkonProps extends React.SVGProps<SVGSVGElement> {
+  /** Piksel ölçü. Verilmezse 1em — yanındaki metinle ölçeklenir. */
+  size?: number | string;
+}
+
+function Ikon({ size = "1em", className, children, ...rest }: IkonProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2.25}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+      className={cn("shrink-0", className)}
+      {...rest}
+    >
+      {children}
+    </svg>
+  );
+}
+
+/**
+ * Yatak — logodaki formun ikon karşılığı: baş ucu dikeyi + yatak platformu.
+ *
+ * Ayak ucundaki yay önce 5 birimdi ve 11 birimlik düz kısmı yiyip ikonu
+ * bota benzetiyordu. Yay 2 birime indi, şilte düz kaldı.
+ */
+export function LbYatak(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <path d="M4 6v13.5" />
+      <path d="M4 13h14a2 2 0 0 1 2 2v4.5" />
+      <path d="M4 19.5h16" />
+      <path d="M7.25 10h4" />
+    </Ikon>
+  );
+}
+
+/** Fiyat etiketi. */
+export function LbEtiket(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <path d="M11.6 4H6.5A2.5 2.5 0 0 0 4 6.5v5.1c0 .7.3 1.3.7 1.8l6.3 6.3a2.5 2.5 0 0 0 3.6 0l4.8-4.8a2.5 2.5 0 0 0 0-3.6l-6.3-6.3c-.5-.4-1.1-.7-1.8-.7Z" />
+      <path d="M8.5 8.5h.01" />
+    </Ikon>
+  );
+}
+
+/** Misafirler — iki kişi. */
+export function LbMisafir(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <circle cx="9.5" cy="8" r="3.25" />
+      <path d="M3.5 19.5v-.8a5 5 0 0 1 5-5h2a5 5 0 0 1 5 5v.8" />
+      <path d="M16.5 5.6a3 3 0 0 1 0 5.6" />
+      <path d="M17 13.9a4.5 4.5 0 0 1 3.5 4.4v1.2" />
+    </Ikon>
+  );
+}
+
+/** Belge — iptal koşulları gibi sözleşme metinleri. */
+export function LbBelge(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <path d="M13 3.5H7.5A2.5 2.5 0 0 0 5 6v12a2.5 2.5 0 0 0 2.5 2.5h9A2.5 2.5 0 0 0 19 18V9.5L13 3.5Z" />
+      <path d="M12.75 3.75V8a1.5 1.5 0 0 0 1.5 1.5h4.25" />
+      <path d="M8.5 14h7" />
+      <path d="M8.5 17.25h4" />
+    </Ikon>
+  );
+}
+
+/** Telefon. */
+export function LbTelefon(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <path d="M7.4 4h-.9A2.5 2.5 0 0 0 4 6.6c0 7.7 5.7 13.4 13.4 13.4a2.5 2.5 0 0 0 2.6-2.5v-.9a1.5 1.5 0 0 0-1.1-1.4l-2.8-.8a1.5 1.5 0 0 0-1.6.6l-.7 1a11.4 11.4 0 0 1-4.2-4.2l1-.7a1.5 1.5 0 0 0 .6-1.6l-.8-2.8A1.5 1.5 0 0 0 7.4 4Z" />
+    </Ikon>
+  );
+}
+
+/** Bina — otel sayfası. */
+export function LbBina(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <path d="M5.5 20V6.5A2.5 2.5 0 0 1 8 4h8a2.5 2.5 0 0 1 2.5 2.5V20" />
+      <path d="M3.5 20h17" />
+      <path d="M9.25 8.5h.01M14.75 8.5h.01M9.25 12.5h.01M14.75 12.5h.01" />
+      <path d="M10.5 20v-3a1.5 1.5 0 0 1 3 0v3" />
+    </Ikon>
+  );
+}
+
+/** Konum iğnesi — yol tarifi. */
+export function LbKonum(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <path d="M19 10.3c0 5-5.4 9.4-6.6 10.3a.7.7 0 0 1-.8 0C10.4 19.7 5 15.3 5 10.3a7 7 0 0 1 14 0Z" />
+      <circle cx="12" cy="10.2" r="2.6" />
+    </Ikon>
+  );
+}
+
+/** Ay — gece sayısı. */
+export function LbAy(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <path d="M20 14.3A8.5 8.5 0 0 1 9.7 4a8.5 8.5 0 1 0 10.3 10.3Z" />
+    </Ikon>
+  );
+}
+
+/** Yıldız — otel sınıfı. Tek dolu ikon; yıldız içi boşken sayılmıyor. */
+export function LbYildiz({ size = "1em", className, ...rest }: IkonProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill="currentColor"
+      stroke="currentColor"
+      strokeWidth={2.25}
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+      className={cn("shrink-0", className)}
+      {...rest}
+    >
+      <path d="m12 4.5 2.3 4.7 5.2.8-3.7 3.6.9 5.1-4.7-2.4-4.7 2.4.9-5.1L4.5 10l5.2-.8L12 4.5Z" />
+    </svg>
+  );
+}
+
+/** Onay — daire içinde tik. */
+export function LbOnay(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="m8.5 12.2 2.4 2.4 4.6-4.8" />
+    </Ikon>
+  );
+}
+
+/** Saat — beklemedeki durum. */
+export function LbSaat(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 7.8V12l2.8 1.8" />
+    </Ikon>
+  );
+}
+
+/** Çarpı — iptal. */
+export function LbCarpi(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="m9.4 9.4 5.2 5.2M14.6 9.4l-5.2 5.2" />
+    </Ikon>
+  );
+}
+
+/** Uyarı — başarısız işlem. */
+export function LbUyari(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <path d="M10.3 4.9 3.6 16.4A2 2 0 0 0 5.3 19.5h13.4a2 2 0 0 0 1.7-3.1L13.7 4.9a2 2 0 0 0-3.4 0Z" />
+      <path d="M12 10v3.2M12 16.3h.01" />
+    </Ikon>
+  );
+}
+
+/** Sağ ok — satır bağlantıları. */
+export function LbSagOk(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <path d="m9.5 5.5 6 6.5-6 6.5" />
+    </Ikon>
+  );
+}

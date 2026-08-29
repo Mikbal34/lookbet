@@ -11,14 +11,20 @@
 // bloğun arkasına gradyan olarak seriyor (Pegasus'un kart başındaki yeşilliği).
 // Rozet ile bant tek kaynaktan gelsin diye burada duruyor.
 
-import { CheckCircle2, Clock3, XCircle, AlertTriangle } from "lucide-react";
+import {
+  LbCarpi,
+  LbOnay,
+  LbSaat,
+  LbUyari,
+  type IkonProps,
+} from "@/components/ui/icons";
 import { cn } from "@/lib/utils/cn";
 
 type ReservationStatus = "PENDING" | "CONFIRMED" | "CANCELLED" | "FAILED";
 
 interface StatusConfig {
   label: string;
-  Icon: React.ComponentType<{ className?: string }>;
+  Icon: React.ComponentType<IkonProps>;
   className: string;
   /** Kart başındaki gradyanın başlangıç rengi. */
   tint: string;
@@ -27,25 +33,25 @@ interface StatusConfig {
 const STATUS_CONFIG: Record<ReservationStatus, StatusConfig> = {
   PENDING: {
     label: "Beklemede",
-    Icon: Clock3,
+    Icon: LbSaat,
     className: "bg-amber-50 text-amber-700",
     tint: "from-amber-100/80",
   },
   CONFIRMED: {
     label: "Onaylandı",
-    Icon: CheckCircle2,
+    Icon: LbOnay,
     className: "bg-emerald-50 text-emerald-700",
     tint: "from-emerald-100/80",
   },
   CANCELLED: {
     label: "İptal edildi",
-    Icon: XCircle,
+    Icon: LbCarpi,
     className: "bg-rose-50 text-rose-700",
     tint: "from-rose-100/70",
   },
   FAILED: {
     label: "Tamamlanamadı",
-    Icon: AlertTriangle,
+    Icon: LbUyari,
     className: "bg-gray-100 text-gray-600",
     tint: "from-gray-200/70",
   },
@@ -78,7 +84,7 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
         className
       )}
     >
-      <Icon className="size-3.5 shrink-0" aria-hidden="true" />
+      <Icon size={14} />
       {label}
     </span>
   );

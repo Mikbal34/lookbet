@@ -18,7 +18,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ChevronRight, Moon } from "lucide-react";
+import { LbAy, LbSagOk } from "@/components/ui/icons";
 import { cn } from "@/lib/utils/cn";
 import { formatCurrency, getNightCount } from "@/lib/utils";
 import { StatusBadge, statusTint } from "./status-badge";
@@ -137,7 +137,7 @@ export function ReservationCard({
               <div className="flex items-center gap-1.5">
                 <span className="size-1.5 rounded-full bg-line-strong" />
                 <span className="h-px w-6 bg-line-strong" />
-                <Moon className="size-3.5 text-navy" aria-hidden="true" />
+                <LbAy size={14} className="text-navy" />
                 <span className="h-px w-6 bg-line-strong" />
                 <span className="size-1.5 rounded-full bg-line-strong" />
               </div>
@@ -170,9 +170,9 @@ export function ReservationCard({
               {formatCurrency(fiyat, r.currency)}
             </span>
           </div>
-          <ChevronRight
-            className="size-5 shrink-0 text-muted transition-colors group-hover:text-navy"
-            aria-hidden="true"
+          <LbSagOk
+            size={18}
+            className="text-muted transition-colors group-hover:text-navy-text"
           />
         </div>
       </Link>
