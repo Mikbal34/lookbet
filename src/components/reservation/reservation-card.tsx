@@ -10,11 +10,8 @@
 // (onaylıda yeşil). Bilette koçanın renkli basılması gibi: kart daha ilk
 // bakışta "her şey yolunda" veya "bir sorun var" diyor, rozeti okumadan.
 //
-// Çentikler sayfanın zemin rengiyle (bg-gray-50) boyanmış yarım daireler;
-// kartın kenarındaki çizgiyi tam o noktada kesip ısırık izlenimi veriyor.
-// Ayraç Tailwind'in border-dashed'i değil, repeating-linear-gradient: tire ve
-// boşluk uzunluğunu kendimiz veriyoruz, böylece perforasyon her genişlikte
-// aynı ritimde çıkıyor (border-dashed'te tarayıcı tireleri uzatıp kısaltıyor).
+// Kesikli ayraç ve çentikler ortak bileşende (ticket-perforation.tsx);
+// rezervasyon detayındaki özet kartı da aynısını kullanıyor.
 //
 // Tek düzen: masaüstünde de aynı kart. Eskiden yatay bir liste satırıydı ve
 // her bilgi aynı ağırlıktaydı, göz nereye bakacağını bilmiyordu.
@@ -25,6 +22,7 @@ import { ChevronRight, Moon } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { formatCurrency, getNightCount } from "@/lib/utils";
 import { StatusBadge, statusTint } from "./status-badge";
+import { TicketPerforation } from "./ticket-perforation";
 
 export interface ReservationItem {
   id: string;
@@ -110,21 +108,7 @@ export function ReservationCard({
           </div>
         </div>
 
-        {/* Kesikli ayraç + iki yanda çentik */}
-        <div className="relative h-0">
-          <span
-            aria-hidden="true"
-            className="absolute -top-2 -left-2 size-4 rounded-full bg-gray-50"
-          />
-          <span
-            aria-hidden="true"
-            className="absolute -top-2 -right-2 size-4 rounded-full bg-gray-50"
-          />
-          <div
-            aria-hidden="true"
-            className="mx-3.5 h-px bg-[repeating-linear-gradient(to_right,var(--color-line-strong)_0_4px,transparent_4px_8px)]"
-          />
-        </div>
+        <TicketPerforation />
 
         {/* Gövde */}
         <div className="px-4 pt-4 pb-3.5">

@@ -6,3 +6,8 @@ export type { StatusBadgeProps } from "./status-badge";
 
 export { CancelDialog } from "./cancel-dialog";
 export type { CancelDialogProps } from "./cancel-dialog";
+
+export { TicketPerforation } from "./ticket-perforation";
+export type { TicketPerforationProps } from "./ticket-perforation";
+
+export { UpcomingReservationCard } from "./upcoming-reservation-card";

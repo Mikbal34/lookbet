@@ -108,11 +108,41 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
       }
     }
 
-    // Liste ucundaki gibi pansiyon kodunu görünen ada çevir.
-    const pansiyonAdlari = await boardTypeAdlari();
+    // Liste ucundaki gibi pansiyon kodunu görünen ada çevir; ayrıca otelin
+    // yerel kaydından fotoğraf/yıldız/konum ekle. Detay sayfası tepede otel
+    // fotoğrafı gösteriyor ve bu bilgiler rezervasyon satırında tutulmuyor.
+    // İkinci bir istemci isteği yerine burada birleştiriliyor — tedarikçiye
+    // değil yerel tabloya bakıldığı için ek gecikme getirmiyor.
+    const [pansiyonAdlari, otel] = await Promise.all([
+      boardTypeAdlari(),
+      prisma.hotel.findUnique({
+        where: { hotelCode: reservation.hotelCode },
+        select: {
+          thumbnailImage: true,
+          images: true,
+          stars: true,
+          address: true,
+          location: { select: { name: true } },
+        },
+      }),
+    ]);
+
+    // images alanı Json?; yerel kayıtta düz URL dizisi olarak tutuluyor.
+    const gorseller = Array.isArray(otel?.images)
+      ? (otel.images as unknown[]).filter((u): u is string => typeof u === "string")
+      : [];
+
     return NextResponse.json({
       ...reservation,
       boardTypeName: boardTypeAdi(reservation.boardType, pansiyonAdlari),
+      hotel: otel
+        ? {
+            image: otel.thumbnailImage ?? gorseller[0] ?? null,
+            stars: otel.stars,
+            address: otel.address,
+            city: otel.location?.name ?? null,
+          }
+        : null,
     });
   } catch (error) {
     console.error("[GET /api/reservations/[id]]", error);

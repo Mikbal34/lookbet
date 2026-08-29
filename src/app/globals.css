@@ -233,6 +233,19 @@ html:not([data-app="partner"]) .partner-only {
   display: none !important;
 }
 
+/* Saydam kimlik çubuğunun altına giren hero'lar (rezervasyon detayındaki
+   otel fotoğrafı gibi) bu sınıfla yukarı çekiliyor. Çubuk sticky olduğu için
+   yer kaplıyor; fotoğrafın arkasından geçmesi isteniyorsa o yer geri
+   alınmalı. Web'de kimlik çubuğu hiç yok, bu yüzden kural da yok — aynı
+   negatif marjı sınıf olarak yazsaydık web'de fotoğraf navbar'ın altına
+   girerdi. */
+html[data-app] {
+  --app-header-h: 3.75rem; /* 60px — app-header.tsx'teki derin çubuk */
+}
+html[data-app] .app-header-altina {
+  margin-top: calc(-1 * var(--app-header-h) - env(safe-area-inset-top));
+}
+
 /* App modunda footer'ın büyük blokları gizli kalıyor; geriye kalan yasal
    satır için üstteki nefes payı gereksiz kalıyordu. */
 html[data-app] .site-footer {

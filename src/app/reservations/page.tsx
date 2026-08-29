@@ -172,12 +172,15 @@ export default function ReservationsPage() {
 
       <main className="flex-1">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 pt-4 pb-8 sm:pt-8">
-          <div className="web-only mb-6">
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          {/* Başlık yalnızca web'de: app'te aynı başlık kimlik çubuğunda
+              duruyor, iki kez yazmak yer kaplıyor. Açıklama ise her ikisinde
+              de var — sekmelerin neyi böldüğünü söyleyen tek cümle o. */}
+          <div className="mb-5">
+            <h1 className="web-only mb-1 text-2xl font-bold text-gray-900 flex items-center gap-2">
               <CalendarCheck className="h-6 w-6 text-navy" aria-hidden="true" />
               Rezervasyonlarım
             </h1>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-gray-500">
               Tüm rezervasyon geçmişinizi buradan yönetebilirsiniz.
             </p>
           </div>

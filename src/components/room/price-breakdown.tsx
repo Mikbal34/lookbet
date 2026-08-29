@@ -48,15 +48,15 @@ export function PriceBreakdown({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden",
+        "overflow-hidden rounded-xl border border-line bg-white",
         className
       )}
       aria-label="Fiyat detayı"
     >
       {/* Header */}
-      <div className="px-5 py-4 border-b border-gray-50">
+      <div className="border-b border-line/60 px-4 py-3.5">
         <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
-          <Tag className="h-4 w-4 text-blue-500" aria-hidden="true" />
+          <Tag className="h-4 w-4 text-navy" aria-hidden="true" />
           Fiyat Detayı
         </h3>
       </div>
