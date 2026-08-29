@@ -59,7 +59,7 @@ export default function HelpPage() {
       {/* Arama bandı */}
       <div
         className="px-6 py-10 lg:py-14 text-center"
-        style={{ background: "linear-gradient(150deg,#E06028,#8F3A12)" }}
+        style={{ background: "linear-gradient(150deg,#1D5BA6,#123A6B)" }}
       >
         <h1 className="font-serif text-3xl lg:text-[34px] font-normal text-paper mb-5">
           Nasıl yardımcı olabiliriz?

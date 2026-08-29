@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <!-- LookBeds logosu — vektörel yeniden çizim.
-       Marka turuncusu: #E06028 (orijinal görselden örneklendi) -->
-  <rect x="14" y="14" width="484" height="484" rx="112" fill="#E06028"/>
+       Marka laciverti: #1D5BA6 (globals.css'teki color-navy ile aynı) -->
+  <rect x="14" y="14" width="484" height="484" rx="112" fill="#1D5BA6"/>
 
   <!-- Yatak "H" formu -->
   <!-- Sol dikey (başlık) -->

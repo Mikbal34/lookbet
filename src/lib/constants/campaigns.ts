@@ -14,7 +14,7 @@ export const CAMPAIGNS = [
     code: "ERKEN25",
     image:
       "https://images.unsplash.com/photo-1509233725247-49e657c54213?w=900&q=80&auto=format&fit=crop",
-    bg: "linear-gradient(150deg,#E06028,#8F3A12)",
+    bg: "linear-gradient(150deg,#1D5BA6,#123A6B)",
   },
   {
     tag: "HAFTA SONU",
@@ -36,7 +36,7 @@ export const CAMPAIGNS = [
     code: "SONDK30",
     image:
       "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=900&q=80&auto=format&fit=crop",
-    bg: "linear-gradient(150deg,#ED7B45,#E06028)",
+    bg: "linear-gradient(150deg,#2F74C4,#1D5BA6)",
   },
   {
     tag: "UZUN KONAKLAMA",
@@ -47,7 +47,7 @@ export const CAMPAIGNS = [
     code: "UZUN20",
     image:
       "https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=900&q=80&auto=format&fit=crop",
-    bg: "linear-gradient(150deg,#14202E,#8F3A12)",
+    bg: "linear-gradient(150deg,#0E1F38,#123A6B)",
   },
 ] as const;
 

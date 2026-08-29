@@ -1,34 +1,30 @@
 @import "tailwindcss";
 
 /* LookBeds tasarım sistemi — CruiseScanner (Skyscanner-tarzı) tasarımının
-   TURUNCU versiyonu: dümdüz tek renk marka bandı, beyaz gövde, Nunito,
-   amber fiyat/CTA vurguları, keskin köşeler.
-   Marka turuncusu logodan örneklendi: #E06028 */
+   LACİVERT versiyonu: dümdüz tek renk marka bandı, beyaz gövde, Nunito,
+   altın fiyat/CTA vurguları.
+   Marka turuncuydu (#E06028) ama üstünde beyaz yazı 3.58 kontrast veriyordu
+   (sınır 4.5) ve saydam çubukta 3.01'e düşüyordu; her beyaz-yazılı yüzey için
+   ayrı koyu ton türetmek gerekiyordu. Lacivertte bu sorun yok: #1d5ba6
+   üstünde beyaz 6.78, beyaz zeminde ikon olarak da 6.78. */
 @theme inline {
-  /* Marka — turuncu ailesi (eski "navy" token adları geriye uyumluluk için
-     korunuyor; TÜM uygulama bu adları kullanıyor) */
-  --color-navy: #e06028; /* birincil — marka turuncusu */
-  --color-navy-dark: #c24e1d; /* hover */
-  --color-navy-deep: #8f3a12; /* koyu zemin / panel sidebar */
-  --color-navy-mid: #ed7b45;
-  --color-navy-bright: #f59468;
-  /* Kimlik çubuğunun dolu hâli. Marka turuncusu (#e06028) üstünde beyaz yazı
-     3.58 kontrast veriyor; çubuk %85 saydam olduğu için altındaki açık zemin
-     karışıyor ve değer 3.01'e düşüyordu. Sınır 4.5.
-     Bu ton %95 opaklıkta 5.52 veriyor — 4.5'i rahat geçen tonların markaya
-     en yakını, yani çubuk turuncudan gerektiğinden fazla uzaklaşmıyor. */
-  --color-navy-bar: #a84314;
-  /* YALNIZCA METİN için. İkonlarda kullanma.
-     Marka turuncusu (#e06028) beyazda 3.58 kontrast veriyor. Metin için AA
-     sınırı 4.5, o yüzden bağlantı/vurgu yazısı bu koyu tonu kullanır (beyazda
-     5.48, canvas'ta 4.99, chip'te 4.69 — geçenlerin en açığı).
-     İkon ise grafik öğe; WCAG 1.4.11 sınırı 3:1 ve marka turuncusu ikonların
-     durduğu her zeminde bunu geçiyor (beyaz 3.58, canvas 3.26, chip 3.06,
-     chip-blue 3.07). Dolayısıyla İKONLAR text-navy kullanır — logodaki
-     turuncunun aynısı. Bir öğe hem ikon hem yazı taşıyorsa (ör. "Yol tarifi"
-     bağlantısı) yazı belirleyicidir, ikisi de bu tonu alır.
-     Altındaki --color-gold-text ile aynı mantık. */
-  --color-navy-text: #b34718;
+  /* Marka — lacivert ailesi. Jeton adları zaten "navy"ydi: tasarım baştan
+     lacivertti, bir ara turuncuya boyanmış ama adlar kalmıştı. */
+  --color-navy: #1d5ba6; /* birincil — marka laciverti */
+  --color-navy-dark: #17457f; /* hover */
+  --color-navy-deep: #123a6b; /* koyu zemin / panel sidebar */
+  --color-navy-mid: #2f74c4;
+  --color-navy-bright: #5a97dd;
+  /* Kimlik çubuğunun dolu hâli — birincilden bir tık koyu.
+     Çubuk %95 saydam olduğu için altındaki açık zemin renge karışıyor;
+     bu tonla beyaz başlık 8.44 kontrast alıyor. */
+  --color-navy-bar: #17457f;
+  /* Açık zeminde metin/bağlantı vurgusu — birincilden bir tık koyu.
+     Turuncu dönemde bu jeton zorunluydu: marka rengi metin olarak 3.58
+     veriyordu ve sınırın altındaydı. Lacivertte birincil renk (#1d5ba6)
+     metin olarak da 6.78 alıyor, yani jeton artık zorunlu değil; yalnızca
+     bağlantılara bir tık ağırlık vermek için duruyor (beyazda 7.78). */
+  --color-navy-text: #1a5297;
 
   /* Vurgu — amber (CruiseScanner CTA/fiyat etiketi rengi) */
   --color-gold: #ffc829;
@@ -51,7 +47,7 @@
   --color-canvas: #f7f4ed; /* sayfa zemini — beyaz kartların üstünde durduğu
      ton. Beyaza yakın bir zeminde beyaz kart kart gibi durmuyor. */
   --color-chip: #f1ede4; /* etiket zemini */
-  --color-chip-blue: #fdeae0; /* turuncu tonlu soft zemin */
+  --color-chip-blue: #e4edf9; /* lacivert tonlu soft zemin */
   --color-paper: #ffffff; /* gövde beyaz (Skyscanner-tarzı) */
 
   /* Fontlar — Nunito her yerde (display dahil) */
