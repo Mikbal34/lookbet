@@ -96,6 +96,16 @@ export function LbBelge(p: IkonProps) {
   );
 }
 
+/** Zarf — e-posta. */
+export function LbZarf(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <rect x="3.5" y="5.5" width="17" height="13" rx="2.5" />
+      <path d="m4.5 7.5 6.2 4.6a2 2 0 0 0 2.6 0l6.2-4.6" />
+    </Ikon>
+  );
+}
+
 /** Telefon. */
 export function LbTelefon(p: IkonProps) {
   return (

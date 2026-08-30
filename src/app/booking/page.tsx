@@ -18,7 +18,7 @@ import { createBookingSchema, type CreateBookingInput } from "@/lib/validators/b
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, CalendarX, Send } from "lucide-react";
 
-const STEPS = ["İletişim Bilgileri", "Misafir Bilgileri", "Özet"];
+const STEPS = ["İletişim bilgileri", "Misafir bilgileri", "Özet"];
 
 export default function BookingPage() {
   return (
@@ -148,7 +148,7 @@ function BookingPageContent() {
   // ama hiçbir şey ifade etmeyen bir ekrandı.
   if (!roomSearchId || !priceCode) {
     return (
-      <div className="flex min-h-screen flex-col bg-gray-50">
+      <div className="flex min-h-screen flex-col bg-canvas">
         <AppHeader geri baslik="Rezervasyon" />
         <div className="web-only">
           <Navbar />
@@ -180,7 +180,7 @@ function BookingPageContent() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-canvas">
       <AppHeader geri baslik="Rezervasyon" />
       <div className="web-only">
         <Navbar />
@@ -197,7 +197,7 @@ function BookingPageContent() {
             <div className="flex flex-col lg:flex-row gap-6 items-start">
               {/* Form area — mobilde özet kartının altında (order-2) */}
               <div className="order-2 w-full flex-1 min-w-0 lg:order-1">
-                <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-6">
+                <div>
                   {currentStep === 0 && (
                     <ContactForm register={register} errors={errors} />
                   )}
@@ -205,7 +205,7 @@ function BookingPageContent() {
                   {currentStep === 1 && (
                     <div className="space-y-4">
                       <h3 className="text-lg font-semibold text-gray-900">
-                        Misafir Bilgileri
+                        Misafir bilgileri
                       </h3>
                       {Array.from({ length: adults }, (_, i) => (
                         <GuestForm
@@ -244,7 +244,7 @@ function BookingPageContent() {
                       {(() => {
                         const contact = getValues("contact");
                         return (
-                          <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
+                          <div className="rounded-2xl bg-paper p-4 shadow-[0_1px_2px_rgb(11_13_20/0.04),0_6px_16px_-12px_rgb(11_13_20/0.18)]">
                             <p className="text-sm font-semibold text-gray-700 mb-2">
                               İletişim
                             </p>
@@ -258,7 +258,7 @@ function BookingPageContent() {
                       })()}
 
                       {/* Guests summary */}
-                      <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
+                      <div className="rounded-2xl bg-paper p-4 shadow-[0_1px_2px_rgb(11_13_20/0.04),0_6px_16px_-12px_rgb(11_13_20/0.18)]">
                         <p className="text-sm font-semibold text-gray-700 mb-2">
                           Misafirler ({totalGuests} kişi)
                         </p>

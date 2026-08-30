@@ -56,7 +56,7 @@ export const Stepper = ({
                   <div
                     className={cn(
                       "w-0.5 flex-1 my-1",
-                      status === "completed" ? "bg-navy" : "bg-gray-200"
+                      status === "completed" ? "bg-navy" : "bg-line-strong"
                     )}
                     aria-hidden="true"
                   />
@@ -99,7 +99,7 @@ export const Stepper = ({
                 <div
                   className={cn(
                     "h-0.5 flex-1 mx-2",
-                    status === "completed" ? "bg-navy" : "bg-gray-200"
+                    status === "completed" ? "bg-navy" : "bg-line-strong"
                   )}
                   aria-hidden="true"
                 />
@@ -132,7 +132,7 @@ const StepIndicator = ({ index, status }: StepIndicatorProps) => (
         "border-navy bg-navy text-white": status === "completed",
         "border-navy bg-white text-navy ring-4 ring-blue-50":
           status === "active",
-        "border-gray-300 bg-white text-gray-400": status === "upcoming",
+        "border-line-strong bg-paper text-slate-text": status === "upcoming",
       }
     )}
   >
@@ -154,8 +154,8 @@ const StepLabel = ({ step, status }: StepLabelProps) => (
   <span
     className={cn("text-xs font-medium text-center leading-snug max-w-[80px]", {
       "text-navy": status === "active",
-      "text-gray-900": status === "completed",
-      "text-gray-400": status === "upcoming",
+      "text-ink": status === "completed",
+      "text-slate-text": status === "upcoming",
     })}
   >
     {step}

@@ -6,7 +6,7 @@
 // ))}
 
 import * as React from "react";
-import { User } from "lucide-react";
+import { LbKullanici } from "@/components/ui/icons";
 import { cn } from "@/lib/utils/cn";
 import type { UseFormRegister, FieldErrors } from "react-hook-form";
 
@@ -66,7 +66,7 @@ export function GuestForm({
       <input type="hidden" {...register(`${prefix}.type`)} value={type} />
 
       <h4 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-        <User className="h-4 w-4 text-blue-400" aria-hidden="true" />
+        <LbKullanici size={16} className="text-navy" />
         {title}
         <span
           className={cn(
