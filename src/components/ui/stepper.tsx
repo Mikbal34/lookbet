@@ -73,13 +73,18 @@ export const Stepper = ({
     );
   }
 
+  // Yatay düzen: her adım eşit genişlikte bir sütun, yuvarlak sütunun
+  // ortasında, etiket doğrudan yuvarlağın altında.
+  //
+  // Önceki kurgu bağlantı çizgisini yuvarlağın YANINA koyuyordu ve etiketi
+  // ikisinin ortasına hizalıyordu; çizgi uzun olduğu için etiket sağa
+  // kayıyordu. Son adımda çizgi olmadığı için yalnızca o doğru duruyordu —
+  // hata da böyle gözden kaçmıştı. Çizgi artık mutlak konumlu: bir
+  // yuvarlağın merkezinden diğerininkine uzanıyor ve hizalamaya karışmıyor.
   return (
     <ol
       aria-label="Progress steps"
-      className={cn(
-        "flex items-start justify-between w-full",
-        className
-      )}
+      className={cn("flex w-full items-start", className)}
     >
       {steps.map((step, index) => {
         const status = getStatus(index);
@@ -88,22 +93,20 @@ export const Stepper = ({
         return (
           <li
             key={step}
-            className={cn(
-              "flex flex-col items-center gap-2",
-              !isLast && "flex-1"
-            )}
+            className="relative flex flex-1 flex-col items-center gap-2"
           >
-            <div className="flex items-center w-full">
+            {!isLast && (
+              <span
+                aria-hidden="true"
+                className={cn(
+                  // top-4: 32px yuvarlağın dikey ortası
+                  "absolute top-4 left-1/2 h-0.5 w-full -translate-y-1/2",
+                  status === "completed" ? "bg-navy" : "bg-line-strong"
+                )}
+              />
+            )}
+            <div className="relative">
               <StepIndicator index={index} status={status} />
-              {!isLast && (
-                <div
-                  className={cn(
-                    "h-0.5 flex-1 mx-2",
-                    status === "completed" ? "bg-navy" : "bg-line-strong"
-                  )}
-                  aria-hidden="true"
-                />
-              )}
             </div>
             <StepLabel step={step} status={status} index={index} />
           </li>
