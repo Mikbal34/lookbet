@@ -377,6 +377,59 @@ export function LbAramaBos(p: IkonProps) {
   );
 }
 
+/** Kalkan + tik — ücretsiz iptal. */
+export function LbKalkanOnay(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <path d="M12 3.5 5 6v6c0 4.2 3 7.2 7 8.5 4-1.3 7-4.3 7-8.5V6l-7-2.5Z" />
+      <path d="m9.25 11.75 2 2 3.5-3.75" />
+    </Ikon>
+  );
+}
+
+/** Kalkan + ünlem — iptal edilemez / koşullu. */
+export function LbKalkanUyari(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <path d="M12 3.5 5 6v6c0 4.2 3 7.2 7 8.5 4-1.3 7-4.3 7-8.5V6l-7-2.5Z" />
+      <path d="M12 8.75v3.5M12 15.75h.01" />
+    </Ikon>
+  );
+}
+
+/** Büyüt — görseli tam ekran aç. */
+export function LbBuyut(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <path d="M14.5 4.5h5v5M9.5 19.5h-5v-5" />
+      <path d="m19.5 4.5-6 6M4.5 19.5l6-6" />
+    </Ikon>
+  );
+}
+
+/** Görsel yok. */
+export function LbGorselYok(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <path d="M20.5 13.5V6.5A2.5 2.5 0 0 0 18 4H6.5" />
+      <path d="M3.5 7v11A2.5 2.5 0 0 0 6 20.5h11.5" />
+      <path d="m4 18 4.5-4.5a2 2 0 0 1 2.8 0L15 17" />
+      <path d="m3.5 3.5 17 17" />
+    </Ikon>
+  );
+}
+
+/** Çatal-bıçak — pansiyon. */
+export function LbPansiyon(p: IkonProps) {
+  return (
+    <Ikon {...p}>
+      <path d="M6 3.5v7a2.5 2.5 0 0 0 5 0v-7" />
+      <path d="M8.5 10.5v10" />
+      <path d="M17.5 3.5c-1.5 1.5-2 3.5-2 5.5s.5 3 2 3.5v8" />
+    </Ikon>
+  );
+}
+
 /** Bilgi — açıklama bölümü. */
 export function LbBilgi(p: IkonProps) {
   return (

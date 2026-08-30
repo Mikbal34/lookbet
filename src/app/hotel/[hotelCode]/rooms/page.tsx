@@ -8,7 +8,7 @@ import { use } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, BedDouble, AlertCircle } from "lucide-react";
+import { LbUyari, LbYatak } from "@/components/ui/icons";
 import {AppHeader, Navbar, Footer } from "@/components/layout";
 import { RoomCard, CountdownTimer } from "@/components/room";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -152,7 +152,7 @@ function RoomsPageContent({
   const backHref = `/hotel/${hotelCode}?${searchParams.toString()}`;
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-canvas">
       <AppHeader geri={backHref} baslik="Müsait odalar" />
       <div className="web-only">
         <Navbar />
@@ -175,12 +175,12 @@ function RoomsPageContent({
           <div className="mb-6">
             {/* App'te başlığı kimlik çubuğu taşıyor; burada tekrar
                 yazılmasın. Web'de çubuk olmadığı için görünür. */}
-            <h1 className="web-only text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <BedDouble className="h-6 w-6 text-navy" aria-hidden="true" />
-              Müsait Odalar
+            <h1 className="web-only text-2xl font-bold text-ink flex items-center gap-2">
+              <LbYatak size={22} className="text-navy" />
+              Müsait odalar
             </h1>
             {searchParams.get("checkIn") && (
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-muted mt-1">
                 {formatDateRange(
                   searchParams.get("checkIn")!,
                   searchParams.get("checkOut")!
@@ -202,11 +202,11 @@ function RoomsPageContent({
           {/* Error */}
           {isError && (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-              <AlertCircle className="h-12 w-12 text-red-400 mb-4" aria-hidden="true" />
-              <h2 className="text-lg font-semibold text-gray-900 mb-2">
+              <LbUyari size={44} className="mb-4 text-red-400" />
+              <h2 className="text-lg font-semibold text-ink mb-2">
                 Odalar yüklenemedi
               </h2>
-              <p className="text-sm text-gray-500 mb-4">
+              <p className="text-sm text-muted mb-4">
                 Lütfen sayfayı yenileyerek tekrar deneyin.
               </p>
               <Button variant="outline" onClick={() => window.location.reload()}>
@@ -218,11 +218,11 @@ function RoomsPageContent({
           {/* Empty */}
           {!isLoading && !isError && data && data.rooms.length === 0 && (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-              <BedDouble className="h-12 w-12 text-gray-300 mb-4" aria-hidden="true" />
-              <h2 className="text-lg font-semibold text-gray-900 mb-2">
+              <LbYatak size={44} className="mb-4 text-line-strong" />
+              <h2 className="text-lg font-semibold text-ink mb-2">
                 Müsait oda bulunamadı
               </h2>
-              <p className="text-sm text-gray-500 mb-4">
+              <p className="text-sm text-muted mb-4">
                 Seçtiğiniz tarihlerde uygun oda bulunmamaktadır. Farklı tarih
                 deneyin.
               </p>

@@ -7,7 +7,7 @@
 // />
 
 import * as React from "react";
-import { Clock, AlertTriangle } from "lucide-react";
+import { LbSaat, LbUyari } from "@/components/ui/icons";
 import { cn } from "@/lib/utils/cn";
 
 export interface CountdownTimerProps {
@@ -65,7 +65,7 @@ export function CountdownTimer({
       className={cn(
         "inline-flex items-center gap-2 rounded-lg px-4 py-2.5 border transition-colors duration-500",
         isExpired
-          ? "bg-gray-100 border-gray-200 text-gray-400"
+          ? "bg-chip border-line text-muted"
           : isUrgent
           ? "bg-red-50 border-red-200 text-red-600 animate-pulse"
           : "bg-chip-blue border-line text-navy-dark",
@@ -80,15 +80,12 @@ export function CountdownTimer({
       aria-live="polite"
     >
       {isUrgent || isExpired ? (
-        <AlertTriangle
-          className={cn(
-            "h-4 w-4 shrink-0",
-            isExpired ? "text-gray-400" : "text-red-500"
-          )}
-          aria-hidden="true"
+        <LbUyari
+          size={16}
+          className={isExpired ? "text-muted" : "text-red-600"}
         />
       ) : (
-        <Clock className="h-4 w-4 shrink-0 text-blue-500" aria-hidden="true" />
+        <LbSaat size={16} className="text-navy" />
       )}
 
       <div>
@@ -96,7 +93,7 @@ export function CountdownTimer({
           className={cn(
             "text-xs font-medium leading-none mb-0.5",
             isExpired
-              ? "text-gray-400"
+              ? "text-muted"
               : isUrgent
               ? "text-red-500"
               : "text-navy"
@@ -108,7 +105,7 @@ export function CountdownTimer({
           className={cn(
             "text-lg font-bold font-mono leading-none tabular-nums",
             isExpired
-              ? "text-gray-400"
+              ? "text-muted"
               : isUrgent
               ? "text-red-600"
               : "text-navy-dark"
