@@ -9,16 +9,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
-import {
-  LbBelge,
-  LbBina,
-  LbCikis,
-  LbKalkan,
-  LbKullanici,
-  LbSagOk,
-  LbTerazi,
-  LbYardim,
-} from "@/components/ui/icons";
+import { LbSagOk } from "@/components/ui/icons";
 import { AppHeader } from "@/components/layout";
 import { LocaleSwitcher } from "@/components/layout/locale-switcher";
 
@@ -26,20 +17,20 @@ const BOLUMLER = [
   {
     baslik: "Hesap",
     satirlar: [
-      { etiket: "Hesabım", href: "/profile", ikon: LbKullanici },
-      { etiket: "Rezervasyonlarım", href: "/reservations", ikon: LbBina },
+      { etiket: "Hesabım", href: "/profile" },
+      { etiket: "Rezervasyonlarım", href: "/reservations" },
     ],
   },
   {
     baslik: "Destek",
-    satirlar: [{ etiket: "Yardım", href: "/yardim", ikon: LbYardim }],
+    satirlar: [{ etiket: "Yardım", href: "/yardim" }],
   },
   {
     baslik: "Yasal",
     satirlar: [
-      { etiket: "Gizlilik politikası", href: "/yardim", ikon: LbKalkan },
-      { etiket: "Kullanım koşulları", href: "/yardim", ikon: LbBelge },
-      { etiket: "KVKK", href: "/yardim", ikon: LbTerazi },
+      { etiket: "Gizlilik politikası", href: "/yardim" },
+      { etiket: "Kullanım koşulları", href: "/yardim" },
+      { etiket: "KVKK", href: "/yardim" },
     ],
   },
 ];
@@ -62,7 +53,7 @@ export default function DahaFazlaPage() {
               {b.baslik}
             </h2>
             <nav className="overflow-hidden rounded-xl border border-line bg-white">
-              {b.satirlar.map(({ etiket, href, ikon: Ikon }, i) => (
+              {b.satirlar.map(({ etiket, href }, i) => (
                 <Link
                   key={etiket}
                   href={href}
@@ -70,7 +61,6 @@ export default function DahaFazlaPage() {
                     i < b.satirlar.length - 1 ? "border-b border-line" : ""
                   }`}
                 >
-                  <Ikon size={20} className="text-navy" />
                   <span className="flex-1">{etiket}</span>
                   <LbSagOk size={16} className="text-muted" />
                 </Link>
@@ -97,7 +87,6 @@ export default function DahaFazlaPage() {
             onClick={() => signOut({ callbackUrl: "/" })}
             className="flex min-h-13 w-full items-center justify-center gap-2 rounded-xl border border-line bg-white px-4 py-3 text-[15px] font-semibold text-red-600 active:bg-chip"
           >
-            <LbCikis size={20} />
             Çıkış yap
           </button>
         )}
