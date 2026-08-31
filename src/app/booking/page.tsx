@@ -10,14 +10,15 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Navbar, Footer } from "@/components/layout";
+import {AppHeader, Navbar, Footer } from "@/components/layout";
 import { ContactForm, GuestForm, BookingSummary } from "@/components/booking";
 import { Stepper } from "@/components/ui/stepper";
 import { Button } from "@/components/ui/button";
 import { createBookingSchema, type CreateBookingInput } from "@/lib/validators/booking.schema";
-import { ArrowLeft, ArrowRight, Send } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeft, ArrowRight, CalendarX, Send } from "lucide-react";
 
-const STEPS = ["İletişim Bilgileri", "Misafir Bilgileri", "Özet"];
+const STEPS = ["İletişim bilgileri", "Misafir bilgileri", "Özet"];
 
 export default function BookingPage() {
   return (
@@ -141,22 +142,62 @@ function BookingPageContent() {
     }
   };
 
+  // Oda seçilmeden bu sayfaya düşülebiliyor: derin bağlantı, uygulamanın arka
+  // plandan dönüşü, ya da geri tuşuyla parametresiz gezinme. Eskiden boş bir
+  // form ("0 gece", "€0,00") render ediliyordu; doldurulup gönderilebilecek
+  // ama hiçbir şey ifade etmeyen bir ekrandı.
+  if (!roomSearchId || !priceCode) {
+    return (
+      <div className="flex min-h-screen flex-col bg-canvas">
+        <AppHeader geri baslik="Rezervasyon" />
+        <div className="web-only">
+          <Navbar />
+        </div>
+        <main className="flex-1">
+          <div className="mx-auto max-w-lg px-4 py-16 text-center sm:px-6">
+            <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-chip">
+              <CalendarX className="size-7 text-muted" aria-hidden="true" />
+            </div>
+            <h1 className="text-xl font-bold text-gray-900">
+              Rezervasyon bilgisi bulunamadı
+            </h1>
+            <p className="mx-auto mt-2 max-w-sm text-sm text-gray-500">
+              Bu sayfaya bir oda seçtikten sonra ulaşabilirsin. Oda seçimi
+              30 dakika geçerli olduğu için bekleyen bir seçimin süresi de
+              dolmuş olabilir.
+            </p>
+            <Link
+              href="/"
+              className="mt-6 inline-flex min-h-12 items-center justify-center rounded-lg bg-gold px-6 text-[15px] font-bold text-ink active:bg-gold-dark"
+            >
+              Otel aramaya dön
+            </Link>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <Navbar />
+    <div className="min-h-screen flex flex-col bg-canvas">
+      <AppHeader geri baslik="Rezervasyon" />
+      <div className="web-only">
+        <Navbar />
+      </div>
 
       <main className="flex-1">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
           {/* Stepper */}
-          <div className="mb-8">
+          <div className="mb-6 sm:mb-8">
             <Stepper steps={STEPS} currentStep={currentStep} />
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="flex flex-col lg:flex-row gap-6 items-start">
-              {/* Form area */}
-              <div className="flex-1 min-w-0">
-                <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+              {/* Form area — mobilde özet kartının altında (order-2) */}
+              <div className="order-2 w-full flex-1 min-w-0 lg:order-1">
+                <div>
                   {currentStep === 0 && (
                     <ContactForm register={register} errors={errors} />
                   )}
@@ -164,7 +205,7 @@ function BookingPageContent() {
                   {currentStep === 1 && (
                     <div className="space-y-4">
                       <h3 className="text-lg font-semibold text-gray-900">
-                        Misafir Bilgileri
+                        Misafir bilgileri
                       </h3>
                       {Array.from({ length: adults }, (_, i) => (
                         <GuestForm
@@ -203,7 +244,7 @@ function BookingPageContent() {
                       {(() => {
                         const contact = getValues("contact");
                         return (
-                          <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
+                          <div className="rounded-2xl bg-paper p-4 shadow-[0_1px_2px_rgb(11_13_20/0.04),0_6px_16px_-12px_rgb(11_13_20/0.18)]">
                             <p className="text-sm font-semibold text-gray-700 mb-2">
                               İletişim
                             </p>
@@ -217,7 +258,7 @@ function BookingPageContent() {
                       })()}
 
                       {/* Guests summary */}
-                      <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
+                      <div className="rounded-2xl bg-paper p-4 shadow-[0_1px_2px_rgb(11_13_20/0.04),0_6px_16px_-12px_rgb(11_13_20/0.18)]">
                         <p className="text-sm font-semibold text-gray-700 mb-2">
                           Misafirler ({totalGuests} kişi)
                         </p>
@@ -233,10 +274,11 @@ function BookingPageContent() {
                 </div>
 
                 {/* Navigation buttons */}
-                <div className="mt-4 flex items-center justify-between">
+                <div className="mt-4 flex items-center justify-between gap-3 [&>button]:flex-1 sm:[&>button]:flex-none">
                   <Button
                     type="button"
                     variant="outline"
+                    size="lg"
                     onClick={() => setCurrentStep((s) => Math.max(s - 1, 0))}
                     disabled={currentStep === 0}
                   >
@@ -245,21 +287,21 @@ function BookingPageContent() {
                   </Button>
 
                   {currentStep < STEPS.length - 1 ? (
-                    <Button type="button" onClick={handleNext}>
+                    <Button type="button" variant="gold" size="lg" onClick={handleNext}>
                       İleri
                       <ArrowRight className="h-4 w-4" aria-hidden="true" />
                     </Button>
                   ) : (
-                    <Button type="submit" loading={loading}>
+                    <Button type="submit" variant="gold" size="lg" loading={loading}>
                       <Send className="h-4 w-4" aria-hidden="true" />
-                      Rezervasyonu Tamamla
+                      Rezervasyonu tamamla
                     </Button>
                   )}
                 </div>
               </div>
 
-              {/* Sidebar */}
-              <div className="w-full lg:w-80 shrink-0">
+              {/* Sidebar — mobilde formdan önce görünür ki fiyat gözden kaçmasın */}
+              <div className="order-1 w-full shrink-0 lg:order-2 lg:sticky lg:top-6 lg:w-80">
                 <BookingSummary
                   bookingData={{
                     hotelName: hotelName || hotelCode,

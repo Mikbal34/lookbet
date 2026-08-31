@@ -1,39 +1,65 @@
 @import "tailwindcss";
 
 /* LookBeds tasarım sistemi — CruiseScanner (Skyscanner-tarzı) tasarımının
-   TURUNCU versiyonu: dümdüz tek renk marka bandı, beyaz gövde, Manrope,
-   amber fiyat/CTA vurguları, keskin köşeler.
-   Marka turuncusu logodan örneklendi: #E06028 */
+   Palet CruiseScanner ile hizalı — jetonları siteden okundu:
+     --brand   #0a1f44   koyu lacivert, yüzey ve başlık
+     --primary #0b63e5   canlı mavi, eylem
+     --accent  #ffc829   altın
+   Altın (#ffc829) ve chip (#f1ede4) zaten birebir aynıydı; bu projede
+   yalnızca lacivert ailesi turuncuya boyanmış, nötrler olduğu gibi kalmıştı.
+
+   Turuncunun ölçülen sorunu: #e06028 üstünde beyaz yazı 3.58 (sınır 4.5),
+   saydam çubukta 3.01. Beyaz yazı taşıyan her yüzey için ayrı koyu ton
+   türetmek gerekiyordu. İki mavili sistemde bu sorun yok. */
 @theme inline {
-  /* Marka — turuncu ailesi (eski "navy" token adları geriye uyumluluk için
-     korunuyor; TÜM uygulama bu adları kullanıyor) */
-  --color-navy: #e06028; /* birincil — marka turuncusu */
-  --color-navy-dark: #c24e1d; /* hover */
-  --color-navy-deep: #8f3a12; /* koyu zemin / panel sidebar */
-  --color-navy-mid: #ed7b45;
-  --color-navy-bright: #f59468;
+  /* Marka — lacivert ailesi. Jeton adları zaten "navy"ydi: tasarım baştan
+     lacivertti, bir ara turuncuya boyanmış ama adlar kalmıştı.
+
+     İki rol ayrı: navy EYLEM (düğme, ikon, bağlantı, aktif sekme),
+     navy-deep/navy-bar YÜZEY (kimlik çubuğu, koyu bloklar). */
+  --color-navy: #0b63e5; /* eylem — CruiseScanner --primary */
+  --color-navy-dark: #094fba; /* hover */
+  --color-navy-deep: #0a1f44; /* koyu yüzey — CruiseScanner --brand */
+  --color-navy-mid: #3d85ee;
+  --color-navy-bright: #74a8f5;
+  /* Kimlik çubuğunun dolu hâli — CruiseScanner'ın hero bloğuyla aynı ton.
+     Çubuk %95 saydam olduğu için altındaki açık zemin renge karışıyor;
+     bu tonla beyaz başlık 14.6 kontrast alıyor. */
+  --color-navy-bar: #0a1f44;
 
   /* Vurgu — amber (CruiseScanner CTA/fiyat etiketi rengi) */
   --color-gold: #ffc829;
   --color-gold-dark: #f0b400;
-  --color-gold-text: #9a7300;
+  /* Altın METİN olarak — indirim/tasarruf satırları ve gold-soft kutular.
+     #9a7300 idi ve beyazda 4.35, canvas'ta 3.96 veriyordu; sınır 4.5.
+     Bu ton üç zeminde de geçiyor (beyaz 5.61, canvas 5.11, gold-soft 5.06)
+     ve geçenlerin en açığı. Altın DOLGU (#ffc829) ayrı iş: üstünde yalnızca
+     koyu yazı taşır (11.43), beyaz yazı 1.55 verir ve asla kullanılmaz. */
+  --color-gold-text: #856200;
   --color-gold-soft: #fff3cd;
 
   /* Metin / zemin — sıcak nötrler (CruiseScanner warm-ink) */
   --color-ink: #1a1814; /* ana metin */
   --color-slate-text: #3f3a33; /* ikincil metin */
-  --color-muted: #8a8377; /* soluk metin */
+  --color-muted: #6f685c; /* soluk metin.
+     Eskiden #8a8377 idi: beyazda 3.75 kontrast veriyordu ve 13px ikincil
+     metin için AA sınırı 4.5. Uygulamanın en çok kullanılan ikincil rengi
+     (93 yer), bu yüzden düzeltme jetonun kendisinde yapıldı.
+     Bu ton kullanıldığı dört zeminde de geçiyor: beyaz 5.51, canvas 5.02,
+     chip 4.72, chip-blue 4.73 — ve geçenlerin en açığı. */
   --color-line: #e5e0d3; /* ince çizgi */
   --color-line-strong: #ccc6b5; /* input border */
   --color-row: #f1ede4; /* satır çizgisi / paper-strong */
+  --color-canvas: #f7f4ed; /* sayfa zemini — beyaz kartların üstünde durduğu
+     ton. Beyaza yakın bir zeminde beyaz kart kart gibi durmuyor. */
   --color-chip: #f1ede4; /* etiket zemini */
-  --color-chip-blue: #fdeae0; /* turuncu tonlu soft zemin */
+  --color-chip-blue: #e7effc; /* lacivert tonlu soft zemin */
   --color-paper: #ffffff; /* gövde beyaz (Skyscanner-tarzı) */
 
-  /* Fontlar — Manrope her yerde (display dahil) */
-  --font-sans: var(--font-manrope), "Helvetica Neue", Helvetica, Arial,
+  /* Fontlar — Nunito her yerde (display dahil) */
+  --font-sans: var(--font-nunito), "Helvetica Neue", Helvetica, Arial,
     sans-serif;
-  --font-serif: var(--font-manrope), "Helvetica Neue", Helvetica, Arial,
+  --font-serif: var(--font-nunito), "Helvetica Neue", Helvetica, Arial,
     sans-serif;
 }
 
@@ -43,7 +69,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Başlık dili: eski font-serif başlıklar artık Manrope — CruiseScanner'daki
+/* Başlık dili: eski font-serif başlıklar artık Nunito — CruiseScanner'daki
    extrabold + sıkı tracking hissi için global düzeltme */
 .font-serif {
   font-weight: 800;
@@ -80,7 +106,7 @@ body {
   --rdp-day-height: 23px;
   --rdp-day-width: 23px;
   --rdp-nav-height: 24px;
-  font-family: var(--font-manrope), sans-serif;
+  font-family: var(--font-nunito), sans-serif;
   font-size: 11px;
 }
 /* İki ay her zaman yan yana (dar popup'ta alt alta sarmasın) */
@@ -90,7 +116,7 @@ body {
   gap: 1.25rem;
 }
 .lookbet-daypicker .rdp-month_caption {
-  font-family: var(--font-manrope), sans-serif;
+  font-family: var(--font-nunito), sans-serif;
   font-size: 14px;
   font-weight: 800;
   letter-spacing: -0.01em;
@@ -115,4 +141,235 @@ body {
 .lookbet-daypicker .range-preview .rdp-day_button {
   background-color: #fdeae0 !important;
   color: #1a1814;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   MOBİL / WEBVIEW TEMELİ
+   Site aynı zamanda WebView içinde mobil uygulama olarak paketleniyor;
+   aşağıdakiler native his için gerekli davranışları kuruyor.
+   ═══════════════════════════════════════════════════════════════════ */
+
+html {
+  /* iOS yatay çevirmede metni kendiliğinden büyütmesin */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  /* Taşan bir öğe tüm sayfayı yatay kaydırılabilir yapmasın */
+  overflow-x: hidden;
+  /* WebView'de dokunuşta beliren gri kutu native hissi bozuyor */
+  -webkit-tap-highlight-color: transparent;
+  /* Sayfa sonunda "rubber band" ile arkadaki WebView'i çekmeyi engelle */
+  overscroll-behavior-y: none;
+}
+
+/* Görseller hiçbir zaman kabından taşmasın */
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+}
+
+/* iOS Safari/WebView, 16px'ten küçük fontlu bir alana odaklanınca sayfayı
+   zoom'lar ve bir daha geri çıkmaz. Mobilde tüm form alanları 16px. */
+@media (max-width: 1023px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Yatay kaydırmalı şeritler (chip'ler, sekmeler) için gizli scrollbar +
+   parmakla momentum kaydırma. */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Alt sayfa (bottom sheet) animasyonu — mobil filtre/menü panelleri */
+@keyframes sheetUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+.animate-sheet-up {
+  animation: sheetUp 0.22s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+/* ── Takvim: 1024px altında tek ay, parmakla basılabilir gün kutuları ──
+   Masaüstündeki 11px/23px hücreler dokunma için çok küçük. */
+@media (max-width: 1023px) {
+  .lookbet-daypicker .rdp-root {
+    --rdp-day-height: 40px;
+    --rdp-day-width: 40px;
+    --rdp-nav-height: 32px;
+    font-size: 14px;
+  }
+  .lookbet-daypicker .rdp-months {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  .lookbet-daypicker .rdp-month_caption {
+    font-size: 15px;
+  }
+  .lookbet-daypicker .rdp-weekday {
+    font-size: 11px;
+  }
+}
+
+/* WebView'de buton ve bağlantılarda uzun basınca çıkan iOS bağlam menüsü
+   native uygulama hissini bozuyor; metin seçimi serbest kalıyor. */
+button,
+a,
+[role="button"] {
+  -webkit-touch-callout: none;
+}
+
+/* ── App modu görünürlük yardımcıları ──────────────────────────────
+   <html data-app="b2c"> / <html data-app="partner"> işareti app-mode.ts'deki
+   senkron script tarafından konur; tarayıcıda attribute hiç konmaz.
+   Kurallar yalnızca gizler; görünür durumda display'e hiç dokunmadığımız
+   için öğenin kendi flex/grid düzeni korunur. */
+
+/* Yalnızca tarayıcıda */
+html[data-app] .web-only {
+  display: none !important;
+}
+
+/* Her iki uygulamada (hangisi olduğu fark etmez) */
+html:not([data-app]) .app-only {
+  display: none !important;
+}
+
+/* Tek bir uygulamaya özel */
+html:not([data-app="b2c"]) .b2c-only {
+  display: none !important;
+}
+html:not([data-app="partner"]) .partner-only {
+  display: none !important;
+}
+
+/* Saydam kimlik çubuğunun altına giren hero'lar (rezervasyon detayındaki
+   otel fotoğrafı gibi) bu sınıfla yukarı çekiliyor. Çubuk sticky olduğu için
+   yer kaplıyor; fotoğrafın arkasından geçmesi isteniyorsa o yer geri
+   alınmalı. Web'de kimlik çubuğu hiç yok, bu yüzden kural da yok — aynı
+   negatif marjı sınıf olarak yazsaydık web'de fotoğraf navbar'ın altına
+   girerdi. */
+html[data-app] {
+  --app-header-h: 3.75rem; /* 60px — app-header.tsx'teki derin çubuk */
+}
+html[data-app] .app-header-altina {
+  margin-top: calc(-1 * var(--app-header-h) - env(safe-area-inset-top));
+}
+
+/* ── Hareket ──────────────────────────────────────────────────────────
+   Tek imza: içerik hep aynı şekilde beliriyor. Süre kısa (180ms) çünkü bu
+   animasyon her gezinmede tekrar oynuyor; 250ms üstü ağır hissettiriyor. */
+@keyframes sayfa-belir {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.sayfa-gecisi {
+  animation: sayfa-belir 180ms ease-out both;
+}
+
+/* Sistemde "hareketi azalt" açıksa hepsi susuyor.
+   Uygulamada 112 yerde geçiş var ve bunlardan yalnızca biri bu ayara saygı
+   duyuyordu; tek tek sınıf eklemek yerine kural burada, bir kez. Hareket
+   vestibüler rahatsızlığı olan kullanıcıda mide bulantısı yapabiliyor,
+   işletim sistemi bu ayarı onun için sunuyor. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Giriş ekranı — app'te tam ekran fotoğraf, form alta yapışan yaprak.
+   Web'de ortalanmış kart olarak kalıyor.
+
+   Bunu app-only/web-only ile yapamıyoruz: o sınıflar yalnızca gizliyor,
+   konum ve köşe yarıçapı değiştirmiyor. Formu iki kez render etmek de
+   olmaz — CustomerLogin durum tutuyor, iki kopya iki ayrı OTP akışı
+   demek. Statik metin (logo, başlık) mod başına ayrı yazılabilir, form
+   tek. Bkz. app-header-altina, aynı gerekçe. */
+.giris-kap {
+  display: flex;
+  min-height: 100dvh;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1rem;
+}
+html[data-app] .giris-kap {
+  align-items: flex-end;
+  padding: 0;
+}
+html[data-app] .giris-kart {
+  width: 100%;
+  max-width: none;
+  border-radius: 1.5rem 1.5rem 0 0;
+  /* Yüzen sekme çubuğu yaprağın altından 78px örtüyordu (ölçüldü). Çubuk
+     burada bilerek duruyor: girişsiz kullanıcı "Rezervasyonlar"a dokunup
+     buraya düşüyor ve çubuk olmazsa geri dönecek yolu kalmıyor. */
+  padding-bottom: calc(6.25rem + env(safe-area-inset-bottom));
+}
+
+/* App modunda footer'ın büyük blokları gizli kalıyor; geriye kalan yasal
+   satır için üstteki nefes payı gereksiz kalıyordu. */
+html[data-app] .site-footer {
+  margin-top: 2rem;
+}
+html[data-app] .site-footer .site-footer-fine {
+  margin-top: 0;
+}
+
+/* ── Harita fiyat baloncukları (Leaflet divIcon) ───────────────────
+   Leaflet .leaflet-div-icon'a varsayılan beyaz kutu + kenarlık veriyor;
+   ikisini de sıfırlayıp kendi baloncuğumuzu çiziyoruz. iconSize vermediğimiz
+   için genişliği içerik belirliyor, uzun fiyatlar kırpılmıyor — konumu
+   transform ile baloncuğun altına sabitliyoruz. */
+.lookbet-fiyat-pini {
+  width: auto !important;
+  height: auto !important;
+  margin: 0 !important;
+  background: none;
+  border: none;
+}
+
+.lookbet-fiyat-pini > span {
+  display: inline-block;
+  transform: translate(-50%, -100%);
+  white-space: nowrap;
+  border-radius: 9999px;
+  background: var(--color-navy);
+  color: #fff;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 2px 8px rgb(26 24 20 / 0.35);
+}
+
+/* Leaflet'in kendi kontrolleri sekme çubuğunun altında kalmasın */
+.leaflet-container {
+  font: inherit;
+  z-index: 0;
 }

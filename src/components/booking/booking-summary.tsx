@@ -18,15 +18,17 @@
 
 import * as React from "react";
 import {
-  Hotel,
-  CalendarDays,
-  Moon,
-  UtensilsCrossed,
-  User,
-  Mail,
-  Phone,
-  Tag,
-} from "lucide-react";
+  LbAy,
+  LbBelge,
+  LbEtiket,
+  LbBina,
+  LbKullanici,
+  LbPansiyon,
+  LbTakvimDuz,
+  LbTelefon,
+  LbYatak,
+  LbZarf,
+} from "@/components/ui/icons";
 import { cn } from "@/lib/utils/cn";
 import { formatCurrency, formatDate, getNightCount } from "@/lib/utils";
 
@@ -68,10 +70,10 @@ function SummaryRow({
 }) {
   return (
     <div className="flex items-start gap-2.5">
-      <Icon className="h-4 w-4 text-gray-400 mt-0.5 shrink-0" aria-hidden="true" />
+      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-navy" aria-hidden="true" />
       <div className="min-w-0">
-        {label && <p className="text-xs text-gray-400 leading-none mb-0.5">{label}</p>}
-        <p className={cn("text-sm text-gray-700 font-medium leading-snug", valueClass)}>
+        {label && <p className="mb-0.5 text-xs leading-none text-muted">{label}</p>}
+        <p className={cn("text-sm text-ink font-medium leading-snug", valueClass)}>
           {value}
         </p>
       </div>
@@ -99,42 +101,45 @@ export function BookingSummary({ bookingData, className }: BookingSummaryProps) 
   return (
     <aside
       className={cn(
-        "bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden sticky top-24",
+        "sticky top-24 overflow-hidden rounded-2xl bg-paper shadow-[0_1px_2px_rgb(11_13_20/0.04),0_6px_16px_-12px_rgb(11_13_20/0.18)]",
         className
       )}
-      aria-label="Rezervasyon ozeti"
+      aria-label="Rezervasyon özeti"
     >
       {/* Header */}
-      <div className="bg-navy px-5 py-4">
-        <h2 className="text-white font-semibold text-base">Rezervasyon Ozeti</h2>
+      <div className="px-4 pt-4">
+        <h2 className="flex items-center gap-2 text-[15px] font-extrabold text-ink">
+          <LbBelge size={18} className="text-navy" />
+          Rezervasyon özeti
+        </h2>
       </div>
 
       <div className="p-5 space-y-5">
         {/* Hotel + Room info */}
         <div className="space-y-3">
           {hotelName && (
-            <SummaryRow icon={Hotel} label="Otel" value={hotelName} />
+            <SummaryRow icon={LbBina} label="Otel" value={hotelName} />
           )}
           {roomType && (
-            <SummaryRow icon={Hotel} label="Oda tipi" value={roomType} />
+            <SummaryRow icon={LbYatak} label="Oda tipi" value={roomType} />
           )}
           {boardType && (
-            <SummaryRow icon={UtensilsCrossed} label="Pansiyon" value={boardType} />
+            <SummaryRow icon={LbPansiyon} label="Pansiyon" value={boardType} />
           )}
         </div>
 
-        <hr className="border-gray-100" />
+        <hr className="border-line/60" />
 
         {/* Dates */}
         <div className="space-y-3">
           <SummaryRow
-            icon={CalendarDays}
+            icon={LbTakvimDuz}
             label="Tarihler"
             value={`${formatDate(checkIn)} - ${formatDate(checkOut)}`}
           />
           <SummaryRow
-            icon={Moon}
-            label="Konaklama suresi"
+            icon={LbAy}
+            label="Konaklama süresi"
             value={`${nights} gece`}
           />
         </div>
@@ -142,55 +147,55 @@ export function BookingSummary({ bookingData, className }: BookingSummaryProps) 
         {/* Contact info */}
         {contact && (
           <>
-            <hr className="border-gray-100" />
+            <hr className="border-line/60" />
             <div className="space-y-3">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                Iletisim
+              <p className="text-xs font-semibold text-muted uppercase tracking-wide">
+                İletişim
               </p>
               <SummaryRow
-                icon={User}
+                icon={LbKullanici}
                 value={`${contact.name} ${contact.surname}`}
               />
               {contact.email && (
-                <SummaryRow icon={Mail} value={contact.email} />
+                <SummaryRow icon={LbZarf} value={contact.email} />
               )}
               {contact.phone && (
-                <SummaryRow icon={Phone} value={contact.phone} />
+                <SummaryRow icon={LbTelefon} value={contact.phone} />
               )}
             </div>
           </>
         )}
 
         {/* Price breakdown */}
-        <hr className="border-gray-100" />
+        <hr className="border-line/60" />
         <div className="space-y-2">
           {hasDiscount && (
             <>
               <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-500">Liste fiyati</span>
-                <span className="text-gray-400 line-through">
+                <span className="text-muted">Liste fiyatı</span>
+                <span className="text-muted line-through">
                   {formatCurrency(originalPrice, currency)}
                 </span>
               </div>
               <div className="flex justify-between items-center text-sm">
-                <span className="text-green-600 font-medium flex items-center gap-1">
-                  <Tag className="h-3.5 w-3.5" aria-hidden="true" />
-                  Indirim
+                <span className="text-gold-text font-medium flex items-center gap-1">
+                  <LbEtiket size={14} />
+                  İndirim
                 </span>
-                <span className="text-green-600 font-semibold">
+                <span className="text-gold-text font-semibold">
                   -{formatCurrency(discount, currency)}
                 </span>
               </div>
             </>
           )}
           <div className="flex justify-between items-center pt-2 border-t border-dashed border-gray-200">
-            <span className="text-sm font-bold text-gray-900">Toplam</span>
+            <span className="text-sm font-bold text-ink">Toplam</span>
             <span className="text-xl font-bold text-navy">
               {formatCurrency(finalPrice, currency)}
             </span>
           </div>
           {hasDiscount && (
-            <p className="text-xs text-green-600 text-right">
+            <p className="text-xs text-gold-text text-right">
               {formatCurrency(discount, currency)} tasarruf ettiniz
             </p>
           )}

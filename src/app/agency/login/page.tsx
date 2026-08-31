@@ -20,7 +20,7 @@ export default function AgencyLoginPage() {
         className="relative overflow-hidden flex flex-col justify-between p-6 sm:p-10 lg:p-14 min-h-[280px]"
         style={{
           background:
-            "linear-gradient(160deg,#14202E 0%,#E06028 70%,#ED7B45 100%)",
+            "linear-gradient(160deg,#06163A 0%,#0B63E5 70%,#3D85EE 100%)",
         }}
       >
         <div

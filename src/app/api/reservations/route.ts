@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
+import { boardTypeAdi, boardTypeAdlari } from "@/lib/board-types";
 
 type ReservationStatus = "PENDING" | "CONFIRMED" | "CANCELLED" | "FAILED";
 
@@ -75,12 +76,42 @@ export async function GET(request: NextRequest) {
       where.status = statusParam as ReservationStatus;
     }
 
+    // ?upcoming=true — konaklaması henüz bitmemiş, iptal/başarısız olmayan
+    // rezervasyonlar, girişe en yakın önce. Uygulama ana sayfasındaki
+    // "yaklaşan rezervasyonun" kartı bunu kullanıyor: aksi hâlde istemcinin
+    // sayfalarca kayıt çekip kendi ayıklaması gerekirdi.
+    const upcoming = searchParams.get("upcoming") === "true";
+    if (upcoming) {
+      where.checkOut = { gte: new Date() };
+      where.status = { in: ["PENDING", "CONFIRMED"] as ReservationStatus[] };
+    }
+
+    // ?zaman=gelecek|gecmis — arayüzdeki iki sekme.
+    //
+    // İptal ve başarısız kayıtlar tarihi ne olursa olsun "geçmiş" tarafında:
+    // gelecek haftaya ait iptal edilmiş bir rezervasyon "gelecek konaklamam"
+    // değil. Kullanıcı onu "artık aktif olmayan" diye arar.
+    const zaman = searchParams.get("zaman");
+    if (zaman === "gelecek") {
+      where.checkOut = { gte: new Date() };
+      where.status = { in: ["PENDING", "CONFIRMED"] as ReservationStatus[] };
+    } else if (zaman === "gecmis") {
+      where.OR = [
+        { checkOut: { lt: new Date() } },
+        { status: { in: ["CANCELLED", "FAILED"] as ReservationStatus[] } },
+      ];
+    }
+
     const [reservations, total] = await Promise.all([
       prisma.reservation.findMany({
         where,
         skip,
         take: limit,
-        orderBy: { createdAt: "desc" },
+        // Gelecek: girişe en yakın önce. Geçmiş ve varsayılan: en yeni önce.
+        orderBy:
+          upcoming || zaman === "gelecek"
+            ? { checkIn: "asc" }
+            : { createdAt: "desc" },
         include: {
           user: { select: { id: true, name: true, email: true } },
           agency: { select: { id: true, companyName: true } },
@@ -89,8 +120,16 @@ export async function GET(request: NextRequest) {
       prisma.reservation.count({ where }),
     ]);
 
+    // Pansiyon kodunu görünen ada çevir; arayüzde kullanıcıya "RO" yerine
+    // "Sadece Oda" yazsın. Arama ucu bunu zaten yapıyordu.
+    const pansiyonAdlari = await boardTypeAdlari();
+    const cikti = reservations.map((r) => ({
+      ...r,
+      boardTypeName: boardTypeAdi(r.boardType, pansiyonAdlari),
+    }));
+
     return NextResponse.json({
-      data: reservations,
+      data: cikti,
       pagination: {
         total,
         page,

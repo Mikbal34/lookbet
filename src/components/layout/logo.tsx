@@ -2,7 +2,7 @@ import Link from "next/link";
 /* eslint-disable @next/next/no-img-element */
 import { cn } from "@/lib/utils/cn";
 
-// LookBeds logosu — turuncu yatak ikonu + Manrope wordmark.
+// LookBeds logosu — turuncu yatak ikonu + Nunito wordmark.
 // variant="light" koyu (turuncu) zeminlerde kullanılır.
 export function Logo({
   href = "/",

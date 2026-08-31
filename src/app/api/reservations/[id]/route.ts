@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
 import { getReservationDetail } from "@/lib/royal-api";
 import type { ReservationStatus } from "@/generated/prisma/client";
+import { boardTypeAdi, boardTypeAdlari } from "@/lib/board-types";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -107,7 +108,49 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
       }
     }
 
-    return NextResponse.json(reservation);
+    // Liste ucundaki gibi pansiyon kodunu görünen ada çevir; ayrıca otelin
+    // yerel kaydından fotoğraf/yıldız/konum ekle. Detay sayfası tepede otel
+    // fotoğrafı gösteriyor ve bu bilgiler rezervasyon satırında tutulmuyor.
+    // İkinci bir istemci isteği yerine burada birleştiriliyor — tedarikçiye
+    // değil yerel tabloya bakıldığı için ek gecikme getirmiyor.
+    const [pansiyonAdlari, otel] = await Promise.all([
+      boardTypeAdlari(),
+      prisma.hotel.findUnique({
+        where: { hotelCode: reservation.hotelCode },
+        select: {
+          thumbnailImage: true,
+          images: true,
+          stars: true,
+          address: true,
+          phone: true,
+          latitude: true,
+          longitude: true,
+          location: { select: { name: true } },
+        },
+      }),
+    ]);
+
+    // images alanı Json?; yerel kayıtta düz URL dizisi olarak tutuluyor.
+    const gorseller = Array.isArray(otel?.images)
+      ? (otel.images as unknown[]).filter((u): u is string => typeof u === "string")
+      : [];
+
+    return NextResponse.json({
+      ...reservation,
+      boardTypeName: boardTypeAdi(reservation.boardType, pansiyonAdlari),
+      hotel: otel
+        ? {
+            image: otel.thumbnailImage ?? gorseller[0] ?? null,
+            stars: otel.stars,
+            address: otel.address,
+            city: otel.location?.name ?? null,
+            // Detay sayfasındaki hızlı eylemler (ara / yol tarifi) için.
+            phone: otel.phone,
+            latitude: otel.latitude,
+            longitude: otel.longitude,
+          }
+        : null,
+    });
   } catch (error) {
     console.error("[GET /api/reservations/[id]]", error);
     return NextResponse.json(

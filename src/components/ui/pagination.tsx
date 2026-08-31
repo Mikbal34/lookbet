@@ -77,7 +77,7 @@ export const Pagination = ({
   return (
     <nav
       aria-label="Pagination"
-      className={cn("flex items-center gap-1", className)}
+      className={cn("flex flex-wrap items-center justify-center gap-1", className)}
     >
       {/* Previous */}
       <button
@@ -85,7 +85,7 @@ export const Pagination = ({
         disabled={currentPage <= 1}
         aria-label="Go to previous page"
         className={cn(
-          "inline-flex h-9 w-9 items-center justify-center rounded-lg border text-sm",
+          "inline-flex size-10 sm:size-9 items-center justify-center rounded-lg border text-sm",
           "transition-colors duration-150",
           "focus:outline-none focus:ring-2 focus:ring-navy focus:ring-offset-1",
           currentPage <= 1
@@ -101,7 +101,7 @@ export const Pagination = ({
         page === "..." ? (
           <span
             key={`ellipsis-${idx}`}
-            className="inline-flex h-9 w-9 items-center justify-center text-gray-400"
+            className="inline-flex size-10 items-center justify-center text-gray-400 sm:size-9"
             aria-hidden="true"
           >
             <MoreHorizontal className="h-4 w-4" />
@@ -113,7 +113,7 @@ export const Pagination = ({
             aria-label={`Go to page ${page}`}
             aria-current={page === currentPage ? "page" : undefined}
             className={cn(
-              "inline-flex h-9 w-9 items-center justify-center rounded-lg border text-sm font-medium",
+              "inline-flex size-10 sm:size-9 items-center justify-center rounded-lg border text-sm font-medium",
               "transition-colors duration-150",
               "focus:outline-none focus:ring-2 focus:ring-navy focus:ring-offset-1",
               page === currentPage
@@ -132,7 +132,7 @@ export const Pagination = ({
         disabled={currentPage >= totalPages}
         aria-label="Go to next page"
         className={cn(
-          "inline-flex h-9 w-9 items-center justify-center rounded-lg border text-sm",
+          "inline-flex size-10 sm:size-9 items-center justify-center rounded-lg border text-sm",
           "transition-colors duration-150",
           "focus:outline-none focus:ring-2 focus:ring-navy focus:ring-offset-1",
           currentPage >= totalPages

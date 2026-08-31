@@ -6,7 +6,7 @@
 // ))}
 
 import * as React from "react";
-import { User } from "lucide-react";
+import { LbKullanici } from "@/components/ui/icons";
 import { cn } from "@/lib/utils/cn";
 import type { UseFormRegister, FieldErrors } from "react-hook-form";
 
@@ -21,7 +21,7 @@ export interface GuestFormProps {
 
 const fieldClass = (hasError: boolean) =>
   cn(
-    "h-9 w-full rounded-lg border px-3 text-sm text-gray-900 placeholder:text-gray-400 bg-white",
+    "h-11 w-full rounded-lg border px-3 text-sm text-gray-900 placeholder:text-gray-400 bg-white",
     "focus:outline-none focus:ring-2 focus:ring-navy focus:border-navy transition-colors",
     hasError
       ? "border-red-400 focus:ring-red-400"
@@ -30,7 +30,7 @@ const fieldClass = (hasError: boolean) =>
 
 const selectClass = (hasError: boolean) =>
   cn(
-    "h-9 w-full appearance-none rounded-lg border px-3 text-sm text-gray-900 bg-white",
+    "h-11 w-full appearance-none rounded-lg border px-3 text-sm text-gray-900 bg-white",
     "focus:outline-none focus:ring-2 focus:ring-navy focus:border-navy transition-colors",
     hasError
       ? "border-red-400 focus:ring-red-400"
@@ -52,7 +52,7 @@ export function GuestForm({
   const prefix = `rooms.${roomIndex}.guests.${index}` as const;
   const guestErrors = (errors as any)?.rooms?.[roomIndex]?.guests?.[index];
 
-  const title = type === "Adult" ? `Yetiskin ${index + 1}` : `Cocuk ${index + 1}`;
+  const title = type === "Adult" ? `Yetişkin ${index + 1}` : `Çocuk ${index + 1}`;
 
   return (
     <div
@@ -66,7 +66,7 @@ export function GuestForm({
       <input type="hidden" {...register(`${prefix}.type`)} value={type} />
 
       <h4 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-        <User className="h-4 w-4 text-blue-400" aria-hidden="true" />
+        <LbKullanici size={16} className="text-navy" />
         {title}
         <span
           className={cn(
@@ -76,7 +76,7 @@ export function GuestForm({
               : "bg-amber-50 text-amber-600"
           )}
         >
-          {type === "Adult" ? "Yetiskin" : "Cocuk"}
+          {type === "Adult" ? "Yetişkin" : "Çocuk"}
         </span>
       </h4>
 
@@ -132,8 +132,8 @@ export function GuestForm({
       {/* Gender + Nationality + Age (child only) */}
       <div
         className={cn(
-          "grid gap-3",
-          type === "Child" ? "grid-cols-3" : "grid-cols-2"
+          "grid gap-3 grid-cols-1",
+          type === "Child" ? "sm:grid-cols-3" : "sm:grid-cols-2"
         )}
       >
         {/* Gender */}
@@ -152,7 +152,7 @@ export function GuestForm({
               {...register(`${prefix}.gender`)}
             >
               <option value="Male">Erkek</option>
-              <option value="Female">Kadin</option>
+              <option value="Female">Kadın</option>
             </select>
             <svg
               className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"

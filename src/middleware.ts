@@ -61,7 +61,6 @@ export const config = {
     "/agency/:path*",
     "/reservations/:path*",
     "/booking/:path*",
-    "/profile/:path*",
     "/api/admin/:path*",
     "/api/booking/:path*",
     "/api/reservations/:path*",

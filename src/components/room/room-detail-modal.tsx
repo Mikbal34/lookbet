@@ -106,14 +106,14 @@ export function RoomDetailModal({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-3 sm:p-6"
+      className="fixed inset-0 z-[100] flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-6"
       role="dialog"
       aria-modal="true"
       aria-label={room.roomName}
       onClick={onClose}
     >
       <div
-        className="flex max-h-full w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl"
+        className="flex max-h-[92dvh] w-full max-w-4xl flex-col overflow-hidden rounded-t-2xl bg-white shadow-xl animate-sheet-up sm:max-h-full sm:rounded-2xl sm:animate-none"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Başlık + kapat */}
@@ -129,7 +129,7 @@ export function RoomDetailModal({
             type="button"
             onClick={onClose}
             aria-label="Kapat"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100"
+            className="flex size-11 shrink-0 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 active:bg-gray-100 sm:size-9"
           >
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
@@ -158,7 +158,7 @@ export function RoomDetailModal({
                     type="button"
                     onClick={prev}
                     aria-label="Önceki"
-                    className="absolute left-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-gray-700 hover:bg-white"
+                    className="absolute left-2 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-gray-700 hover:bg-white sm:size-8"
                   >
                     <ChevronLeft className="h-5 w-5" aria-hidden="true" />
                   </button>
@@ -166,7 +166,7 @@ export function RoomDetailModal({
                     type="button"
                     onClick={next}
                     aria-label="Sonraki"
-                    className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-gray-700 hover:bg-white"
+                    className="absolute right-2 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-gray-700 hover:bg-white sm:size-8"
                   >
                     <ChevronRight className="h-5 w-5" aria-hidden="true" />
                   </button>
@@ -239,7 +239,7 @@ export function RoomDetailModal({
         </div>
 
         {/* Alt bar: fiyat + seç */}
-        <div className="flex items-center justify-between gap-4 border-t border-gray-100 px-5 py-3.5">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 px-5 pt-3.5 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:pb-3.5">
           <div>
             {hasDiscount && (
               <span className="mr-2 text-sm text-gray-400 line-through">
@@ -259,10 +259,10 @@ export function RoomDetailModal({
               onSelect?.();
               onClose();
             }}
-            className="flex items-center gap-1.5 rounded-lg bg-navy px-6 py-2.5 text-sm font-semibold text-white hover:bg-navy-dark"
+            className="flex min-h-12 flex-1 items-center justify-center gap-1.5 rounded-lg bg-gold px-6 text-sm font-bold text-ink hover:bg-gold-dark active:bg-gold-dark sm:min-h-0 sm:flex-none sm:py-2.5"
           >
             <BedDouble className="h-4 w-4" aria-hidden="true" />
-            Bu Odayı Seç
+            Bu odayı seç
           </button>
         </div>
       </div>

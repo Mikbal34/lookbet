@@ -1,103 +1,76 @@
-// Kampanyalar — lookbet. tasarım dili: koyu gradyan kupon kartları,
-// kesikli çizgili kod kutuları, altın CTA.
+// Kampanyalar listesi — fotoğraflı kartlar, köşede kurdele rozet.
+// Detay, indirim kodu ve CTA tek kampanya sayfasında (./[kod]).
 
 import Link from "next/link";
-import { Navbar, Footer } from "@/components/layout";
+import {AppHeader, Navbar, Footer } from "@/components/layout";
 import type { Metadata } from "next";
+import { CAMPAIGNS } from "@/lib/constants/campaigns";
 
 export const metadata: Metadata = {
   title: "Kampanyalar — lookbet.",
   description: "Kodu rezervasyonda gir, indirim anında uygulansın.",
 };
 
-const deals = [
-  {
-    tag: "ERKEN REZERVASYON",
-    until: "30 Eylül'e kadar",
-    amount: "%25",
-    title: "Yaz tatilini şimdiden planla",
-    desc: "Seçili tatil otellerinde erken rezervasyona %25'e varan indirim. İptal koşulları esnek, girişte ödeme seçeneği geçerli.",
-    code: "ERKEN25",
-    bg: "linear-gradient(150deg,#E06028,#8F3A12)",
-  },
-  {
-    tag: "HAFTA SONU",
-    until: "Her hafta sonu",
-    amount: "%15",
-    title: "Şehir otellerinde hafta sonu kaçamağı",
-    desc: "Cuma–Pazar konaklamalarında şehir otellerine özel %15 indirim. Kahvaltı dahil seçeneklerde de geçerli.",
-    code: "HSONU15",
-    bg: "linear-gradient(150deg,#9A7410,#6E4E28)",
-  },
-  {
-    tag: "SON DAKİKA",
-    until: "72 saat içinde giriş",
-    amount: "%30",
-    title: "Bugün ara, yarın otelde ol",
-    desc: "Girişe 72 saatten az kalan rezervasyonlarda seçili otellerde %30'a varan son dakika indirimi.",
-    code: "SONDK30",
-    bg: "linear-gradient(150deg,#ED7B45,#E06028)",
-  },
-  {
-    tag: "UZUN KONAKLAMA",
-    until: "5 gece ve üzeri",
-    amount: "%20",
-    title: "Uzun kal, az öde",
-    desc: "5 gece ve üzeri konaklamalarda %20 indirim. Aylık konaklamalarda ekstra avantajlar için bizi arayın.",
-    code: "UZUN20",
-    bg: "linear-gradient(150deg,#14202E,#8F3A12)",
-  },
-];
+
+
+const deals = CAMPAIGNS;
 
 export default function DealsPage() {
   return (
     <div className="min-h-screen flex flex-col bg-paper">
-      <Navbar />
+      <AppHeader baslik="Kampanyalar" />
+      <div className="web-only">
+        <Navbar />
+      </div>
 
       <main className="flex-1 max-w-[1280px] w-full mx-auto px-4 sm:px-6 lg:px-10 py-11">
-        <h1 className="font-serif text-3xl lg:text-4xl font-normal mb-1.5">
+        <h1 className="web-only font-serif text-3xl lg:text-4xl font-normal mb-1.5">
           Kampanyalar
         </h1>
         <p className="text-[14.5px] text-muted mb-8">
           Kodu rezervasyonda gir, indirim anında uygulansın.
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {/* Fotoğraflı kartlar — köşede kurdele rozet, altta başlık.
+            Dokununca kampanya sayfası açılıyor; detay, indirim kodu ve CTA
+            orada. Eskiden hepsi kartın içine sıkıştırılmıştı. */}
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           {deals.map((d) => (
-            <div
+            <Link
               key={d.code}
-              className="rounded-md px-8 py-[30px] text-paper relative overflow-hidden flex flex-col gap-2"
-              style={{ background: d.bg }}
+              href={`/kampanyalar/${d.code.toLowerCase()}`}
+              className="group relative block h-52 overflow-hidden rounded-xl bg-navy"
             >
-              <div
-                className="absolute -right-10 -top-10 w-[180px] h-[180px] rounded-full bg-paper/[0.08]"
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={d.image}
+                alt=""
                 aria-hidden="true"
+                className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                loading="lazy"
               />
-              <div className="flex justify-between items-center">
-                <span className="bg-paper/15 rounded-sm px-3 py-[5px] text-xs font-bold tracking-[1px]">
-                  {d.tag}
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/35 to-transparent"
+              />
+
+              {/* Kurdele rozet */}
+              <span className="absolute top-4 right-0 rounded-l-sm bg-gold px-3 py-1.5 text-[11px] font-bold tracking-[0.1em] text-ink uppercase shadow-[0_2px_0_rgb(11_13_20/0.2)]">
+                {d.tag}
+              </span>
+
+              <div className="absolute inset-x-0 bottom-0 p-4">
+                {/* Tutar üstte, başlık altında: yan yana dizilince iki
+                    satırlık başlıklarda hiza bozuluyordu. */}
+                <span className="block text-[32px] leading-none font-extrabold text-gold">
+                  {d.amount}
                 </span>
-                <span className="text-[12.5px] text-paper/65">{d.until}</span>
+                <h2 className="mt-1 text-[17px] leading-tight font-extrabold text-white">
+                  {d.title}
+                </h2>
+                <p className="mt-1 text-[12.5px] text-white/75">{d.until}</p>
               </div>
-              <div className="font-serif text-[42px] text-gold mt-2">
-                {d.amount}
-              </div>
-              <div className="text-[17px] font-bold">{d.title}</div>
-              <div className="text-[13.5px] text-paper/70 leading-relaxed max-w-[380px]">
-                {d.desc}
-              </div>
-              <div className="flex justify-between items-center mt-3.5 flex-wrap gap-3">
-                <span className="border border-dashed border-paper/40 rounded-sm px-4 py-2 text-sm font-bold tracking-[2px]">
-                  {d.code}
-                </span>
-                <Link
-                  href="/search"
-                  className="bg-gold text-ink rounded-md px-5 py-[11px] text-[13px] font-bold hover:bg-gold-dark transition-colors"
-                >
-                  Otelleri gör
-                </Link>
-              </div>
-            </div>
+            </Link>
           ))}
         </div>
       </main>

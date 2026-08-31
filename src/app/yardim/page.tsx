@@ -4,7 +4,7 @@
 // kategori kartları, akordeon SSS, iletişim kartı.
 
 import { useState } from "react";
-import { Navbar, Footer } from "@/components/layout";
+import {AppHeader, Navbar, Footer } from "@/components/layout";
 
 const helpCats = [
   { title: "Rezervasyon işlemleri", count: 12 },
@@ -39,21 +39,36 @@ const faqs = [
 ];
 
 export default function HelpPage() {
-  const [openIdx, setOpenIdx] = useState<number | null>(0);
+  const [acikSoru, setAcikSoru] = useState<string | null>(faqs[0]?.q ?? null);
+  const [sorgu, setSorgu] = useState("");
+
+  // Arama kutusu eskiden hiçbir şeye bağlı değildi; yazılan şey hiçbir yeri
+  // etkilemiyordu. Artık SSS listesini süzüyor.
+  const kucult = (t: string) => t.toLocaleLowerCase("tr");
+  const gorunenSSS = sorgu.trim()
+    ? faqs.filter((f) => kucult(f.q + " " + f.a).includes(kucult(sorgu.trim())))
+    : faqs;
 
   return (
     <div className="min-h-screen flex flex-col bg-paper">
-      <Navbar />
+      <AppHeader geri baslik="Yardım" />
+      <div className="web-only">
+        <Navbar />
+      </div>
 
       {/* Arama bandı */}
       <div
         className="px-6 py-10 lg:py-14 text-center"
-        style={{ background: "linear-gradient(150deg,#E06028,#8F3A12)" }}
+        style={{ background: "linear-gradient(150deg,#0B63E5,#0A1F44)" }}
       >
         <h1 className="font-serif text-3xl lg:text-[34px] font-normal text-paper mb-5">
           Nasıl yardımcı olabiliriz?
         </h1>
         <input
+          type="search"
+          value={sorgu}
+          onChange={(e) => setSorgu(e.target.value)}
+          aria-label="Yardım konularında ara"
           placeholder="Soru veya konu ara — örn. iptal, fatura, onay kodu"
           className="w-full max-w-[560px] rounded-md px-[22px] py-[17px] font-sans text-[15px] outline-none shadow-[0_10px_30px_rgba(14,42,69,0.4)] bg-white text-ink placeholder:text-muted/70"
         />
@@ -82,28 +97,37 @@ export default function HelpPage() {
               Sık sorulanlar
             </h2>
             <div className="flex flex-col gap-2.5">
-              {faqs.map((f, i) => (
+              {gorunenSSS.map((f) => (
                 <div
                   key={f.q}
                   className="bg-white border border-line rounded-md overflow-hidden"
                 >
                   <button
-                    onClick={() => setOpenIdx(openIdx === i ? null : i)}
-                    className="w-full flex justify-between items-center px-5 py-4 cursor-pointer text-[14.5px] font-semibold text-left"
-                    aria-expanded={openIdx === i}
+                    onClick={() =>
+                      setAcikSoru(acikSoru === f.q ? null : f.q)
+                    }
+                    className="w-full min-h-14 flex justify-between items-center px-5 py-4 cursor-pointer text-[14.5px] font-semibold text-left"
+                    aria-expanded={acikSoru === f.q}
                   >
                     {f.q}
                     <span className="text-navy text-lg shrink-0 ml-3">
-                      {openIdx === i ? "−" : "+"}
+                      {acikSoru === f.q ? "−" : "+"}
                     </span>
                   </button>
-                  {openIdx === i && (
+                  {acikSoru === f.q && (
                     <div className="px-5 pb-[18px] text-sm text-slate-text leading-relaxed">
                       {f.a}
                     </div>
                   )}
                 </div>
               ))}
+
+              {gorunenSSS.length === 0 && (
+                <p className="rounded-md border border-line bg-white px-5 py-6 text-center text-sm text-muted">
+                  &ldquo;{sorgu}&rdquo; için sonuç bulunamadı. Aşağıdan canlı
+                  desteğe yazabilirsin.
+                </p>
+              )}
             </div>
           </div>
 

@@ -66,9 +66,9 @@ export default function ContentSyncPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-serif text-[28px] font-normal text-ink">Content Sync</h1>
+          <h1 className="font-serif text-[22px] font-normal text-ink sm:text-[28px]">Content Sync</h1>
           <p className="text-sm text-gray-500 mt-1">
             {status?.lastSync
               ? `Son senkronizasyon: ${formatDate(status.lastSync)}`
@@ -169,7 +169,7 @@ export default function ContentSyncPage() {
                 key={item.label}
                 className="bg-gray-50 rounded-lg p-4 text-center"
               >
-                <p className="font-serif text-[28px] font-normal text-ink">{item.count}</p>
+                <p className="font-serif text-[22px] font-normal text-ink sm:text-[28px]">{item.count}</p>
                 <p className="text-xs text-gray-500 mt-1">{item.label} güncellendi</p>
               </div>
             ))}

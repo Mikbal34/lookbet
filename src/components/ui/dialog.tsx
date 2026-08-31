@@ -72,7 +72,7 @@ export const Dialog = ({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4"
       role="dialog"
       aria-modal="true"
     >
@@ -85,9 +85,11 @@ export const Dialog = ({
       {/* Panel */}
       <div
         className={cn(
-          "relative z-10 w-full max-w-md bg-white rounded-2xl shadow-xl",
-          "animate-in fade-in-0 zoom-in-95 duration-200",
-          "max-h-[90vh] flex flex-col",
+          "relative z-10 w-full bg-white shadow-xl",
+          // Mobil: tam genişlik alt sayfa · sm+: ortalanmış kutu
+          "rounded-t-2xl max-h-[88dvh] animate-sheet-up",
+          "sm:max-w-md sm:rounded-2xl sm:max-h-[90vh] sm:animate-in sm:fade-in-0 sm:zoom-in-95 sm:duration-200",
+          "flex flex-col",
           className
         )}
       >
@@ -96,8 +98,8 @@ export const Dialog = ({
           onClick={onClose}
           aria-label="Close dialog"
           className={cn(
-            "absolute right-4 top-4 z-10 rounded-lg p-1.5",
-            "text-gray-400 hover:text-gray-600 hover:bg-gray-100",
+            "absolute right-2 top-2 z-10 flex size-11 items-center justify-center rounded-lg sm:right-4 sm:top-4 sm:size-8",
+            "text-gray-400 hover:text-gray-600 hover:bg-gray-100 active:bg-gray-100",
             "transition-colors duration-150",
             "focus:outline-none focus:ring-2 focus:ring-navy"
           )}
@@ -118,7 +120,7 @@ export interface DialogHeaderProps
 
 export const DialogHeader = ({ className, ...props }: DialogHeaderProps) => (
   <div
-    className={cn("flex flex-col gap-1.5 p-6 pb-0 pr-12", className)}
+    className={cn("flex flex-col gap-1.5 px-5 pt-5 pb-0 pr-14 sm:p-6 sm:pb-0 sm:pr-12", className)}
     {...props}
   />
 );
@@ -157,7 +159,7 @@ export const DialogContent = ({
   ...props
 }: DialogContentProps) => (
   <div
-    className={cn("flex-1 overflow-y-auto px-6 py-4", className)}
+    className={cn("flex-1 overflow-y-auto overscroll-contain px-5 py-4 sm:px-6", className)}
     {...props}
   />
 );
@@ -169,7 +171,9 @@ export interface DialogFooterProps
 export const DialogFooter = ({ className, ...props }: DialogFooterProps) => (
   <div
     className={cn(
-      "flex items-center justify-end gap-3 border-t border-gray-100 px-6 py-4",
+      "flex flex-col-reverse gap-3 border-t border-gray-100 px-6 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))]",
+      "sm:flex-row sm:items-center sm:justify-end sm:pb-4",
+      "[&>*]:w-full sm:[&>*]:w-auto",
       className
     )}
     {...props}

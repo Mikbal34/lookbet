@@ -44,8 +44,8 @@ export function Footer() {
   ] as const;
 
   return (
-    <footer className="mt-16 bg-navy text-white">
-      <div className="mx-auto max-w-[1200px] px-4 py-12 sm:px-6 lg:py-16">
+    <footer className="site-footer web-only mt-16 bg-navy text-white">
+      <div className="mx-auto max-w-[1200px] px-4 pt-10 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:px-6 sm:py-12 lg:py-16">
         {/* Üst — logo + tagline + telefon */}
         <div className="flex flex-col gap-6 border-b border-white/10 pb-8 md:flex-row md:items-end md:justify-between">
           <div className="max-w-xl">
@@ -99,7 +99,7 @@ export function Footer() {
         </div>
 
         {/* Fine print */}
-        <div className="mt-12 flex flex-col gap-2 border-t border-white/10 pt-6">
+        <div className="site-footer-fine mt-10 flex flex-col gap-2 border-t border-white/10 pt-6 sm:mt-12">
           <p className="text-[12px] font-semibold tracking-[0.01em] text-white/80">
             LookBeds Turizm A.Ş. · TÜRSAB Belge No: 0000
           </p>

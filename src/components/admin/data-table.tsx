@@ -29,8 +29,8 @@ export function DataTable<T extends Record<string, any>>({
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full">
+    <div className="overflow-x-auto overscroll-x-contain">
+      <table className="w-full min-w-[720px]">
         <thead>
           <tr className="border-b border-gray-200">
             {columns.map((col) => (

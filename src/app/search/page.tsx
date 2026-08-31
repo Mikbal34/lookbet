@@ -6,12 +6,38 @@
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { SearchX } from "lucide-react";
-import { Navbar, Footer } from "@/components/layout";
-import { SearchForm } from "@/components/search";
+import {
+  LbAramaBos,
+  LbFiltre,
+  LbHarita,
+  LbKalem,
+  LbListe,
+} from "@/components/ui/icons";
+import {AppHeader, Navbar, Footer } from "@/components/layout";
+import { SearchForm, SearchOverlay } from "@/components/search";
 import { HotelCard, HotelFilters } from "@/components/hotel";
+import dynamic from "next/dynamic";
+
+// Leaflet window/document'a doğrudan dokunuyor → ssr:false.
+// Ayrı parça olarak yükleniyor; liste görünümünde hiç indirilmiyor.
+const HotelMap = dynamic(
+  () => import("@/components/hotel/hotel-map").then((m) => m.HotelMap),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-full items-center justify-center text-[13.5px] text-muted">
+        Harita yükleniyor…
+      </div>
+    ),
+  }
+);
 import type { HotelFiltersValue } from "@/components/hotel";
 import { Skeleton } from "@/components/ui/skeleton";
+import { MobileSheet } from "@/components/ui/mobile-sheet";
+import { useMediaQuery } from "@/lib/utils/use-media-query";
+import { formatDateRange } from "@/lib/utils";
+import { cn } from "@/lib/utils/cn";
+import { addRecentSearch } from "@/lib/utils/recent-searches";
 import type { HotelSearchResult, HotelSearchResponse } from "@/lib/royal-api/types";
 
 // ---------- helpers ----------
@@ -129,6 +155,12 @@ function SearchPageContent() {
   const router = useRouter();
   const rawParams = useSearchParams();
   const [filters, setFilters] = React.useState<HotelFiltersValue>(DEFAULT_FILTERS);
+  // Filtre kenar çubuğu lg'den itibaren görünür; altında alt sayfa kullanılır
+  const filtersInSheet = useMediaQuery("(max-width: 1023px)");
+  // Mobilde arama barı ekranın yarısını yiyordu: özet satırı + isteğe bağlı açılım
+  const [searchOpen, setSearchOpen] = React.useState(false);
+  const [gorunum, setGorunum] = React.useState<"liste" | "harita">("liste");
+  const [filtersOpen, setFiltersOpen] = React.useState(false);
 
   const payload = React.useMemo(() => buildSearchPayload(rawParams), [rawParams]);
   const searchParamStr = buildSearchParams(rawParams);
@@ -171,8 +203,22 @@ function SearchPageContent() {
     p.set("nationality", values.nationality);
     // Mevcut para birimi tercihini koru
     p.set("currency", rawParams.get("currency") ?? "EUR");
+
+    addRecentSearch({
+      destination: values.destination,
+      checkIn: values.checkIn,
+      checkOut: values.checkOut,
+      adults: values.guests.adult,
+    });
+
     router.push(`/search?${p.toString()}`);
   };
+
+  const activeFilterCount =
+    filters.stars.length +
+    filters.boardTypes.length +
+    (filters.minPrice !== "" ? 1 : 0) +
+    (filters.maxPrice !== "" ? 1 : 0);
 
   const destination = rawParams.get("destination") ?? "";
   const checkIn = rawParams.get("checkIn") ?? "";
@@ -188,22 +234,48 @@ function SearchPageContent() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <Navbar />
+      <AppHeader geri="/" />
+      <div className="web-only">
+        <Navbar />
+      </div>
 
       <main className="flex-1">
-        {/* Search bar top */}
-        <div className="bg-white border-b border-gray-200 py-4">
+        {/* Arama barı — mobilde önce tek satırlık özet, dokununca tam form */}
+        <div className="bg-white border-b border-gray-200 py-3 sm:py-4">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <SearchForm
-              initialValues={{
-                destination,
-                checkIn,
-                checkOut,
-                nationality: rawParams.get("nationality") ?? "TR",
-              }}
-              onSearch={handleSearch}
-              loading={isLoading}
-            />
+            {/* Mobil özet satırı */}
+            <button
+              type="button"
+              onClick={() => setSearchOpen(true)}
+              className="flex w-full items-center gap-3 rounded-md border border-line-strong px-4 py-3 text-left active:bg-chip lg:hidden"
+            >
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[15px] font-bold text-ink">
+                  {destination || "Nereye gitmek istersin?"}
+                </span>
+                <span className="block truncate text-[12.5px] text-muted">
+                  {checkIn && checkOut
+                    ? `${formatDateRange(checkIn, checkOut)} · ${rawParams.get("adults") ?? 2} kişi`
+                    : "Tarih ve misafir seç"}
+                </span>
+              </span>
+              <LbKalem size={16} className="text-navy" />
+            </button>
+
+            {/* Tam form yalnızca masaüstünde satır içi; lg altında aynı
+                değerlerle tam ekran katman açılıyor (aşağıda). */}
+            <div className="hidden lg:block">
+              <SearchForm
+                initialValues={{
+                  destination,
+                  checkIn,
+                  checkOut,
+                  nationality: rawParams.get("nationality") ?? "TR",
+                }}
+                onSearch={handleSearch}
+                loading={isLoading}
+              />
+            </div>
           </div>
         </div>
 
@@ -222,28 +294,75 @@ function SearchPageContent() {
 
             {/* Results */}
             <div className="flex-1 min-w-0">
-              {/* Mobile filters */}
-              <div className="lg:hidden mb-4">
-                <HotelFilters
-                  filters={filters}
-                  onFilterChange={setFilters}
-                  boardTypes={allBoardTypes}
-                  nationality={nationality}
-                  onNationalityChange={handleNationalityChange}
-                />
-              </div>
-
-              {/* Results header */}
-              {!isLoading && !isError && data && (
-                <div className="mb-4 flex items-center justify-between">
-                  <p className="text-[14.5px] text-slate-text">
+              {/* Sonuç başlığı + mobil filtre tetikleyicisi */}
+              {/* lg altı: yapışkan eylem satırı. Liste uzadığında Filtreler
+                  ve Harita kaydırmayla erişilemez kalıyordu; kenarlara
+                  taşırılıp kendi zeminini alıyor ki altındaki kartlar
+                  üstünden geçerken okunur kalsın. */}
+              <div className="sticky top-0 z-20 -mx-4 mb-4 flex items-center justify-between gap-3 border-b border-line bg-paper px-4 py-2 sm:-mx-6 sm:px-6 lg:static lg:mx-0 lg:border-0 lg:bg-transparent lg:px-0 lg:py-0">
+                {!isLoading && !isError && data ? (
+                  <p className="min-w-0 truncate text-[14.5px] text-slate-text">
                     <b className="text-ink">{filteredHotels.length}</b> otel
-                    bulundu
+                    {/* "bulundu — İstanbul" 375px'te iki satıra sarıyordu;
+                        destinasyon zaten üstteki arama özetinde yazıyor. */}
+                    <span className="hidden lg:inline"> bulundu</span>
                     {destination && (
-                      <span className="text-muted"> — {destination}</span>
+                      <span className="hidden text-muted lg:inline">
+                        {" "}
+                        — {destination}
+                      </span>
                     )}
                   </p>
+                ) : (
+                  <span />
+                )}
+
+                <div className="flex shrink-0 items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setGorunum((g) => (g === "liste" ? "harita" : "liste"))
+                  }
+                  aria-pressed={gorunum === "harita"}
+                  className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-md border border-line-strong px-3.5 py-2.5 text-[13.5px] font-bold text-ink active:bg-chip lg:hidden"
+                >
+                  {gorunum === "liste" ? (
+                    <>
+                      <LbHarita size={16} />
+                      Harita
+                    </>
+                  ) : (
+                    <>
+                      <LbListe size={16} />
+                      Liste
+                    </>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setFiltersOpen(true)}
+                  className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-md border border-line-strong px-3.5 py-2.5 text-[13.5px] font-bold text-ink active:bg-chip lg:hidden"
+                >
+                  <LbFiltre size={16} />
+                  Filtreler
+                  {activeFilterCount > 0 && (
+                    <span className="inline-flex size-5 items-center justify-center rounded-full bg-navy text-[11px] font-bold text-white">
+                      {activeFilterCount}
+                    </span>
+                  )}
+                </button>
                 </div>
+              </div>
+
+              {/* Harita görünümü — yalnızca lg altında, listenin yerine.
+                  Masaüstünde liste her zaman görünür, geçiş düğmesi yok. */}
+              {!isLoading && !isError && gorunum === "harita" && (
+                <HotelMap
+                  hotels={filteredHotels}
+                  searchParams={searchParamStr}
+                  className="h-[70dvh] min-h-[380px] overflow-hidden rounded-md border border-line lg:hidden"
+                />
               )}
 
               {/* Loading skeletons */}
@@ -258,7 +377,7 @@ function SearchPageContent() {
               {/* Error state */}
               {isError && (
                 <div className="flex flex-col items-center justify-center py-20 text-center">
-                  <SearchX className="h-12 w-12 text-red-400 mb-4" aria-hidden="true" />
+                  <LbAramaBos size={44} className="mb-4 text-red-400" />
                   <h2 className="text-lg font-semibold text-gray-900 mb-2">
                     Arama sırasında hata oluştu
                   </h2>
@@ -279,7 +398,7 @@ function SearchPageContent() {
                       aria-hidden="true"
                     />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <SearchX className="h-14 w-14 text-gray-500" aria-hidden="true" />
+                      <LbAramaBos size={52} className="text-muted" />
                     </div>
                   </div>
                   <h2 className="text-lg font-semibold text-gray-900 mb-2">
@@ -294,7 +413,12 @@ function SearchPageContent() {
 
               {/* Hotel grid */}
               {!isLoading && filteredHotels.length > 0 && (
-                <div className="space-y-4">
+                <div
+                  className={cn(
+                    "space-y-4",
+                    gorunum === "harita" && "hidden lg:block"
+                  )}
+                >
                   {filteredHotels.map((hotel) => (
                     <HotelCard
                       key={hotel.hotelCode}
@@ -307,7 +431,46 @@ function SearchPageContent() {
             </div>
           </div>
         </div>
+
+        {/* Mobil filtre alt sayfası */}
+        <MobileSheet
+          open={filtersOpen && filtersInSheet}
+          onClose={() => setFiltersOpen(false)}
+          title="Filtreler"
+          footer={
+            <button
+              type="button"
+              onClick={() => setFiltersOpen(false)}
+              className="h-12 w-full rounded-md bg-gold text-[15px] font-bold text-ink active:bg-gold-dark"
+            >
+              {filteredHotels.length} oteli göster
+            </button>
+          }
+        >
+          <HotelFilters
+            filters={filters}
+            onFilterChange={setFilters}
+            boardTypes={allBoardTypes}
+            nationality={nationality}
+            onNationalityChange={handleNationalityChange}
+            hideTitle
+            className="border-0 p-0"
+          />
+        </MobileSheet>
       </main>
+
+      <SearchOverlay
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        initialValues={{
+          destination,
+          checkIn,
+          checkOut,
+          nationality: rawParams.get("nationality") ?? "TR",
+        }}
+        onSearch={handleSearch}
+        loading={isLoading}
+      />
 
       <Footer />
     </div>

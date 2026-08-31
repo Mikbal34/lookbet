@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
 import { hotelSearchSchema } from "@/lib/validators";
 import { searchHotels } from "@/lib/royal-api";
+import { boardTypeAdlari } from "@/lib/board-types";
 
 // POST /api/hotels/search
 // Searches hotels by destination via Royal API.
@@ -95,13 +96,29 @@ export async function POST(request: NextRequest) {
 
     // Translate board type codes to display names using the synced content
     // table; unknown codes fall through as-is.
-    const boardTypeRows = await prisma.boardType.findMany();
-    const boardTypeNames = new Map(boardTypeRows.map((b) => [b.code, b.name]));
+    const boardTypeNames = await boardTypeAdlari();
 
     const hotelsWithBoardNames = (results.hotels ?? []).map((h) => ({
       ...h,
       boardTypes: (h.boardTypes ?? []).map((code) => boardTypeNames.get(code) ?? code),
     }));
+
+    // Arama geçmişi — analitik ve ileride kişiselleştirme için. Ekrandaki
+    // "son aramaların" listesi cihazdan besleniyor (girişsiz kullanıcıda da
+    // çalışsın diye), burası ondan bağımsız.
+    //
+    // Yazma bilerek await edilmiyor ve hatası yutuluyor: geçmiş kaydı
+    // tutmakta yaşanan bir sorun arama sonucunu geciktirmemeli ya da
+    // düşürmemeli.
+    void prisma.searchHistory
+      .create({
+        data: {
+          userId: session?.user?.id ?? null,
+          params: input as object,
+          resultCount: hotelsWithBoardNames.length,
+        },
+      })
+      .catch((e) => console.error("[SEARCH_HISTORY_WRITE]", e));
 
     return NextResponse.json({ ...results, hotels: hotelsWithBoardNames });
   } catch (error) {

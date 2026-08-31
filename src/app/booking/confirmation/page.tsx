@@ -1,10 +1,20 @@
-import { Navbar, Footer } from "@/components/layout";
+// Rezervasyon onayı.
+//
+// Bu ekranın üç işi var: güven ver, numarayı ver, yoluna devam ettir.
+// Eskiden iki "bilgi kutusu" vardı ve ikisi de "şu sayfaya bakın" diyordu —
+// bilgi değil, ekranı doldurma. Kaldırıldı; numara ve iki bağlantı kaldı.
+//
+// Altın kuralı: ekranın seni ileri götüren birincil eylemi. Burada o
+// "Rezervasyonlarım" — az önce yaptığın şeye gitmek. İkincil "Yeni arama"
+// çerçeveli kalıyor.
+
+import { AppHeader, Navbar, Footer } from "@/components/layout";
 import Link from "next/link";
-import { CheckCircle2, CalendarCheck, Home } from "lucide-react";
+import { LbOnay, LbTakvim, LbAra } from "@/components/ui/icons";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Rezervasyon Onaylandı - Lookbet",
+  title: "Rezervasyon onaylandı — LookBeds",
 };
 
 interface ConfirmationPageProps {
@@ -17,81 +27,59 @@ export default async function ConfirmationPage({
   const { bookingNumber } = await searchParams;
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <Navbar />
+    <div className="flex min-h-screen flex-col bg-canvas">
+      <AppHeader geri="/reservations" baslik="Rezervasyon onayı" />
+      <div className="web-only">
+        <Navbar />
+      </div>
 
-      <main className="flex flex-1 items-center justify-center px-4 py-12">
+      <main className="flex flex-1 items-center justify-center px-4 py-10">
         <div className="w-full max-w-lg">
-          {/* Success card */}
-          <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-sm text-center">
-            {/* Icon */}
-            <div className="mb-6 flex justify-center">
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
-                <CheckCircle2
-                  className="h-10 w-10 text-green-600"
-                  aria-hidden="true"
-                />
+          <div className="rounded-2xl bg-paper p-6 text-center shadow-[0_1px_2px_rgb(11_13_20/0.04),0_6px_16px_-12px_rgb(11_13_20/0.18)] sm:p-8">
+            <div className="mb-5 flex justify-center">
+              <div className="flex size-16 items-center justify-center rounded-full bg-emerald-50">
+                <LbOnay size={34} className="text-emerald-700" />
               </div>
             </div>
 
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Rezervasyonunuz Onaylandı!
+            <h1 className="mb-2 text-[22px] font-extrabold text-ink">
+              Rezervasyonun onaylandı
             </h1>
-            <p className="text-gray-500 text-sm mb-6">
-              Rezervasyonunuz başarıyla oluşturuldu. Onay bilgileri email
-              adresinize gönderilecektir.
+            <p className="mb-6 text-[14px] leading-relaxed text-muted">
+              Onay bilgileri e-posta adresine gönderilecek.
             </p>
 
-            {/* Booking number */}
             {bookingNumber && (
-              <div className="mb-8 rounded-lg border border-line bg-chip-blue px-6 py-4">
-                <p className="text-xs font-medium text-navy uppercase tracking-wider mb-1">
-                  Rezervasyon Numarası
+              <div className="mb-6 rounded-xl bg-chip-blue px-5 py-4">
+                <p className="mb-1 text-[10.5px] font-bold tracking-[0.12em] text-navy uppercase">
+                  Rezervasyon numarası
                 </p>
                 <p
-                  className="text-2xl font-bold font-mono text-navy-dark"
+                  className="font-mono text-[22px] font-extrabold text-ink"
                   aria-label={`Rezervasyon numarası: ${bookingNumber}`}
                 >
-                  #{bookingNumber}
+                  {bookingNumber}
                 </p>
-                <p className="text-xs text-blue-500 mt-1">
-                  Bu numarayı kaydedin
+                <p className="mt-1 text-[12.5px] text-slate-text">
+                  Otelde bu numara sorulabilir
                 </p>
               </div>
             )}
 
-            {/* Info boxes */}
-            <div className="mb-8 grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
-              <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
-                <p className="text-xs font-medium text-gray-500 mb-1">Sonraki Adım</p>
-                <p className="text-sm text-gray-700">
-                  Rezervasyon detaylarınızı &quot;Rezervasyonlarım&quot; sayfasından
-                  takip edebilirsiniz.
-                </p>
-              </div>
-              <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
-                <p className="text-xs font-medium text-gray-500 mb-1">İptal Politikası</p>
-                <p className="text-sm text-gray-700">
-                  İptal koşulları rezervasyon detay sayfasında görüntülenebilir.
-                </p>
-              </div>
-            </div>
-
-            {/* Action buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <div className="flex flex-col gap-2.5 sm:flex-row sm:justify-center">
               <Link
                 href="/reservations"
-                className="inline-flex items-center justify-center gap-2 rounded-lg bg-navy px-5 py-3 text-sm font-semibold text-white hover:bg-navy-dark transition-colors"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-gold px-5 text-[15px] font-bold text-ink active:bg-gold-dark"
               >
-                <CalendarCheck className="h-4 w-4" aria-hidden="true" />
+                <LbTakvim size={18} />
                 Rezervasyonlarım
               </Link>
               <Link
                 href="/"
-                className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border border-line-strong bg-paper px-5 text-[15px] font-semibold text-slate-text active:bg-chip"
               >
-                <Home className="h-4 w-4" aria-hidden="true" />
-                Ana Sayfa
+                <LbAra size={18} />
+                Yeni arama
               </Link>
             </div>
           </div>

@@ -94,6 +94,8 @@ export async function syncHotels(feedId: string) {
         images: h.images,
         facilities: h.facilities,
         thumbnailImage: h.thumbnailImage ?? null,
+        phone: h.phone ?? null,
+        email: h.email ?? null,
         locationId: location?.id,
       },
       create: {
@@ -106,6 +108,8 @@ export async function syncHotels(feedId: string) {
         images: h.images,
         facilities: h.facilities,
         thumbnailImage: h.thumbnailImage ?? null,
+        phone: h.phone ?? null,
+        email: h.email ?? null,
         locationId: location?.id,
       },
     });

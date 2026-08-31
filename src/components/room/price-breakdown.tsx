@@ -10,7 +10,7 @@
 // />
 
 import * as React from "react";
-import { Tag, ChevronDown, ChevronUp, CheckCircle2 } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
 export interface PriceBreakdownProps {
@@ -46,99 +46,71 @@ export function PriceBreakdown({
     : 0;
 
   return (
-    <div
-      className={cn(
-        "rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden",
-        className
-      )}
-      aria-label="Fiyat detayı"
-    >
-      {/* Header */}
-      <div className="px-5 py-4 border-b border-gray-50">
-        <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
-          <Tag className="h-4 w-4 text-blue-500" aria-hidden="true" />
-          Fiyat Detayı
-        </h3>
+    // Kendi kartı ve başlığı yok: sayfa bölümü <Bolum> ile sarıyor, başlık
+    // oradan geliyor. İki ayrı kabuk iç içe girmesin.
+    <div className={cn("space-y-2.5", className)} aria-label="Fiyat detayı">
+      <div className="flex items-center justify-between">
+        <span className="text-[13px] text-muted">Liste fiyatı</span>
+        <span
+          className={cn(
+            "text-[14px] font-semibold",
+            hasDiscount ? "text-muted line-through" : "text-ink",
+          )}
+        >
+          {formatPrice(originalPrice, currency)}
+        </span>
       </div>
 
-      <div className="px-5 py-4 space-y-3">
-        {/* Original price */}
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-500">Liste fiyatı</span>
-          <span
-            className={cn(
-              "font-medium",
-              hasDiscount ? "text-gray-400 line-through" : "text-gray-900"
-            )}
-          >
-            {formatPrice(originalPrice, currency)}
+      {hasDiscount && (
+        <div className="flex items-center justify-between">
+          <span className="text-[13px] text-gold-text">
+            İndirim (%{discountPct})
+          </span>
+          <span className="text-[14px] font-semibold text-gold-text">
+            -{formatPrice(discount, currency)}
           </span>
         </div>
+      )}
 
-        {/* Discount */}
-        {hasDiscount && (
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-green-600 font-medium flex items-center gap-1">
-              <Tag className="h-3.5 w-3.5" aria-hidden="true" />
-              İndirim ({discountPct}%)
-            </span>
-            <span className="text-green-600 font-semibold">
-              -{formatPrice(discount, currency)}
-            </span>
-          </div>
-        )}
-
-        {/* Applied rules toggle */}
-        {appliedRules && appliedRules.length > 0 && (
-          <div>
-            <button
-              type="button"
-              onClick={() => setShowRules((v) => !v)}
-              aria-expanded={showRules}
-              className={cn(
-                "flex items-center gap-1 text-xs text-navy hover:text-navy-dark transition-colors",
-                "focus:outline-none focus:underline"
-              )}
-            >
-              {showRules ? (
-                <ChevronUp className="h-3.5 w-3.5" aria-hidden="true" />
-              ) : (
-                <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
-              )}
-              {appliedRules.length} indirim kuralı uygulandı
-            </button>
-
-            {showRules && (
-              <ul className="mt-2 space-y-1.5 pl-1">
-                {appliedRules.map((rule, i) => (
-                  <li key={i} className="flex items-start gap-1.5 text-xs text-gray-600">
-                    <CheckCircle2
-                      className="h-3.5 w-3.5 text-green-500 mt-0.5 shrink-0"
-                      aria-hidden="true"
-                    />
-                    {rule}
-                  </li>
-                ))}
-              </ul>
+      {appliedRules && appliedRules.length > 0 && (
+        <div>
+          <button
+            type="button"
+            onClick={() => setShowRules((v) => !v)}
+            aria-expanded={showRules}
+            className="flex min-h-11 items-center gap-1 text-[13px] font-semibold text-navy focus:underline focus:outline-none"
+          >
+            {appliedRules.length} indirim kuralı uygulandı
+            {showRules ? (
+              <ChevronUp className="size-3.5" aria-hidden="true" />
+            ) : (
+              <ChevronDown className="size-3.5" aria-hidden="true" />
             )}
-          </div>
-        )}
+          </button>
 
-        {/* Separator */}
-        <div className="border-t border-dashed border-gray-200 pt-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold text-gray-900">Toplam</span>
-            <div className="text-right">
-              <p className="text-xl font-bold text-navy">
-                {formatPrice(finalPrice, currency)}
-              </p>
-              {hasDiscount && (
-                <p className="text-xs text-green-600 font-medium">
-                  {formatPrice(discount, currency)} tasarruf ettiniz
-                </p>
-              )}
-            </div>
-          </div>
+          {showRules && (
+            <ul className="space-y-1 pb-1">
+              {appliedRules.map((rule, i) => (
+                <li key={i} className="text-[13px] text-muted">
+                  {rule}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
+      <div className="flex items-center justify-between pt-1">
+        <span className="text-[14px] font-semibold text-ink">Toplam</span>
+        <div className="text-right">
+          <p className="text-[17px] leading-none font-extrabold text-ink">
+            {formatPrice(finalPrice, currency)}
+          </p>
+          {hasDiscount && (
+            <p className="mt-1 text-[13px] text-gold-text">
+              {formatPrice(discount, currency)} tasarruf ettin
+            </p>
+          )}
         </div>
       </div>
     </div>

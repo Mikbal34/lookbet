@@ -82,7 +82,7 @@ export default function AgencyDashboardPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="font-serif text-[28px] font-normal text-ink">
+          <h1 className="font-serif text-[22px] font-normal text-ink sm:text-[28px]">
             {data?.agency.companyName ?? "Acente Paneli"}
           </h1>
           <p className="text-sm text-gray-500 mt-1">
@@ -215,7 +215,7 @@ export default function AgencyDashboardPage() {
                 </Link>
               </div>
             ) : (
-              <table className="w-full">
+              <table className="w-full min-w-[720px]">
                 <thead>
                   <tr className="border-b border-gray-100">
                     <th className="text-left text-xs font-semibold text-gray-500 uppercase py-3 px-6">

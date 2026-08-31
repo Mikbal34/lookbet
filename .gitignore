@@ -48,3 +48,6 @@ next-env.d.ts
 # iCloud sync bypass
 
 .next
+
+# Claude Code — makineye özel izinler (EC2 IP, .pem yolu içeriyor)
+.claude/settings.local.json

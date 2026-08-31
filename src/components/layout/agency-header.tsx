@@ -66,8 +66,16 @@ export function AgencyHeader() {
                       </p>
                     </div>
                     <Link
+                      href="/search"
+                      className="flex items-center gap-2 px-4 py-3 text-sm text-slate-text hover:bg-paper hover:text-ink sm:hidden"
+                      onClick={() => setProfileOpen(false)}
+                    >
+                      <Search className="h-4 w-4" aria-hidden="true" />
+                      Otel Ara
+                    </Link>
+                    <Link
                       href="/agency/dashboard"
-                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-text hover:bg-paper hover:text-ink"
+                      className="flex items-center gap-2 px-4 py-3 text-sm text-slate-text hover:bg-paper hover:text-ink sm:py-2.5"
                       onClick={() => setProfileOpen(false)}
                     >
                       <LayoutDashboard className="h-4 w-4" aria-hidden="true" />
@@ -75,7 +83,7 @@ export function AgencyHeader() {
                     </Link>
                     <Link
                       href="/agency/reservations"
-                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-text hover:bg-paper hover:text-ink"
+                      className="flex items-center gap-2 px-4 py-3 text-sm text-slate-text hover:bg-paper hover:text-ink sm:py-2.5"
                       onClick={() => setProfileOpen(false)}
                     >
                       <CalendarCheck className="h-4 w-4" aria-hidden="true" />
@@ -83,7 +91,7 @@ export function AgencyHeader() {
                     </Link>
                     <Link
                       href="/agency/company"
-                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-text hover:bg-paper hover:text-ink"
+                      className="flex items-center gap-2 px-4 py-3 text-sm text-slate-text hover:bg-paper hover:text-ink sm:py-2.5"
                       onClick={() => setProfileOpen(false)}
                     >
                       <Building2 className="h-4 w-4" aria-hidden="true" />
@@ -92,7 +100,7 @@ export function AgencyHeader() {
                     <hr className="my-1 border-line" />
                     <button
                       onClick={() => signOut({ callbackUrl: "/agency/login" })}
-                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 w-full"
+                      className="flex w-full items-center gap-2 px-4 py-3 text-sm text-red-600 hover:bg-red-50 sm:py-2.5"
                     >
                       <LogOut className="h-4 w-4" aria-hidden="true" />
                       Çıkış yap

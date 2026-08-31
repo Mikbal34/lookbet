@@ -1,41 +1,70 @@
 "use client";
 
-// Usage:
-// <StatusBadge status="CONFIRMED" />
-// <StatusBadge status="PENDING" />
+// Durum rozeti — Pegasus'un "✓ Biletlendi" rozetinin karşılığı.
+//
+// Eskiden çerçeveli, noktalı ve sarı/kırmızı doygun bir etiketti; kartın en
+// çok bakılan yerinde en gürültülü öğe oydu. Şimdi çerçevesiz, yumuşak zeminli
+// ve durumu nokta yerine ikon anlatıyor — renk körlüğünde tek ayırt edici
+// işaret renk olmasın diye de gerekli.
+//
+// STATUS_TINT aynı renk ailesinin çok açık tonu; rezervasyon kartı bunu üst
+// bloğun arkasına gradyan olarak seriyor (Pegasus'un kart başındaki yeşilliği).
+// Rozet ile bant tek kaynaktan gelsin diye burada duruyor.
 
+import {
+  LbCarpi,
+  LbOnay,
+  LbSaat,
+  LbUyari,
+  type IkonProps,
+} from "@/components/ui/icons";
 import { cn } from "@/lib/utils/cn";
 
 type ReservationStatus = "PENDING" | "CONFIRMED" | "CANCELLED" | "FAILED";
 
 interface StatusConfig {
   label: string;
-  dotColor: string;
+  Icon: React.ComponentType<IkonProps>;
   className: string;
+  /** Kart başındaki gradyanın başlangıç rengi. */
+  tint: string;
 }
 
 const STATUS_CONFIG: Record<ReservationStatus, StatusConfig> = {
   PENDING: {
     label: "Beklemede",
-    dotColor: "bg-yellow-400",
-    className: "bg-yellow-50 text-yellow-700 border border-yellow-200",
+    Icon: LbSaat,
+    className: "bg-amber-50 text-amber-700",
+    tint: "from-amber-100/80",
   },
   CONFIRMED: {
-    label: "Onaylandi",
-    dotColor: "bg-green-400",
-    className: "bg-green-50 text-green-700 border border-green-200",
+    label: "Onaylandı",
+    Icon: LbOnay,
+    className: "bg-emerald-50 text-emerald-700",
+    tint: "from-emerald-100/80",
   },
   CANCELLED: {
-    label: "Iptal Edildi",
-    dotColor: "bg-red-400",
-    className: "bg-red-50 text-red-700 border border-red-200",
+    label: "İptal edildi",
+    Icon: LbCarpi,
+    className: "bg-rose-50 text-rose-700",
+    tint: "from-rose-100/70",
   },
   FAILED: {
-    label: "Basarisiz",
-    dotColor: "bg-gray-400",
-    className: "bg-gray-100 text-gray-600 border border-gray-200",
+    label: "Tamamlanamadı",
+    Icon: LbUyari,
+    className: "bg-gray-100 text-gray-600",
+    tint: "from-gray-200/70",
   },
 };
+
+function config(status: string): StatusConfig {
+  return STATUS_CONFIG[status as ReservationStatus] ?? STATUS_CONFIG.FAILED;
+}
+
+/** Durumun kart başına serilecek açık tonu — bkz. ReservationCard. */
+export function statusTint(status: string): string {
+  return config(status).tint;
+}
 
 export interface StatusBadgeProps {
   status: string;
@@ -43,24 +72,20 @@ export interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {
-  const config =
-    STATUS_CONFIG[status as ReservationStatus] ?? STATUS_CONFIG.FAILED;
+  const { label, Icon, className: renk } = config(status);
 
   return (
     <span
       role="status"
-      aria-label={config.label}
+      aria-label={label}
       className={cn(
-        "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium",
-        config.className,
+        "inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-1 text-[12px] leading-none font-semibold",
+        renk,
         className
       )}
     >
-      <span
-        className={cn("h-1.5 w-1.5 rounded-full shrink-0", config.dotColor)}
-        aria-hidden="true"
-      />
-      {config.label}
+      <Icon size={14} />
+      {label}
     </span>
   );
 }

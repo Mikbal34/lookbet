@@ -68,7 +68,7 @@ export const TabsList = ({ className, ...props }: TabsListProps) => (
   <div
     role="tablist"
     className={cn(
-      "flex border-b border-gray-200 gap-0",
+      "flex gap-0 overflow-x-auto overscroll-x-contain border-b border-gray-200 no-scrollbar",
       className
     )}
     {...props}

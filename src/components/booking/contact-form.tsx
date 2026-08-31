@@ -5,7 +5,7 @@
 // <ContactForm register={register} errors={errors} />
 
 import * as React from "react";
-import { User, Mail, Phone } from "lucide-react";
+import { LbKullanici, LbTelefon, LbZarf } from "@/components/ui/icons";
 import { cn } from "@/lib/utils/cn";
 import type { UseFormRegister, FieldErrors } from "react-hook-form";
 
@@ -26,7 +26,7 @@ interface FieldWrapperProps {
 function FieldWrapper({ label, error, htmlFor, icon: Icon, children }: FieldWrapperProps) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={htmlFor} className="text-sm font-medium text-gray-700">
+      <label htmlFor={htmlFor} className="text-sm font-medium text-slate-text">
         {label}
       </label>
       <div className="relative">
@@ -47,7 +47,7 @@ function FieldWrapper({ label, error, htmlFor, icon: Icon, children }: FieldWrap
 
 const inputClass = (hasError: boolean) =>
   cn(
-    "h-10 w-full rounded-lg border pl-9 pr-3 text-sm text-gray-900 placeholder:text-gray-400 bg-white",
+    "h-11 w-full rounded-lg border pl-9 pr-3 text-sm text-ink placeholder:text-muted bg-white",
     "focus:outline-none focus:ring-2 focus:ring-navy focus:border-navy transition-colors",
     hasError
       ? "border-red-400 focus:ring-red-400"
@@ -60,17 +60,17 @@ export function ContactForm({ register, errors, className }: ContactFormProps) {
   return (
     <section
       className={cn(
-        "bg-white rounded-2xl border border-gray-100 shadow-sm p-5",
+        "rounded-2xl bg-paper p-4 shadow-[0_1px_2px_rgb(11_13_20/0.04),0_6px_16px_-12px_rgb(11_13_20/0.18)]",
         className
       )}
       aria-labelledby="contact-form-heading"
     >
       <h2
         id="contact-form-heading"
-        className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2"
+        className="text-[15px] font-extrabold text-ink mb-4 flex items-center gap-2"
       >
-        <User className="h-4 w-4 text-blue-500" aria-hidden="true" />
-        Iletisim Bilgileri
+        <LbKullanici size={16} className="text-navy" />
+        İletişim bilgileri
       </h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -78,13 +78,13 @@ export function ContactForm({ register, errors, className }: ContactFormProps) {
         <FieldWrapper
           label="Ad"
           htmlFor="contact-name"
-          icon={User}
+          icon={LbKullanici}
           error={contactErrors?.name?.message as string | undefined}
         >
           <input
             id="contact-name"
             type="text"
-            placeholder="Adiniz"
+            placeholder="Adınız"
             autoComplete="given-name"
             aria-invalid={!!contactErrors?.name}
             className={inputClass(!!contactErrors?.name)}
@@ -96,13 +96,13 @@ export function ContactForm({ register, errors, className }: ContactFormProps) {
         <FieldWrapper
           label="Soyad"
           htmlFor="contact-surname"
-          icon={User}
+          icon={LbKullanici}
           error={contactErrors?.surname?.message as string | undefined}
         >
           <input
             id="contact-surname"
             type="text"
-            placeholder="Soyadiniz"
+            placeholder="Soyadınız"
             autoComplete="family-name"
             aria-invalid={!!contactErrors?.surname}
             className={inputClass(!!contactErrors?.surname)}
@@ -114,7 +114,7 @@ export function ContactForm({ register, errors, className }: ContactFormProps) {
         <FieldWrapper
           label="E-posta"
           htmlFor="contact-email"
-          icon={Mail}
+          icon={LbZarf}
           error={contactErrors?.email?.message as string | undefined}
         >
           <input
@@ -132,7 +132,7 @@ export function ContactForm({ register, errors, className }: ContactFormProps) {
         <FieldWrapper
           label="Telefon"
           htmlFor="contact-phone"
-          icon={Phone}
+          icon={LbTelefon}
           error={contactErrors?.phone?.message as string | undefined}
         >
           <input

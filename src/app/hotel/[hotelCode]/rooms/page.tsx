@@ -8,12 +8,13 @@ import { use } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, BedDouble, AlertCircle } from "lucide-react";
-import { Navbar, Footer } from "@/components/layout";
+import { LbUyari, LbYatak } from "@/components/ui/icons";
+import {AppHeader, Navbar, Footer } from "@/components/layout";
 import { RoomCard, CountdownTimer } from "@/components/room";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import type { RoomResult } from "@/lib/royal-api/types";
+import { formatDateRange } from "@/lib/utils";
 
 interface RoomSearchResponse {
   roomSearchId: string;
@@ -151,20 +152,16 @@ function RoomsPageContent({
   const backHref = `/hotel/${hotelCode}?${searchParams.toString()}`;
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <Navbar />
+    <div className="min-h-screen flex flex-col bg-canvas">
+      <AppHeader geri={backHref} baslik="Müsait odalar" />
+      <div className="web-only">
+        <Navbar />
+      </div>
 
       <main className="flex-1">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-6">
           {/* Back + timer row */}
           <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
-            <Link
-              href={backHref}
-              className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800"
-            >
-              <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-              Otel Detayına Dön
-            </Link>
 
             {data?.expiresAt && !isLoading && (
               <CountdownTimer
@@ -176,15 +173,19 @@ function RoomsPageContent({
 
           {/* Heading */}
           <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <BedDouble className="h-6 w-6 text-navy" aria-hidden="true" />
-              Müsait Odalar
+            {/* App'te başlığı kimlik çubuğu taşıyor; burada tekrar
+                yazılmasın. Web'de çubuk olmadığı için görünür. */}
+            <h1 className="web-only text-2xl font-bold text-ink flex items-center gap-2">
+              <LbYatak size={22} className="text-navy" />
+              Müsait odalar
             </h1>
             {searchParams.get("checkIn") && (
-              <p className="text-sm text-gray-500 mt-1">
-                {searchParams.get("checkIn")} &ndash;{" "}
-                {searchParams.get("checkOut")} &bull;{" "}
-                {searchParams.get("adults") ?? 2} yetişkin
+              <p className="text-sm text-muted mt-1">
+                {formatDateRange(
+                  searchParams.get("checkIn")!,
+                  searchParams.get("checkOut")!
+                )}{" "}
+                &bull; {searchParams.get("adults") ?? 2} yetişkin
               </p>
             )}
           </div>
@@ -201,11 +202,11 @@ function RoomsPageContent({
           {/* Error */}
           {isError && (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-              <AlertCircle className="h-12 w-12 text-red-400 mb-4" aria-hidden="true" />
-              <h2 className="text-lg font-semibold text-gray-900 mb-2">
+              <LbUyari size={44} className="mb-4 text-red-400" />
+              <h2 className="text-lg font-semibold text-ink mb-2">
                 Odalar yüklenemedi
               </h2>
-              <p className="text-sm text-gray-500 mb-4">
+              <p className="text-sm text-muted mb-4">
                 Lütfen sayfayı yenileyerek tekrar deneyin.
               </p>
               <Button variant="outline" onClick={() => window.location.reload()}>
@@ -217,11 +218,11 @@ function RoomsPageContent({
           {/* Empty */}
           {!isLoading && !isError && data && data.rooms.length === 0 && (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-              <BedDouble className="h-12 w-12 text-gray-300 mb-4" aria-hidden="true" />
-              <h2 className="text-lg font-semibold text-gray-900 mb-2">
+              <LbYatak size={44} className="mb-4 text-line-strong" />
+              <h2 className="text-lg font-semibold text-ink mb-2">
                 Müsait oda bulunamadı
               </h2>
-              <p className="text-sm text-gray-500 mb-4">
+              <p className="text-sm text-muted mb-4">
                 Seçtiğiniz tarihlerde uygun oda bulunmamaktadır. Farklı tarih
                 deneyin.
               </p>

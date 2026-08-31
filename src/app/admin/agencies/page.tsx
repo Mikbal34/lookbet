@@ -296,7 +296,7 @@ export default function AgenciesPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="font-serif text-[28px] font-normal text-ink">Acenteler</h1>
+        <h1 className="font-serif text-[22px] font-normal text-ink sm:text-[28px]">Acenteler</h1>
         <p className="text-sm text-gray-500 mt-1">
           Acente başvuruları ve hesap yönetimi — hesaplar yalnızca başvuru
           onayıyla açılır

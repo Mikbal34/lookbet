@@ -65,11 +65,19 @@ export type {
   DropdownMenuLabelProps,
 } from "./dropdown-menu";
 
+export * from "./icons";
+
 export { Input } from "./input";
 export type { InputProps } from "./input";
 
 export { Pagination } from "./pagination";
 export type { PaginationProps } from "./pagination";
+
+export { SegmentedTabs } from "./segmented-tabs";
+export type { SegmentedTabsProps, SegmentedOption } from "./segmented-tabs";
+
+export { Bolum, Baslik, BOLUM_GOLGE } from "./section";
+export type { BolumProps, BaslikProps } from "./section";
 
 export { Select } from "./select";
 export type { SelectProps } from "./select";
