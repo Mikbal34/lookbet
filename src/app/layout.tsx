@@ -3,6 +3,7 @@ import { Nunito } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { AppTabBar } from "@/components/layout";
+import { SayfaGecisi } from "@/components/layout/sayfa-gecisi";
 import { APP_MODE_SCRIPT } from "@/lib/utils/app-mode";
 
 // Nunito — yuvarlak uçlu. Logonun kendi yazı tipi yığını zaten bunu istiyor
@@ -53,7 +54,9 @@ export default function RootLayout({
         className={`${nunito.variable} font-sans antialiased bg-paper text-ink min-h-dvh`}
       >
         <Providers>
-          {children}
+          {/* Alt sekme çubuğu geçişin DIŞINDA: gezinmede yanıp sönmemeli,
+              o çubuk sabit kalan tek öğe. */}
+          <SayfaGecisi>{children}</SayfaGecisi>
           <AppTabBar />
         </Providers>
       </body>

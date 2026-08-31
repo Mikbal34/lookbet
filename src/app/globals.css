@@ -272,6 +272,37 @@ html[data-app] .app-header-altina {
   margin-top: calc(-1 * var(--app-header-h) - env(safe-area-inset-top));
 }
 
+/* ── Hareket ──────────────────────────────────────────────────────────
+   Tek imza: içerik hep aynı şekilde beliriyor. Süre kısa (180ms) çünkü bu
+   animasyon her gezinmede tekrar oynuyor; 250ms üstü ağır hissettiriyor. */
+@keyframes sayfa-belir {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.sayfa-gecisi {
+  animation: sayfa-belir 180ms ease-out both;
+}
+
+/* Sistemde "hareketi azalt" açıksa hepsi susuyor.
+   Uygulamada 112 yerde geçiş var ve bunlardan yalnızca biri bu ayara saygı
+   duyuyordu; tek tek sınıf eklemek yerine kural burada, bir kez. Hareket
+   vestibüler rahatsızlığı olan kullanıcıda mide bulantısı yapabiliyor,
+   işletim sistemi bu ayarı onun için sunuyor. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* Giriş ekranı — app'te tam ekran fotoğraf, form alta yapışan yaprak.
    Web'de ortalanmış kart olarak kalıyor.
 
