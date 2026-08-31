@@ -63,10 +63,10 @@ export function PriceBreakdown({
 
       {hasDiscount && (
         <div className="flex items-center justify-between">
-          <span className="text-[13px] text-emerald-700">
+          <span className="text-[13px] text-gold-text">
             İndirim (%{discountPct})
           </span>
-          <span className="text-[14px] font-semibold text-emerald-700">
+          <span className="text-[14px] font-semibold text-gold-text">
             -{formatPrice(discount, currency)}
           </span>
         </div>
@@ -107,7 +107,7 @@ export function PriceBreakdown({
             {formatPrice(finalPrice, currency)}
           </p>
           {hasDiscount && (
-            <p className="mt-1 text-[13px] text-emerald-700">
+            <p className="mt-1 text-[13px] text-gold-text">
               {formatPrice(discount, currency)} tasarruf ettin
             </p>
           )}

@@ -287,12 +287,12 @@ function BookingPageContent() {
                   </Button>
 
                   {currentStep < STEPS.length - 1 ? (
-                    <Button type="button" size="lg" onClick={handleNext}>
+                    <Button type="button" variant="gold" size="lg" onClick={handleNext}>
                       İleri
                       <ArrowRight className="h-4 w-4" aria-hidden="true" />
                     </Button>
                   ) : (
-                    <Button type="submit" size="lg" loading={loading}>
+                    <Button type="submit" variant="gold" size="lg" loading={loading}>
                       <Send className="h-4 w-4" aria-hidden="true" />
                       Rezervasyonu Tamamla
                     </Button>

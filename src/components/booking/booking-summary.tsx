@@ -178,11 +178,11 @@ export function BookingSummary({ bookingData, className }: BookingSummaryProps) 
                 </span>
               </div>
               <div className="flex justify-between items-center text-sm">
-                <span className="text-emerald-700 font-medium flex items-center gap-1">
+                <span className="text-gold-text font-medium flex items-center gap-1">
                   <LbEtiket size={14} />
                   İndirim
                 </span>
-                <span className="text-emerald-700 font-semibold">
+                <span className="text-gold-text font-semibold">
                   -{formatCurrency(discount, currency)}
                 </span>
               </div>
@@ -195,7 +195,7 @@ export function BookingSummary({ bookingData, className }: BookingSummaryProps) 
             </span>
           </div>
           {hasDiscount && (
-            <p className="text-xs text-emerald-700 text-right">
+            <p className="text-xs text-gold-text text-right">
               {formatCurrency(discount, currency)} tasarruf ettiniz
             </p>
           )}

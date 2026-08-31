@@ -30,7 +30,12 @@
   /* Vurgu — amber (CruiseScanner CTA/fiyat etiketi rengi) */
   --color-gold: #ffc829;
   --color-gold-dark: #f0b400;
-  --color-gold-text: #9a7300;
+  /* Altın METİN olarak — indirim/tasarruf satırları ve gold-soft kutular.
+     #9a7300 idi ve beyazda 4.35, canvas'ta 3.96 veriyordu; sınır 4.5.
+     Bu ton üç zeminde de geçiyor (beyaz 5.61, canvas 5.11, gold-soft 5.06)
+     ve geçenlerin en açığı. Altın DOLGU (#ffc829) ayrı iş: üstünde yalnızca
+     koyu yazı taşır (11.43), beyaz yazı 1.55 verir ve asla kullanılmaz. */
+  --color-gold-text: #856200;
   --color-gold-soft: #fff3cd;
 
   /* Metin / zemin — sıcak nötrler (CruiseScanner warm-ink) */

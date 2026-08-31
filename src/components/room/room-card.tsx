@@ -220,9 +220,11 @@ export function RoomCard({
                 className={cn(
                   "shrink-0 h-11 px-5 rounded-lg text-sm font-semibold transition-all duration-150",
                   "focus:outline-none focus:ring-2 focus:ring-offset-2",
+                  // Sarı = seni bir adım ilerleten düğme. Arama ekranındaki
+                  // "Otel Ara" ile aynı iş; aynı renk olmalı.
                   isSelected
-                    ? "bg-navy text-white focus:ring-navy"
-                    : "bg-navy text-white hover:bg-navy-dark active:bg-navy-dark focus:ring-navy"
+                    ? "bg-gold-dark text-ink focus:ring-gold-dark"
+                    : "bg-gold text-ink hover:bg-gold-dark active:bg-gold-dark focus:ring-gold-dark"
                 )}
               >
                 {isSelected ? "Seçildi" : "Seç"}
