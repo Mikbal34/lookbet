@@ -259,10 +259,10 @@ export function RoomDetailModal({
               onSelect?.();
               onClose();
             }}
-            className="flex min-h-12 flex-1 items-center justify-center gap-1.5 rounded-lg bg-navy px-6 text-sm font-semibold text-white hover:bg-navy-dark active:bg-navy-dark sm:min-h-0 sm:flex-none sm:py-2.5"
+            className="flex min-h-12 flex-1 items-center justify-center gap-1.5 rounded-lg bg-gold px-6 text-sm font-bold text-ink hover:bg-gold-dark active:bg-gold-dark sm:min-h-0 sm:flex-none sm:py-2.5"
           >
             <BedDouble className="h-4 w-4" aria-hidden="true" />
-            Bu Odayı Seç
+            Bu odayı seç
           </button>
         </div>
       </div>

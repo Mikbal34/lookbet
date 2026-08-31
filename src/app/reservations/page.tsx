@@ -137,9 +137,9 @@ function TabContent({ zaman }: { zaman: Zaman }) {
         {zaman === "gelecek" && (
           <a
             href="/search"
-            className="mt-4 inline-block bg-navy text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-navy-dark transition-colors"
+            className="mt-4 inline-flex min-h-11 items-center rounded-lg bg-gold px-5 text-sm font-bold text-ink active:bg-gold-dark"
           >
-            Otel Ara
+            Otel ara
           </a>
         )}
       </div>

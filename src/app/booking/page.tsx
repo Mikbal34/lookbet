@@ -168,7 +168,7 @@ function BookingPageContent() {
             </p>
             <Link
               href="/"
-              className="mt-6 inline-flex min-h-12 items-center justify-center rounded-lg bg-navy px-6 text-[15px] font-semibold text-white active:bg-navy-dark"
+              className="mt-6 inline-flex min-h-12 items-center justify-center rounded-lg bg-gold px-6 text-[15px] font-bold text-ink active:bg-gold-dark"
             >
               Otel aramaya dön
             </Link>

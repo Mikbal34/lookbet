@@ -149,7 +149,7 @@ export function HotelCard({ hotel, searchParams, className }: HotelCardProps) {
         {/* Fiyat kolonu — yalnızca masaüstü */}
         <div className="hidden w-[190px] shrink-0 flex-col items-end justify-end gap-1 border-l border-line px-6 py-5 lg:flex">
           <FiyatBlogu fiyat={formattedPrice} masaustu />
-          <span className="mt-2 inline-flex items-center justify-center rounded-md bg-navy px-5 py-2.5 text-[13.5px] font-semibold text-paper transition-colors group-hover:bg-navy-dark">
+          <span className="mt-2 inline-flex items-center justify-center rounded-md bg-gold px-5 py-2.5 text-[13.5px] font-bold text-ink transition-colors group-hover:bg-gold-dark">
             Müsaitliği gör
           </span>
         </div>
