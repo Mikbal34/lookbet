@@ -96,6 +96,10 @@ export function AppTabBar() {
     return () => window.removeEventListener("scroll", izle);
   }, []);
 
+  // Hangi sekme aktif: hap bu sıraya göre kayıyor. Hiçbiri değilse (ör.
+  // /login — çubuk orada duruyor ama bir sekmeye ait değil) hap çıkmıyor.
+  const aktifSira = SEKMELER.findIndex((s) => s.aktif(yol));
+
   if (!cubukGorunur(yol)) return null;
 
   return (
@@ -123,14 +127,32 @@ export function AppTabBar() {
           "transition-all duration-300 ease-out"
         )}
       >
-        <ul className="flex items-stretch">
+        <ul className="relative flex items-stretch">
+          {/* Kayan hap — iOS'un yeni sekme çubuğundaki seçim kapsülü.
+              Hareket segment çubuğundakiyle aynı: transform ile 300ms
+              ease-out. Aynı imzayı iki yerde kullanmak sistemi tek parça
+              gösteriyor; ayrıca transform GPU'da çalışıyor, WebView'de
+              arka plan geçişinden akıcı.
+              Genişlik ve öteleme sekme sayısına bağlı, o yüzden inline. */}
+          {aktifSira >= 0 && (
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute top-1.5 bottom-1.5 left-0 px-1.5 transition-transform duration-300 ease-out"
+              style={{
+                width: `${100 / SEKMELER.length}%`,
+                transform: `translateX(${aktifSira * 100}%)`,
+              }}
+            >
+              <span className="block h-full w-full rounded-full bg-chip-blue" />
+            </span>
+          )}
           {SEKMELER.map((s) => {
             const aktif = s.aktif(yol);
             const Ikon = s.ikon;
             // min-w-0: etiket metni min-content genişliği dayatıyor,
             // flex-1 tek başına sekmeleri eşitleyemiyordu.
             return (
-              <li key={s.href} className="min-w-0 flex-1">
+              <li key={s.href} className="relative z-10 min-w-0 flex-1">
                 <Link
                   href={s.href}
                   aria-current={aktif ? "page" : undefined}
@@ -140,7 +162,10 @@ export function AppTabBar() {
                     "flex w-full flex-col items-center justify-center gap-1 px-1",
                     "text-[10px] font-semibold leading-none transition-colors",
                     daralt ? "h-12" : "h-16",
-                    aktif ? "text-navy" : "text-muted active:text-ink"
+                    // Aktif renk navy değil navy-dark: hapın (chip-blue) üstünde navy
+                    // 4.62 kontrast veriyor ve 10px etiket için sınır 4.5 —
+                    // pay yok. Bir ton koyusu 6.39.
+                    aktif ? "text-navy-dark" : "text-muted active:text-ink"
                   )}
                 >
                   <Ikon
