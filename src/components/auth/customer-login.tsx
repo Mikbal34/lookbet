@@ -59,7 +59,7 @@ export function CustomerLogin() {
       setInfo(
         json.devCode
           ? `Geliştirme modu — kodunuz: ${json.devCode}`
-          : "6 haneli kod email adresinize gönderildi"
+          : "6 haneli kod e-posta adresine gönderildi"
       );
     } catch {
       setError("Kod gönderilemedi. Lütfen tekrar deneyin.");
@@ -115,7 +115,7 @@ export function CustomerLogin() {
           type="button"
           onClick={() => signIn("google", { callbackUrl })}
           className={cn(
-            "flex w-full items-center justify-center gap-3 h-11 rounded-lg border border-gray-300 bg-white text-sm font-medium text-gray-700",
+            "flex w-full items-center justify-center gap-3 h-11 rounded-lg border border-line-strong bg-white text-sm font-medium text-slate-text",
             "hover:bg-gray-50 hover:border-gray-400 transition-colors"
           )}
         >
@@ -189,7 +189,7 @@ export function CustomerLogin() {
           className="space-y-4"
         >
           <Input
-            label="Email Adresi"
+            label="E-posta adresi"
             type="email"
             placeholder="ornek@mail.com"
             autoComplete="email"
@@ -198,10 +198,10 @@ export function CustomerLogin() {
           />
           <Button type="submit" loading={loading} className="w-full" size="lg">
             <Mail className="h-4 w-4" aria-hidden="true" />
-            Giriş Kodu Gönder
+            Giriş kodu gönder
           </Button>
-          <p className="text-center text-xs text-gray-400">
-            Hesabınız yoksa otomatik oluşturulur — şifre gerekmez.
+          <p className="text-center text-xs text-muted">
+            Hesabın yoksa otomatik oluşturulur — şifre gerekmez.
           </p>
         </form>
       ) : (
@@ -215,9 +215,9 @@ export function CustomerLogin() {
           <div className="flex flex-col gap-1.5">
             <label
               htmlFor="otp-code"
-              className="text-sm font-medium text-gray-700"
+              className="text-sm font-medium text-slate-text"
             >
-              Giriş Kodu
+              Giriş kodu
             </label>
             <input
               id="otp-code"
@@ -229,12 +229,12 @@ export function CustomerLogin() {
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
               className={cn(
-                "h-14 w-full rounded-lg border border-gray-300 bg-white text-center text-2xl font-bold tracking-[0.5em] text-gray-900",
-                "placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                "h-14 w-full rounded-lg border border-line-strong bg-white text-center text-2xl font-bold tracking-[0.5em] text-ink",
+                "placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-navy focus:border-navy transition-colors"
               )}
             />
             <p className="text-xs text-gray-500">
-              <span className="font-medium text-gray-700">{email}</span>{" "}
+              <span className="font-medium text-slate-text">{email}</span>{" "}
               adresine gönderilen 6 haneli kodu girin
             </p>
           </div>
@@ -252,7 +252,7 @@ export function CustomerLogin() {
                 setError(null);
                 setInfo(null);
               }}
-              className="inline-flex items-center gap-1 text-gray-500 hover:text-gray-700"
+              className="inline-flex items-center gap-1 text-gray-500 hover:text-slate-text"
             >
               <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
               Email değiştir

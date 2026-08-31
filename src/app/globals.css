@@ -267,6 +267,35 @@ html[data-app] .app-header-altina {
   margin-top: calc(-1 * var(--app-header-h) - env(safe-area-inset-top));
 }
 
+/* Giriş ekranı — app'te tam ekran fotoğraf, form alta yapışan yaprak.
+   Web'de ortalanmış kart olarak kalıyor.
+
+   Bunu app-only/web-only ile yapamıyoruz: o sınıflar yalnızca gizliyor,
+   konum ve köşe yarıçapı değiştirmiyor. Formu iki kez render etmek de
+   olmaz — CustomerLogin durum tutuyor, iki kopya iki ayrı OTP akışı
+   demek. Statik metin (logo, başlık) mod başına ayrı yazılabilir, form
+   tek. Bkz. app-header-altina, aynı gerekçe. */
+.giris-kap {
+  display: flex;
+  min-height: 100dvh;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1rem;
+}
+html[data-app] .giris-kap {
+  align-items: flex-end;
+  padding: 0;
+}
+html[data-app] .giris-kart {
+  width: 100%;
+  max-width: none;
+  border-radius: 1.5rem 1.5rem 0 0;
+  /* Yüzen sekme çubuğu yaprağın altından 78px örtüyordu (ölçüldü). Çubuk
+     burada bilerek duruyor: girişsiz kullanıcı "Rezervasyonlar"a dokunup
+     buraya düşüyor ve çubuk olmazsa geri dönecek yolu kalmıyor. */
+  padding-bottom: calc(6.25rem + env(safe-area-inset-bottom));
+}
+
 /* App modunda footer'ın büyük blokları gizli kalıyor; geriye kalan yasal
    satır için üstteki nefes payı gereksiz kalıyordu. */
 html[data-app] .site-footer {
