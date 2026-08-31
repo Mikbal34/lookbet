@@ -200,9 +200,9 @@ function HotelDetailContent({
                   )}
 
                   <Link href={roomsHref} className="hidden lg:block">
-                    <Button className="w-full">
+                    <Button variant="gold" className="w-full">
                       <BedDouble className="h-5 w-5" aria-hidden="true" />
-                      Odaları Gör
+                      Odaları gör
                     </Button>
                   </Link>
                 </div>
@@ -269,9 +269,9 @@ function HotelDetailContent({
                 </p>
               </div>
               <Link href={roomsHref} className="shrink-0">
-                <Button className="min-h-12 px-6">
+                <Button variant="gold" className="min-h-12 px-6">
                   <BedDouble className="h-5 w-5" aria-hidden="true" />
-                  Odaları Gör
+                  Odaları gör
                 </Button>
               </Link>
             </div>

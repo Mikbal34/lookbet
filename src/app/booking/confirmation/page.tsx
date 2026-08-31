@@ -4,10 +4,9 @@
 // Eskiden iki "bilgi kutusu" vardı ve ikisi de "şu sayfaya bakın" diyordu —
 // bilgi değil, ekranı doldurma. Kaldırıldı; numara ve iki bağlantı kaldı.
 //
-// Düğmeler altın DEĞİL. Altın bu sistemde "seni bir adım ilerleten" düğme
-// (Otel Ara → Seç → İleri → Rezervasyonu Tamamla). Burada huni bitti,
-// ilerletecek bir şey yok; bunlar gezinme. Altını buraya da koymak onu
-// "her birincil düğme" hâline getirirdi ve anlamını silerdi.
+// Altın kuralı: ekranın seni ileri götüren birincil eylemi. Burada o
+// "Rezervasyonlarım" — az önce yaptığın şeye gitmek. İkincil "Yeni arama"
+// çerçeveli kalıyor.
 
 import { AppHeader, Navbar, Footer } from "@/components/layout";
 import Link from "next/link";
@@ -70,7 +69,7 @@ export default async function ConfirmationPage({
             <div className="flex flex-col gap-2.5 sm:flex-row sm:justify-center">
               <Link
                 href="/reservations"
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-navy px-5 text-[15px] font-semibold text-white active:bg-navy-dark"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-gold px-5 text-[15px] font-bold text-ink active:bg-gold-dark"
               >
                 <LbTakvim size={18} />
                 Rezervasyonlarım

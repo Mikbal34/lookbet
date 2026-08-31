@@ -127,7 +127,7 @@ export function UpcomingReservationCard() {
           href={`/reservations/${data.id}`}
           className="mt-3.5 flex h-11 w-full items-center justify-center rounded-lg bg-gold text-[14.5px] font-bold text-ink active:bg-gold-dark"
         >
-          Rezervasyon Detayı
+          Rezervasyon detayı
         </Link>
 
         <Link

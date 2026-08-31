@@ -153,7 +153,7 @@ export function AppHomeHero({
             className="flex h-12 w-full items-center justify-center gap-2 bg-gold text-[15px] font-bold text-ink active:bg-gold-dark"
           >
             <LbAra size={16} />
-            Otel Ara
+            Otel ara
           </button>
         </div>
       </div>

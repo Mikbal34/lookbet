@@ -241,7 +241,7 @@ export default function ProfilePage() {
               </p>
               <Link
                 href="/login?callbackUrl=/profile"
-                className="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-lg bg-navy px-6 text-[15px] font-semibold text-white active:bg-navy-dark sm:w-auto"
+                className="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-lg bg-gold px-6 text-[15px] font-bold text-ink active:bg-gold-dark sm:w-auto"
               >
                 Giriş yap veya kayıt ol
               </Link>

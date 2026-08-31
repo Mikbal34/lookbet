@@ -294,7 +294,7 @@ function BookingPageContent() {
                   ) : (
                     <Button type="submit" variant="gold" size="lg" loading={loading}>
                       <Send className="h-4 w-4" aria-hidden="true" />
-                      Rezervasyonu Tamamla
+                      Rezervasyonu tamamla
                     </Button>
                   )}
                 </div>

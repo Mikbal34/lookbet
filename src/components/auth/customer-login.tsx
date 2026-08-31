@@ -196,7 +196,7 @@ export function CustomerLogin() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          <Button type="submit" loading={loading} className="w-full" size="lg">
+          <Button variant="gold" type="submit" loading={loading} className="w-full" size="lg">
             <Mail className="h-4 w-4" aria-hidden="true" />
             Giriş kodu gönder
           </Button>
@@ -239,8 +239,8 @@ export function CustomerLogin() {
             </p>
           </div>
 
-          <Button type="submit" loading={loading} className="w-full" size="lg">
-            Giriş Yap
+          <Button variant="gold" type="submit" loading={loading} className="w-full" size="lg">
+            Giriş yap
           </Button>
 
           <div className="flex items-center justify-between text-sm">
