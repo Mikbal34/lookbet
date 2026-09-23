@@ -3,6 +3,9 @@ FROM node:20-alpine AS deps
 WORKDIR /app
 
 COPY package.json package-lock.json ./
+# postinstall "prisma generate" çalıştırıyor; şema burada olmazsa npm ci düşüyor.
+COPY prisma ./prisma
+COPY prisma.config.ts ./
 RUN npm ci
 
 # ============ Stage 2: Build ============
