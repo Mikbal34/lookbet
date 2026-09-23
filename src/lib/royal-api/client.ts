@@ -36,18 +36,15 @@ const TOKEN_PAYI_MS = 5 * 60 * 1000;
  * Hepsi ölçülerek bulundu, dokümanda yok:
  *   0904077  "Aradığınız kriterlere uygun otelde müsaitlik bulunmamaktadır."
  *   0904155  "Verilen tarihlerde fiyat veren bir otel bulunamadı."
- *   0904100  "Arama sonucunda satışa açık bir otel bulunamadı." — satışa
- *            kapalı otel; satılamayan otel ayıklanıp paket bölünürken
- *            tek kalan kodda çıktı.
+ *   0904100  "Arama sonucunda satışa açık bir otel bulunamadı."
+ *   0904172  "Aranan otellerde provider ülke tanımı bulunmamaktadır."
+ *            Yalnızca paketteki otellerin HİÇBİRİ satılamıyorsa geliyor;
+ *            satılabilir bir otel eklenince aynı paket OK dönüyor.
+ *
+ * Bilinen diğer: 0904168 "Otel kodları listesi 1 ile 250 arasında olmalıdır"
+ * (bkz. ETS_ARAMA_PAKETI).
  */
-export const ETS_SONUC_YOK = new Set(["0904077", "0904155", "0904100"]);
-
-/**
- * "Aranan otellerde provider ülke tanımı bulunmamaktadır." Hesabımızın
- * satamadığı bir otel (sağlayıcısı pazarımız için tanımlı değil). İçinde
- * tek bir böyle otel olan paketin TAMAMI reddediliyor.
- */
-export const ETS_TANIMSIZ_OTEL = "0904172";
+export const ETS_SONUC_YOK = new Set(["0904077", "0904155", "0904100", "0904172"]);
 
 export class EtscoreError extends Error {
   constructor(
@@ -68,11 +65,6 @@ export class EtscoreError extends Error {
   /** Saniyede 20 istek sınırı aşıldı (HTTP 429). */
   get hizSiniri(): boolean {
     return this.status === 429 || this.code === ETS_HIZ_SINIRI;
-  }
-
-  /** Pakette satamadığımız bir otel var — paket bölünüp yeniden denenmeli. */
-  get tanimsizOtel(): boolean {
-    return this.code === ETS_TANIMSIZ_OTEL;
   }
 }
 
@@ -99,8 +91,8 @@ export const ETS_HIZ_SINIRI = "0901010";
 //
 // Etscore saniyede 20 istek kabul ediyor, fazlasını 429 ile reddediyor
 // (ölçüldü: 30 eşzamanlı istekten 11'i düştü). Arama paketleri paralel
-// gidiyor ve satamadığımız otel yüzünden bölünen paketler çağrı sayısını
-// katlıyor; sınır kolayca aşılıyordu.
+// gidiyor; geniş bir şehir aramasıyla konum indeksi aynı anda koşunca sınır
+// kolayca aşılıyordu.
 //
 // Her isteğin BAŞLAMA zamanı sıraya konuyor: en az 1000/15 ms arayla. İstekler
 // yine paralel uçuşuyor, yalnızca saniyede 15'ten fazlası başlamıyor (20'ye

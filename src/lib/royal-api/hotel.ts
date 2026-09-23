@@ -48,53 +48,30 @@ async function paketlerHalinde<T, R>(ogeler: T[], boyut: number, fn: (paket: T[]
 }
 
 /**
- * Satamadığımız oteller (0904172). Süreç boyunca hatırlanıyor: aynı kod bir
- * sonraki aramada pakete hiç girmesin, paket yeniden bölünmesin.
+ * Tek paketi arar. "Sonuç yok" kodları (bkz. ETS_SONUC_YOK) boş liste sayılır.
  *
- * Şehir aramasında bu oteller zaten çıkmaz — indekse hiç girmedikleri için
- * konumları yok. Asıl otel adıyla aramada ve indeks kurulurken işe yarıyor.
- */
-export const satilamayanOteller = new Set<string>();
-
-/**
- * Tek paketi arar; satamadığımız bir otel yüzünden reddedilirse paketi
- * ikiye bölüp yeniden dener, sorunlu tek kodu yalıtana kadar.
- *
- * Etscore pakette tek bir tanımsız otel görünce paketin TAMAMINI 400 ile
- * reddediyor (ölçüldü: 2000 otelde 10 paketten 2'si). Bölmeden atlamak o
- * paketteki bütün iyi otelleri de kaybettirirdi. 200 kodda tek bir kötü
- * kod ~16 ek çağrıyla bulunuyor.
+ * Eskiden 0904172'de ("provider ülke tanımı yok") paket ikiye bölünüp
+ * yeniden deneniyordu; kodun tek bir kötü otel yüzünden bütün paketi
+ * reddettiği sanılıyordu. Ölçüm tersini gösterdi: tek başına 0904172 veren
+ * otel, fiyat veren bir otelle aynı pakette OK dönüyor (16/16 çift, 200'lük
+ * karışık paket). Yani 0904172 de "pakette satılabilir otel yok" demek;
+ * bölmek hiçbir otel kazandırmıyor, yalnızca çağrı sayısını katlıyordu.
  */
 async function paketAra(
   req: Pick<HotelSearchRequest, "feedId" | "nationality" | "checkIn" | "checkOut" | "rooms" | "currency">,
   kodlar: string[],
   tumFiyatlar: boolean
 ): Promise<EtsSearchHotel[]> {
-  const temiz = kodlar.filter((k) => !satilamayanOteller.has(k));
-  if (temiz.length === 0) return [];
-
+  if (kodlar.length === 0) return [];
   try {
     const d = await royalApiClient.post<EtsSearchResponse>(
       ARAMA,
-      etsAramaIstegi(req, temiz, tumFiyatlar),
+      etsAramaIstegi(req, kodlar, tumFiyatlar),
       { currency: req.currency }
     );
     return d?.hotels ?? [];
   } catch (e) {
-    if (!(e instanceof EtscoreError)) throw e;
-    if (e.musaitlikYok) return [];
-    if (e.tanimsizOtel) {
-      if (temiz.length === 1) {
-        satilamayanOteller.add(temiz[0]);
-        return [];
-      }
-      const orta = Math.ceil(temiz.length / 2);
-      const [a, b] = await Promise.all([
-        paketAra(req, temiz.slice(0, orta), tumFiyatlar),
-        paketAra(req, temiz.slice(orta), tumFiyatlar),
-      ]);
-      return [...a, ...b];
-    }
+    if (e instanceof EtscoreError && e.musaitlikYok) return [];
     throw e;
   }
 }

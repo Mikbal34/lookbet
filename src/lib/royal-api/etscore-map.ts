@@ -29,7 +29,7 @@ import type {
   EtsSearchRequest,
 } from "./types/etscore.types";
 
-/** Tek aramada gönderilecek en fazla otel kodu. 200 kod ~4 sn (ölçüldü). */
+/** Tek aramada gönderilecek otel kodu. API sınırı 250 (0904168); 200 kod ~4 sn. */
 export const ETS_ARAMA_PAKETI = 200;
 
 const yuvarla = (n: number) => Math.round(n * 100) / 100;
