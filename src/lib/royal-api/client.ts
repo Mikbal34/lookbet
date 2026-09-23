@@ -33,11 +33,14 @@ const TOKEN_PAYI_MS = 5 * 60 * 1000;
 
 /**
  * Arama sonucu yokken dönen hata kodları — boş liste yerine HTTP 400 geliyor.
- * İkisi de ölçülerek bulundu, dokümanda yok:
+ * Hepsi ölçülerek bulundu, dokümanda yok:
  *   0904077  "Aradığınız kriterlere uygun otelde müsaitlik bulunmamaktadır."
  *   0904155  "Verilen tarihlerde fiyat veren bir otel bulunamadı."
+ *   0904100  "Arama sonucunda satışa açık bir otel bulunamadı." — satışa
+ *            kapalı otel; satılamayan otel ayıklanıp paket bölünürken
+ *            tek kalan kodda çıktı.
  */
-export const ETS_SONUC_YOK = new Set(["0904077", "0904155"]);
+export const ETS_SONUC_YOK = new Set(["0904077", "0904155", "0904100"]);
 
 /**
  * "Aranan otellerde provider ülke tanımı bulunmamaktadır." Hesabımızın

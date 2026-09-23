@@ -4,6 +4,8 @@ import { getCurrencies, getBoardTypes, getFacilities, getRoomAttributes } from "
 import { getLocations } from "./location";
 import { getHotelList, etsOtelAra } from "./hotel";
 import { etsKonumTuru } from "./etscore-map";
+import { EtscoreError } from "./client";
+import type { EtsSearchHotel } from "./types/etscore.types";
 
 export async function syncCurrencies() {
   const currencies = await getCurrencies();
@@ -154,6 +156,9 @@ export async function syncHotels(feedId: string) {
 /** Etscore konumları mock kimlikleriyle çakışmasın (ikisinde de id: 1 var). */
 const etsKonumAnahtari = (id: number) => `ets:${id}`;
 
+/** İndekste bir seferde aranan otel: 3 paket, paralel ~4 sn. */
+const INDEKS_DILIMI = 600;
+
 /**
  * "Hangi otel hangi şehirde" indeksini kurar.
  *
@@ -176,6 +181,8 @@ export async function indexHotelLocations(opts: {
   enFazla?: number;
   /** true: konumu olan otelleri de yeniden tara. */
   hepsi?: boolean;
+  /** Her dilimden sonra çağrılır — betik ilerlemeyi yazsın diye. */
+  ilerleme?: (satir: string) => void;
 }) {
   const { feedId, gunler = [30, 75, 150], enFazla, hepsi = false } = opts;
 
@@ -188,68 +195,89 @@ export async function indexHotelLocations(opts: {
 
   const bekleyen = new Set(adaylar.map((h) => h.hotelCode));
   const koordinatiVar = new Set(adaylar.filter((h) => h.latitude).map((h) => h.hotelCode));
-  const istatistik = { taranan: bekleyen.size, eslesen: 0, konum: 0, turlar: [] as string[] };
+  const istatistik = {
+    taranan: bekleyen.size,
+    eslesen: 0,
+    konum: 0,
+    turlar: [] as string[],
+    hatalar: [] as string[],
+  };
   const konumCache = new Map<number, string>(); // Etscore id → Location.id
 
   for (const gun of gunler) {
     if (bekleyen.size === 0) break;
     const giris = new Date(Date.now() + gun * 86_400_000).toISOString().slice(0, 10);
     const cikis = new Date(Date.now() + (gun + 1) * 86_400_000).toISOString().slice(0, 10);
+    const istek = {
+      feedId,
+      nationality: "TR",
+      checkIn: giris,
+      checkOut: cikis,
+      currency: "EUR",
+      rooms: [{ adult: 2 }],
+    };
 
-    const oteller = await etsOtelAra(
-      {
-        feedId,
-        nationality: "TR",
-        checkIn: giris,
-        checkOut: cikis,
-        currency: "EUR",
-        rooms: [{ adult: 2 }],
-      },
-      [...bekleyen],
-      false
-    );
-
+    // Kodlar dilim dilim aranıp her dilimden sonra yazılıyor. Önceden tüm
+    // tur tek aramaydı: 15 bin otelde tek bir beklenmedik hata (Etscore'un
+    // belgelemediği yeni bir "sonuç yok" kodu gibi) saatlerce süren taramayı
+    // hiçbir şey yazmadan bitiriyordu. Şimdi o dilim atlanıyor, ilerleme
+    // kalıcı, yeniden çalıştırmak kaldığı yerden devam ediyor.
+    const kodlar = [...bekleyen];
     let turda = 0;
-    for (const o of oteller) {
-      if (!bekleyen.has(o.hotelCode)) continue;
-
-      // Zinciri üstten alta kur; her halka bir öncekinin çocuğu.
-      let ustId: string | null = null;
-      for (const d of o.destinationCodes ?? []) {
-        let id = konumCache.get(d.id);
-        if (!id) {
-          const kayit: { id: string } = await prisma.location.upsert({
-            where: { externalId: etsKonumAnahtari(d.id) },
-            update: { name: d.name, type: etsKonumTuru(d.type), parentId: ustId },
-            create: {
-              externalId: etsKonumAnahtari(d.id),
-              name: d.name,
-              type: etsKonumTuru(d.type),
-              parentId: ustId,
-            },
-            select: { id: true },
-          });
-          id = kayit.id;
-          konumCache.set(d.id, id);
-          istatistik.konum++;
-        }
-        ustId = id;
+    let atlanan = 0;
+    for (let i = 0; i < kodlar.length; i += INDEKS_DILIMI) {
+      let oteller: EtsSearchHotel[];
+      try {
+        oteller = await etsOtelAra(istek, kodlar.slice(i, i + INDEKS_DILIMI), false);
+      } catch (e) {
+        atlanan++;
+        const kod = e instanceof EtscoreError ? ` [${e.status} ${e.code}]` : "";
+        istatistik.hatalar.push(`${giris} dilim ${i / INDEKS_DILIMI}${kod}: ${e instanceof Error ? e.message : e}`);
+        continue;
       }
 
-      await prisma.hotel.update({
-        where: { hotelCode: o.hotelCode },
-        data: {
-          ...(ustId && { locationId: ustId }),
-          // Koordinat bizde yoksa Etscore'unkini yaz; varsa dokunma.
-          ...(!koordinatiVar.has(o.hotelCode) &&
-            o.geoLocation && { latitude: o.geoLocation.lat, longitude: o.geoLocation.lon }),
-        },
-      });
-      bekleyen.delete(o.hotelCode);
-      istatistik.eslesen++;
-      turda++;
+      for (const o of oteller) {
+        if (!bekleyen.has(o.hotelCode)) continue;
+
+        // Zinciri üstten alta kur; her halka bir öncekinin çocuğu.
+        let ustId: string | null = null;
+        for (const d of o.destinationCodes ?? []) {
+          let id = konumCache.get(d.id);
+          if (!id) {
+            const kayit: { id: string } = await prisma.location.upsert({
+              where: { externalId: etsKonumAnahtari(d.id) },
+              update: { name: d.name, type: etsKonumTuru(d.type), parentId: ustId },
+              create: {
+                externalId: etsKonumAnahtari(d.id),
+                name: d.name,
+                type: etsKonumTuru(d.type),
+                parentId: ustId,
+              },
+              select: { id: true },
+            });
+            id = kayit.id;
+            konumCache.set(d.id, id);
+            istatistik.konum++;
+          }
+          ustId = id;
+        }
+
+        await prisma.hotel.update({
+          where: { hotelCode: o.hotelCode },
+          data: {
+            ...(ustId && { locationId: ustId }),
+            // Koordinat bizde yoksa Etscore'unkini yaz; varsa dokunma.
+            ...(!koordinatiVar.has(o.hotelCode) &&
+              o.geoLocation && { latitude: o.geoLocation.lat, longitude: o.geoLocation.lon }),
+          },
+        });
+        bekleyen.delete(o.hotelCode);
+        istatistik.eslesen++;
+        turda++;
+      }
+      opts.ilerleme?.(`${giris} ${Math.min(i + INDEKS_DILIMI, kodlar.length)}/${kodlar.length} · eşleşen ${istatistik.eslesen}`);
     }
-    istatistik.turlar.push(`${giris}: ${turda} otel`);
+    istatistik.turlar.push(`${giris}: ${turda} otel${atlanan ? `, ${atlanan} dilim atlandı` : ""}`);
   }
 
   return istatistik;

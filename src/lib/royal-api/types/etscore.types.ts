@@ -138,8 +138,8 @@ export interface EtsSearchHotel {
 
 /**
  * POST /royal/hotel/search — yanıt.
- * DİKKAT: hiç müsaitlik yoksa boş liste DEĞİL, HTTP 400 + errorCode
- * "0904077" dönüyor. client.ts bunu EtscoreError.musaitlikYok ile ayırır.
+ * DİKKAT: hiç müsaitlik yoksa boş liste DEĞİL, HTTP 400 + errorCode (bkz. ETS_SONUC_YOK)
+ * ("0904077" vb.) dönüyor. client.ts bunu EtscoreError.musaitlikYok ile ayırır.
  */
 export interface EtsSearchResponse {
   totalHotelCount: number;

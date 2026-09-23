@@ -37,7 +37,12 @@ async function main() {
   if (komut === "indeks" || komut === "hepsi") {
     const enFazla = arg ? Number(arg) : undefined;
     console.log(`Konum indeksi kuruluyor${enFazla ? ` (en fazla ${enFazla} otel)` : ""}…`);
-    console.log("  ", await indexHotelLocations({ feedId, enFazla }), sure());
+    const sonuc = await indexHotelLocations({
+      feedId,
+      enFazla,
+      ilerleme: (satir) => console.log(`   ${satir} · ${sure()}`),
+    });
+    console.log("  ", sonuc, sure());
   }
   if (!["oteller", "indeks", "hepsi"].includes(komut ?? "")) {
     console.error("Kullanım: scripts/etscore.ts oteller | indeks [enFazla] | hepsi");
