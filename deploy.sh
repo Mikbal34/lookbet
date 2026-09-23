@@ -7,10 +7,15 @@ set -euo pipefail
 # ============================================================
 
 # ---- Konfigürasyon ----
-EC2_HOST="${EC2_HOST:-}"
-EC2_USER="${EC2_USER:-ubuntu}"
-EC2_KEY="${EC2_KEY:-~/.ssh/lookbet.pem}"
-APP_DIR="/home/${EC2_USER}/lookbet"
+# Hetzner sunucusu. Etscore'un beyaz listesindeki IP bu — tedarikçi API'si
+# yalnızca buradan çağrılabiliyor, uygulamanın burada koşmasının sebebi de bu.
+# (Değişken adları EC2_ kaldı: script önce AWS için yazılmıştı, dışarıdan
+# EC2_HOST=... ile çağıranlar kırılmasın.)
+EC2_HOST="${EC2_HOST:-2.29.53.188}"
+EC2_USER="${EC2_USER:-root}"
+EC2_KEY="${EC2_KEY:-$HOME/.ssh/lookbet}"
+BRANCH="${BRANCH:-main}"
+if [[ "$EC2_USER" == "root" ]]; then APP_DIR="/root/lookbet"; else APP_DIR="/home/${EC2_USER}/lookbet"; fi
 REPO_URL="${REPO_URL:-https://github.com/Mikbal34/lookbet.git}"
 
 RED='\033[0;31m'
@@ -23,7 +28,7 @@ warn() { echo -e "${YELLOW}[WARN]${NC} $*"; }
 err()  { echo -e "${RED}[ERROR]${NC} $*" >&2; }
 
 ssh_cmd() {
-    ssh -i "$EC2_KEY" -o StrictHostKeyChecking=no "${EC2_USER}@${EC2_HOST}" "$@"
+    ssh -i "$EC2_KEY" -o StrictHostKeyChecking=accept-new "${EC2_USER}@${EC2_HOST}" "$@"
 }
 
 check_config() {
@@ -36,7 +41,7 @@ check_config() {
 # ---- İlk kurulum (EC2 üzerinde çalışır) ----
 cmd_setup() {
     check_config
-    log "EC2 sunucu kurulumu başlıyor..."
+    log "Sunucu kurulumu başlıyor (${EC2_HOST})..."
 
     ssh_cmd << 'SETUP_EOF'
 set -euo pipefail
@@ -83,7 +88,7 @@ set -euo pipefail
 cd ${APP_DIR}
 
 echo "==> Git pull..."
-git pull origin main
+git fetch origin ${BRANCH} && git checkout ${BRANCH} && git pull origin ${BRANCH}
 
 echo "==> Docker build..."
 docker compose -f docker-compose.prod.yml build
