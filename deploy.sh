@@ -17,6 +17,10 @@ EC2_KEY="${EC2_KEY:-$HOME/.ssh/lookbet}"
 BRANCH="${BRANCH:-main}"
 if [[ "$EC2_USER" == "root" ]]; then APP_DIR="/root/lookbet"; else APP_DIR="/home/${EC2_USER}/lookbet"; fi
 REPO_URL="${REPO_URL:-https://github.com/Mikbal34/lookbet.git}"
+# --env-file: compose'daki ${POSTGRES_PASSWORD} gibi değişkenler env_file'dan
+# değil, kabuktan ya da bu dosyadan okunuyor. Olmadan db servisi
+# "POSTGRES_PASSWORD gerekli" deyip başlamıyordu.
+COMPOSE="docker compose -f docker-compose.prod.yml --env-file .env.production"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -91,14 +95,14 @@ echo "==> Git pull..."
 git fetch origin ${BRANCH} && git checkout ${BRANCH} && git pull origin ${BRANCH}
 
 echo "==> Docker build..."
-docker compose -f docker-compose.prod.yml build
+${COMPOSE} build
 
 echo "==> Container durdur & başlat..."
-docker compose -f docker-compose.prod.yml down
-docker compose -f docker-compose.prod.yml up -d
+${COMPOSE} down
+${COMPOSE} up -d
 
 echo "==> Prisma migrate deploy..."
-docker compose -f docker-compose.prod.yml --profile migrate run --rm migrate
+${COMPOSE} --profile migrate run --rm migrate
 
 echo "==> Nginx reload..."
 sudo nginx -t && sudo systemctl reload nginx
@@ -116,7 +120,7 @@ DEPLOY_EOF
 cmd_migrate() {
     check_config
     log "Prisma migrate deploy çalıştırılıyor..."
-    ssh_cmd "cd ${APP_DIR} && docker compose -f docker-compose.prod.yml --profile migrate run --rm migrate"
+    ssh_cmd "cd ${APP_DIR} && ${COMPOSE} --profile migrate run --rm migrate"
     log "Migration tamamlandı."
 }
 
@@ -136,13 +140,13 @@ cmd_health() {
 # ---- Logs ----
 cmd_logs() {
     check_config
-    ssh_cmd "cd ${APP_DIR} && docker compose -f docker-compose.prod.yml logs -f --tail=100"
+    ssh_cmd "cd ${APP_DIR} && ${COMPOSE} logs -f --tail=100"
 }
 
 # ---- Status ----
 cmd_status() {
     check_config
-    ssh_cmd "cd ${APP_DIR} && docker compose -f docker-compose.prod.yml ps"
+    ssh_cmd "cd ${APP_DIR} && ${COMPOSE} ps"
 }
 
 # ---- Main ----
