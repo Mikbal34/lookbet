@@ -200,6 +200,12 @@ export interface EtsHotelDetail {
   };
   geoLocation?: { lat: number; lon: number };
   allowedPet?: boolean;
+  /**
+   * Konum zinciri. Aramadaki destinationCodes'la aynı kimlikler ("795" =
+   * İstanbul) ama fiyattan bağımsız: satışta olmayan otelde de geliyor.
+   * `locationType`: COUNTRY, REGION, CITY, TOWN, CUSTOMREGION.
+   */
+  locationStructure?: { id: number; name: string; type?: string; locationType: string }[];
   checkInOutPolicy?: { checkInTime?: string; checkOutTime?: string };
   hotelImages?: EtsGorsel[];
   contact?: {
@@ -222,6 +228,16 @@ export interface EtsHotelDetail {
     facilities?: { id: number; description?: string }[];
   }[];
   facilities?: { id: number; free?: boolean; description?: string }[];
+}
+
+/**
+ * POST /content/hotel/revision?page&size {sinceDate, revisionType}.
+ * sinceDate en fazla 6 gün geri (7'de 0905028). Türsüz sorgu yalnızca UPDATE döndürüyor.
+ */
+export interface EtsRevizyonSayfasi {
+  totalCount: number;
+  numberOfPages: number;
+  hotels: { hotelId: string; revisionType: "INSERT" | "UPDATE" | "DELETE"; updateDate?: string }[];
 }
 
 // ── Oda arama ─────────────────────────────────────────────────────────────

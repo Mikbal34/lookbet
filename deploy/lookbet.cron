@@ -1,0 +1,12 @@
+# /etc/cron.d/lookbet — Etscore içerik işleri (sunucu saati UTC).
+# Kurulum: cp deploy/lookbet.cron /etc/cron.d/lookbet
+# Revizyon ucu yalnızca son 6 günü verdiği için günlük iş kaçırılmamalı;
+# 2 günlük pencereyle bir gece atlansa da açık kalmaz.
+SHELL=/bin/bash
+LOG=/var/log/lookbet-icerik.log
+
+# Her gece 01:30 (TR 04:30): eklenen, değişen, silinen oteller
+30 1 * * *   root  /root/lookbet/deploy/icerik-isi.sh revizyon >> $LOG 2>&1
+
+# Pazar: adlar, otel listesi, eksik içerik (sırayla; uç aynı anda tek iş kabul ediyor)
+0 2 * * 0    root  /root/lookbet/deploy/icerik-isi.sh listeler >> $LOG 2>&1 && /root/lookbet/deploy/icerik-isi.sh oteller >> $LOG 2>&1 && /root/lookbet/deploy/icerik-isi.sh icerik >> $LOG 2>&1

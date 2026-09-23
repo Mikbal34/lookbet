@@ -62,6 +62,14 @@ export class EtscoreError extends Error {
     return this.code !== null && ETS_SONUC_YOK.has(this.code);
   }
 
+  /**
+   * Otel detayı: "… idli otel aktif değil." İçerik servisi errorCode'a kod
+   * yerine metin ("İçerik bulunamadı") koyuyor; ayırt eden mesaj.
+   */
+  get otelAktifDegil(): boolean {
+    return this.status === 400 && /aktif değil/i.test(this.message);
+  }
+
   /** Saniyede 20 istek sınırı aşıldı (HTTP 429). */
   get hizSiniri(): boolean {
     return this.status === 429 || this.code === ETS_HIZ_SINIRI;

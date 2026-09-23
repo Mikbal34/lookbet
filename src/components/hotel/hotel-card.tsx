@@ -46,6 +46,10 @@ export function HotelCard({ hotel, searchParams, className }: HotelCardProps) {
 
   const href = `/hotel/${hotelCode}${searchParams ? `?${searchParams}` : ""}`;
 
+  // Tedarikçinin verdiği adres bazen kırık (test otellerinde 404). Kırık
+  // görselde tarayıcı alt metni kutuya basıyordu; yer tutucuya düş.
+  const [gorselHatali, setGorselHatali] = React.useState(false);
+
   const formattedPrice = new Intl.NumberFormat("tr-TR", {
     style: "currency",
     currency: currency || "EUR",
@@ -63,9 +67,10 @@ export function HotelCard({ hotel, searchParams, className }: HotelCardProps) {
       <Link href={href} className="flex" aria-label={hotelName}>
         {/* Fotoğraf — mobilde 112px kare, masaüstünde geniş kolon */}
         <div className="relative w-28 shrink-0 self-stretch overflow-hidden bg-chip lg:min-h-[190px] lg:w-[220px]">
-          {thumbnailImage ? (
+          {thumbnailImage && !gorselHatali ? (
             <img
               src={thumbnailImage}
+              onError={() => setGorselHatali(true)}
               alt={`${hotelName} görseli`}
               className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
               loading="lazy"

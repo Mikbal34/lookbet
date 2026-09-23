@@ -9,8 +9,13 @@
 //       olmayan otelleri tarar; tekrar çalıştırmak kaldığı yerden devam eder.
 //
 //   npx tsx --env-file=.env.local scripts/etscore.ts icerik [enFazla]
-//       Fiyat veren (konumu bilinen) otellerin fotoğraf, yıldız, adres ve
-//       açıklamasını otel detayından yazar. Yalnızca fotoğrafı olmayanlar.
+//       Otel detayından fotoğraf, yıldız, adres, açıklama ve KONUM yazar
+//       (konum fiyattan bağımsız: satışta olmayan otel de şehrine bağlanır).
+//       Yalnızca fotoğrafı ya da konumu eksik oteller; kaldığı yerden devam eder.
+//
+//   npx tsx --env-file=.env.local scripts/etscore.ts revizyon [gün]
+//       Son günlerde (varsayılan 2, en fazla 6) eklenen, değişen, silinen
+//       otelleri uygular. Sunucuda her gece cron çalıştırır.
 //
 //   npx tsx --env-file=.env.local scripts/etscore.ts listeler
 //       Pansiyon tipleri, otel olanakları ve oda özellikleri (Türkçe).
@@ -25,6 +30,7 @@ import {
   syncFacilities,
   syncHotelContent,
   syncHotels,
+  syncRevisions,
   syncRoomAttributes,
 } from "@/lib/royal-api/sync";
 
@@ -68,8 +74,13 @@ async function main() {
     const sonuc = await syncHotelContent({ enFazla, ilerleme: (satir) => console.log(`   ${satir} · ${sure()}`) });
     console.log("  ", { ...sonuc, hatalar: sonuc.hatalar.slice(0, 10) }, sure());
   }
-  if (!["listeler", "oteller", "indeks", "icerik", "hepsi"].includes(komut ?? "")) {
-    console.error("Kullanım: scripts/etscore.ts listeler | oteller | indeks [enFazla] | icerik [enFazla] | hepsi");
+  if (komut === "revizyon") {
+    console.log("Revizyonlar uygulanıyor…");
+    const sonuc = await syncRevisions({ gun: arg ? Number(arg) : 2, ilerleme: (satir) => console.log(`   ${satir} · ${sure()}`) });
+    console.log("  ", sonuc, sure());
+  }
+  if (!["listeler", "oteller", "indeks", "icerik", "revizyon", "hepsi"].includes(komut ?? "")) {
+    console.error("Kullanım: scripts/etscore.ts listeler | oteller | indeks [enFazla] | icerik [enFazla] | revizyon [gün] | hepsi");
     process.exit(1);
   }
 }

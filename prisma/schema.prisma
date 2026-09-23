@@ -223,6 +223,9 @@ model Hotel {
   facilities  Json?
   thumbnailImage String?
   locationId  String?
+  /// Etscore otel detayı "otel aktif değil" dediyse false. Aramada ve
+  /// içerik senkronunda atlanır. Otel listesi pasif otelleri de veriyor.
+  isActive    Boolean  @default(true)
   phone       String?
   email       String?
   createdAt   DateTime @default(now())

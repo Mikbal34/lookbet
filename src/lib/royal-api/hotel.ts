@@ -109,14 +109,22 @@ export async function searchHotels(params: HotelSearchRequest): Promise<HotelSea
 // izlenir); her sayfa açılışında ve her oda aramasında yeniden istemek
 // gereksiz. Süreç içi, 1 saat.
 const DETAY_OMRU_MS = 60 * 60 * 1000;
+// Sınırsız olsaydı toplu içerik senkronu 15 bin detayı (~30 KB) belleğe
+// doldururdu: ~450 MB, 2 GB'lık sunucuda. En eskiler atılıyor (Map ekleme
+// sırasını korur).
+const DETAY_EN_FAZLA = 500;
 const detayOnbellegi = new Map<string, { d: EtsHotelDetail; zaman: number }>();
 
 /** Ham otel detayı (önbellekli). Oda araması fotoğraflar için de kullanıyor. */
-export async function etsOtelDetayiGetir(hotelCode: string): Promise<EtsHotelDetail> {
+export async function etsOtelDetayiGetir(hotelCode: string, taze = false): Promise<EtsHotelDetail> {
   const kayit = detayOnbellegi.get(hotelCode);
-  if (kayit && Date.now() - kayit.zaman < DETAY_OMRU_MS) return kayit.d;
+  if (!taze && kayit && Date.now() - kayit.zaman < DETAY_OMRU_MS) return kayit.d;
   const d = await royalApiClient.post<EtsHotelDetail>(`${ICERIK}/hotel/detail`, { hotelId: hotelCode });
+  detayOnbellegi.delete(hotelCode);
   detayOnbellegi.set(hotelCode, { d, zaman: Date.now() });
+  if (detayOnbellegi.size > DETAY_EN_FAZLA) {
+    detayOnbellegi.delete(detayOnbellegi.keys().next().value!);
+  }
   return d;
 }
 

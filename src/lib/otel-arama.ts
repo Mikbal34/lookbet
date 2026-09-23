@@ -96,7 +96,7 @@ export async function hedefOtelKodlari(yazilan: string): Promise<HedefSonucu> {
     // İçeriği (görseli) olan oteller önce: sınır devreye girerse sonuç
     // listesi boş kartlarla dolmasın.
     const oteller = await prisma.hotel.findMany({
-      where: { locationId: { in: [...tumKonumlar] } },
+      where: { locationId: { in: [...tumKonumlar] }, isActive: true },
       select: { hotelCode: true },
       orderBy: [{ thumbnailImage: { sort: "asc", nulls: "last" } }, { hotelCode: "asc" }],
     });
@@ -112,7 +112,7 @@ export async function hedefOtelKodlari(yazilan: string): Promise<HedefSonucu> {
   // 2) Otel adı
   const adla = await prisma.$queryRawUnsafe<{ hotel_code: string }[]>(
     // Prisma alan adını sütun adı olarak kullanıyor: "hotelCode" (tırnaklı).
-    `SELECT "hotelCode" AS hotel_code FROM hotels WHERE ${TR_KATLA("name")} LIKE $1
+    `SELECT "hotelCode" AS hotel_code FROM hotels WHERE "isActive" AND ${TR_KATLA("name")} LIKE $1
      ORDER BY "hotelCode" LIMIT ${ARAMA_OTEL_SINIRI + 1}`,
     desen
   );

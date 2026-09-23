@@ -95,16 +95,19 @@ echo "==> Git pull..."
 git fetch origin ${BRANCH} && git checkout ${BRANCH} && git pull origin ${BRANCH}
 
 echo "==> Docker build..."
-${COMPOSE} build
+${COMPOSE} build app migrate
 
-echo "==> Container durdur & başlat..."
-${COMPOSE} down
-${COMPOSE} up -d
-
-echo "==> Prisma migrate deploy..."
+# Şema, yeni kod ayağa kalkmadan önce: kod yeni sütunları sorguluyor.
+echo "==> Şema (prisma db push)..."
+${COMPOSE} up -d db
 ${COMPOSE} --profile migrate run --rm migrate
 
-echo "==> Nginx reload..."
+echo "==> Uygulamayı yeni imajla başlat..."
+${COMPOSE} up -d app
+
+echo "==> Nginx ve cron..."
+sudo cp nginx/nginx.conf /etc/nginx/conf.d/lookbet.conf
+sudo cp deploy/lookbet.cron /etc/cron.d/lookbet
 sudo nginx -t && sudo systemctl reload nginx
 
 echo "==> Eski Docker image'ları temizle..."

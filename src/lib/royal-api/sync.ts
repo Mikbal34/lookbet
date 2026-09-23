@@ -4,8 +4,8 @@ import { getCurrencies, getBoardTypes, getFacilities, getRoomAttributes } from "
 import { getLocations } from "./location";
 import { getHotelList, etsOtelAra, etsOtelDetayiGetir } from "./hotel";
 import { etsKonumTuru, etsOtelDetayi } from "./etscore-map";
-import { EtscoreError } from "./client";
-import type { EtsSearchHotel } from "./types/etscore.types";
+import { EtscoreError, royalApiClient } from "./client";
+import type { EtsRevizyonSayfasi, EtsSearchHotel } from "./types/etscore.types";
 
 export async function syncCurrencies() {
   const currencies = await getCurrencies();
@@ -156,6 +156,66 @@ export async function syncHotels(feedId: string) {
 /** Etscore konumları mock kimlikleriyle çakışmasın (ikisinde de id: 1 var). */
 const etsKonumAnahtari = (id: number) => `ets:${id}`;
 
+/** Konum zincirinde üstten alta sıra; zincir bu sıraya göre kurulur. */
+const KONUM_SIRASI: Record<string, number> = { COUNTRY: 0, REGION: 1, CITY: 2, TOWN: 3, CUSTOMREGION: 4 };
+
+/**
+ * Etscore konum zincirini Location tablosuna yazar, en alttaki konumun
+ * kimliğini döner. Her halka bir öncekinin çocuğu. `onbellek`: Etscore id →
+ * Location.id; aynı taramada aynı konum tekrar yazılmasın.
+ *
+ * Zincir sıraya diziliyor: arama COUNTRY→…→CUSTOMREGION sırasıyla veriyor,
+ * oda araması tersini; detay ise düz sırayla. Türe göre dizmek hepsinde
+ * aynı ağacı kuruyor.
+ */
+// İçerik senkronu otelleri paralel işliyor; iki otel aynı yeni konumu aynı
+// anda yazarsa upsert yarışıp benzersizlik hatası verir. Zincir yazımları
+// sırayla: kısa ve çoğu önbellekten döndüğü için yavaşlatmıyor.
+let konumKilidi: Promise<unknown> = Promise.resolve();
+
+function konumZinciriniYaz(
+  zincir: { id: number; name: string; type: string }[],
+  onbellek: Map<number, string>,
+  sayac?: { konum: number }
+): Promise<string | null> {
+  const is = konumKilidi.then(() => zinciriYaz(zincir, onbellek, sayac));
+  konumKilidi = is.catch(() => undefined);
+  return is;
+}
+
+async function zinciriYaz(
+  zincir: { id: number; name: string; type: string }[],
+  onbellek: Map<number, string>,
+  sayac?: { konum: number }
+): Promise<string | null> {
+  const sirali = [...zincir].sort(
+    (a, b) => (KONUM_SIRASI[a.type] ?? 9) - (KONUM_SIRASI[b.type] ?? 9)
+  );
+  let ustId: string | null = null;
+  for (const d of sirali) {
+    if (!d.id || !d.name) continue;
+    let id = onbellek.get(d.id);
+    if (!id) {
+      const kayit: { id: string } = await prisma.location.upsert({
+        where: { externalId: etsKonumAnahtari(d.id) },
+        update: { name: d.name, type: etsKonumTuru(d.type), parentId: ustId },
+        create: {
+          externalId: etsKonumAnahtari(d.id),
+          name: d.name,
+          type: etsKonumTuru(d.type),
+          parentId: ustId,
+        },
+        select: { id: true },
+      });
+      id = kayit.id;
+      onbellek.set(d.id, id);
+      if (sayac) sayac.konum++;
+    }
+    ustId = id;
+  }
+  return ustId;
+}
+
 /** İndekste bir seferde aranan otel: 3 paket, paralel ~4 sn. */
 const INDEKS_DILIMI = 600;
 
@@ -187,7 +247,7 @@ export async function indexHotelLocations(opts: {
   const { feedId, gunler = [30, 75, 150], enFazla, hepsi = false } = opts;
 
   const adaylar = await prisma.hotel.findMany({
-    where: hepsi ? {} : { locationId: null },
+    where: hepsi ? {} : { locationId: null, isActive: true },
     select: { hotelCode: true, latitude: true },
     orderBy: { hotelCode: "asc" },
     ...(enFazla ? { take: enFazla } : {}),
@@ -239,28 +299,7 @@ export async function indexHotelLocations(opts: {
       for (const o of oteller) {
         if (!bekleyen.has(o.hotelCode)) continue;
 
-        // Zinciri üstten alta kur; her halka bir öncekinin çocuğu.
-        let ustId: string | null = null;
-        for (const d of o.destinationCodes ?? []) {
-          let id = konumCache.get(d.id);
-          if (!id) {
-            const kayit: { id: string } = await prisma.location.upsert({
-              where: { externalId: etsKonumAnahtari(d.id) },
-              update: { name: d.name, type: etsKonumTuru(d.type), parentId: ustId },
-              create: {
-                externalId: etsKonumAnahtari(d.id),
-                name: d.name,
-                type: etsKonumTuru(d.type),
-                parentId: ustId,
-              },
-              select: { id: true },
-            });
-            id = kayit.id;
-            konumCache.set(d.id, id);
-            istatistik.konum++;
-          }
-          ustId = id;
-        }
+        const ustId = await konumZinciriniYaz(o.destinationCodes ?? [], konumCache, istatistik);
 
         await prisma.hotel.update({
           where: { hotelCode: o.hotelCode },
@@ -284,63 +323,196 @@ export async function indexHotelLocations(opts: {
 }
 
 /**
- * Otel içeriğini (fotoğraf, yıldız, adres, açıklama, olanaklar) Etscore'un
- * otel detayından veritabanına yazar.
+ * Otel içeriğini (fotoğraf, yıldız, adres, açıklama, olanaklar) ve konumunu
+ * Etscore'un otel detayından veritabanına yazar.
  *
  * Arama sonucu kartları içeriği bizim veritabanımızdan alıyor (arama ucu
- * fotoğraf ve yıldız vermiyor). Varsayılan olarak yalnızca konumu bilinen
- * — yani fiyat veren — ve henüz fotoğrafı olmayan oteller taranır; 15 bin
- * otelin hepsini çekmek gereksiz. Boş gelen alan mevcut değeri ezmez.
+ * fotoğraf ve yıldız vermiyor). Detay konum zincirini de veriyor ve —
+ * aramadan farklı olarak — fiyattan bağımsız: satışta olmayan otel de
+ * şehrine bağlanıyor. Aramaya dayalı indeks yalnızca o tarihlerde fiyat
+ * veren otelleri bağlayabiliyordu (%8).
+ *
+ * Varsayılan: fotoğrafı ya da konumu eksik oteller. Boş gelen alan mevcut
+ * değeri ezmez; konumu olan otelin konumuna dokunulmaz.
  */
+type IcerikIstatistigi = {
+  yazilan: number;
+  fotografli: number;
+  konumlanan: number;
+  konum: number;
+  pasif: number;
+  hatalar: string[];
+};
+
+const yeniIstatistik = (): IcerikIstatistigi => ({
+  yazilan: 0,
+  fotografli: 0,
+  konumlanan: 0,
+  konum: 0,
+  pasif: 0,
+  hatalar: [],
+});
+
+/**
+ * Tek otelin detayını alıp veritabanına yazar. Otel satırı yoksa oluşturur
+ * (revizyonda yeni eklenen otel).
+ *
+ * `taze`: önbelleği atla — revizyon "bu otel değişti" dediğinde.
+ * Pasif otel işaretlenir; hata istatistiğe yazılır, fırlatılmaz.
+ */
+async function oteliDetaydanYaz(
+  hotelCode: string,
+  konumCache: Map<number, string>,
+  ist: IcerikIstatistigi,
+  taze = false
+): Promise<void> {
+  try {
+    const ham = await etsOtelDetayiGetir(hotelCode, taze);
+    const d = etsOtelDetayi(ham);
+    const urller = d.images.map((g) => g.url);
+    const mevcut = await prisma.hotel.findUnique({
+      where: { hotelCode },
+      select: { latitude: true, locationId: true },
+    });
+
+    const konumId = mevcut?.locationId
+      ? null
+      : await konumZinciriniYaz(
+          (ham.locationStructure ?? []).map((l) => ({ id: l.id, name: l.name, type: l.locationType })),
+          konumCache,
+          ist
+        );
+    if (konumId) ist.konumlanan++;
+
+    const alanlar = {
+      ...(d.name && { name: d.name }),
+      ...(d.stars && { stars: d.stars }),
+      ...(d.address && { address: d.address }),
+      ...(d.description && { description: d.description }),
+      ...(urller.length && { images: urller, thumbnailImage: urller[0] }),
+      ...(d.facilities.length && { facilities: d.facilities.map((f) => f.id) }),
+      ...(d.phone && { phone: d.phone }),
+      ...(d.email && { email: d.email }),
+      ...(!mevcut?.latitude && d.latitude && { latitude: d.latitude, longitude: d.longitude }),
+      ...(konumId && { locationId: konumId }),
+      isActive: true,
+    };
+    await prisma.hotel.upsert({
+      where: { hotelCode },
+      update: alanlar,
+      create: { hotelCode, name: d.name || hotelCode, ...alanlar },
+    });
+    ist.yazilan++;
+    if (urller.length) ist.fotografli++;
+  } catch (e) {
+    // Pasif otel: işaretle, bir daha taranmasın ve aramada çıkmasın.
+    if (e instanceof EtscoreError && e.otelAktifDegil) {
+      await prisma.hotel.updateMany({ where: { hotelCode }, data: { isActive: false } });
+      ist.pasif++;
+      return;
+    }
+    const kod = e instanceof EtscoreError ? ` [${e.status} ${e.code}]` : "";
+    ist.hatalar.push(`${hotelCode}${kod}: ${e instanceof Error ? e.message : e}`);
+  }
+}
+
+/** Kodları 5'erli paralel işler; ilerlemeyi 100 otelde bir bildirir. */
+async function detaylariYaz(
+  kodlar: string[],
+  ist: IcerikIstatistigi,
+  opts: { taze?: boolean; ilerleme?: (satir: string) => void } = {}
+) {
+  const PARALEL = 5;
+  const konumCache = new Map<number, string>();
+  for (let i = 0; i < kodlar.length; i += PARALEL) {
+    await Promise.all(
+      kodlar.slice(i, i + PARALEL).map((k) => oteliDetaydanYaz(k, konumCache, ist, opts.taze))
+    );
+    if ((i / PARALEL) % 20 === 19 || i + PARALEL >= kodlar.length) {
+      opts.ilerleme?.(
+        `${Math.min(i + PARALEL, kodlar.length)}/${kodlar.length} · fotoğraflı ${ist.fotografli} · konumlanan ${ist.konumlanan} · pasif ${ist.pasif}`
+      );
+    }
+  }
+}
+
 export async function syncHotelContent(opts: {
   enFazla?: number;
-  /** true: fotoğrafı olanları ve konumu olmayanları da tara. */
+  /** true: fotoğrafı ve konumu olanları, pasifleri de tara. */
   hepsi?: boolean;
   ilerleme?: (satir: string) => void;
 } = {}) {
   const { enFazla, hepsi = false } = opts;
   const oteller = await prisma.hotel.findMany({
-    where: hepsi ? {} : { locationId: { not: null }, thumbnailImage: null },
-    select: { hotelCode: true, latitude: true },
+    where: hepsi ? {} : { isActive: true, OR: [{ locationId: null }, { thumbnailImage: null }] },
+    select: { hotelCode: true },
     orderBy: { hotelCode: "asc" },
     ...(enFazla ? { take: enFazla } : {}),
   });
+  const ist = yeniIstatistik();
+  await detaylariYaz(
+    oteller.map((h) => h.hotelCode),
+    ist,
+    { ilerleme: opts.ilerleme }
+  );
+  return { taranan: oteller.length, ...ist };
+}
 
-  const istatistik = { taranan: oteller.length, yazilan: 0, fotografli: 0, hatalar: [] as string[] };
-  const PARALEL = 5;
+// ── Revizyonlar (günlük artımlı güncelleme) ──────────────────────────────
 
-  for (let i = 0; i < oteller.length; i += PARALEL) {
-    await Promise.all(
-      oteller.slice(i, i + PARALEL).map(async (h) => {
-        try {
-          const d = etsOtelDetayi(await etsOtelDetayiGetir(h.hotelCode));
-          const urller = d.images.map((g) => g.url);
-          await prisma.hotel.update({
-            where: { hotelCode: h.hotelCode },
-            data: {
-              ...(d.stars && { stars: d.stars }),
-              ...(d.address && { address: d.address }),
-              ...(d.description && { description: d.description }),
-              ...(urller.length && { images: urller, thumbnailImage: urller[0] }),
-              ...(d.facilities.length && { facilities: d.facilities.map((f) => f.id) }),
-              ...(d.phone && { phone: d.phone }),
-              ...(d.email && { email: d.email }),
-              ...(!h.latitude && d.latitude && { latitude: d.latitude, longitude: d.longitude }),
-            },
-          });
-          istatistik.yazilan++;
-          if (urller.length) istatistik.fotografli++;
-        } catch (e) {
-          const kod = e instanceof EtscoreError ? ` [${e.status} ${e.code}]` : "";
-          istatistik.hatalar.push(`${h.hotelCode}${kod}: ${e instanceof Error ? e.message : e}`);
-        }
-      })
-    );
-    if ((i / PARALEL) % 20 === 19 || i + PARALEL >= oteller.length) {
-      opts.ilerleme?.(`${Math.min(i + PARALEL, oteller.length)}/${oteller.length} · fotoğraflı ${istatistik.fotografli}`);
-    }
+const REVIZYON = "/api/v1/generic-api-service/content/hotel/revision";
+
+/** Bir türdeki tüm revizyonlar (sayfalı). */
+async function revizyonlar(
+  sinceDate: string,
+  revisionType: "INSERT" | "UPDATE" | "DELETE"
+): Promise<string[]> {
+  const kodlar: string[] = [];
+  for (let sayfa = 0; sayfa < 200; sayfa++) {
+    const d = await royalApiClient.post<EtsRevizyonSayfasi>(`${REVIZYON}?page=${sayfa}&size=300`, {
+      sinceDate,
+      revisionType,
+    });
+    kodlar.push(...(d?.hotels ?? []).map((h) => h.hotelId));
+    if (!d?.hotels?.length || sayfa + 1 >= (d.numberOfPages ?? 1)) break;
   }
-  return istatistik;
+  return [...new Set(kodlar)];
+}
+
+/**
+ * Son günlerde Etscore'da eklenen, değişen ve silinen otelleri uygular.
+ *
+ * Revizyon ucu en fazla son 6 günü veriyor; günlük çalıştırılmalı (bkz.
+ * /api/internal/sync). Türsüz sorgu yalnızca UPDATE döndürüyor (ölçüldü:
+ * türsüz 2, DELETE filtresiyle 6) — her tür ayrı soruluyor.
+ */
+export async function syncRevisions(opts: { gun?: number; ilerleme?: (satir: string) => void } = {}) {
+  // Doküman "son 7 gün" diyor; 7 gün geri 0905028 ("Otel bulunamadi, rapor
+  // kriterlerini…") veriyor, 6 gün çalışıyor (ölçüldü).
+  const gun = Math.min(Math.max(opts.gun ?? 2, 1), 6);
+  const sinceDate = new Date(Date.now() - gun * 86_400_000).toISOString().slice(0, 10);
+
+  const [eklenen, degisen, silinen] = await Promise.all([
+    revizyonlar(sinceDate, "INSERT"),
+    revizyonlar(sinceDate, "UPDATE"),
+    revizyonlar(sinceDate, "DELETE"),
+  ]);
+
+  if (silinen.length) {
+    await prisma.hotel.updateMany({ where: { hotelCode: { in: silinen } }, data: { isActive: false } });
+  }
+  const silinmeyen = new Set(silinen);
+  const yazilacak = [...new Set([...eklenen, ...degisen])].filter((k) => !silinmeyen.has(k));
+  const ist = yeniIstatistik();
+  await detaylariYaz(yazilacak, ist, { taze: true, ilerleme: opts.ilerleme });
+
+  return {
+    sinceDate,
+    eklenen: eklenen.length,
+    degisen: degisen.length,
+    silinen: silinen.length,
+    ...ist,
+  };
 }
 
 /**

@@ -306,8 +306,14 @@ export function etsOtelDetayi(
     if (ek && !adres.join(" ").toLocaleLowerCase("tr").includes(ek.toLocaleLowerCase("tr"))) adres.push(ek);
   }
 
-  // Ana görsel önce, sonra genel görünüm, en son oda fotoğrafları.
-  const sira = (g: EtsGorsel) => (g.mainImage ? 0 : g.type === "ROOM" ? 2 : 1);
+  // Ana görsel önce, sonra genel görünüm, tesis (plaj, spa…), odalar; türü
+  // belirsizler en sonda.
+  const sira = (g: EtsGorsel) =>
+    g.mainImage ? 0
+    : g.type === "GENERALVIEW" ? 1
+    : g.type === "ROOM" ? 3
+    : !g.type || g.type === "UNCATEGORIZED" ? 4
+    : 2;
   const images: HotelImage[] = (d.hotelImages ?? [])
     .filter((g) => !g.contentType || g.contentType === "IMAGE")
     .sort((a, b) => sira(a) - sira(b))
