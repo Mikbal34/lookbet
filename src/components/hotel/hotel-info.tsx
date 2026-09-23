@@ -187,16 +187,20 @@ export function HotelInfo({ hotel, className }: HotelInfoProps) {
       {/* Header */}
       <div className="space-y-1.5">
         <h1 className="text-xl md:text-2xl font-bold text-ink">{name}</h1>
-        <StarRating stars={stars} />
-        <div className="flex items-start gap-1.5 text-muted">
-          <MapPin
-            className="h-4 w-4 mt-0.5 shrink-0 text-muted"
-            aria-hidden="true"
-          />
-          <address className="text-sm not-italic leading-snug">
-            {address}
-          </address>
-        </div>
+        {/* Yıldızı ya da adresi bilinmeyen otelde boş yıldız sırası ve
+            yalnız bir konum iğnesi "0 yıldızlı, adressiz" gibi okunuyordu. */}
+        {stars > 0 && <StarRating stars={stars} />}
+        {address && (
+          <div className="flex items-start gap-1.5 text-muted">
+            <MapPin
+              className="h-4 w-4 mt-0.5 shrink-0 text-muted"
+              aria-hidden="true"
+            />
+            <address className="text-sm not-italic leading-snug">
+              {address}
+            </address>
+          </div>
+        )}
       </div>
 
       {/* Description */}

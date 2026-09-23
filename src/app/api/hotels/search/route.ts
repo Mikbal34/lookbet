@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { hotelSearchSchema } from "@/lib/validators";
 import { searchHotels } from "@/lib/royal-api";
 import { boardTypeAdlari } from "@/lib/board-types";
+import { hedefOtelKodlari } from "@/lib/otel-arama";
 
 // POST /api/hotels/search
 // Searches hotels by destination via Royal API.
@@ -41,34 +42,14 @@ export async function POST(request: NextRequest) {
         "";
     }
 
-    // Resolve hotel codes for the requested destination from the local DB.
-    // Match locations whose name contains the destination string (case-insensitive),
-    // then collect all hotels belonging to those locations AND their descendants
-    // (e.g. "Antalya" should also surface hotels in Lara / Belek districts).
-    const matched = await prisma.location.findMany({
-      where: { name: { contains: input.destination, mode: "insensitive" } },
-      select: { id: true },
-    });
-
-    const matchedIds = matched.map((l: { id: string }) => l.id);
-
-    // Pull direct children of the matched locations so a city query includes
-    // hotels registered under its districts.
-    const children = matchedIds.length
-      ? await prisma.location.findMany({
-          where: { parentId: { in: matchedIds } },
-          select: { id: true },
-        })
-      : [];
-
-    const locationIds = [...matchedIds, ...children.map((l: { id: string }) => l.id)];
-
-    const hotels = await prisma.hotel.findMany({
-      where: locationIds.length > 0 ? { locationId: { in: locationIds } } : {},
-      select: { hotelCode: true },
-    });
-
-    const hotelCodes = hotels.map((h: { hotelCode: string }) => h.hotelCode);
+    // Yazılanı otel kodlarına çevir — konum adında, bulunamazsa otel adında.
+    // Etscore şehre göre arama sunmuyor, eşleşme bizim veritabanımızda
+    // (bkz. lib/otel-arama.ts).
+    const hedef = await hedefOtelKodlari(input.destination);
+    if (hedef.kodlar.length === 0) {
+      return NextResponse.json({ searchId: "", hotels: [], eslesme: hedef.eslesme });
+    }
+    const hotelCodes = hedef.kodlar;
 
     // Call Royal API
     const results = await searchHotels({
@@ -81,27 +62,44 @@ export async function POST(request: NextRequest) {
       rooms: input.rooms,
     });
 
-    // Persist search history (fire-and-forget; errors are swallowed intentionally)
-    prisma.searchHistory
-      .create({
-        data: {
-          userId: session?.user.id ?? null,
-          params: { ...input, searchId: results.searchId } as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-          resultCount: results.hotels?.length ?? 0,
-        },
-      })
-      .catch(() => {
-        // Non-critical – do not surface history write failures to the caller.
-      });
-
     // Translate board type codes to display names using the synced content
     // table; unknown codes fall through as-is.
     const boardTypeNames = await boardTypeAdlari();
 
-    const hotelsWithBoardNames = (results.hotels ?? []).map((h) => ({
-      ...h,
-      boardTypes: (h.boardTypes ?? []).map((code) => boardTypeNames.get(code) ?? code),
-    }));
+    // Etscore aramada yıldız, adres ve görsel vermiyor; bunlar bizim
+    // veritabanımızda. API'nin boş bıraktığı alanlar oradan dolduruluyor,
+    // API'nin verdiği (fiyat, koordinat) ezilmiyor.
+    const icerik = new Map(
+      (
+        await prisma.hotel.findMany({
+          where: { hotelCode: { in: (results.hotels ?? []).map((h) => h.hotelCode) } },
+          select: {
+            hotelCode: true,
+            stars: true,
+            address: true,
+            thumbnailImage: true,
+            images: true,
+            latitude: true,
+            longitude: true,
+            location: { select: { name: true } },
+          },
+        })
+      ).map((h) => [h.hotelCode, h])
+    );
+
+    const hotelsWithBoardNames = (results.hotels ?? []).map((h) => {
+      const db = icerik.get(h.hotelCode);
+      const ilkGorsel = Array.isArray(db?.images) ? (db.images as unknown[]).find((x) => typeof x === "string") : undefined;
+      return {
+        ...h,
+        stars: h.stars || db?.stars || 0,
+        address: h.address || db?.address || db?.location?.name || "",
+        thumbnailImage: h.thumbnailImage || db?.thumbnailImage || (ilkGorsel as string | undefined) || "",
+        latitude: h.latitude || db?.latitude || 0,
+        longitude: h.longitude || db?.longitude || 0,
+        boardTypes: (h.boardTypes ?? []).map((code) => boardTypeNames.get(code) ?? code),
+      };
+    });
 
     // Arama geçmişi — analitik ve ileride kişiselleştirme için. Ekrandaki
     // "son aramaların" listesi cihazdan besleniyor (girişsiz kullanıcıda da

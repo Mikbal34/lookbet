@@ -29,6 +29,11 @@ export interface HotelSearchResult {
   minPrice: number;
   currency: string;
   boardTypes: string[];
+  /**
+   * En az bir fiyat seçeneği ücretsiz iptalli mi. Tanımsızsa bilinmiyor
+   * (mock) ve kart eskisi gibi gösterir; false ise "Ücretsiz iptal" yazmaz.
+   */
+  freeCancellation?: boolean;
   // Zenginleştirme (opsiyonel) — arama kartında puan rozeti için.
   reviewScore?: number;
   reviewCount?: number;

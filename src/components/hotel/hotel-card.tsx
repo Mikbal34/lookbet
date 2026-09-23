@@ -38,7 +38,11 @@ export function HotelCard({ hotel, searchParams, className }: HotelCardProps) {
     reviewScore,
     reviewCount,
     reviewLabel,
+    freeCancellation,
   } = hotel;
+
+  // Bilinmiyorsa (mock) eskisi gibi göster; tedarikçi "iade yok" dediyse asla.
+  const ucretsizIptal = freeCancellation !== false;
 
   const href = `/hotel/${hotelCode}${searchParams ? `?${searchParams}` : ""}`;
 
@@ -136,13 +140,13 @@ export function HotelCard({ hotel, searchParams, className }: HotelCardProps) {
           {/* Mobil: güven satırı + fiyat yan yana, kartın dibinde */}
           <div className="mt-auto flex items-end justify-between gap-2 pt-1 lg:hidden">
             <span className="text-[11px] font-semibold leading-tight text-navy">
-              Ücretsiz iptal
+              {ucretsizIptal && "Ücretsiz iptal"}
             </span>
             <FiyatBlogu fiyat={formattedPrice} />
           </div>
 
           <div className="mt-auto hidden pt-1 text-[13px] font-semibold text-navy lg:block">
-            Ücretsiz iptal · Girişte ödeme
+            {ucretsizIptal ? "Ücretsiz iptal · Girişte ödeme" : "Girişte ödeme"}
           </div>
         </div>
 

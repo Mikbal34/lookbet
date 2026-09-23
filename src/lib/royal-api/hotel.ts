@@ -1,4 +1,12 @@
-import { royalApiClient } from "./client";
+import { randomUUID } from "node:crypto";
+import { prisma } from "@/lib/prisma";
+import { belgelenmemis, EtscoreError, royalApiClient } from "./client";
+import {
+  ETS_ARAMA_PAKETI,
+  etsAramaIstegi,
+  etsOtelListeOgesi,
+  etsOtelSonucu,
+} from "./etscore-map";
 import {
   USE_MOCK,
   mockSearchHotels,
@@ -12,18 +20,150 @@ import type {
   HotelListRequest,
   HotelListItem,
 } from "./types";
+import type {
+  EtsHotelListItem,
+  EtsSayfa,
+  EtsSearchHotel,
+  EtsSearchResponse,
+} from "./types/etscore.types";
+
+const ARAMA = "/api/v1/generic-api-service/royal/hotel/search";
+const OTEL_LISTESI = "/api/v1/generic-api-service/content/hotel/find-by-paging";
+
+/** Aynı anda en fazla bu kadar arama paketi. */
+const PARALEL = 3;
+
+/** Otel listesinde sayfa boyu. 5000 kayıt ~1 sn (ölçüldü); 15.679 otel 4 istek. */
+const LISTE_SAYFASI = 5000;
+
+async function paketlerHalinde<T, R>(ogeler: T[], boyut: number, fn: (paket: T[]) => Promise<R[]>): Promise<R[]> {
+  const paketler: T[][] = [];
+  for (let i = 0; i < ogeler.length; i += boyut) paketler.push(ogeler.slice(i, i + boyut));
+  const sonuc: R[] = [];
+  for (let i = 0; i < paketler.length; i += PARALEL) {
+    const dalga = await Promise.all(paketler.slice(i, i + PARALEL).map(fn));
+    sonuc.push(...dalga.flat());
+  }
+  return sonuc;
+}
+
+/**
+ * Satamadığımız oteller (0904172). Süreç boyunca hatırlanıyor: aynı kod bir
+ * sonraki aramada pakete hiç girmesin, paket yeniden bölünmesin.
+ *
+ * Şehir aramasında bu oteller zaten çıkmaz — indekse hiç girmedikleri için
+ * konumları yok. Asıl otel adıyla aramada ve indeks kurulurken işe yarıyor.
+ */
+export const satilamayanOteller = new Set<string>();
+
+/**
+ * Tek paketi arar; satamadığımız bir otel yüzünden reddedilirse paketi
+ * ikiye bölüp yeniden dener, sorunlu tek kodu yalıtana kadar.
+ *
+ * Etscore pakette tek bir tanımsız otel görünce paketin TAMAMINI 400 ile
+ * reddediyor (ölçüldü: 2000 otelde 10 paketten 2'si). Bölmeden atlamak o
+ * paketteki bütün iyi otelleri de kaybettirirdi. 200 kodda tek bir kötü
+ * kod ~16 ek çağrıyla bulunuyor.
+ */
+async function paketAra(
+  req: Pick<HotelSearchRequest, "feedId" | "nationality" | "checkIn" | "checkOut" | "rooms" | "currency">,
+  kodlar: string[],
+  tumFiyatlar: boolean
+): Promise<EtsSearchHotel[]> {
+  const temiz = kodlar.filter((k) => !satilamayanOteller.has(k));
+  if (temiz.length === 0) return [];
+
+  try {
+    const d = await royalApiClient.post<EtsSearchResponse>(
+      ARAMA,
+      etsAramaIstegi(req, temiz, tumFiyatlar),
+      { currency: req.currency }
+    );
+    return d?.hotels ?? [];
+  } catch (e) {
+    if (!(e instanceof EtscoreError)) throw e;
+    if (e.musaitlikYok) return [];
+    if (e.tanimsizOtel) {
+      if (temiz.length === 1) {
+        satilamayanOteller.add(temiz[0]);
+        return [];
+      }
+      const orta = Math.ceil(temiz.length / 2);
+      const [a, b] = await Promise.all([
+        paketAra(req, temiz.slice(0, orta), tumFiyatlar),
+        paketAra(req, temiz.slice(orta), tumFiyatlar),
+      ]);
+      return [...a, ...b];
+    }
+    throw e;
+  }
+}
+
+/**
+ * Etscore araması — ham yanıt. Oda arama ve konum indeksi de bunu kullanıyor.
+ *
+ * Kod listesi 200'lük paketlere bölünüyor (tek istekte 200 kod ~4 sn).
+ * Müsaitlik yoksa Etscore boş liste yerine HTTP 400 dönüyor; o paket boş
+ * sayılıyor, diğer paketler etkilenmiyor.
+ */
+export async function etsOtelAra(
+  req: Pick<HotelSearchRequest, "feedId" | "nationality" | "checkIn" | "checkOut" | "rooms" | "currency">,
+  hotelCodes: string[],
+  tumFiyatlar: boolean
+): Promise<EtsSearchHotel[]> {
+  return paketlerHalinde(hotelCodes, ETS_ARAMA_PAKETI, (kodlar) => paketAra(req, kodlar, tumFiyatlar));
+}
+
+/**
+ * Aramadan pansiyon adlarını öğren.
+ *
+ * Pansiyon tipleri ucu belgelenmemiş, ama her arama sonucu kodu ve Türkçe
+ * adını birlikte taşıyor ("BB" → "Oda Kahvaltı"). Rota kodları bu tablodan
+ * çeviriyor; böylece tablo arama yapıldıkça kendiliğinden doluyor.
+ * Arama sonucunu bekletmesin diye await edilmiyor.
+ */
+function pansiyonAdlariniOgren(oteller: EtsSearchHotel[]): void {
+  const adlar = new Map<string, string>();
+  for (const h of oteller)
+    for (const r of h.rooms) if (r.mealTypeCode && r.mealType) adlar.set(r.mealTypeCode, r.mealType);
+  for (const [code, name] of adlar) {
+    void prisma.boardType
+      .upsert({ where: { code }, update: { name }, create: { code, name } })
+      .catch((e) => console.error("[PANSIYON_OGREN]", code, e));
+  }
+}
 
 export async function searchHotels(params: HotelSearchRequest): Promise<HotelSearchResponse> {
   if (USE_MOCK) return mockSearchHotels(params);
-  return royalApiClient.post<HotelSearchResponse>("/api/hotel/search", params);
+
+  const oteller = await etsOtelAra(params, params.hotelCodes, false);
+  pansiyonAdlariniOgren(oteller);
+
+  return {
+    searchId: randomUUID(),
+    hotels: oteller.map((h) => etsOtelSonucu(h, params.currency, params.checkIn, params.checkOut)),
+  };
 }
 
 export async function getHotelDetail(hotelCode: string): Promise<HotelDetailResponse> {
   if (USE_MOCK) return mockGetHotelDetail(hotelCode);
-  return royalApiClient.get<HotelDetailResponse>(`/api/hotel/${hotelCode}`);
+  // Doküman "Hotel Detail (including images, descriptions)" servisinden söz
+  // ediyor ama sayfası yok. Çağıran rota yerel veritabanına düşüyor.
+  return belgelenmemis(`Otel detayı (${hotelCode})`);
 }
 
+/** Tüm otel listesi — yalnızca ad ve kod gelir. */
 export async function getHotelList(params: HotelListRequest): Promise<HotelListItem[]> {
   if (USE_MOCK) return mockGetHotelList();
-  return royalApiClient.post<HotelListItem[]>("/api/hotel/list", params);
+  void params; // Etscore listesi feed'e göre filtrelenmiyor
+
+  const liste: HotelListItem[] = [];
+  for (let sayfa = 0; ; sayfa++) {
+    const d = await royalApiClient.get<EtsSayfa<EtsHotelListItem>>(
+      `${OTEL_LISTESI}?page=${sayfa}&size=${LISTE_SAYFASI}`
+    );
+    liste.push(...d.content.map(etsOtelListeOgesi));
+    if (sayfa + 1 >= d.totalPages || d.content.length === 0) break;
+  }
+  return liste;
 }

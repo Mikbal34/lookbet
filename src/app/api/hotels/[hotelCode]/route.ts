@@ -22,7 +22,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
     const [localHotel, apiDetail] = await Promise.allSettled([
       prisma.hotel.findUnique({
         where: { hotelCode },
-        include: { location: true },
+        include: { location: { include: { parent: true } } },
       }),
       getHotelDetail(hotelCode),
     ]);
@@ -76,6 +76,13 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
       // Always preserve the local id so clients can reference the DB record.
       id: local?.id,
       location: local?.location ?? null,
+      // Etscore'dan gelen otellerde adres yok; konum zincirinden
+      // "Ağva, Şile" gibi okunur bir yer yaz.
+      address:
+        api?.address ||
+        local?.address ||
+        [local?.location?.name, local?.location?.parent?.name].filter(Boolean).join(", "),
+      stars: api?.stars ?? local?.stars ?? 0,
     };
 
     return NextResponse.json(combined);
