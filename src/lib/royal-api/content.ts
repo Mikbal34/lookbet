@@ -1,5 +1,5 @@
-import { belgelenmemis, royalApiClient } from "./client";
-import { etsParaBirimi } from "./etscore-map";
+import { royalApiClient } from "./client";
+import { etsOzellik, etsParaBirimi } from "./etscore-map";
 import {
   USE_MOCK,
   mockGetCurrencies,
@@ -8,7 +8,7 @@ import {
   mockGetRoomAttributes,
 } from "./mock";
 import type { CurrencyDto, BoardTypeDto, FacilityDto, RoomAttributeDto } from "./types";
-import type { EtsCurrency } from "./types/etscore.types";
+import type { EtsBoardType, EtsCurrency, EtsOzellikSayfasi } from "./types/etscore.types";
 
 export async function getCurrencies(): Promise<CurrencyDto[]> {
   if (USE_MOCK) return mockGetCurrencies();
@@ -16,21 +16,38 @@ export async function getCurrencies(): Promise<CurrencyDto[]> {
   return (d ?? []).map(etsParaBirimi);
 }
 
-/**
- * Pansiyon tipleri ucu belgelenmemiş. Tablo yine de doluyor: her arama
- * sonucu kodu ve adı birlikte taşıyor, hotel.ts bunları öğrenip yazıyor.
- */
+const ICERIK = "/api/v1/generic-api-service/content";
+
+/** Pansiyon tipleri — Türkçe adlarıyla ("BB" → "Oda Kahvaltı"). */
 export async function getBoardTypes(): Promise<BoardTypeDto[]> {
   if (USE_MOCK) return mockGetBoardTypes();
-  return belgelenmemis("Pansiyon tipleri");
+  const d = await royalApiClient.get<EtsBoardType[]>(`${ICERIK}/list-board-types`);
+  return (d ?? []).filter((b) => b.code && b.name).map((b) => ({ code: b.code, name: b.name.trim() }));
+}
+
+/**
+ * Olanak ve oda özelliği listeleri sayfalı. Tek sayfa ~1000 kayıtta
+ * kesiliyor (1837 oda özelliğinden 996'sı geldi), boş sayfa gelene ya da
+ * toplam dolana kadar okunuyor.
+ */
+async function ozellikListesi(yol: string): Promise<FacilityDto[]> {
+  const BOYUT = 500;
+  const hepsi: FacilityDto[] = [];
+  for (let sayfa = 0; sayfa < 20; sayfa++) {
+    const d = await royalApiClient.get<EtsOzellikSayfasi>(`${yol}?page=${sayfa}&size=${BOYUT}`);
+    const parca = d?.attributes ?? [];
+    hepsi.push(...parca.map(etsOzellik).filter((x) => x.id && x.name));
+    if (parca.length === 0 || (d?.totalCount && (sayfa + 1) * BOYUT >= d.totalCount)) break;
+  }
+  return [...new Map(hepsi.map((x) => [x.id, x])).values()];
 }
 
 export async function getFacilities(): Promise<FacilityDto[]> {
   if (USE_MOCK) return mockGetFacilities();
-  return belgelenmemis("Otel olanakları");
+  return ozellikListesi(`${ICERIK}/list-hotel-facilities/ATTRIBUTE_ALL`);
 }
 
 export async function getRoomAttributes(): Promise<RoomAttributeDto[]> {
   if (USE_MOCK) return mockGetRoomAttributes();
-  return belgelenmemis("Oda özellikleri");
+  return ozellikListesi(`${ICERIK}/list-rooms/ATTRIBUTE_ALL`);
 }

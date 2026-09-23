@@ -97,7 +97,9 @@ function BookingPageContent() {
             type: i < adults ? ("Adult" as const) : ("Child" as const),
             age: i < adults ? undefined : childAges[i - adults],
             gender: "Male" as const,
-            nationality: "TR",
+            // Aramadaki uyruk; fiyat ona göre verildi.
+            nationality,
+            birthDate: "",
           })),
         },
       ],

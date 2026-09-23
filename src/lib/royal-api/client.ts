@@ -68,22 +68,6 @@ export class EtscoreError extends Error {
   }
 }
 
-/**
- * Belgelenmemiş bir uç çağrıldığında: ağa çıkmadan net hata.
- *
- * Eski istemcinin yollarının hiçbiri gerçek API'de yok. Onları çağırmaya
- * devam etmek her seferinde tedarikçiye 404 alacak bir istek atmak demek —
- * hem boşa bekletir hem onların loglarında kötü görünür. Fonksiyonlar ve
- * mock'ları yerinde duruyor; uç belgelenince bu çağrı gerçeğiyle değişecek.
- */
-export function belgelenmemis(ne: string): never {
-  throw new EtscoreError(
-    501,
-    "BELGELENMEMIS",
-    `${ne}: Etscore dokümanında bu uç yok, belgelenince bağlanacak`
-  );
-}
-
 /** "1 saniyede 20 adet request gönderebilirsiniz." — HTTP 429. */
 export const ETS_HIZ_SINIRI = "0901010";
 

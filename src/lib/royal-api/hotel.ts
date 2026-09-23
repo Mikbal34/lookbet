@@ -1,9 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/prisma";
-import { belgelenmemis, EtscoreError, royalApiClient } from "./client";
+import { EtscoreError, royalApiClient } from "./client";
 import {
   ETS_ARAMA_PAKETI,
   etsAramaIstegi,
+  etsOtelDetayi,
   etsOtelListeOgesi,
   etsOtelSonucu,
 } from "./etscore-map";
@@ -25,10 +26,12 @@ import type {
   EtsSayfa,
   EtsSearchHotel,
   EtsSearchResponse,
+  EtsHotelDetail,
 } from "./types/etscore.types";
 
 const ARAMA = "/api/v1/generic-api-service/royal/hotel/search";
-const OTEL_LISTESI = "/api/v1/generic-api-service/content/hotel/find-by-paging";
+const ICERIK = "/api/v1/generic-api-service/content";
+const OTEL_LISTESI = `${ICERIK}/hotel/find-by-paging`;
 
 /** Aynı anda en fazla bu kadar arama paketi. */
 const PARALEL = 3;
@@ -91,30 +94,10 @@ export async function etsOtelAra(
   return paketlerHalinde(hotelCodes, ETS_ARAMA_PAKETI, (kodlar) => paketAra(req, kodlar, tumFiyatlar));
 }
 
-/**
- * Aramadan pansiyon adlarını öğren.
- *
- * Pansiyon tipleri ucu belgelenmemiş, ama her arama sonucu kodu ve Türkçe
- * adını birlikte taşıyor ("BB" → "Oda Kahvaltı"). Rota kodları bu tablodan
- * çeviriyor; böylece tablo arama yapıldıkça kendiliğinden doluyor.
- * Arama sonucunu bekletmesin diye await edilmiyor.
- */
-function pansiyonAdlariniOgren(oteller: EtsSearchHotel[]): void {
-  const adlar = new Map<string, string>();
-  for (const h of oteller)
-    for (const r of h.rooms) if (r.mealTypeCode && r.mealType) adlar.set(r.mealTypeCode, r.mealType);
-  for (const [code, name] of adlar) {
-    void prisma.boardType
-      .upsert({ where: { code }, update: { name }, create: { code, name } })
-      .catch((e) => console.error("[PANSIYON_OGREN]", code, e));
-  }
-}
-
 export async function searchHotels(params: HotelSearchRequest): Promise<HotelSearchResponse> {
   if (USE_MOCK) return mockSearchHotels(params);
 
   const oteller = await etsOtelAra(params, params.hotelCodes, false);
-  pansiyonAdlariniOgren(oteller);
 
   return {
     searchId: randomUUID(),
@@ -122,11 +105,37 @@ export async function searchHotels(params: HotelSearchRequest): Promise<HotelSea
   };
 }
 
+// Otel detayı değişmiyor sayılır (içerik güncellemesi revizyon ucuyla
+// izlenir); her sayfa açılışında ve her oda aramasında yeniden istemek
+// gereksiz. Süreç içi, 1 saat.
+const DETAY_OMRU_MS = 60 * 60 * 1000;
+const detayOnbellegi = new Map<string, { d: EtsHotelDetail; zaman: number }>();
+
+/** Ham otel detayı (önbellekli). Oda araması fotoğraflar için de kullanıyor. */
+export async function etsOtelDetayiGetir(hotelCode: string): Promise<EtsHotelDetail> {
+  const kayit = detayOnbellegi.get(hotelCode);
+  if (kayit && Date.now() - kayit.zaman < DETAY_OMRU_MS) return kayit.d;
+  const d = await royalApiClient.post<EtsHotelDetail>(`${ICERIK}/hotel/detail`, { hotelId: hotelCode });
+  detayOnbellegi.set(hotelCode, { d, zaman: Date.now() });
+  return d;
+}
+
 export async function getHotelDetail(hotelCode: string): Promise<HotelDetailResponse> {
   if (USE_MOCK) return mockGetHotelDetail(hotelCode);
-  // Doküman "Hotel Detail (including images, descriptions)" servisinden söz
-  // ediyor ama sayfası yok. Çağıran rota yerel veritabanına düşüyor.
-  return belgelenmemis(`Otel detayı (${hotelCode})`);
+
+  const d = await etsOtelDetayiGetir(hotelCode);
+  // Detay olanağın adını veriyor, grubunu vermiyor; grup bizim tabloda
+  // (syncFacilities).
+  const ids = (d.facilities ?? []).map((f) => String(f.id));
+  const kategoriler = new Map(
+    (
+      await prisma.hotelFacility.findMany({
+        where: { externalId: { in: ids } },
+        select: { externalId: true, category: true },
+      })
+    ).map((f) => [Number(f.externalId), f.category])
+  );
+  return etsOtelDetayi(d, kategoriler);
 }
 
 /** Tüm otel listesi — yalnızca ad ve kod gelir. */

@@ -79,8 +79,14 @@ export function formatDateRange(
     : `${gunAy.format(a)} – ${gunAy.format(b)}${yil}`;
 }
 
+/**
+ * Tedarikçiye giden rezervasyon referansı. Etscore en fazla 20 karakter
+ * kabul ediyor; eski biçim ("LB-1790200000000-ABC123") 23 karakterdi.
+ * Şimdi "LB" + zaman (36 tabanında 8 hane) + 4 rastgele = 14 karakter.
+ */
 export function generateClientReferenceId(): string {
-  return `LB-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+  const rastgele = Math.random().toString(36).substring(2, 6).padEnd(4, "0");
+  return `LB${Date.now().toString(36)}${rastgele}`.toUpperCase();
 }
 
 export function getNightCount(checkIn: Date | string, checkOut: Date | string): number {

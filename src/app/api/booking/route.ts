@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
 import { createBookingSchema } from "@/lib/validators";
 import { createBooking } from "@/lib/royal-api";
+import { EtscoreError } from "@/lib/royal-api/client";
 import { calculatePrice } from "@/lib/pricing";
 import { generateClientReferenceId } from "@/lib/utils";
 
@@ -62,8 +63,13 @@ export async function POST(request: NextRequest) {
       roomSearchId: input.roomSearchId,
       priceCode: input.priceCode,
       clientReferenceId,
+      hotelCode: input.hotelCode,
+      checkIn: input.checkIn,
+      checkOut: input.checkOut,
+      currency: input.currency,
       contact: input.contact,
       rooms: input.rooms,
+      additionalInfo: input.additionalInfo,
     });
 
     // The supplier-confirmed price is authoritative; the client-supplied
@@ -142,6 +148,15 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error("[POST /api/booking]", error);
+    // Tedarikçinin reddi (fiyat süresi doldu, fiyat değişti, oda kalmadı…)
+    // kullanıcının düzeltebileceği bir durum: mesajı olduğu gibi göster.
+    // Etscore mesajları Accept-Language: tr-TR ile Türkçe geliyor.
+    if (error instanceof EtscoreError && error.status >= 400 && error.status < 500) {
+      return NextResponse.json(
+        { error: error.message, code: error.code },
+        { status: error.status === 409 ? 409 : 422 }
+      );
+    }
     return NextResponse.json(
       { error: "Rezervasyon oluşturulurken bir hata oluştu" },
       { status: 500 }

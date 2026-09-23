@@ -146,6 +146,211 @@ export interface EtsSearchResponse {
   hotels: EtsSearchHotel[];
 }
 
+// ── İçerik listeleri ──────────────────────────────────────────────────────
+
+/** GET /content/list-board-types — Accept-Language'e göre çevrili ad. */
+export interface EtsBoardType {
+  code: string;
+  name: string;
+}
+
+/**
+ * GET /content/list-hotel-facilities/ATTRIBUTE_ALL ve
+ * GET /content/list-rooms/ATTRIBUTE_ALL — ikisi de aynı şekilde.
+ * Sayfa boyutu ~1000'de kesiliyor (1837 oda özelliğinden 996'sı geldi);
+ * sayfalanarak okunmalı.
+ */
+export interface EtsOzellikSayfasi {
+  totalCount: number;
+  pageSize: number;
+  attributes: {
+    id: string;
+    parentId: number;
+    parentName: string; // "FOOD_DRINK", "BED_TYPES"…
+    name: string; // Accept-Language'e göre
+    description: Record<string, string | null>;
+  }[];
+}
+
+// ── Otel detayı ───────────────────────────────────────────────────────────
+
+export interface EtsGorsel {
+  /** Aynı görselin boyutları: 300x300, 800x600, 1024x768. */
+  imageUrls: { url: string; width: number; height: number }[];
+  imageText: string | null;
+  type: string; // "GENERALVIEW", "ROOM"…
+  roomCode: string | null;
+  mainImage: boolean;
+  contentType: string; // "IMAGE"
+}
+
+/** POST /content/hotel/detail {hotelId} */
+export interface EtsHotelDetail {
+  id: string;
+  name: string;
+  /** "4 Stars" gibi metin; yıldızı olmayan otelde yok. */
+  starLevel?: string;
+  location?: {
+    id: number;
+    city?: string;
+    postalCode?: string;
+    countryCode?: string;
+    country?: string;
+    state?: string;
+  };
+  geoLocation?: { lat: number; lon: number };
+  allowedPet?: boolean;
+  checkInOutPolicy?: { checkInTime?: string; checkOutTime?: string };
+  hotelImages?: EtsGorsel[];
+  contact?: {
+    addressLines?: string[];
+    phones?: { number?: string; type?: string }[];
+    email?: string | null;
+    webSite?: string | null;
+  };
+  /** Başlıklar: GENERAL, WHYTHISHOTEL, FOOD, GENERAL_WARNINGS… */
+  descriptions?: { title?: string; description: string }[];
+  extraInformation?: { info?: string; value?: string }[];
+  rooms?: {
+    code: string;
+    name: string;
+    size?: number;
+    capacity?: number;
+    bedTypes?: { id: number; name: string }[];
+    descriptions?: { text: string }[];
+    images?: EtsGorsel[];
+    facilities?: { id: number; description?: string }[];
+  }[];
+  facilities?: { id: number; free?: boolean; description?: string }[];
+}
+
+// ── Oda arama ─────────────────────────────────────────────────────────────
+
+/** POST /royal/room/search — istek. Şimdilik rezervasyon başına tek oda. */
+export interface EtsRoomSearchRequest {
+  hotelCode: string;
+  checkIn: string;
+  checkOut: string;
+  feedId: string;
+  clientNationality: string;
+  rooms: { adults: number; child: number; childAges: number[] }[];
+}
+
+/**
+ * Oda araması fiyatı. Otel aramasındaki EtsRate'ten farkı `priceCode`:
+ * rezervasyonda gönderilen, 30 dakika geçerli anahtar.
+ */
+export type EtsRoomRate = Omit<EtsRate, "pax" | "roomType" | "roomCode" | "roomCapacity" | "bedTypes"> & {
+  priceCode: string;
+};
+
+/** POST /royal/room/search — yanıt. */
+export interface EtsRoomSearchResponse {
+  hotelCode: string;
+  hotelName: string;
+  /** Etscore önbelleğindeki arama; rezervasyonda gönderilir. */
+  roomSearchId: string;
+  destinations?: EtsDestinationCode[];
+  rooms: {
+    pax: { adult: number; child: number; childAges: number[] };
+    roomType: string;
+    roomCode: string;
+    roomCapacity: number;
+    bedTypes: { id: number; name: string }[];
+    rates: EtsRoomRate[];
+  }[];
+  hotelImportantNotes?: unknown[];
+}
+
+// ── Rezervasyon ───────────────────────────────────────────────────────────
+
+export interface EtsKisi {
+  name: string;
+  surname: string;
+  phoneCountryCode: string; // "+90"
+  phoneNumber: string;
+  email: string;
+}
+
+export interface EtsMisafir extends EtsKisi {
+  birthDate: string; // yyyy-MM-dd
+  nationality: string; // iki harf
+  gender: "MALE" | "FEMALE";
+  type: "ADULT" | "CHILD";
+}
+
+/** POST /royal/book — istek. */
+export interface EtsBookRequest {
+  contact: EtsKisi;
+  roomSearchId: string;
+  checkIn: string;
+  checkOut: string;
+  hotelCode: string;
+  payment: {
+    /** Örnekte "CASH_EUR"; dokümanda başka değer listelenmiyor. */
+    paymentType: string;
+    price: string; // "222.13"
+    currency: string;
+  };
+  guests: EtsMisafir[];
+  priceCode: string;
+  /** En fazla 20 karakter, benzersiz. */
+  clientReferenceId?: string;
+  additionalInfo?: string;
+}
+
+export interface EtsRezervasyonOdasi {
+  pax?: { adult: number; child?: number; childAges?: number[] };
+  roomCode: string;
+  roomName: string;
+  mealType: string; // kod: "BB"
+  nightlyPrices?: EtsNightlyPrice[];
+  /** İptalde gönderilir: "ETSR2014683530230886". */
+  confirmationCode: string;
+  rateId?: string;
+}
+
+/** POST /royal/book — yanıt. `price` metin olarak geliyor ("222.13"). */
+export interface EtsBookResponse {
+  success: boolean;
+  bookingNumber: string;
+  /** Rezervasyon kimliği: detay ve iptal bununla yapılır ("ETSR…"). */
+  voucher: string;
+  createdAt?: string;
+  hotelCode: string;
+  price: string | number;
+  agencyCommission?: string | number;
+  currency: string;
+  isRefundable?: boolean;
+  cancellationPolicies?: EtsCancellationPolicy[];
+  room?: EtsRezervasyonOdasi[];
+  clientReferenceId?: string;
+  hotelConfirmationNumber?: string;
+}
+
+/** POST /royal/hotel/book/cancel — istek. */
+export interface EtsCancelRequest {
+  reservationId: string; // voucher
+  roomConfirmationCodes: string[];
+  reason?: string;
+}
+
+/** POST /royal/hotel/book/cancel — yanıt. */
+export interface EtsCancelResponse {
+  cancelInfos?: {
+    price: number;
+    refundPrice: number;
+    penaltyAmount?: number;
+    currency: string;
+    roomCode: string;
+    success: boolean;
+  }[];
+  cancellationPolicies?: EtsCancellationPolicy[];
+  cancelId?: string;
+  /** RESERVATION | CANCELLED | CANCELLED_PENALTY */
+  status: string;
+}
+
 // ── Rezervasyon detayı ───────────────────────────────────────────────────
 
 /** POST /royal/hotel/book/detail — istek. */
@@ -154,10 +359,7 @@ export interface EtsBookDetailRequest {
   clientReferenceId?: string;
 }
 
-/**
- * POST /royal/hotel/book/detail — yanıt (dokümana göre; henüz gerçek bir
- * rezervasyonla doğrulanmadı, çünkü rezervasyon oluşturma ucu belgelenmemiş).
- */
+/** POST /royal/hotel/book/detail — yanıt. */
 export interface EtsBookDetailResponse {
   hotelName: string;
   hotelAddress?: string;
@@ -172,8 +374,12 @@ export interface EtsBookDetailResponse {
   checkOut: string;
   contactName?: string;
   contactPhone?: string;
+  additionalInfo?: string;
   cancellationPolicies?: EtsCancellationPolicy[];
   reservationDetails?: EtsReservationDetail | EtsReservationDetail[];
+  guests?: { name?: string; surname?: string; birthDate?: string; guidId?: string }[];
+  room?: EtsRezervasyonOdasi[];
+  hotelConfirmationNumber?: string;
 }
 
 export interface EtsReservationDetail {

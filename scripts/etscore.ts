@@ -8,11 +8,25 @@
 //       "Hangi otel hangi şehirde" indeksini kurar. Yalnızca henüz konumu
 //       olmayan otelleri tarar; tekrar çalıştırmak kaldığı yerden devam eder.
 //
+//   npx tsx --env-file=.env.local scripts/etscore.ts icerik [enFazla]
+//       Fiyat veren (konumu bilinen) otellerin fotoğraf, yıldız, adres ve
+//       açıklamasını otel detayından yazar. Yalnızca fotoğrafı olmayanlar.
+//
+//   npx tsx --env-file=.env.local scripts/etscore.ts listeler
+//       Pansiyon tipleri, otel olanakları ve oda özellikleri (Türkçe).
+//
 //   npx tsx --env-file=.env.local scripts/etscore.ts hepsi
-//       Önce oteller, sonra indeks.
+//       Sırayla: listeler, oteller, indeks, içerik.
 
 import { prisma } from "@/lib/prisma";
-import { indexHotelLocations, syncHotels } from "@/lib/royal-api/sync";
+import {
+  indexHotelLocations,
+  syncBoardTypes,
+  syncFacilities,
+  syncHotelContent,
+  syncHotels,
+  syncRoomAttributes,
+} from "@/lib/royal-api/sync";
 
 const feedId = process.env.ROYAL_API_FEED_ID_B2B || process.env.ROYAL_API_FEED_ID_B2C || "";
 
@@ -30,12 +44,16 @@ async function main() {
   const t = Date.now();
   const sure = () => `${((Date.now() - t) / 1000).toFixed(1)} sn`;
 
+  if (komut === "listeler" || komut === "hepsi") {
+    console.log("Listeler senkronlanıyor…");
+    console.log("   pansiyon:", await syncBoardTypes(), "· olanak:", await syncFacilities(), "· oda özelliği:", await syncRoomAttributes(), sure());
+  }
   if (komut === "oteller" || komut === "hepsi") {
     console.log("Oteller senkronlanıyor…");
     console.log("  ", await syncHotels(feedId), sure());
   }
   if (komut === "indeks" || komut === "hepsi") {
-    const enFazla = arg ? Number(arg) : undefined;
+    const enFazla = komut === "indeks" && arg ? Number(arg) : undefined;
     console.log(`Konum indeksi kuruluyor${enFazla ? ` (en fazla ${enFazla} otel)` : ""}…`);
     const sonuc = await indexHotelLocations({
       feedId,
@@ -44,8 +62,14 @@ async function main() {
     });
     console.log("  ", sonuc, sure());
   }
-  if (!["oteller", "indeks", "hepsi"].includes(komut ?? "")) {
-    console.error("Kullanım: scripts/etscore.ts oteller | indeks [enFazla] | hepsi");
+  if (komut === "icerik" || komut === "hepsi") {
+    const enFazla = komut === "icerik" && arg ? Number(arg) : undefined;
+    console.log(`Otel içeriği senkronlanıyor${enFazla ? ` (en fazla ${enFazla} otel)` : ""}…`);
+    const sonuc = await syncHotelContent({ enFazla, ilerleme: (satir) => console.log(`   ${satir} · ${sure()}`) });
+    console.log("  ", { ...sonuc, hatalar: sonuc.hatalar.slice(0, 10) }, sure());
+  }
+  if (!["listeler", "oteller", "indeks", "icerik", "hepsi"].includes(komut ?? "")) {
+    console.error("Kullanım: scripts/etscore.ts listeler | oteller | indeks [enFazla] | icerik [enFazla] | hepsi");
     process.exit(1);
   }
 }

@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
 import { cancelReservation } from "@/lib/royal-api";
+import { EtscoreError } from "@/lib/royal-api/client";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -74,6 +75,9 @@ export async function POST(_request: NextRequest, { params }: RouteParams) {
     // Cancel at Royal API
     const cancelResult = await cancelReservation({
       bookingNumber: reservation.bookingNumber,
+      roomConfirmationCodes: Array.isArray(reservation.roomConfirmationCodes)
+        ? (reservation.roomConfirmationCodes as unknown[]).filter((x): x is string => typeof x === "string")
+        : [],
     });
 
     // The API reports the resulting status; anything other than a cancelled
@@ -100,6 +104,9 @@ export async function POST(_request: NextRequest, { params }: RouteParams) {
     });
   } catch (error) {
     console.error("[POST /api/reservations/[id]/cancel]", error);
+    if (error instanceof EtscoreError && error.status >= 400 && error.status < 500) {
+      return NextResponse.json({ error: error.message, code: error.code }, { status: 422 });
+    }
     return NextResponse.json(
       { error: "Rezervasyon iptal edilirken bir hata oluştu" },
       { status: 500 }

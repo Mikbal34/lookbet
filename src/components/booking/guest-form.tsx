@@ -129,6 +129,31 @@ export function GuestForm({
         </div>
       </div>
 
+      {/* Doğum tarihi — Etscore her misafir için istiyor. Çocukta girişteki
+          yaş aramadaki yaşla uyuşmalı (şema kontrol ediyor). */}
+      <div className="flex flex-col gap-1">
+        <label
+          htmlFor={`${prefix}-birthDate`}
+          className="text-xs font-medium text-gray-600"
+        >
+          Doğum tarihi
+        </label>
+        <input
+          id={`${prefix}-birthDate`}
+          type="date"
+          max={new Date().toISOString().slice(0, 10)}
+          autoComplete={type === "Adult" ? "bday" : "off"}
+          aria-invalid={!!guestErrors?.birthDate}
+          className={fieldClass(!!guestErrors?.birthDate)}
+          {...register(`${prefix}.birthDate`)}
+        />
+        {guestErrors?.birthDate && (
+          <p role="alert" className="text-xs text-red-600">
+            {guestErrors.birthDate.message as string}
+          </p>
+        )}
+      </div>
+
       {/* Gender + Nationality + Age (child only) */}
       <div
         className={cn(
@@ -177,7 +202,6 @@ export function GuestForm({
           <div className="relative">
             <select
               id={`${prefix}-nationality`}
-              defaultValue="TR"
               className={selectClass(!!guestErrors?.nationality)}
               {...register(`${prefix}.nationality`)}
             >

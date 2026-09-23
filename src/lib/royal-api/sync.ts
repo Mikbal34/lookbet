@@ -2,8 +2,8 @@ import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@/generated/prisma/client";
 import { getCurrencies, getBoardTypes, getFacilities, getRoomAttributes } from "./content";
 import { getLocations } from "./location";
-import { getHotelList, etsOtelAra } from "./hotel";
-import { etsKonumTuru } from "./etscore-map";
+import { getHotelList, etsOtelAra, etsOtelDetayiGetir } from "./hotel";
+import { etsKonumTuru, etsOtelDetayi } from "./etscore-map";
 import { EtscoreError } from "./client";
 import type { EtsSearchHotel } from "./types/etscore.types";
 
@@ -284,9 +284,68 @@ export async function indexHotelLocations(opts: {
 }
 
 /**
- * Tüm içeriği senkronlar. Adımlar birbirinden bağımsız: gerçek modda bazı
- * uçlar belgelenmemiş (pansiyon tipleri, olanaklar, oda özellikleri) ve
- * hata veriyor; biri düşünce diğerleri yine çalışsın.
+ * Otel içeriğini (fotoğraf, yıldız, adres, açıklama, olanaklar) Etscore'un
+ * otel detayından veritabanına yazar.
+ *
+ * Arama sonucu kartları içeriği bizim veritabanımızdan alıyor (arama ucu
+ * fotoğraf ve yıldız vermiyor). Varsayılan olarak yalnızca konumu bilinen
+ * — yani fiyat veren — ve henüz fotoğrafı olmayan oteller taranır; 15 bin
+ * otelin hepsini çekmek gereksiz. Boş gelen alan mevcut değeri ezmez.
+ */
+export async function syncHotelContent(opts: {
+  enFazla?: number;
+  /** true: fotoğrafı olanları ve konumu olmayanları da tara. */
+  hepsi?: boolean;
+  ilerleme?: (satir: string) => void;
+} = {}) {
+  const { enFazla, hepsi = false } = opts;
+  const oteller = await prisma.hotel.findMany({
+    where: hepsi ? {} : { locationId: { not: null }, thumbnailImage: null },
+    select: { hotelCode: true, latitude: true },
+    orderBy: { hotelCode: "asc" },
+    ...(enFazla ? { take: enFazla } : {}),
+  });
+
+  const istatistik = { taranan: oteller.length, yazilan: 0, fotografli: 0, hatalar: [] as string[] };
+  const PARALEL = 5;
+
+  for (let i = 0; i < oteller.length; i += PARALEL) {
+    await Promise.all(
+      oteller.slice(i, i + PARALEL).map(async (h) => {
+        try {
+          const d = etsOtelDetayi(await etsOtelDetayiGetir(h.hotelCode));
+          const urller = d.images.map((g) => g.url);
+          await prisma.hotel.update({
+            where: { hotelCode: h.hotelCode },
+            data: {
+              ...(d.stars && { stars: d.stars }),
+              ...(d.address && { address: d.address }),
+              ...(d.description && { description: d.description }),
+              ...(urller.length && { images: urller, thumbnailImage: urller[0] }),
+              ...(d.facilities.length && { facilities: d.facilities.map((f) => f.id) }),
+              ...(d.phone && { phone: d.phone }),
+              ...(d.email && { email: d.email }),
+              ...(!h.latitude && d.latitude && { latitude: d.latitude, longitude: d.longitude }),
+            },
+          });
+          istatistik.yazilan++;
+          if (urller.length) istatistik.fotografli++;
+        } catch (e) {
+          const kod = e instanceof EtscoreError ? ` [${e.status} ${e.code}]` : "";
+          istatistik.hatalar.push(`${h.hotelCode}${kod}: ${e instanceof Error ? e.message : e}`);
+        }
+      })
+    );
+    if ((i / PARALEL) % 20 === 19 || i + PARALEL >= oteller.length) {
+      opts.ilerleme?.(`${Math.min(i + PARALEL, oteller.length)}/${oteller.length} · fotoğraflı ${istatistik.fotografli}`);
+    }
+  }
+  return istatistik;
+}
+
+/**
+ * Tüm içeriği senkronlar. Adımlar birbirinden bağımsız: biri düşünce
+ * (ör. gerçek modda boş dönen konum listesi) diğerleri yine çalışsın.
  *
  * Konum indeksi burada yok — dakikalar sürebilir, ayrı çalıştırılır
  * (indexHotelLocations).
