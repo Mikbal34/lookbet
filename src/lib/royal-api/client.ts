@@ -67,7 +67,8 @@ export class EtscoreError extends Error {
    * yerine metin ("İçerik bulunamadı") koyuyor; ayırt eden mesaj.
    */
   get otelAktifDegil(): boolean {
-    return this.status === 400 && /aktif değil/i.test(this.message);
+    // İki biçim görüldü: "… otel aktif değil." ve "… otel satışa açık değil."
+    return this.status === 400 && /aktif değil|satışa açık değil/i.test(this.message);
   }
 
   /** Saniyede 20 istek sınırı aşıldı (HTTP 429). */

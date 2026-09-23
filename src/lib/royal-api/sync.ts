@@ -458,6 +458,67 @@ export async function syncHotelContent(opts: {
   return { taranan: oteller.length, ...ist };
 }
 
+// ── Fiyat verenler (gece taraması) ───────────────────────────────────────
+
+/**
+ * Tüm aktif otelleri birkaç tarihte aratıp fiyat verenlerin
+ * `lastPricedAt`'ini günceller. Geniş şehir aramaları 600 kodu buna göre
+ * seçiyor. Konumu olmayan fiyatlı otel aramanın konum zinciriyle bağlanır.
+ *
+ * ~14 bin otel = 70 paket × tarih sayısı; 15 istek/sn sınırıyla ~5–10 dk.
+ */
+export async function syncPricedHotels(opts: {
+  feedId: string;
+  gunler?: number[];
+  ilerleme?: (satir: string) => void;
+}) {
+  const { feedId, gunler = [14, 45, 90] } = opts;
+  const oteller = await prisma.hotel.findMany({
+    where: { isActive: true },
+    select: { hotelCode: true, locationId: true },
+    orderBy: { hotelCode: "asc" },
+  });
+  const konumsuz = new Set(oteller.filter((h) => !h.locationId).map((h) => h.hotelCode));
+  const kodlar = oteller.map((h) => h.hotelCode);
+  const goruldu = new Set<string>();
+  const konumCache = new Map<number, string>();
+  const ist = { taranan: kodlar.length, fiyatli: 0, konumlanan: 0, konum: 0, hatalar: [] as string[] };
+
+  for (const gun of gunler) {
+    const giris = new Date(Date.now() + gun * 86_400_000).toISOString().slice(0, 10);
+    const cikis = new Date(Date.now() + (gun + 1) * 86_400_000).toISOString().slice(0, 10);
+    const istek = { feedId, nationality: "TR", checkIn: giris, checkOut: cikis, currency: "EUR", rooms: [{ adult: 2 }] };
+
+    for (let i = 0; i < kodlar.length; i += INDEKS_DILIMI) {
+      let bulunan: EtsSearchHotel[];
+      try {
+        bulunan = await etsOtelAra(istek, kodlar.slice(i, i + INDEKS_DILIMI), false);
+      } catch (e) {
+        const kod = e instanceof EtscoreError ? ` [${e.status} ${e.code}]` : "";
+        ist.hatalar.push(`${giris} dilim ${i / INDEKS_DILIMI}${kod}: ${e instanceof Error ? e.message : e}`);
+        continue;
+      }
+      const yeni = bulunan.map((o) => o.hotelCode).filter((k) => !goruldu.has(k));
+      if (yeni.length) {
+        await prisma.hotel.updateMany({ where: { hotelCode: { in: yeni } }, data: { lastPricedAt: new Date() } });
+        yeni.forEach((k) => goruldu.add(k));
+      }
+      for (const o of bulunan) {
+        if (!konumsuz.has(o.hotelCode)) continue;
+        const konumId = await konumZinciriniYaz(o.destinationCodes ?? [], konumCache, ist);
+        if (konumId) {
+          await prisma.hotel.update({ where: { hotelCode: o.hotelCode }, data: { locationId: konumId } });
+          konumsuz.delete(o.hotelCode);
+          ist.konumlanan++;
+        }
+      }
+    }
+    ist.fiyatli = goruldu.size;
+    opts.ilerleme?.(`${giris}: toplam fiyat veren ${goruldu.size}`);
+  }
+  return ist;
+}
+
 // ── Revizyonlar (günlük artımlı güncelleme) ──────────────────────────────
 
 const REVIZYON = "/api/v1/generic-api-service/content/hotel/revision";

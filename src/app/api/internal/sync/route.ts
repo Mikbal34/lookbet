@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { timingSafeEqual } from "node:crypto";
 import {
+  syncPricedHotels,
   syncBoardTypes,
   syncFacilities,
   syncHotelContent,
@@ -9,10 +10,12 @@ import {
   syncRoomAttributes,
 } from "@/lib/royal-api/sync";
 
-// POST /api/internal/sync?adim=revizyon|icerik|listeler|oteller
+// POST /api/internal/sync?adim=revizyon|fiyat|icerik|listeler|oteller
 //
 // Zamanlanmış içerik işleri. Sunucudaki cron çağırır (bkz. deploy/cron):
 //   revizyon  — her gece: son 2 günde eklenen/değişen/silinen oteller
+//   fiyat     — her gece: hangi oteller fiyat veriyor (geniş şehir aramasının
+//               600 kodu buna göre seçiliyor)
 //   listeler  — haftalık: pansiyon, olanak, oda özelliği adları
 //   oteller   — haftalık: otel listesi (yeni kodlar)
 //   icerik    — haftalık: fotoğrafı ya da konumu eksik oteller
@@ -25,7 +28,7 @@ import {
 export const dynamic = "force-dynamic";
 export const maxDuration = 3600;
 
-const ADIMLAR = ["revizyon", "icerik", "listeler", "oteller"] as const;
+const ADIMLAR = ["revizyon", "fiyat", "icerik", "listeler", "oteller"] as const;
 type Adim = (typeof ADIMLAR)[number];
 
 /** Aynı anda iki iş koşmasın: Etscore hız sınırını ve belleği paylaşıyorlar. */
@@ -62,6 +65,9 @@ export async function POST(req: NextRequest) {
     switch (adim) {
       case "revizyon":
         sonuc = await syncRevisions({ gun: 2, ilerleme });
+        break;
+      case "fiyat":
+        sonuc = await syncPricedHotels({ feedId, ilerleme });
         break;
       case "icerik":
         sonuc = await syncHotelContent({ ilerleme });

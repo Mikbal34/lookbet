@@ -93,12 +93,19 @@ export async function hedefOtelKodlari(yazilan: string): Promise<HedefSonucu> {
   }
 
   if (tumKonumlar.size > 0) {
-    // İçeriği (görseli) olan oteller önce: sınır devreye girerse sonuç
-    // listesi boş kartlarla dolmasın.
+    // Sınır devreye girerse (İstanbul'da binlerce otel) aramaya fiyat
+    // VERENLER gitsin: en son fiyatla görülenler önce, sonra içeriği
+    // olanlar. Önceki sıralama yalnızca görsele bakıyordu; konum taraması
+    // her otele görsel verince fiyat verenler 600'ün dışında kaldı
+    // (İstanbul 294 → 142 otel).
     const oteller = await prisma.hotel.findMany({
       where: { locationId: { in: [...tumKonumlar] }, isActive: true },
       select: { hotelCode: true },
-      orderBy: [{ thumbnailImage: { sort: "asc", nulls: "last" } }, { hotelCode: "asc" }],
+      orderBy: [
+        { lastPricedAt: { sort: "desc", nulls: "last" } },
+        { thumbnailImage: { sort: "asc", nulls: "last" } },
+        { hotelCode: "asc" },
+      ],
     });
     if (oteller.length > 0) {
       return {
@@ -113,7 +120,7 @@ export async function hedefOtelKodlari(yazilan: string): Promise<HedefSonucu> {
   const adla = await prisma.$queryRawUnsafe<{ hotel_code: string }[]>(
     // Prisma alan adını sütun adı olarak kullanıyor: "hotelCode" (tırnaklı).
     `SELECT "hotelCode" AS hotel_code FROM hotels WHERE "isActive" AND ${TR_KATLA("name")} LIKE $1
-     ORDER BY "hotelCode" LIMIT ${ARAMA_OTEL_SINIRI + 1}`,
+     ORDER BY "lastPricedAt" DESC NULLS LAST, "hotelCode" LIMIT ${ARAMA_OTEL_SINIRI + 1}`,
     desen
   );
   if (adla.length > 0) {

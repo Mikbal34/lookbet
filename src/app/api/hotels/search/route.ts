@@ -101,6 +101,15 @@ export async function POST(request: NextRequest) {
       };
     });
 
+    // Fiyatla dönen otelleri işaretle: sonraki geniş aramalarda önce onlar
+    // seçilir (bkz. otel-arama.ts). Sonucu bekletmesin.
+    const fiyatli = (results.hotels ?? []).map((h) => h.hotelCode);
+    if (fiyatli.length) {
+      void prisma.hotel
+        .updateMany({ where: { hotelCode: { in: fiyatli } }, data: { lastPricedAt: new Date() } })
+        .catch((e) => console.error("[FIYAT_GORULDU]", e));
+    }
+
     // Arama geçmişi — analitik ve ileride kişiselleştirme için. Ekrandaki
     // "son aramaların" listesi cihazdan besleniyor (girişsiz kullanıcıda da
     // çalışsın diye), burası ondan bağımsız.
