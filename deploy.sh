@@ -100,7 +100,10 @@ ${COMPOSE} build app migrate
 # Şema, yeni kod ayağa kalkmadan önce: kod yeni sütunları sorguluyor.
 echo "==> Şema (prisma db push)..."
 ${COMPOSE} up -d db
-${COMPOSE} --profile migrate run --rm migrate
+# -T ve </dev/null: "run" varsayılan olarak stdin'i okuyor; burada stdin bu
+# betiğin kendisi (ssh heredoc). Olmadan migrate betiğin geri kalanını
+# yutuyor ve sonraki adımlar hiç çalışmıyordu.
+${COMPOSE} --profile migrate run --rm -T migrate </dev/null
 
 echo "==> Uygulamayı yeni imajla başlat..."
 ${COMPOSE} up -d app
@@ -123,7 +126,7 @@ DEPLOY_EOF
 cmd_migrate() {
     check_config
     log "Prisma migrate deploy çalıştırılıyor..."
-    ssh_cmd "cd ${APP_DIR} && ${COMPOSE} --profile migrate run --rm migrate"
+    ssh_cmd "cd ${APP_DIR} && ${COMPOSE} --profile migrate run --rm -T migrate </dev/null"
     log "Migration tamamlandı."
 }
 
