@@ -77,6 +77,15 @@ export class EtscoreError extends Error {
   }
 }
 
+/**
+ * "Sage acente id ve kullanıcı bilgisi tanımlı değil." Token'daki acente
+ * bilgisi geçersizleşmiş: Etscore hesapta bir tanımı değiştirince eski
+ * token süresi dolmadan aramada bu hatayı veriyor (401 değil). Otel detayı
+ * aynı token'la çalışmaya devam ediyor. Yeni giriş düzeltiyor (ölçüldü:
+ * 24 Eylül, tüm aramalar bu hatayla düştü, taze token'la hemen OK).
+ */
+export const ETS_OTURUM_ESKIDI = "0904049";
+
 /** "1 saniyede 20 adet request gönderebilirsiniz." — HTTP 429. */
 export const ETS_HIZ_SINIRI = "0901010";
 
@@ -155,6 +164,17 @@ async function login(): Promise<string> {
   return data.access_token;
 }
 
+/**
+ * Geçersizleşen token'ı bir kez yeniler. Paralel paketlerin hepsi aynı
+ * hatayı alabiliyor: token yalnızca hâlâ KULLANILAN token kayıtlıysa
+ * siliniyor; başka bir istek zaten yenilediyse onun token'ı kullanılır.
+ */
+async function tokeniYenile(kullanilan: string): Promise<void> {
+  const kayitli = await getStoredToken();
+  if (kayitli && kayitli !== kullanilan) return; // başkası yeniledi
+  await prisma.royalApiToken.deleteMany({ where: { accessToken: kullanilan } });
+}
+
 async function getAccessToken(): Promise<string> {
   const stored = await getStoredToken();
   if (stored) return stored;
@@ -196,7 +216,7 @@ async function request<T>(path: string, options: EtsRequestOptions = {}): Promis
 
   // Token süresi dolmuş ya da iptal edilmiş: bir kez taze token ile dene.
   if (res.status === 401 && retry) {
-    await prisma.royalApiToken.deleteMany({});
+    await tokeniYenile(token);
     return request<T>(path, { ...options, retry: false });
   }
 
@@ -215,6 +235,13 @@ async function request<T>(path: string, options: EtsRequestOptions = {}): Promis
       message = `${message}: ${text.slice(0, 200)}`;
     }
     const hata = new EtscoreError(res.status, code, message, traceId);
+
+    // Token'daki acente bilgisi eskimiş (bkz. ETS_OTURUM_ESKIDI): 401 gibi.
+    if (code === ETS_OTURUM_ESKIDI && retry) {
+      console.warn("[etscore] 0904049: token yenileniyor", path);
+      await tokeniYenile(token);
+      return request<T>(path, { ...options, retry: false });
+    }
 
     // Sıraya rağmen sınır aşıldıysa (ör. aynı hesabı kullanan başka bir
     // süreç) biraz bekleyip yeniden dene.
