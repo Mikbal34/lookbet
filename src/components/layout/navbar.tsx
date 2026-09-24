@@ -30,8 +30,12 @@ const outlineBtnCls =
 export function Navbar({
   variant = "solid",
 }: {
-  /** "transparent": ana sayfada bant hero ile kesintisiz birleşir (gölgesiz) */
-  variant?: "solid" | "transparent";
+  /**
+   * "transparent": ana sayfada bant hero ile kesintisiz birleşir (gölgesiz).
+   * "deep": koyu lacivert yüzey (#0a1f44) üstündeki sayfalar için; işlem
+   * mavisi zemin olarak koyu bandın üstünde iki ayrı mavi gibi duruyordu.
+   */
+  variant?: "solid" | "transparent" | "deep";
 }) {
   const { data: session } = useSession();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -46,9 +50,11 @@ export function Navbar({
   return (
     <header
       className={
-        variant === "transparent"
-          ? "w-full bg-navy text-white"
-          : "w-full bg-navy text-white shadow-[0_1px_0_rgb(0_0_0/0.15),0_4px_18px_-8px_rgb(0_0_0/0.3)]"
+        variant === "deep"
+          ? "w-full border-b border-white/10 bg-navy-deep text-white"
+          : variant === "transparent"
+            ? "w-full bg-navy text-white"
+            : "w-full bg-navy text-white shadow-[0_1px_0_rgb(0_0_0/0.15),0_4px_18px_-8px_rgb(0_0_0/0.3)]"
       }
     >
       <div className="mx-auto flex h-[72px] max-w-[1200px] items-center gap-8 px-4 sm:px-6">
