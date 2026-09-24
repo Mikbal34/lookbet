@@ -78,11 +78,12 @@ export class EtscoreError extends Error {
 }
 
 /**
- * "Sage acente id ve kullanıcı bilgisi tanımlı değil." Token'daki acente
- * bilgisi geçersizleşmiş: Etscore hesapta bir tanımı değiştirince eski
- * token süresi dolmadan aramada bu hatayı veriyor (401 değil). Otel detayı
- * aynı token'la çalışmaya devam ediyor. Yeni giriş düzeltiyor (ölçüldü:
- * 24 Eylül, tüm aramalar bu hatayla düştü, taze token'la hemen OK).
+ * "Sage acente id ve kullanıcı bilgisi tanımlı değil." 24 Eylül'de bir süre
+ * TÜM aramalar bu hatayla düştü (otel detayı çalışıyordu), sonra kendiliğinden
+ * düzeldi: sabah alınmış token'la da arama yeniden çalıştı. Sebep Etscore
+ * tarafında; token'la ilgisi kanıtlanmadı. Yine de bir kez yeniden giriş
+ * deneniyor — ucuz, ve hata token'daki acente bilgisinden geliyorsa düzeltir.
+ * Kalıcı olursa Etscore'a traceId ile bildirilmeli.
  */
 export const ETS_OTURUM_ESKIDI = "0904049";
 
@@ -236,7 +237,7 @@ async function request<T>(path: string, options: EtsRequestOptions = {}): Promis
     }
     const hata = new EtscoreError(res.status, code, message, traceId);
 
-    // Token'daki acente bilgisi eskimiş (bkz. ETS_OTURUM_ESKIDI): 401 gibi.
+    // Acente bilgisi hatası (bkz. ETS_OTURUM_ESKIDI): bir kez yeni girişle dene.
     if (code === ETS_OTURUM_ESKIDI && retry) {
       console.warn("[etscore] 0904049: token yenileniyor", path);
       await tokeniYenile(token);
