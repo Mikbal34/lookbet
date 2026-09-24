@@ -90,6 +90,9 @@ export async function sehirKartlari(): Promise<SehirKarti[]> {
      JOIN hotels h ON h."locationId" = a.id AND h."isActive" AND h."thumbnailImage" IS NOT NULL
        -- Etscore'un kendi test otellerinin görselleri 404 veriyor.
        AND h."thumbnailImage" NOT LIKE '%/test/%'
+       -- etstur.com görselleri yalnızca etstur.com yönlendiricisiyle açılıyor;
+       -- bizden (tarayıcı ya da sunucu) 403.
+       AND h."thumbnailImage" NOT LIKE '%etstur.com/%'
      ORDER BY a.sorgu, (h."lastPricedAt" IS NULL), h.stars DESC NULLS LAST, h."hotelCode"`,
     sorgular
   );
