@@ -17,6 +17,7 @@ import {
 import type {
   HotelSearchRequest,
   HotelSearchResponse,
+  HotelSearchResult,
   HotelDetailResponse,
   HotelListRequest,
   HotelListItem,
@@ -33,22 +34,38 @@ const ARAMA = "/api/v1/generic-api-service/royal/hotel/search";
 const ICERIK = "/api/v1/generic-api-service/content";
 const OTEL_LISTESI = `${ICERIK}/hotel/find-by-paging`;
 
-/** Aynı anda en fazla bu kadar arama paketi. */
+/** Toplu işlerde (indeks, fiyat taraması) aynı anda en fazla bu kadar paket. */
 const PARALEL = 3;
 
 /** Otel listesinde sayfa boyu. 5000 kayıt ~1 sn (ölçüldü); 15.679 otel 4 istek. */
 const LISTE_SAYFASI = 5000;
 
-async function paketlerHalinde<T, R>(ogeler: T[], boyut: number, fn: (paket: T[]) => Promise<R[]>): Promise<R[]> {
+async function paketlerHalinde<T, R>(
+  ogeler: T[],
+  boyut: number,
+  paralel: number,
+  fn: (paket: T[]) => Promise<R[]>
+): Promise<R[]> {
   const paketler: T[][] = [];
   for (let i = 0; i < ogeler.length; i += boyut) paketler.push(ogeler.slice(i, i + boyut));
   const sonuc: R[] = [];
-  for (let i = 0; i < paketler.length; i += PARALEL) {
-    const dalga = await Promise.all(paketler.slice(i, i + PARALEL).map(fn));
+  for (let i = 0; i < paketler.length; i += paralel) {
+    const dalga = await Promise.all(paketler.slice(i, i + paralel).map(fn));
     sonuc.push(...dalga.flat());
   }
   return sonuc;
 }
+
+/**
+ * Kullanıcı aramasında paket boyu. Etscore'un süresi pakette fiyat veren otel
+ * sayısıyla artıyor (~30 ms/otel), paketler paralel gidiyor: küçük paket =
+ * kısa bekleme. İstanbul, 600 kod, 295 fiyatlı otel (ölçüldü):
+ *   200 × 3   toplam 4,7 sn, ilk paket 2,7 sn
+ *   100 × 6   toplam 2,8 sn, ilk paket 1,3 sn
+ *    50 × 12  toplam 2,4 sn, ilk paket 0,3 sn
+ * Toplu işler 200'lük pakette kalıyor: çağrı sayısı dört katına çıkmasın.
+ */
+export const KULLANICI_PAKETI = 50;
 
 /**
  * Tek paketi arar. "Sonuç yok" kodları (bkz. ETS_SONUC_YOK) boş liste sayılır.
@@ -89,20 +106,47 @@ async function paketAra(
 export async function etsOtelAra(
   req: Pick<HotelSearchRequest, "feedId" | "nationality" | "checkIn" | "checkOut" | "rooms" | "currency">,
   hotelCodes: string[],
-  tumFiyatlar: boolean
+  tumFiyatlar: boolean,
+  opts: {
+    /** Varsayılan 200 (toplu işler); kullanıcı araması KULLANICI_PAKETI. */
+    paket?: number;
+    /** Varsayılan 3; kullanıcı aramasında hepsi birden (hız sınırlayıcı zaten sıraya koyuyor). */
+    paralel?: number;
+    /** Her paket dönünce — sonuçları gelen gelene göstermek için. */
+    onPaket?: (oteller: EtsSearchHotel[]) => void | Promise<void>;
+  } = {}
 ): Promise<EtsSearchHotel[]> {
-  return paketlerHalinde(hotelCodes, ETS_ARAMA_PAKETI, (kodlar) => paketAra(req, kodlar, tumFiyatlar));
+  const { paket = ETS_ARAMA_PAKETI, paralel = PARALEL, onPaket } = opts;
+  return paketlerHalinde(hotelCodes, paket, paralel, async (kodlar) => {
+    const oteller = await paketAra(req, kodlar, tumFiyatlar);
+    if (onPaket && oteller.length) await onPaket(oteller);
+    return oteller;
+  });
 }
 
-export async function searchHotels(params: HotelSearchRequest): Promise<HotelSearchResponse> {
-  if (USE_MOCK) return mockSearchHotels(params);
+/**
+ * Otel araması. `onParca` verilirse her paketin otelleri geldikçe çağrılır;
+ * dönen değer yine tüm sonuçlar.
+ */
+export async function searchHotels(
+  params: HotelSearchRequest,
+  onParca?: (oteller: HotelSearchResult[]) => void | Promise<void>
+): Promise<HotelSearchResponse> {
+  const cevir = (h: EtsSearchHotel) => etsOtelSonucu(h, params.currency, params.checkIn, params.checkOut);
 
-  const oteller = await etsOtelAra(params, params.hotelCodes, false);
+  if (USE_MOCK) {
+    const mock = await mockSearchHotels(params);
+    if (onParca && mock.hotels.length) await onParca(mock.hotels);
+    return mock;
+  }
 
-  return {
-    searchId: randomUUID(),
-    hotels: oteller.map((h) => etsOtelSonucu(h, params.currency, params.checkIn, params.checkOut)),
-  };
+  const oteller = await etsOtelAra(params, params.hotelCodes, false, {
+    paket: KULLANICI_PAKETI,
+    paralel: Math.ceil(params.hotelCodes.length / KULLANICI_PAKETI),
+    onPaket: onParca ? (parca) => onParca(parca.map(cevir)) : undefined,
+  });
+
+  return { searchId: randomUUID(), hotels: oteller.map(cevir) };
 }
 
 // Otel detayı değişmiyor sayılır (içerik güncellemesi revizyon ucuyla

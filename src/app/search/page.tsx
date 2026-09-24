@@ -1,11 +1,12 @@
 "use client";
 
 // Search results page
-// Reads URL params, fetches hotels via react-query, shows filters + hotel cards
+// URL'den aramayı kurar; oteller akışla gelen gelene listeye eklenir
+// (useOtelAramasi), filtreler ve sıralama istemcide.
 
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useOtelAramasi } from "@/lib/utils/use-otel-aramasi";
 import {
   LbAramaBos,
   LbFiltre,
@@ -38,7 +39,7 @@ import { useMediaQuery } from "@/lib/utils/use-media-query";
 import { formatDateRange } from "@/lib/utils";
 import { cn } from "@/lib/utils/cn";
 import { addRecentSearch } from "@/lib/utils/recent-searches";
-import type { HotelSearchResult, HotelSearchResponse } from "@/lib/royal-api/types";
+import type { HotelSearchResult } from "@/lib/royal-api/types";
 
 // ---------- helpers ----------
 
@@ -66,16 +67,6 @@ function buildSearchPayload(params: URLSearchParams) {
 
 function buildSearchParams(params: URLSearchParams): string {
   return params.toString();
-}
-
-async function searchHotels(payload: ReturnType<typeof buildSearchPayload>): Promise<HotelSearchResponse> {
-  const res = await fetch("/api/hotels/search", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) throw new Error("Arama sırasında bir hata oluştu");
-  return res.json();
 }
 
 function applyFilters(
@@ -165,24 +156,27 @@ function SearchPageContent() {
   const payload = React.useMemo(() => buildSearchPayload(rawParams), [rawParams]);
   const searchParamStr = buildSearchParams(rawParams);
 
-  const { data, isLoading, isError, error } = useQuery<HotelSearchResponse>({
-    queryKey: ["hotels-search", payload],
-    queryFn: () => searchHotels(payload),
-    enabled: !!(payload.destination && payload.checkIn && payload.checkOut),
-    staleTime: 5 * 60 * 1000,
-  });
+  const arama = useOtelAramasi(
+    payload,
+    !!(payload.destination && payload.checkIn && payload.checkOut)
+  );
+  // İskelet yalnızca hiç otel gelmemişken; ilk paket gelince liste görünür.
+  const isLoading = arama.ilkYukleme;
+  // Bir kısmı geldikten sonra düşen arama elde olanı göstermeye devam eder.
+  const isError = arama.durum === "hata" && arama.hotels.length === 0;
+  const aramaBitti = arama.durum === "bitti";
 
   const filteredHotels = React.useMemo(
-    () => applyFilters(data?.hotels ?? [], filters),
-    [data?.hotels, filters]
+    () => applyFilters(arama.hotels, filters),
+    [arama.hotels, filters]
   );
 
   // Collect all board types found in results for filter panel
   const allBoardTypes = React.useMemo(() => {
     const set = new Set<string>();
-    (data?.hotels ?? []).forEach((h) => h.boardTypes.forEach((bt) => set.add(bt)));
+    arama.hotels.forEach((h) => h.boardTypes.forEach((bt) => set.add(bt)));
     return Array.from(set).sort();
-  }, [data?.hotels]);
+  }, [arama.hotels]);
 
   // SearchForm onSearch handler: update URL params
   const handleSearch = (values: {
@@ -300,9 +294,10 @@ function SearchPageContent() {
                   taşırılıp kendi zeminini alıyor ki altındaki kartlar
                   üstünden geçerken okunur kalsın. */}
               <div className="sticky top-0 z-20 -mx-4 mb-4 flex items-center justify-between gap-3 border-b border-line bg-paper px-4 py-2 sm:-mx-6 sm:px-6 lg:static lg:mx-0 lg:border-0 lg:bg-transparent lg:px-0 lg:py-0">
-                {!isLoading && !isError && data ? (
+                {!isLoading && !isError ? (
                   <p className="min-w-0 truncate text-[14.5px] text-slate-text">
                     <b className="text-ink">{filteredHotels.length}</b> otel
+                    {arama.devamEdiyor && <span className="text-muted">+</span>}
                     {/* "bulundu — İstanbul" 375px'te iki satıra sarıyordu;
                         destinasyon zaten üstteki arama özetinde yazıyor. */}
                     <span className="hidden lg:inline"> bulundu</span>
@@ -355,6 +350,17 @@ function SearchPageContent() {
                 </div>
               </div>
 
+              {/* Oteller gelmeye devam ederken: ince ilerleme çubuğu. Liste
+                  bu sırada kullanılabilir; yeni oteller sıraya eklenir. */}
+              {arama.devamEdiyor && (
+                <div className="mb-3" role="status" aria-live="polite">
+                  <div className="h-1 overflow-hidden rounded-full bg-chip">
+                    <div className="arama-ilerleme h-full w-1/3 rounded-full bg-navy" />
+                  </div>
+                  <p className="mt-1.5 text-[12.5px] text-muted">Daha fazla otel aranıyor…</p>
+                </div>
+              )}
+
               {/* Harita görünümü — yalnızca lg altında, listenin yerine.
                   Masaüstünde liste her zaman görünür, geçiş düğmesi yok. */}
               {!isLoading && !isError && gorunum === "harita" && (
@@ -382,13 +388,13 @@ function SearchPageContent() {
                     Arama sırasında hata oluştu
                   </h2>
                   <p className="text-sm text-gray-500">
-                    {error instanceof Error ? error.message : "Lütfen tekrar deneyin"}
+                    {arama.hata ?? "Lütfen tekrar deneyin"}
                   </p>
                 </div>
               )}
 
               {/* Empty state */}
-              {!isLoading && !isError && filteredHotels.length === 0 && (
+              {aramaBitti && filteredHotels.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-20 text-center">
                   <div className="relative w-40 h-40 mb-6 rounded-2xl overflow-hidden shadow-md">
                     <img

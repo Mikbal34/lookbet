@@ -373,3 +373,14 @@ html[data-app] .site-footer .site-footer-fine {
   font: inherit;
   z-index: 0;
 }
+
+/* Arama sonuçları gelmeye devam ederken ince çubukta kayan parça.
+   Hareket azaltma tercihinde yukarıdaki genel kural animasyonu kısaltıyor;
+   çubuk yine görünür kalıyor. */
+@keyframes arama-ilerleme {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(300%); }
+}
+.arama-ilerleme {
+  animation: arama-ilerleme 1.1s ease-in-out infinite;
+}
