@@ -16,8 +16,10 @@ export interface KonumOnerisi {
 }
 
 /**
- * Yazılanla eşleşen konumlar. Adı yazılanla BAŞLAYANLAR önce, sonra otel
- * sayısına göre. Hiç oteli olmayan konum önerilmiyor.
+ * Yazılanla eşleşen konumlar: adın başı ya da içindeki bir kelimenin başı
+ * ("anadolu" → "İstanbul Anadolu Yakası"). Kelime ortası eşleşmiyor; yoksa
+ * "istan" yazınca Hindistan ve Pakistan da geliyordu. Adı yazılanla
+ * BAŞLAYANLAR önce, sonra otel sayısına göre. Oteli olmayan konum önerilmez.
  */
 export async function konumOnerileri(yazilan: string): Promise<KonumOnerisi[]> {
   const q = katla(yazilan);
@@ -29,7 +31,7 @@ export async function konumOnerileri(yazilan: string): Promise<KonumOnerisi[]> {
        SELECT id, name, type::text AS tur, "parentId",
               CASE WHEN ${TR_KATLA("name")} LIKE $1 THEN 0 ELSE 1 END AS onek
        FROM locations
-       WHERE ${TR_KATLA("name")} LIKE $2
+       WHERE ${TR_KATLA("name")} LIKE $1 OR ${TR_KATLA("name")} LIKE $2
        LIMIT 60
      ),
      agac AS (
@@ -49,7 +51,7 @@ export async function konumOnerileri(yazilan: string): Promise<KonumOnerisi[]> {
      ORDER BY d.onek, s.otel DESC
      LIMIT 6`,
     `${kacik}%`,
-    `%${kacik}%`
+    `% ${kacik}%`
   );
 }
 
