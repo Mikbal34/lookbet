@@ -41,6 +41,12 @@ const EYLEM: Record<string, string> = {
   CREATE_NOTIFICATION: "bildirim gönderdi",
   BROADCAST_NOTIFICATION: "toplu bildirim gönderdi",
   RUN_CONTENT_SYNC: "içerik işini başlattı",
+  CREATE_DISCOUNT: "indirim oluşturdu",
+  UPDATE_DISCOUNT: "indirimi güncelledi",
+  DELETE_DISCOUNT: "indirimi sildi",
+  CREATE_COUPON: "kupon oluşturdu",
+  UPDATE_COUPON: "kuponu güncelledi",
+  DELETE_COUPON: "kuponu sildi",
 };
 const FILTRE = [
   { ad: "Hepsi", varlik: "" },
@@ -48,6 +54,8 @@ const FILTRE = [
   { ad: "Başvuru", varlik: "AgencyApplication" },
   { ad: "Fiyat kuralı", varlik: "PriceRule" },
   { ad: "Komisyon", varlik: "Commission" },
+  { ad: "İndirim", varlik: "Discount" },
+  { ad: "Kupon", varlik: "Coupon" },
   { ad: "Kullanıcı", varlik: "User" },
 ];
 const yaz = (v: unknown) => (v === null || v === undefined || v === "" ? "—" : typeof v === "object" ? JSON.stringify(v) : String(v));

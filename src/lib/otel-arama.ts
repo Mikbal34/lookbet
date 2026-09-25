@@ -19,30 +19,8 @@ export const ARAMA_OTEL_SINIRI = 600;
 /** Alt konumlar en fazla bu kadar derine iner (ülke → bölge → şehir → ilçe → semt). */
 const EN_DERIN = 6;
 
-/**
- * Türkçe karakterleri katlar ve küçültür.
- *
- * Postgres'in büyük/küçük harf duyarsız araması (ILIKE) "istanbul"u
- * "İstanbul" ile eşleştiriyor ama "AĞRI"yı "Ağrı" ile eşleştirmiyor:
- * noktasız ı'nın büyüğü I, onun küçüğü i oluyor, ı değil. Kırşehir, Iğdır,
- * Kırklareli aynı durumda. Ayrıca mobilde çoğu kişi "cesme", "mugla" diye
- * Türkçe karakter kullanmadan yazıyor. İki taraf da aynı şekilde
- * katlanınca hepsi eşleşiyor.
- *
- * Aynı dönüşüm SQL tarafında TR_KATLA ile yapılıyor; ikisi birebir aynı
- * kalmalı.
- */
-export function katla(s: string): string {
-  return s
-    .replace(/[İIı]/g, "i")
-    .replace(/[ğĞ]/g, "g")
-    .replace(/[üÜ]/g, "u")
-    .replace(/[şŞ]/g, "s")
-    .replace(/[öÖ]/g, "o")
-    .replace(/[çÇ]/g, "c")
-    .toLowerCase()
-    .trim();
-}
+export { katla } from "./katla";
+import { katla } from "./katla";
 
 /** SQL'de katla()'nın karşılığı. translate lower'dan ÖNCE: lower('İ') güvenilmez. */
 export const TR_KATLA = (kolon: string) =>

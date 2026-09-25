@@ -67,7 +67,9 @@ function OdemeFormu({ p }: { p: URLSearchParams }) {
   const paraBirimi = p.get("currency") ?? "EUR";
   const toplam = parseFloat(p.get("totalPrice") ?? "0");
   const ilkFiyat = Math.max(toplam, parseFloat(p.get("originalPrice") ?? String(toplam)) || toplam);
-  const indirim = Math.round((ilkFiyat - toplam) * 100) / 100;
+  const kampanyaAd = p.get("kampanya");
+  const kampanyaYuzde = p.get("kampanyaYuzde");
+  const netFiyat = parseFloat(p.get("netPrice") ?? "") || undefined;
   const politikalar = React.useMemo<CancellationPolicy[] | undefined>(() => {
     try {
       return JSON.parse(p.get("cancellationPolicy") ?? "");
@@ -111,6 +113,50 @@ function OdemeFormu({ p }: { p: URLSearchParams }) {
   const [hatalar, setHatalar] = React.useState<Hatalar>({});
   const [gonderiliyor, setGonderiliyor] = React.useState(false);
   const [sunucuHata, setSunucuHata] = React.useState<{ mesaj: string; odaYenile: boolean } | null>(null);
+  /* Kupon: önizleme /api/kupon; kesin tutar rezervasyonda aynı kuralla. */
+  const [kuponAcik, setKuponAcik] = React.useState(false);
+  const [kuponKod, setKuponKod] = React.useState("");
+  const [kuponMesaj, setKuponMesaj] = React.useState<{ metin: string; hata: boolean } | null>(null);
+  const [kuponYukleniyor, setKuponYukleniyor] = React.useState(false);
+  const [kupon, setKupon] = React.useState<{ kod: string; tutar: number; sonFiyat: number; oncekiFiyat: number; kampanya: { ad: string; yuzde: number; tutar: number } | null } | null>(null);
+  const kuponUygula = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const kod = kuponKod.trim().toUpperCase();
+    if (!kod) return setKuponMesaj({ metin: "Kupon kodunu yaz", hata: true });
+    setKuponYukleniyor(true);
+    setKuponMesaj(null);
+    try {
+      const r = await fetch("/api/kupon", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kod, hotelCode, boardType: boardType || undefined, checkIn, checkOut, netPrice: netFiyat ?? toplam }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        setKupon(null);
+        return setKuponMesaj({ metin: d.mesaj ?? d.error ?? "Kupon uygulanamadı", hata: true });
+      }
+      if (d.durum === "uygulandi") {
+        setKupon({ kod: d.kod, tutar: d.tutar, sonFiyat: d.sonFiyat, oncekiFiyat: d.oncekiFiyat, kampanya: d.kampanya });
+        setKuponMesaj({ metin: d.mesaj, hata: false });
+        setKuponAcik(false);
+      } else {
+        setKupon(null);
+        setKuponMesaj({ metin: d.mesaj, hata: false });
+      }
+    } catch {
+      setKuponMesaj({ metin: "Bağlantıda bir sorun oldu; tekrar dene.", hata: true });
+    } finally {
+      setKuponYukleniyor(false);
+    }
+  };
+  // Gösterilen döküm: kupon uygulandıysa sunucunun hesabı (kupon kampanyanın
+  // yerine geçmiş olabilir), değilse oda aramasındaki fiyatlar.
+  const onceki = kupon ? Math.max(kupon.oncekiFiyat, kupon.sonFiyat) : ilkFiyat;
+  const kampanyaSatiri = kupon
+    ? kupon.kampanya && { ad: `${kupon.kampanya.ad} %${kupon.kampanya.yuzde}`, tutar: kupon.kampanya.tutar }
+    : ilkFiyat - toplam >= 0.01 && { ad: kampanyaAd ? `${kampanyaAd}${kampanyaYuzde ? ` %${kampanyaYuzde}` : ""}` : "İndirim", tutar: Math.round((ilkFiyat - toplam) * 100) / 100 };
+  const odenecek = kupon ? kupon.sonFiyat : toplam;
   const [pencere, setPencere] = React.useState<null | "iptal" | "dokum" | "bilgi">(null);
   const [mobilOzet, setMobilOzet] = React.useState(false);
   const adimRef = React.useRef<Record<number, HTMLElement | null>>({});
@@ -202,6 +248,8 @@ function OdemeFormu({ p }: { p: URLSearchParams }) {
       },
     ],
     additionalInfo: istek.trim() || undefined,
+    couponCode: kupon?.kod,
+    netPrice: netFiyat,
   });
 
   /** Bir adımın hataları; anahtar alanın id'si. */
@@ -283,6 +331,14 @@ function OdemeFormu({ p }: { p: URLSearchParams }) {
         return;
       }
       const d = await r.json().catch(() => ({}));
+      if (!r.ok && d.alan === "kupon") {
+        // Kupon bu arada geçersizleşti (süre, sınır); kuponsuz devam edilebilir.
+        setKupon(null);
+        setKuponMesaj({ metin: d.error, hata: true });
+        setSunucuHata({ mesaj: `${d.error} Kupon kaldırıldı; onaylarsan kuponsuz fiyattan devam edilir.`, odaYenile: false });
+        setGonderiliyor(false);
+        return;
+      }
       if (!r.ok) {
         setSunucuHata({ mesaj: d.error ?? "Rezervasyon oluşturulamadı", odaYenile: r.status === 409 || r.status === 422 });
         setGonderiliyor(false);
@@ -540,7 +596,7 @@ function OdemeFormu({ p }: { p: URLSearchParams }) {
               <div className={`${s.adimAlt} ${s.solda}`}>
                 <button type="button" className={`${s.dugme} ${s.onayla}`} onClick={onayla} disabled={!sozlesme || gonderiliyor}>
                   <Ikon ad={gonderiliyor ? "loading" : "lock"} boyut={18} className={gonderiliyor ? s.don : undefined} />
-                  {gonderiliyor ? "Rezervasyon yapılıyor…" : `Rezervasyonu onayla · ${tl(toplam)}`}
+                  {gonderiliyor ? "Rezervasyon yapılıyor…" : `Rezervasyonu onayla · ${tl(odenecek)}`}
                 </button>
               </div>
             </Adim>
@@ -550,7 +606,7 @@ function OdemeFormu({ p }: { p: URLSearchParams }) {
             <button type="button" className={s.mobilOzet} aria-expanded={mobilOzet} onClick={() => setMobilOzet((a) => !a)}>
               <span>
                 <b>Rezervasyon özeti</b>
-                <span>{tl(toplam)} · {giris && cikis ? `${giris.getDate()}–${tarihYaz(cikis)}` : ""}</span>
+                <span>{tl(odenecek)} · {giris && cikis ? `${giris.getDate()}–${tarihYaz(cikis)}` : ""}</span>
               </span>
               <Ikon ad="chevron-down" boyut={20} />
             </button>
@@ -584,13 +640,22 @@ function OdemeFormu({ p }: { p: URLSearchParams }) {
               <div className={s.fiyat}>
                 <h3>Fiyat ayrıntıları</h3>
                 <div>
-                  <span>{tl(ilkFiyat / gece)} × {gece} gece</span>
-                  <span>{tl(ilkFiyat)}</span>
+                  <span>{tl(onceki / gece)} × {gece} gece</span>
+                  <span>{tl(onceki)}</span>
                 </div>
-                {indirim > 0 && (
+                {kampanyaSatiri && (
                   <div className={s.indirim}>
-                    <span>İndirim</span>
-                    <span>−{tl(indirim)}</span>
+                    <span>{kampanyaSatiri.ad}</span>
+                    <span>−{tl(kampanyaSatiri.tutar)}</span>
+                  </div>
+                )}
+                {kupon && (
+                  <div className={s.indirim}>
+                    <span>
+                      Kupon {kupon.kod}{" "}
+                      <button type="button" className={s.metinDugme} onClick={() => { setKupon(null); setKuponMesaj(null); }}>Kaldır</button>
+                    </span>
+                    <span>−{tl(kupon.tutar)}</span>
                   </div>
                 )}
                 <div>
@@ -602,8 +667,34 @@ function OdemeFormu({ p }: { p: URLSearchParams }) {
                 <b>
                   Toplam <small>{paraBirimi}</small>
                 </b>
-                <span className="lb-y">{tl(toplam)}</span>
+                <span className="lb-y">{tl(odenecek)}</span>
               </div>
+              {!kupon && (
+                <div className={s.kupon}>
+                  {kuponAcik ? (
+                    <form className={s.kuponForm} onSubmit={kuponUygula} noValidate>
+                      <div className={s.alan}>
+                        <label htmlFor="kupon">Kupon kodu</label>
+                        <input
+                          id="kupon"
+                          value={kuponKod}
+                          onChange={(e) => { setKuponKod(e.target.value); setKuponMesaj(null); }}
+                          autoComplete="off"
+                          autoCapitalize="characters"
+                          spellCheck={false}
+                          autoFocus
+                        />
+                      </div>
+                      <button type="submit" className={s.kuponDugme} disabled={kuponYukleniyor}>{kuponYukleniyor ? "…" : "Uygula"}</button>
+                    </form>
+                  ) : (
+                    <button type="button" className={s.metinDugme} onClick={() => setKuponAcik(true)}>Kupon ekle</button>
+                  )}
+                </div>
+              )}
+              {kuponMesaj && (
+                <p className={s.kuponMesaj} data-hata={kuponMesaj.hata || undefined} role={kuponMesaj.hata ? "alert" : "status"}>{kuponMesaj.metin}</p>
+              )}
               <button type="button" className={s.metinDugme} onClick={() => setPencere("dokum")}>Fiyat dökümü</button>
             </div>
             <div className={s.guven}>
@@ -645,11 +736,12 @@ function OdemeFormu({ p }: { p: URLSearchParams }) {
           {geceler.map((d) => (
             <div key={d.getTime()}>
               <span>{d.getDate()} {AYLAR[d.getMonth()]} {GUNLER[d.getDay()]}</span>
-              <span>{tl(ilkFiyat / gece)}</span>
+              <span>{tl(onceki / gece)}</span>
             </div>
           ))}
-          {indirim > 0 && <div><span>İndirim</span><span>−{tl(indirim)}</span></div>}
-          <div><b>Toplam ({paraBirimi}, vergiler dahil)</b><b>{tl(toplam)}</b></div>
+          {kampanyaSatiri && <div><span>{kampanyaSatiri.ad}</span><span>−{tl(kampanyaSatiri.tutar)}</span></div>}
+          {kupon && <div><span>Kupon {kupon.kod}</span><span>−{tl(kupon.tutar)}</span></div>}
+          <div><b>Toplam ({paraBirimi}, vergiler dahil)</b><b>{tl(odenecek)}</b></div>
           <div>
             <span>İptal</span>
             <span>{ip.ucretsiz ? `${ip.ucretsiz.yonelme} kadar ücretsiz, sonrasında ${ip.ceza ? tl(ip.ceza.tutar) : "ücretli"}` : ip.ceza ? "İade edilmez" : "Bilgi yok"}</span>

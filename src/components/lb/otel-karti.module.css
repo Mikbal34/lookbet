@@ -16,10 +16,8 @@
   font-weight: 500;
   background: linear-gradient(160deg, #f6f5f3, #ecebe8);
 }
+.etiketler { position: absolute; left: 12px; top: 12px; right: 52px; display: flex; flex-wrap: wrap; gap: 6px; }
 .etiket {
-  position: absolute;
-  left: 12px;
-  top: 12px;
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -55,6 +53,8 @@
 .kart .fiyat { margin-top: 4px; color: var(--lb-yazi); }
 .fiyat b { font-size: 15px; text-decoration: underline; text-underline-offset: 2px; }
 .fiyat span { color: var(--lb-soluk); }
+.fiyat s { color: var(--lb-soluk); }
+.indirim { background: var(--lb-turuncu); color: #fff; font-weight: 700; }
 .iskelet .foto { background: linear-gradient(100deg, #f3f3f2 30%, #e9e9e7 50%, #f3f3f2 70%); background-size: 300% 100%; animation: parla 1.2s linear infinite; }
 .iskelet i { display: block; height: 12px; border-radius: 6px; background: #f0f0ef; margin-top: 10px; }
 .iskelet i + i { width: 60%; margin-top: 8px; }

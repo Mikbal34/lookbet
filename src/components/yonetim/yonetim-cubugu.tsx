@@ -1,7 +1,7 @@
 "use client";
 
 // LookBeds Yönetim üst çubuğu: solda marka, ortada Bugün · Rezervasyonlar ·
-// Acenteler · Fiyatlar · Raporlar; sağda bildirim zili ve menü (kullanıcılar,
+// Acenteler · Fiyatlar · Kampanyalar · Raporlar; sağda bildirim zili ve menü (kullanıcılar,
 // içerik senkronu, bildirimler, denetim kaydı, sistem). Mobilde sekmeler
 // ekranın altına iner.
 
@@ -19,6 +19,7 @@ const SEKMELER = [
   { href: "/admin/reservations", ad: "Rezervasyonlar" },
   { href: "/admin/agencies", ad: "Acenteler" },
   { href: "/admin/price-rules", ad: "Fiyatlar" },
+  { href: "/admin/campaigns", ad: "Kampanyalar" },
   { href: "/admin/reports", ad: "Raporlar" },
 ];
 const MENU: { href: string; ad: string; ikon: IkonAdi }[] = [

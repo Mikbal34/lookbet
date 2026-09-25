@@ -34,6 +34,10 @@ export interface HotelSearchResult {
    * (mock) ve kart eskisi gibi gösterir; false ise "Ücretsiz iptal" yazmaz.
    */
   freeCancellation?: boolean;
+  /** Kampanya indirimi varsa indirimden önceki gecelik fiyat (üstü çizili). */
+  oncekiFiyat?: number;
+  /** Uygulanan otomatik indirim (arama kartındaki etiket). */
+  kampanya?: { ad: string; yuzde: number; tur: string };
   // Zenginleştirme (opsiyonel) — arama kartında puan rozeti için.
   reviewScore?: number;
   reviewCount?: number;

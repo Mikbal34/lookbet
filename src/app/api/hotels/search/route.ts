@@ -8,6 +8,7 @@ import type { HotelSearchResult } from "@/lib/royal-api/types";
 import { boardTypeAdlari } from "@/lib/board-types";
 import { hedefOtelKodlari } from "@/lib/otel-arama";
 import { aramaAnahtari, onbellegeYaz, onbellektenAl, type AramaKaydi } from "@/lib/arama-onbellegi";
+import { fiyatBaglami, fiyatla, otelKonumAdlari } from "@/lib/pricing";
 
 // POST /api/hotels/search
 //
@@ -60,9 +61,13 @@ export async function POST(request: NextRequest) {
     const userId = session?.user?.id ?? null;
     const akis = request.headers.get("accept")?.includes("application/x-ndjson");
 
+    // Önbellekte Etscore'un ham fiyatları; kullanıcıya göre fiyat (kural,
+    // kampanya, acente indirimi) her istekte uygulanır.
+    const fiyatlat = await listeFiyatlayici(input, session?.user.role, session?.user.agencyId ?? undefined);
+
     if (!akis) {
       const sonuc = kayit ?? (await aramayiYurut(input, feedId, userId, anahtar));
-      return NextResponse.json(sonuc);
+      return NextResponse.json({ ...sonuc, hotels: await fiyatlat(sonuc.hotels) });
     }
 
     const encoder = new TextEncoder();
@@ -80,12 +85,12 @@ export async function POST(request: NextRequest) {
         try {
           if (kayit) {
             yaz({ tip: "bas", searchId: kayit.searchId, eslesme: kayit.eslesme, onbellek: true });
-            if (kayit.hotels.length) yaz({ tip: "oteller", hotels: kayit.hotels });
+            if (kayit.hotels.length) yaz({ tip: "oteller", hotels: await fiyatlat(kayit.hotels) });
             yaz({ tip: "son", toplam: kayit.hotels.length });
           } else {
             const sonuc = await aramayiYurut(input, feedId, userId, anahtar, {
               onBas: (searchId, eslesme) => yaz({ tip: "bas", searchId, eslesme, onbellek: false }),
-              onParca: (hotels) => yaz({ tip: "oteller", hotels }),
+              onParca: async (hotels) => yaz({ tip: "oteller", hotels: await fiyatlat(hotels) }),
             });
             yaz({ tip: "son", toplam: sonuc.hotels.length });
           }
@@ -116,6 +121,38 @@ export async function POST(request: NextRequest) {
 }
 
 /**
+ * Arama listesinin fiyatları: gecelik minPrice'a fiyat motoru (kural →
+ * kampanya → acente indirimi) konaklama toplamı üzerinden uygulanır, geceye
+ * bölünür. Kampanya varsa üstü çizili önceki fiyat ve etiket eklenir. Liste
+ * fiyatında pansiyon bilinmediği için pansiyona özel kurallar burada uymaz.
+ */
+async function listeFiyatlayici(input: Girdi, rol: string | undefined, agencyId: string | undefined) {
+  const userType = rol === "AGENCY" ? "AGENCY" : rol === "ADMIN" ? "ADMIN" : "CUSTOMER";
+  const b = await fiyatBaglami(userType, userType === "AGENCY" ? agencyId : undefined);
+  if (!b.kurallar.length && !b.indirimler.length && !b.acente?.discountRate) return async (h: HotelSearchResult[]) => h;
+  const gece = Math.max(1, Math.round((Date.parse(input.checkOut) - Date.parse(input.checkIn)) / 864e5));
+  return async (oteller: HotelSearchResult[]) => {
+    const konumlar = await otelKonumAdlari(b, oteller.map((h) => h.hotelCode));
+    return oteller.map((h) => {
+      if (!(h.minPrice > 0)) return h;
+      const s = fiyatla(b, {
+        basePrice: h.minPrice * gece,
+        hotelCode: h.hotelCode,
+        checkIn: input.checkIn,
+        checkOut: input.checkOut,
+        konumAdlari: konumlar.get(h.hotelCode),
+      });
+      const gecelik = (n: number) => Math.round((n / gece) * 100) / 100;
+      return {
+        ...h,
+        minPrice: gecelik(s.finalPrice),
+        ...(s.kampanya ? { oncekiFiyat: gecelik(s.oncekiFiyat), kampanya: { ad: s.kampanya.ad, yuzde: s.kampanya.yuzde, tur: s.kampanya.tur } } : {}),
+      };
+    });
+  };
+}
+
+/**
  * Aramayı yürütür, sonucu önbelleğe yazar. `onParca` her paketin
  * zenginleştirilmiş otelleriyle çağrılır.
  */
@@ -126,7 +163,7 @@ async function aramayiYurut(
   anahtar: string,
   dinle: {
     onBas?: (searchId: string, eslesme: string) => void;
-    onParca?: (hotels: HotelSearchResult[]) => void;
+    onParca?: (hotels: HotelSearchResult[]) => void | Promise<void>;
   } = {}
 ): Promise<AramaKaydi> {
   // Yazılanı otel kodlarına çevir — konum adında, bulunamazsa otel adında.
@@ -156,7 +193,7 @@ async function aramayiYurut(
     async (parca) => {
       const zengin = await zenginlestir(parca, boardTypeNames);
       tumu.push(...zengin);
-      dinle.onParca?.(zengin);
+      await dinle.onParca?.(zengin);
     }
   );
 

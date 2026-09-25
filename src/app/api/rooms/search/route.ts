@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
 import { roomSearchSchema } from "@/lib/validators";
 import { searchRooms } from "@/lib/royal-api";
-import { calculatePrice } from "@/lib/pricing";
+import { calculatePrice, fiyatBaglami, otelKonumAdlari } from "@/lib/pricing";
 import type { RoomResult } from "@/lib/royal-api/types";
 
 // POST /api/rooms/search
@@ -59,6 +59,9 @@ export async function POST(request: NextRequest) {
     const userType =
       (session?.user.role as "CUSTOMER" | "AGENCY" | "ADMIN") ?? "CUSTOMER";
 
+    // Kurallar, indirimler ve otelin konumu bir kez; oda başına saf hesap.
+    const baglam = await fiyatBaglami(userType, agencyId);
+    const konumAdlari = (await otelKonumAdlari(baglam, [input.hotelCode])).get(input.hotelCode);
     const roomsWithPricing = await Promise.all(
       (apiResponse.rooms ?? []).map(async (room: RoomResult) => {
         const priceResult = await calculatePrice({
@@ -67,17 +70,23 @@ export async function POST(request: NextRequest) {
           agencyId,
           hotelCode: input.hotelCode,
           boardType: room.boardType,
+          checkIn: input.checkIn,
+          checkOut: input.checkOut,
           currency: input.currency,
+          baglam,
+          konumAdlari,
         });
 
         return {
           ...room,
           pricing: {
             originalPrice: priceResult.originalPrice,
+            oncekiFiyat: priceResult.oncekiFiyat,
             finalPrice: priceResult.finalPrice,
             totalDiscount: priceResult.totalDiscount,
             commissionAmount: priceResult.commissionAmount,
             appliedRules: priceResult.appliedRules,
+            kampanya: priceResult.kampanya,
           },
         };
       })

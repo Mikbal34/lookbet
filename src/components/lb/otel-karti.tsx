@@ -1,7 +1,8 @@
 "use client";
 
 // Otel kartı (arama sonuçları): kare fotoğraf, kalp, ücretsiz iptal etiketi,
-// yer ve yıldız, pansiyon, konaklamanın toplam fiyatı. Fotoğrafı açılmayan
+// yer ve yıldız, pansiyon, konaklamanın toplam fiyatı; otomatik indirim
+// varsa turuncu etiket ve üstü çizili önceki fiyat. Fotoğrafı açılmayan
 // otelde resepsiyon zilli boş durum. Her otel kendi sekmesinde açılır (Airbnb).
 
 import * as React from "react";
@@ -17,8 +18,10 @@ export interface OtelKartiVerisi {
   yer?: string | null;
   pansiyon?: string | null;
   iptal?: boolean;
-  /** Biçimlenmiş toplam fiyat ("€116") ve açıklaması ("2 gece"). */
-  fiyat?: { tutar: string; aciklama: string } | null;
+  /** Biçimlenmiş toplam fiyat ("€116") ve açıklaması ("2 gece"); indirim varsa önceki (üstü çizili). */
+  fiyat?: { tutar: string; aciklama: string; onceki?: string | null } | null;
+  /** Otomatik indirim etiketi ("%15 erken rezervasyon"). */
+  indirim?: string | null;
 }
 
 export function OtelKarti({ otel, href, favori, onFavori, onUzerinde, sira = 0 }: {
@@ -48,10 +51,20 @@ export function OtelKarti({ otel, href, favori, onFavori, onUzerinde, sira = 0 }
             // eslint-disable-next-line @next/next/no-img-element -- dış kaynaklı otel görseli
             <img src={otel.foto!} alt="" loading="lazy" onError={() => setFotoYok(true)} />
           )}
-          {otel.iptal && (
-            <span className={s.etiket}>
-              <Ikon ad="check" boyut={14} kalinlik={2.4} />
-              Ücretsiz iptal
+          {(otel.indirim || otel.iptal) && (
+            <span className={s.etiketler}>
+              {otel.indirim && (
+                <span className={`${s.etiket} ${s.indirim}`}>
+                  <Ikon ad="discount" boyut={14} kalinlik={2.2} />
+                  {otel.indirim}
+                </span>
+              )}
+              {otel.iptal && (
+                <span className={s.etiket}>
+                  <Ikon ad="check" boyut={14} kalinlik={2.4} />
+                  Ücretsiz iptal
+                </span>
+              )}
             </span>
           )}
         </div>
@@ -68,6 +81,7 @@ export function OtelKarti({ otel, href, favori, onFavori, onUzerinde, sira = 0 }
         {otel.pansiyon && <p>{otel.pansiyon}</p>}
         {otel.fiyat && (
           <p className={s.fiyat}>
+            {otel.fiyat.onceki && <><s>{otel.fiyat.onceki}</s>{" "}</>}
             <b className="lb-y">{otel.fiyat.tutar}</b> <span>{otel.fiyat.aciklama}</span>
           </p>
         )}

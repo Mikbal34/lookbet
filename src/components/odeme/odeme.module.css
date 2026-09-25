@@ -140,6 +140,13 @@
 .cipMisafir { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border: 1px solid var(--lb-cizgi); border-radius: 999px; background: #fff; color: var(--lb-yazi); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: border-color 0.2s, background 0.2s; }
 .cipMisafir:hover:not(:disabled) { border-color: var(--lb-yazi); }
 .cipMisafir:disabled { background: var(--lb-kart); color: var(--lb-soluk); cursor: default; }
+.kupon { padding-top: 12px; border-top: 1px solid var(--lb-cizgi); }
+.kuponForm { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: stretch; }
+.kuponForm input { text-transform: uppercase; letter-spacing: 0.04em; }
+.kuponDugme { padding: 0 18px; border: 0; border-radius: 12px; background: var(--lb-yazi); color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+.kuponDugme:disabled { opacity: 0.5; cursor: default; }
+.kuponMesaj { margin: 8px 0 0; color: var(--lb-yesil); font-size: 13.5px; font-weight: 600; }
+.kuponMesaj[data-hata] { color: var(--lb-kirmizi); font-weight: 500; }
 .onayKutu { display: flex; align-items: start; gap: 12px; font-size: 14.5px; cursor: pointer; }
 .onayKutu input { width: 20px; height: 20px; margin: 1px 0 0; flex: none; accent-color: var(--lb-yazi); }
 .uye { display: grid; grid-template-columns: 44px 1fr; gap: 14px; align-items: center; padding: 14px 16px; border-radius: 16px; background: #eef7f2; }

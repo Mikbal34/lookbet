@@ -23,7 +23,7 @@ import { useGiris } from "@/components/lb/giris/giris-saglayici";
 import { aralikMetni, aramaAdresi, geceSayisi, iso, isoOku, misafirMetni, type AramaDegeri } from "@/components/lb/arama/durum";
 import type { HotelDetailResponse } from "@/lib/royal-api/types";
 import { FotoTuru, Galeri, IsikKutusu, type TurBolumu } from "./galeri";
-import { OdaPenceresi, odaToplami, type Oda } from "./oda-penceresi";
+import { OdaPenceresi, odaOncekiFiyati, odaToplami, type Oda } from "./oda-penceresi";
 import { TarihAlani, TarihPenceresi, type TarihPaneli } from "./tarih-alani";
 import { iptalOzeti, olanakGruplari, olanakIkonu, oneCikanlar, oneCikanOlanaklar, para } from "./yardimci";
 import s from "./otel-detay.module.css";
@@ -42,6 +42,13 @@ interface OdaAramasi {
   expiresAt: string;
   rooms: Oda[];
 }
+
+const KAMPANYA_ACIKLAMA: Record<string, string> = {
+  EARLY_BOOKING: "Girişine yeterince gün olduğu için indirimli",
+  LAST_MINUTE: "Girişe az kaldığı için son dakika indirimi",
+  LONG_STAY: "Uzun konaklama indirimi",
+  DATE_RANGE: "Bu tarihlere özel indirim",
+};
 
 async function otelGetir(kod: string): Promise<OtelVerisi> {
   const r = await fetch(`/api/hotels/${kod}`);
@@ -231,7 +238,11 @@ export function OtelDetay({ kod }: { kod: string }) {
       nationality: uyruk,
       currency: o.currency || paraBirimi,
       totalPrice: String(odaToplami(o)),
-      originalPrice: String(o.pricing?.originalPrice ?? o.totalPrice),
+      // Kampanyadan önceki fiyat (üstü çizili) ve kampanya; net fiyat kupon
+      // ön kontrolü için (fatura tedarikçi fiyatından).
+      originalPrice: String(o.pricing?.oncekiFiyat ?? odaToplami(o)),
+      netPrice: String(o.pricing?.originalPrice ?? o.totalPrice),
+      ...(o.pricing?.kampanya ? { kampanya: o.pricing.kampanya.ad, kampanyaYuzde: String(o.pricing.kampanya.yuzde) } : {}),
     });
     if (o.cancellationPolicies?.length) qs.set("cancellationPolicy", JSON.stringify(o.cancellationPolicies));
     // Ödeme girişli; girişsizse pencere açılsın, giriş bitince ödemeye geçilsin.
@@ -327,6 +338,8 @@ export function OtelDetay({ kod }: { kod: string }) {
   // Rezervasyon kutusu, bölüm menüsü ve mobil çubuğun ortak fiyat/düğme durumu.
   const fiyatOdasi = secili ?? enUcuz;
   const fiyat = fiyatOdasi ? para(odaToplami(fiyatOdasi), fiyatOdasi.currency) : null;
+  const oncekiFiyat = fiyatOdasi && odaOncekiFiyati(fiyatOdasi) ? para(odaOncekiFiyati(fiyatOdasi)!, fiyatOdasi.currency) : null;
+  const kampanya = fiyatOdasi?.pricing?.kampanya ?? null;
   const anaMetin = !tarihVar ? "Tarih seç" : secili ? "Rezervasyona devam et" : "Oda seç";
   const anaEylem = () => (!tarihVar ? tarihSec() : secili ? devam() : git("odalar"));
 
@@ -576,12 +589,22 @@ export function OtelDetay({ kod }: { kod: string }) {
                   <span className={s.fiyatIskelet} aria-label="Fiyat aranıyor" />
                 ) : fiyat ? (
                   <>
+                    {oncekiFiyat && <s className={s.onceki}>{oncekiFiyat}</s>}
                     <b className="lb-y">{fiyat}</b> <span>{gece} gece için{secili ? "" : ", en uygun oda"}</span>
                   </>
                 ) : (
                   <span className={s.rezBaslik}>Bu tarihlerde müsait oda yok</span>
                 )}
               </div>
+              {kampanya && tarihVar && !odaQ.isPending && (
+                <div className={s.kampanya}>
+                  <Ikon ad="discount" boyut={20} kalinlik={2} />
+                  <div>
+                    <b>{kampanya.ad} · %{kampanya.yuzde}</b>
+                    <span>{KAMPANYA_ACIKLAMA[kampanya.tur] ?? "Bu tarihlere özel indirim"}. Kod gerekmez.</span>
+                  </div>
+                </div>
+              )}
               <TarihAlani deger={urlDeger} panel={tarihPaneli} onPanel={setTarihPaneli} onUygula={uygula} />
               {secili && (
                 <div className={s.secilen} key={secili.priceCode}>
@@ -597,9 +620,15 @@ export function OtelDetay({ kod }: { kod: string }) {
               {secili && (
                 <div className={s.dokum}>
                   <div>
-                    <span>{para(odaToplami(secili) / gece, secili.currency)} × {gece} gece</span>
-                    <span>{para(odaToplami(secili), secili.currency)}</span>
+                    <span>{para((odaOncekiFiyati(secili) ?? odaToplami(secili)) / gece, secili.currency)} × {gece} gece</span>
+                    <span>{para(odaOncekiFiyati(secili) ?? odaToplami(secili), secili.currency)}</span>
                   </div>
+                  {secili.pricing?.kampanya && (
+                    <div className={s.dokumIndirim}>
+                      <span>{secili.pricing.kampanya.ad}</span>
+                      <span>−{para(secili.pricing.kampanya.tutar, secili.currency)}</span>
+                    </div>
+                  )}
                   <div className={s.toplam}>
                     <span>Toplam</span>
                     <span>{para(odaToplami(secili), secili.currency)}</span>
@@ -782,6 +811,7 @@ function OdaKarti({ oda, gece, misafir, secili, liste, onAc }: {
         )}
       </span>
       <span className={s.odaFiyat}>
+        {odaOncekiFiyati(oda) && <s>{para(odaOncekiFiyati(oda)!, oda.currency)}</s>}
         <b className="lb-y">{para(odaToplami(oda), oda.currency)}</b>
         <small>{gece} gece, toplam</small>
       </span>

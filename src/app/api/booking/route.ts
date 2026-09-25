@@ -5,7 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { createBookingSchema } from "@/lib/validators";
 import { createBooking } from "@/lib/royal-api";
 import { EtscoreError } from "@/lib/royal-api/client";
-import { calculatePrice } from "@/lib/pricing";
+import { calculatePrice, fiyatBaglami, komisyonHesapla } from "@/lib/pricing";
+import { kuponDegerlendir } from "@/lib/pricing/kupon";
 import { generateClientReferenceId } from "@/lib/utils";
 
 // POST /api/booking
@@ -62,6 +63,26 @@ export async function POST(request: NextRequest) {
         "";
     }
 
+    // Kupon ön kontrolü: geçersiz kodla tedarikçide rezervasyon açılmasın.
+    const fiyatGirdisi = {
+      hotelCode: input.hotelCode,
+      boardType: input.boardType,
+      checkIn: input.checkIn,
+      checkOut: input.checkOut,
+    };
+    if (input.couponCode) {
+      const on = await kuponDegerlendir({
+        kod: input.couponCode,
+        userId,
+        userType: userRole,
+        agencyId,
+        girdi: { ...fiyatGirdisi, basePrice: input.netPrice ?? input.totalPrice },
+      });
+      if (on.durum === "gecersiz") {
+        return NextResponse.json({ error: on.mesaj, alan: "kupon" }, { status: 422 });
+      }
+    }
+
     const clientReferenceId = generateClientReferenceId();
 
     // Forward to Royal API
@@ -86,15 +107,33 @@ export async function POST(request: NextRequest) {
         ? apiBooking.totalPrice
         : input.totalPrice;
 
-    // Apply pricing engine on the supplier price
-    const priceResult = await calculatePrice({
-      basePrice: supplierPrice,
-      userType: userRole,
-      agencyId,
-      hotelCode: input.hotelCode,
-      boardType: input.boardType,
-      currency: input.currency,
-    });
+    // Fiyat motoru tedarikçi fiyatı üzerinden: kural → kampanya → acente
+    // indirimi; kupon varsa aynı kuralla yeniden (birleşmiyorsa avantajlı olan).
+    let priceResult = await calculatePrice({ ...fiyatGirdisi, basePrice: supplierPrice, userType: userRole, agencyId, currency: input.currency });
+    let kupon: { id: string; kod: string; tutar: number } | null = null;
+    let sonFiyat = priceResult.finalPrice;
+    let komisyon = priceResult.commissionAmount;
+    if (input.couponCode) {
+      const k = await kuponDegerlendir({
+        kod: input.couponCode,
+        userId,
+        userType: userRole,
+        agencyId,
+        girdi: { ...fiyatGirdisi, basePrice: supplierPrice },
+      });
+      if (k.durum !== "gecersiz") priceResult = k.fiyat;
+      if (k.durum === "uygulandi") {
+        kupon = { ...k.kupon, tutar: k.tutar };
+        sonFiyat = k.sonFiyat;
+        komisyon = await komisyonHesapla(await fiyatBaglami(userRole, agencyId), sonFiyat, input.hotelCode, input.boardType);
+      } else {
+        sonFiyat = priceResult.finalPrice;
+        komisyon = priceResult.commissionAmount;
+      }
+    }
+    const uygulananlar = kupon
+      ? [...priceResult.appliedRules, { ruleId: `kupon-${kupon.id}`, name: `Kupon ${kupon.kod}`, type: "PERCENTAGE_DISCOUNT", value: 0, discountAmount: kupon.tutar }]
+      : priceResult.appliedRules;
 
     // Resolve hotel name from the local cache when the client didn't send one
     let hotelName = input.hotelName ?? null;
@@ -123,8 +162,8 @@ export async function POST(request: NextRequest) {
         checkOut: new Date(input.checkOut),
         status: apiBooking.status === "CONFIRMED" ? "CONFIRMED" : "PENDING",
         totalPrice: supplierPrice,
-        discountedPrice: priceResult.finalPrice,
-        discountAmount: priceResult.totalDiscount,
+        discountedPrice: sonFiyat,
+        discountAmount: priceResult.totalDiscount + (kupon?.tutar ?? 0),
         currency: apiBooking.currency ?? input.currency,
         boardType: input.boardType ?? null,
         roomType: input.roomType ?? null,
@@ -134,13 +173,24 @@ export async function POST(request: NextRequest) {
         guests: allGuests as any, // eslint-disable-line @typescript-eslint/no-explicit-any
         cancellationPolicy: input.cancellationPolicy ?? null,
         roomConfirmationCodes: (apiBooking.roomConfirmationCodes ?? []) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-        appliedPriceRules: priceResult.appliedRules as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-        commissionAmount: agencyId ? priceResult.commissionAmount : null,
+        appliedPriceRules: uygulananlar as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+        commissionAmount: agencyId ? komisyon : null,
+        discountId: priceResult.kampanya?.id ?? null,
+        campaignDiscount: priceResult.kampanya?.tutar ?? null,
+        couponId: kupon?.id ?? null,
+        couponDiscount: kupon?.tutar ?? null,
         source: agencyId ? "AGENCY" : "CUSTOMER",
         // Ödeme sayfasındaki özel istek; rezervasyon detayında görünür.
         notes: input.additionalInfo ?? null,
       },
     });
+
+    if (kupon) {
+      await prisma.$transaction([
+        prisma.coupon.update({ where: { id: kupon.id }, data: { usedCount: { increment: 1 } } }),
+        prisma.couponUse.create({ data: { couponId: kupon.id, userId, reservationId: reservation.id, amount: kupon.tutar } }),
+      ]).catch((e) => console.error("[BOOKING_KUPON_KAYIT]", e));
+    }
 
     return NextResponse.json(
       {
@@ -148,10 +198,12 @@ export async function POST(request: NextRequest) {
         bookingConfirmation: apiBooking,
         pricing: {
           originalPrice: priceResult.originalPrice,
-          finalPrice: priceResult.finalPrice,
-          totalDiscount: priceResult.totalDiscount,
-          commissionAmount: priceResult.commissionAmount,
-          appliedRules: priceResult.appliedRules,
+          finalPrice: sonFiyat,
+          totalDiscount: priceResult.totalDiscount + (kupon?.tutar ?? 0),
+          commissionAmount: komisyon,
+          appliedRules: uygulananlar,
+          kampanya: priceResult.kampanya,
+          kupon,
         },
       },
       { status: 201 }

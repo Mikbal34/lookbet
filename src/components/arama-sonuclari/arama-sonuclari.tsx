@@ -5,6 +5,7 @@
 // ve sayfalama istemcide. Harita o anki sayfanın otellerini gösterir; karta
 // gelince iğnesi öne çıkar.
 
+import { kampanyaEtiketi } from "@/lib/kampanya-etiket";
 import * as React from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
@@ -147,7 +148,10 @@ export function AramaSonuclari({ params }: { params: URLSearchParams }) {
               otel={{
                 kod: h.hotelCode, ad: h.hotelName, foto: h.thumbnailImage, yildiz: h.stars, yer: hedef,
                 pansiyon: h.boardTypes[0] ?? null, iptal: !!h.freeCancellation,
-                fiyat: h.minPrice > 0 ? { tutar: toplamYaz(h), aciklama: `${gece} gece için` } : null,
+                fiyat: h.minPrice > 0
+                  ? { tutar: toplamYaz(h), aciklama: `${gece} gece için`, onceki: h.oncekiFiyat ? toplamYaz({ ...h, minPrice: h.oncekiFiyat }) : null }
+                  : null,
+                indirim: h.kampanya ? kampanyaEtiketi(h.kampanya) : null,
               }}
               href={`/hotel/${h.hotelCode}?${aramaEki}`}
               favori={fav.has(h.hotelCode)}

@@ -14,7 +14,18 @@ import type { RoomResult } from "@/lib/royal-api/types";
 import { iptalOzeti, odaOzellikleri, para } from "./yardimci";
 import s from "./oda-penceresi.module.css";
 
-export type Oda = RoomResult & { pricing?: { originalPrice: number; finalPrice: number; totalDiscount: number } };
+export type Oda = RoomResult & {
+  pricing?: {
+    originalPrice: number;
+    /** Kural sonrası, kampanya indiriminden önceki fiyat. */
+    oncekiFiyat?: number;
+    finalPrice: number;
+    totalDiscount: number;
+    kampanya?: { id: string; ad: string; tur: string; yuzde: number; tutar: number } | null;
+  };
+};
+/** Kampanyadan önceki fiyat (üstü çizili); kampanya yoksa null. */
+export const odaOncekiFiyati = (o: Oda) => (o.pricing?.kampanya ? o.pricing.oncekiFiyat ?? null : null);
 
 export const odaToplami = (o: Oda) => o.pricing?.finalPrice ?? o.totalPrice;
 
@@ -124,7 +135,10 @@ function OdaIcerik({ oda, gece, misafir, secili, onSec, onDevam, onFoto, sagRef 
   const g = oda.images;
   const fazla = g.length - 3;
   const toplam = odaToplami(oda);
-  const indirim = oda.pricing?.totalDiscount ?? 0;
+  const onceki = oda.pricing?.oncekiFiyat ?? toplam;
+  const kampanya = oda.pricing?.kampanya ?? null;
+  // Kampanyadan sonra kalan fark acentenin anlaşma indirimi.
+  const acenteIndirimi = Math.max(0, onceki - (kampanya?.tutar ?? 0) - toplam);
   const ip = iptalOzeti(oda.cancellationPolicies);
   const ozellik = odaOzellikleri(oda);
   ozellik.splice(ozellik[0]?.ikon === "bed" ? 1 : 0, 0, { ikon: "guests", metin: misafir });
@@ -184,13 +198,19 @@ function OdaIcerik({ oda, gece, misafir, secili, onSec, onDevam, onFoto, sagRef 
             <h3>Fiyat</h3>
             <div className={s.dokum}>
               <div>
-                <span>{para((toplam + indirim) / gece, oda.currency)} × {gece} gece</span>
-                <span>{para(toplam + indirim, oda.currency)}</span>
+                <span>{para(onceki / gece, oda.currency)} × {gece} gece</span>
+                <span>{para(onceki, oda.currency)}</span>
               </div>
-              {indirim > 0 && (
+              {kampanya && (
                 <div className={s.indirim}>
-                  <span>İndirim</span>
-                  <span>−{para(indirim, oda.currency)}</span>
+                  <span>{kampanya.ad} %{kampanya.yuzde}</span>
+                  <span>−{para(kampanya.tutar, oda.currency)}</span>
+                </div>
+              )}
+              {acenteIndirimi >= 0.5 && (
+                <div className={s.indirim}>
+                  <span>Acente indirimi</span>
+                  <span>−{para(acenteIndirimi, oda.currency)}</span>
                 </div>
               )}
               <div className={s.toplam}>

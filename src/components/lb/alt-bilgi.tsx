@@ -85,6 +85,7 @@ export function AltBilgi() {
           <section>
             <h3>LookBeds</h3>
             <ul>
+              <li><Link href="/kampanyalar">Kampanyalar</Link></li>
               <li><Link href="/login">Giriş yap ya da üye ol</Link></li>
             </ul>
           </section>

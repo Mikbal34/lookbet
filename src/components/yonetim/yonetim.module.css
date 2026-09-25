@@ -342,6 +342,54 @@
 .hazirSebep button { height: 32px; padding: 0 12px; border: 1px solid var(--lb-cizgi); border-radius: 999px; background: #fff; color: inherit; font: inherit; font-size: 13px; cursor: pointer; }
 .hazirSebep button:hover { border-color: var(--lb-yazi); }
 
+
+/* Kampanyalar */
+.aciklamaSerit { display: flex; align-items: center; gap: 16px; padding: 16px 20px; border-radius: 20px; background: var(--lb-kart); }
+.aciklamaSerit p { margin: 0; max-width: 90ch; color: var(--lb-soluk); font-size: 14.5px; }
+.aciklamaSerit p b { color: var(--lb-yazi); }
+.uyariSerit { display: flex; align-items: center; gap: 12px; margin-top: 12px; padding: 12px 16px; border-radius: 16px; background: #fff4dc; color: #6b4600; font-size: 14px; }
+.uyariSerit svg { flex: none; }
+.dkartlar { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.dkart { display: grid; grid-template-rows: auto 1fr auto auto; padding: 18px; border: 1px solid var(--lb-cizgi); border-radius: 22px; background: #fff; transition: box-shadow 0.25s, transform 0.25s var(--lb-yay); animation: gel 0.35s var(--lb-yay) both; }
+.dkart:hover { box-shadow: 0 10px 28px rgb(0 0 0 / 0.08); transform: translateY(-2px); }
+.dkart[data-soluk] > :not(:last-child) { opacity: 0.6; }
+.dkartUst { display: grid; grid-template-columns: 56px 1fr auto; gap: 12px; align-items: start; }
+.dkartUst img { transition: transform 0.4s var(--lb-zipla); }
+.dkart:hover .dkartUst img { transform: rotate(-8deg) scale(1.06); }
+.dkartIc { display: grid; gap: 4px; align-content: start; margin-top: 12px; }
+.tur { display: inline-flex; align-items: center; gap: 6px; color: var(--lb-soluk); font-size: 12.5px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; }
+.dkart h3 { margin: 0; font-size: 18px; line-height: 1.25; }
+.oran { font-size: 34px; line-height: 1.1; }
+.kosullar { display: grid; gap: 4px; margin: 6px 0 4px; padding: 0; list-style: none; color: var(--lb-soluk); font-size: 13.5px; }
+.kosullar li { display: flex; gap: 8px; }
+.kosullar li::before { content: ""; flex: none; width: 5px; height: 5px; margin-top: 8px; border-radius: 999px; background: #c4c4c2; }
+.dkart .uyari { margin-top: 6px; }
+.dkartAlt { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--lb-cizgi); color: var(--lb-soluk); font-size: 13px; }
+.vitrinRozet { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 999px; background: var(--lb-kart); color: var(--lb-yazi); font-size: 12px; font-weight: 600; }
+.turSec { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.turSec label { position: relative; display: grid; grid-template-columns: 40px 1fr; gap: 12px; align-items: center; padding: 12px 14px; border: 1px solid var(--lb-cizgi); border-radius: 16px; cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s, background 0.2s; }
+.turSec label:hover { border-color: var(--lb-yazi); }
+.turSec input { position: absolute; opacity: 0; }
+.turSec label:has(input:checked) { border-color: var(--lb-yazi); box-shadow: inset 0 0 0 1px var(--lb-yazi); background: #fafafa; }
+.turSec label:has(input:focus-visible) { outline: 2px solid var(--lb-yazi); outline-offset: 2px; }
+.turSec b { display: block; font-size: 14.5px; }
+.turSec label > span > span { color: var(--lb-soluk); font-size: 12.5px; }
+.onayKutu { display: flex; align-items: center; gap: 10px; font-size: 14.5px; cursor: pointer; }
+.onayKutu input { width: 18px; height: 18px; margin: 0; accent-color: var(--lb-yazi); }
+.onizleme { padding: 16px; border-radius: 18px; background: var(--lb-kart); }
+.onizleme ol { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; font-size: 14px; }
+.onizleme li { display: flex; justify-content: space-between; gap: 10px; }
+.onizleme li b { font-variant-numeric: tabular-nums; }
+.onizleme li[data-tur="toplam"] { padding-top: 6px; border-top: 1px solid #dcdcda; font-weight: 700; }
+.onizleme li[data-tur="zarar"] { color: var(--lb-kirmizi); font-weight: 600; }
+.onizleme li[data-tur="kar"] { color: var(--lb-yesil); font-weight: 600; }
+.kod { padding: 3px 9px; border: 1px dashed #b0b0b0; border-radius: 8px; background: #fff; color: var(--lb-yazi); font: 700 13.5px ui-monospace, "SF Mono", Menlo, monospace; letter-spacing: 0.04em; cursor: copy; }
+.kod:hover { border-style: solid; border-color: var(--lb-yazi); }
+.kullanim { display: grid; gap: 4px; min-width: 110px; font-size: 13px; font-variant-numeric: tabular-nums; }
+.kullanim div { height: 6px; border-radius: 999px; background: var(--lb-kart); overflow: hidden; }
+.kullanim i { display: block; height: 100%; border-radius: 999px; background: var(--lb-yazi); }
+.acilir button:disabled { opacity: 0.45; cursor: default; }
+
 .bildiri { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); z-index: 90; max-width: calc(100vw - 32px); padding: 10px 16px; border-radius: 12px; background: var(--lb-yazi); color: #fff; font-size: 14px; font-weight: 500; transform: translateX(-50%); animation: gel 0.25s var(--lb-yay); }
 
 @media (max-width: 1100px) {
@@ -354,14 +402,16 @@
 }
 @media (max-width: 860px) {
   .ustIc { grid-template-columns: 1fr auto; height: 64px; }
-  .sekmeler { position: fixed; inset: auto 0 0; z-index: 40; justify-content: space-around; padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 0px)); background: #fff; border-top: 1px solid var(--lb-cizgi); }
+  .sekmeler { position: fixed; inset: auto 0 0; z-index: 40; justify-content: space-between; padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 0px)); background: #fff; border-top: 1px solid var(--lb-cizgi); overflow-x: auto; scrollbar-width: none; }
+  .sekmeler::-webkit-scrollbar { display: none; }
+  .sekmeler a { flex: none; }
   .sekmeler a { gap: 4px; padding: 8px 6px; font-size: 12.5px; }
   .sekmeler a[aria-current="page"]::after { left: 6px; right: 6px; bottom: 0; }
   .sekmeler .say { min-width: 17px; height: 17px; padding: 0 4px; font-size: 10.5px; }
   .dis { padding-bottom: 110px; }
 }
 @media (max-width: 600px) {
-  .isler { grid-template-columns: 1fr; }
+  .isler, .turSec { grid-template-columns: 1fr; }
   .kpiler { grid-template-columns: 1fr 1fr; }
   .kpi { padding: 14px 16px; }
   .hesap { padding: 18px; }

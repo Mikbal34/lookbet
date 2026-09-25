@@ -40,6 +40,10 @@ export const createBookingSchema = z.object({
   rooms: z.array(z.object({ guests: z.array(guestSchema).min(1) })).min(1),
   cancellationPolicy: z.any().optional(),
   additionalInfo: z.string().max(500).optional(),
+  /** Ödeme adımında girilen kupon kodu. */
+  couponCode: z.string().trim().max(40).optional(),
+  /** Oda aramasındaki net fiyat (kupon ön kontrolü; fatura tedarikçi fiyatından). */
+  netPrice: z.number().positive().optional(),
 }).superRefine((b, ctx) => {
   // Fiyat aramadaki yaşlara göre verildi. Doğum tarihi girişteki yaşla
   // uyuşmazsa otel girişte farkı ister ya da rezervasyonu reddeder.
