@@ -3,7 +3,9 @@ import { Figtree, Nunito } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import { Providers } from "@/components/providers";
+import { Suspense } from "react";
 import { SayfaGecisi } from "@/components/layout/sayfa-gecisi";
+import { UstCizgi } from "@/components/layout/ust-cizgi";
 
 // Nunito — yuvarlak uçlu. Logonun kendi yazı tipi yığını zaten bunu istiyor
 // (Arial Rounded MT Bold → Nunito → Quicksand); arayüz Manrope ile düz uçlu
@@ -59,6 +61,9 @@ export default function RootLayout({
         className={`${nunito.variable} ${figtree.variable} ${yastik.variable} font-sans antialiased bg-paper text-ink min-h-dvh`}
       >
         <Providers>
+          <Suspense>
+            <UstCizgi />
+          </Suspense>
           <SayfaGecisi>{children}</SayfaGecisi>
         </Providers>
       </body>

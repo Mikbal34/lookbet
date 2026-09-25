@@ -6,6 +6,7 @@
 // gelince iğnesi öne çıkar.
 
 import { kampanyaEtiketi } from "@/lib/kampanya-etiket";
+import { Bekleme, DonenMetin } from "@/components/lb/bekleme";
 import * as React from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
@@ -118,7 +119,18 @@ export function AramaSonuclari({ params }: { params: URLSearchParams }) {
       </div>
     );
   } else if (arama.ilkYukleme) {
-    govde = <ul className={s.kartlar} aria-busy="true" aria-label="Oteller yükleniyor">{Array.from({ length: 6 }, (_, i) => <OtelKartiIskelet key={i} />)}</ul>;
+    govde = (
+      <>
+        <div className={s.bekleme}>
+          <Bekleme tur="bavul" boyut={76} etiket={null} />
+          <div>
+            <b>Oteller aranıyor</b>
+            <DonenMetin metinler={[`${hedef} için müsait oteller soruluyor`, "Fiyatlar karşılaştırılıyor", "Neredeyse hazır"]} />
+          </div>
+        </div>
+        <ul className={s.kartlar} aria-busy="true" aria-label="Oteller yükleniyor">{Array.from({ length: 6 }, (_, i) => <OtelKartiIskelet key={i} />)}</ul>
+      </>
+    );
   } else if (arama.durum === "hata" && arama.hotels.length === 0) {
     govde = (
       <div className={s.durum}>

@@ -16,6 +16,7 @@ import { useSession } from "next-auth/react";
 import { UstCubuk } from "@/components/lb/ust-cubuk";
 import { AltBilgi } from "@/components/lb/alt-bilgi";
 import { Ikon } from "@/components/lb/ikon";
+import { Bekleme, DonenMetin } from "@/components/lb/bekleme";
 import { Nesne } from "@/components/lb/nesne";
 import { Pencere } from "@/components/lb/pencere";
 import { useFavoriler } from "@/components/lb/favoriler";
@@ -369,7 +370,18 @@ export function OtelDetay({ kod }: { kod: string }) {
       </div>
     );
   } else if (odaQ.isPending) {
-    odaGovde = <div className={s.odaListe} aria-busy="true" aria-label="Odalar aranıyor">{[0, 1, 2].map((i) => <div key={i} className={s.odaIskelet} />)}</div>;
+    odaGovde = (
+      <div className={s.odaListe} aria-busy="true">
+        <div className={s.odaBekle}>
+          <Bekleme tur="takvim" boyut={64} etiket={null} />
+          <div>
+            <b>Müsait odalar soruluyor</b>
+            <DonenMetin metinler={["Seçtiğin tarihlerde odalar aranıyor", "Fiyatlar ve iptal koşulları geliyor"]} aralik={3000} />
+          </div>
+        </div>
+        {[0, 1].map((i) => <div key={i} className={s.odaIskelet} />)}
+      </div>
+    );
   } else if (odaQ.isError) {
     odaGovde = (
       <div className={s.odaDurum}>
@@ -586,7 +598,10 @@ export function OtelDetay({ kod }: { kod: string }) {
                 {!tarihVar ? (
                   <span className={s.rezBaslik}>Fiyatları görmek için tarih seçin</span>
                 ) : odaQ.isPending ? (
-                  <span className={s.fiyatIskelet} aria-label="Fiyat aranıyor" />
+                  <span className={s.fiyatBekle}>
+                    <Bekleme tur="takvim" boyut={40} etiket={null} />
+                    <span>Fiyatlar geliyor</span>
+                  </span>
                 ) : fiyat ? (
                   <>
                     {oncekiFiyat && <s className={s.onceki}>{oncekiFiyat}</s>}

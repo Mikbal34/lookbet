@@ -44,6 +44,9 @@
 @keyframes kay { from { transform: translateX(-100%); } to { transform: translateX(300%); } }
 .ilerleme span { font-size: 12.5px; color: var(--lb-soluk); }
 .kartlar { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 28px 20px; }
+.bekleme { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+.bekleme b { display: block; font-size: 18px; }
+.bekleme > div > span { color: var(--lb-soluk); font-size: 14.5px; }
 .durum { display: grid; justify-items: center; text-align: center; gap: 8px; padding: 56px 16px; }
 .durum h2 { margin: 6px 0 0; font-size: 22px; }
 .durum p { margin: 0; color: var(--lb-soluk); max-width: 46ch; }

@@ -140,6 +140,12 @@
 .cipMisafir { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border: 1px solid var(--lb-cizgi); border-radius: 999px; background: #fff; color: var(--lb-yazi); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: border-color 0.2s, background 0.2s; }
 .cipMisafir:hover:not(:disabled) { border-color: var(--lb-yazi); }
 .cipMisafir:disabled { background: var(--lb-kart); color: var(--lb-soluk); cursor: default; }
+.onayKatman { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 24px; background: rgb(255 255 255 / 0.88); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); animation: katman 0.3s ease; }
+.onayKatman > div { display: grid; justify-items: center; gap: 8px; max-width: 380px; text-align: center; }
+.onayKatman h2 { margin: 4px 0 0; font-size: 26px; }
+.onayKatman p, .onayMetin { margin: 0; color: var(--lb-soluk); font-size: 15.5px; }
+.onayKatman small { color: var(--lb-soluk); font-size: 13px; }
+@keyframes katman { from { opacity: 0; } }
 .kupon { padding-top: 12px; border-top: 1px solid var(--lb-cizgi); }
 .kuponForm { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: stretch; }
 .kuponForm input { text-transform: uppercase; letter-spacing: 0.04em; }

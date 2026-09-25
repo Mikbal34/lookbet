@@ -16,6 +16,7 @@ import { AltBilgi } from "@/components/lb/alt-bilgi";
 import { Ikon } from "@/components/lb/ikon";
 import { Nesne } from "@/components/lb/nesne";
 import { Pencere } from "@/components/lb/pencere";
+import { Bekleme, DonenMetin } from "@/components/lb/bekleme";
 import { AYLAR, geceSayisi, gunEkle, isoOku } from "@/components/lb/arama/durum";
 import { iptalOzeti, para } from "@/components/otel-detay/yardimci";
 import { createBookingSchema, yasHesapla, type CreateBookingInput, type GuestInput } from "@/lib/validators/booking.schema";
@@ -112,6 +113,7 @@ function OdemeFormu({ p }: { p: URLSearchParams }) {
   const [sozlesme, setSozlesme] = React.useState(false);
   const [hatalar, setHatalar] = React.useState<Hatalar>({});
   const [gonderiliyor, setGonderiliyor] = React.useState(false);
+  const [onaylandi, setOnaylandi] = React.useState<null | "onay" | "alindi">(null);
   const [sunucuHata, setSunucuHata] = React.useState<{ mesaj: string; odaYenile: boolean } | null>(null);
   /* Kupon: önizleme /api/kupon; kesin tutar rezervasyonda aynı kuralla. */
   const [kuponAcik, setKuponAcik] = React.useState(false);
@@ -345,7 +347,9 @@ function OdemeFormu({ p }: { p: URLSearchParams }) {
         return;
       }
       const no = d.reservation?.bookingNumber ?? d.bookingConfirmation?.bookingNumber ?? d.reservation?.id ?? "";
-      router.push(`/booking/confirmation?${new URLSearchParams({ bookingNumber: no, hotelName, checkIn, checkOut })}`);
+      // Kart okutma katmanı yeşile dönsün, bir an görünsün, sonra onay sayfası.
+      setOnaylandi(d.reservation?.status === "CONFIRMED" ? "onay" : "alindi");
+      setTimeout(() => router.push(`/booking/confirmation?${new URLSearchParams({ bookingNumber: no, hotelName, checkIn, checkOut })}`), 1300);
     } catch {
       setSunucuHata({ mesaj: "Bağlantıda bir sorun oldu; birazdan tekrar dene.", odaYenile: false });
       setGonderiliyor(false);
@@ -748,6 +752,24 @@ function OdemeFormu({ p }: { p: URLSearchParams }) {
           </div>
         </div>
       </Pencere>
+      {gonderiliyor && (
+        <div className={s.onayKatman} role="alertdialog" aria-modal="true" aria-labelledby="onay-baslik" aria-live="polite">
+          <div>
+            <Bekleme tur="kart" boyut={150} bitti={!!onaylandi} etiket={null} />
+            <h2 id="onay-baslik" className="lb-y">
+              {onaylandi === "onay" ? "Rezervasyonun onaylandı" : onaylandi === "alindi" ? "Rezervasyonun alındı" : "Rezervasyonun yapılıyor"}
+            </h2>
+            {onaylandi ? (
+              <p>Onay sayfasına geçiliyor</p>
+            ) : (
+              <>
+                <DonenMetin metinler={["Bilgilerin otele iletiliyor", "Oda ayırtılıyor", "Otelden onay bekleniyor"]} aralik={3500} className={s.onayMetin} />
+                <small>Bu birkaç saniye sürebilir; sayfayı kapatma.</small>
+              </>
+            )}
+          </div>
+        </div>
+      )}
       <Pencere acik={pencere === "bilgi"} onKapat={() => setPencere(null)} baslik="Otelin önemli notları">
         <div className={s.pencereMetin}>
           {(otel?.policies?.importantInfo ?? []).flatMap((m) => m.split(/(?<=\.)\s+(?=[A-ZÇĞİÖŞÜ])/)).map((x, i) => <p key={i}>{x}</p>)}

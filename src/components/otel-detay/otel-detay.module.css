@@ -219,6 +219,10 @@
 .rezFiyat { min-height: 34px; display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px; }
 .rezFiyat b { font-size: 24px; }
 .rezFiyat span { color: var(--lb-soluk); }
+.fiyatBekle { display: inline-flex; align-items: center; gap: 10px; color: var(--lb-soluk); font-weight: 600; }
+.odaBekle { display: flex; align-items: center; gap: 14px; padding: 6px 2px 10px; }
+.odaBekle b { display: block; font-size: 16px; }
+.odaBekle > div > span { color: var(--lb-soluk); font-size: 14px; }
 .rezFiyat .onceki { color: var(--lb-soluk); font-size: 17px; }
 .kampanya { display: grid; grid-template-columns: 20px 1fr; gap: 12px; align-items: start; padding: 12px 14px; border-radius: 14px; background: #fff3ec; color: var(--lb-turuncu); animation: blok 0.35s var(--lb-yay); }
 .kampanya > div { display: grid; gap: 2px; color: var(--lb-yazi); }
