@@ -63,6 +63,34 @@
     sans-serif;
 }
 
+/* ── Yeni tasarım (LookBeds kimliği) ────────────────────────────────
+   Siyah-beyaz zemin, vurgu turuncu ve az kullanılır; başlıklar LB Yastık,
+   metin Figtree. Yeni sayfalar kök öğelerine .lb sınıfı verir; eski sayfalar
+   ve paneller eski jetonlarla kalır, geçtikçe silinecek. */
+:root {
+  --lb-yazi: #141414;
+  --lb-soluk: #6a6a6a;
+  --lb-cizgi: #ebebeb;
+  --lb-kart: #f5f5f4;
+  --lb-gri: #ebebea;
+  --lb-turuncu: #ff5f1f;
+  --lb-yesil: #16794c;
+  --lb-kirmizi: #c13515;
+  --lb-golge: 0 6px 24px rgb(0 0 0 / 0.08), 0 1px 2px rgb(0 0 0 / 0.06);
+  --lb-yay: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --lb-zipla: cubic-bezier(0.3, 1.6, 0.5, 1);
+  --lb-kenar: clamp(16px, 4vw, 64px);
+}
+.lb {
+  font-family: var(--font-figtree), "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--lb-yazi);
+  background: #fff;
+}
+.lb :focus-visible { outline: 2px solid var(--lb-yazi); outline-offset: 2px; }
+.lb-y { font-family: var(--font-yastik), var(--font-figtree), sans-serif; font-weight: 700; }
+
 body {
   background: #ffffff;
   color: #1a1814;
@@ -144,9 +172,8 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   MOBİL / WEBVIEW TEMELİ
-   Site aynı zamanda WebView içinde mobil uygulama olarak paketleniyor;
-   aşağıdakiler native his için gerekli davranışları kuruyor.
+   MOBİL TEMEL
+   Telefon tarayıcısında doğru ölçek ve dokunma davranışı.
    ═══════════════════════════════════════════════════════════════════ */
 
 html {
@@ -158,10 +185,8 @@ html {
 body {
   /* Taşan bir öğe tüm sayfayı yatay kaydırılabilir yapmasın */
   overflow-x: hidden;
-  /* WebView'de dokunuşta beliren gri kutu native hissi bozuyor */
+  /* Dokunuşta beliren gri kutu */
   -webkit-tap-highlight-color: transparent;
-  /* Sayfa sonunda "rubber band" ile arkadaki WebView'i çekmeyi engelle */
-  overscroll-behavior-y: none;
 }
 
 /* Görseller hiçbir zaman kabından taşmasın */
@@ -172,7 +197,7 @@ svg {
   max-width: 100%;
 }
 
-/* iOS Safari/WebView, 16px'ten küçük fontlu bir alana odaklanınca sayfayı
+/* iOS Safari, 16px'ten küçük fontlu bir alana odaklanınca sayfayı
    zoom'lar ve bir daha geri çıkmaz. Mobilde tüm form alanları 16px. */
 @media (max-width: 1023px) {
   input,
@@ -227,50 +252,6 @@ svg {
   }
 }
 
-/* WebView'de buton ve bağlantılarda uzun basınca çıkan iOS bağlam menüsü
-   native uygulama hissini bozuyor; metin seçimi serbest kalıyor. */
-button,
-a,
-[role="button"] {
-  -webkit-touch-callout: none;
-}
-
-/* ── App modu görünürlük yardımcıları ──────────────────────────────
-   <html data-app="b2c"> / <html data-app="partner"> işareti app-mode.ts'deki
-   senkron script tarafından konur; tarayıcıda attribute hiç konmaz.
-   Kurallar yalnızca gizler; görünür durumda display'e hiç dokunmadığımız
-   için öğenin kendi flex/grid düzeni korunur. */
-
-/* Yalnızca tarayıcıda */
-html[data-app] .web-only {
-  display: none !important;
-}
-
-/* Her iki uygulamada (hangisi olduğu fark etmez) */
-html:not([data-app]) .app-only {
-  display: none !important;
-}
-
-/* Tek bir uygulamaya özel */
-html:not([data-app="b2c"]) .b2c-only {
-  display: none !important;
-}
-html:not([data-app="partner"]) .partner-only {
-  display: none !important;
-}
-
-/* Saydam kimlik çubuğunun altına giren hero'lar (rezervasyon detayındaki
-   otel fotoğrafı gibi) bu sınıfla yukarı çekiliyor. Çubuk sticky olduğu için
-   yer kaplıyor; fotoğrafın arkasından geçmesi isteniyorsa o yer geri
-   alınmalı. Web'de kimlik çubuğu hiç yok, bu yüzden kural da yok — aynı
-   negatif marjı sınıf olarak yazsaydık web'de fotoğraf navbar'ın altına
-   girerdi. */
-html[data-app] {
-  --app-header-h: 3.75rem; /* 60px — app-header.tsx'teki derin çubuk */
-}
-html[data-app] .app-header-altina {
-  margin-top: calc(-1 * var(--app-header-h) - env(safe-area-inset-top));
-}
 
 /* ── Hareket ──────────────────────────────────────────────────────────
    Tek imza: içerik hep aynı şekilde beliriyor. Süre kısa (180ms) çünkü bu
@@ -303,84 +284,71 @@ html[data-app] .app-header-altina {
   }
 }
 
-/* Giriş ekranı — app'te tam ekran fotoğraf, form alta yapışan yaprak.
-   Web'de ortalanmış kart olarak kalıyor.
-
-   Bunu app-only/web-only ile yapamıyoruz: o sınıflar yalnızca gizliyor,
-   konum ve köşe yarıçapı değiştirmiyor. Formu iki kez render etmek de
-   olmaz — CustomerLogin durum tutuyor, iki kopya iki ayrı OTP akışı
-   demek. Statik metin (logo, başlık) mod başına ayrı yazılabilir, form
-   tek. Bkz. app-header-altina, aynı gerekçe. */
-.giris-kap {
-  display: flex;
-  min-height: 100dvh;
-  align-items: center;
-  justify-content: center;
-  padding: 2.5rem 1rem;
-}
-html[data-app] .giris-kap {
-  align-items: flex-end;
-  padding: 0;
-}
-html[data-app] .giris-kart {
-  width: 100%;
-  max-width: none;
-  border-radius: 1.5rem 1.5rem 0 0;
-  /* Yüzen sekme çubuğu yaprağın altından 78px örtüyordu (ölçüldü). Çubuk
-     burada bilerek duruyor: girişsiz kullanıcı "Rezervasyonlar"a dokunup
-     buraya düşüyor ve çubuk olmazsa geri dönecek yolu kalmıyor. */
-  padding-bottom: calc(6.25rem + env(safe-area-inset-bottom));
-}
-
-/* App modunda footer'ın büyük blokları gizli kalıyor; geriye kalan yasal
-   satır için üstteki nefes payı gereksiz kalıyordu. */
-html[data-app] .site-footer {
-  margin-top: 2rem;
-}
-html[data-app] .site-footer .site-footer-fine {
-  margin-top: 0;
-}
-
-/* ── Harita fiyat baloncukları (Leaflet divIcon) ───────────────────
-   Leaflet .leaflet-div-icon'a varsayılan beyaz kutu + kenarlık veriyor;
-   ikisini de sıfırlayıp kendi baloncuğumuzu çiziyoruz. iconSize vermediğimiz
-   için genişliği içerik belirliyor, uzun fiyatlar kırpılmıyor — konumu
-   transform ile baloncuğun altına sabitliyoruz. */
-.lookbet-fiyat-pini {
-  width: auto !important;
-  height: auto !important;
-  margin: 0 !important;
-  background: none;
-  border: none;
-}
-
-.lookbet-fiyat-pini > span {
-  display: inline-block;
-  transform: translate(-50%, -100%);
+/* ── Harita (Google Maps, components/harita) ─────────────────────────
+   Fiyat hapı Airbnb'deki gibi: beyaz, üstüne gelince ya da seçilince siyah,
+   bakılmış olan gri. HtmlIsaret içeriği noktanın sol üstüne koyar; hap
+   kendini noktaya ortalıyor. */
+.lb-fiyat-pini {
+  transform: translate(-50%, -50%);
   white-space: nowrap;
+  border: 0;
   border-radius: 9999px;
-  background: var(--color-navy);
-  color: #fff;
-  padding: 6px 10px;
-  font-size: 13px;
+  background: #fff;
+  color: #141414;
+  padding: 6px 11px;
+  font-family: inherit;
+  font-size: 13.5px;
   font-weight: 700;
   line-height: 1;
-  box-shadow: 0 2px 8px rgb(26 24 20 / 0.35);
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.18), 0 0 0 1px rgb(0 0 0 / 0.05);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, transform 0.15s, box-shadow 0.15s;
 }
+.lb-fiyat-pini:hover,
+.lb-fiyat-pini[data-acik] {
+  background: #141414;
+  color: #fff;
+  transform: translate(-50%, -50%) scale(1.08);
+  box-shadow: 0 6px 16px rgb(0 0 0 / 0.3);
+}
+.lb-fiyat-pini[data-gorulen]:not([data-acik]):not(:hover) { background: #ececeb; }
+.lb-fiyat-pini:focus-visible { outline: 2px solid #141414; outline-offset: 2px; }
 
-/* Leaflet'in kendi kontrolleri sekme çubuğunun altında kalmasın */
-.leaflet-container {
-  font: inherit;
-  z-index: 0;
+.lb-harita-kart {
+  position: relative;
+  width: 260px;
+  transform: translate(-50%, calc(-100% - 22px));
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 12px 36px rgb(0 0 0 / 0.25);
+  animation: lb-harita-kart 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
+@keyframes lb-harita-kart {
+  from { opacity: 0; transform: translate(-50%, calc(-100% - 12px)) scale(0.97); }
+}
+.lb-harita-kart a { display: block; color: inherit; text-decoration: none; }
+.lb-harita-kart-foto { aspect-ratio: 16 / 10; background: #f2f1ee; }
+.lb-harita-kart-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.lb-harita-kart-alt { display: grid; gap: 2px; padding: 10px 14px 12px; font-size: 13.5px; color: #6a6a6a; }
+.lb-harita-kart-alt > b { color: #141414; font-size: 14.5px; }
+.lb-harita-kart-alt span b { color: #141414; }
+.lb-harita-kart-kapat {
+  position: absolute; right: 8px; top: 8px; z-index: 1;
+  width: 30px; height: 30px; display: grid; place-items: center;
+  border: 0; border-radius: 9999px; background: #fff; cursor: pointer;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.15);
+}
+.lb-harita-kart-kapat svg { width: 14px; height: 14px; fill: none; stroke: #141414; stroke-width: 2.4; stroke-linecap: round; }
 
-/* Arama sonuçları gelmeye devam ederken ince çubukta kayan parça.
-   Hareket azaltma tercihinde yukarıdaki genel kural animasyonu kısaltıyor;
-   çubuk yine görünür kalıyor. */
-@keyframes arama-ilerleme {
-  from { transform: translateX(-100%); }
-  to   { transform: translateX(300%); }
+.lb-konum-pini {
+  display: grid; place-items: center;
+  width: 46px; height: 46px;
+  transform: translate(-50%, -50%);
+  border-radius: 9999px;
+  background: #141414;
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.3);
 }
-.arama-ilerleme {
-  animation: arama-ilerleme 1.1s ease-in-out infinite;
-}
+.lb-konum-pini svg { width: 24px; height: 24px; fill: none; stroke: #fff; stroke-width: 1.75; stroke-linejoin: round; }
+

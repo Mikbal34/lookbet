@@ -21,7 +21,6 @@ export function Footer() {
         { label: "Hakkımızda", href: "/yardim" },
         { label: "İletişim", href: "/yardim" },
         { label: "Partner paneli", href: "/agency/login" },
-        { label: "Partner başvurusu", href: "/register/agency" },
       ],
     },
     {
@@ -44,7 +43,7 @@ export function Footer() {
   ] as const;
 
   return (
-    <footer className="site-footer web-only mt-16 bg-navy text-white">
+    <footer className="site-footer mt-16 bg-navy text-white">
       <div className="mx-auto max-w-[1200px] px-4 pt-10 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:px-6 sm:py-12 lg:py-16">
         {/* Üst — logo + tagline + telefon */}
         <div className="flex flex-col gap-6 border-b border-white/10 pb-8 md:flex-row md:items-end md:justify-between">

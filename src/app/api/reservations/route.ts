@@ -86,21 +86,20 @@ export async function GET(request: NextRequest) {
       where.status = { in: ["PENDING", "CONFIRMED"] as ReservationStatus[] };
     }
 
-    // ?zaman=gelecek|gecmis — arayüzdeki iki sekme.
-    //
-    // İptal ve başarısız kayıtlar tarihi ne olursa olsun "geçmiş" tarafında:
-    // gelecek haftaya ait iptal edilmiş bir rezervasyon "gelecek konaklamam"
-    // değil. Kullanıcı onu "artık aktif olmayan" diye arar.
+    // ?zaman=gelecek|gecmis|iptal — Rezervasyonlarım sayfasındaki üç sekme.
+    //   gelecek: konaklaması bitmemiş, aktif (beklemede/onaylı)
+    //   gecmis:  konaklaması bitmiş, aktif kalmış (tamamlanan)
+    //   iptal:   iptal edilmiş ya da tamamlanamamış, tarihi ne olursa olsun
     const zaman = searchParams.get("zaman");
-    if (zaman === "gelecek") {
-      where.checkOut = { gte: new Date() };
-      where.status = { in: ["PENDING", "CONFIRMED"] as ReservationStatus[] };
-    } else if (zaman === "gecmis") {
-      where.OR = [
-        { checkOut: { lt: new Date() } },
-        { status: { in: ["CANCELLED", "FAILED"] as ReservationStatus[] } },
-      ];
-    }
+    const simdi = new Date();
+    const AKTIF = ["PENDING", "CONFIRMED"] as ReservationStatus[];
+    const ZAMAN_KOSULU: Record<string, ReservationWhereInput> = {
+      gelecek: { checkOut: { gte: simdi }, status: { in: AKTIF } },
+      gecmis: { checkOut: { lt: simdi }, status: { in: AKTIF } },
+      iptal: { status: { in: ["CANCELLED", "FAILED"] as ReservationStatus[] } },
+    };
+    const temel = { ...where };
+    if (zaman && ZAMAN_KOSULU[zaman]) Object.assign(where, ZAMAN_KOSULU[zaman]);
 
     const [reservations, total] = await Promise.all([
       prisma.reservation.findMany({
@@ -111,7 +110,9 @@ export async function GET(request: NextRequest) {
         orderBy:
           upcoming || zaman === "gelecek"
             ? { checkIn: "asc" }
-            : { createdAt: "desc" },
+            : zaman === "gecmis"
+              ? { checkIn: "desc" }
+              : { createdAt: "desc" },
         include: {
           user: { select: { id: true, name: true, email: true } },
           agency: { select: { id: true, companyName: true } },
@@ -120,16 +121,50 @@ export async function GET(request: NextRequest) {
       prisma.reservation.count({ where }),
     ]);
 
+    // Sekme başlıklarındaki sayılar (yalnız ?zaman ile istenince).
+    const sayilar = zaman
+      ? Object.fromEntries(
+          await Promise.all(
+            Object.entries(ZAMAN_KOSULU).map(async ([k, kosul]) => [k, await prisma.reservation.count({ where: { ...temel, ...kosul } })] as const)
+          )
+        )
+      : undefined;
+
+    // Kartlardaki fotoğraf, yıldız ve konum otelin yerel kaydından.
+    const oteller = await prisma.hotel.findMany({
+      where: { hotelCode: { in: [...new Set(reservations.map((r) => r.hotelCode))] } },
+      select: {
+        hotelCode: true,
+        thumbnailImage: true,
+        images: true,
+        stars: true,
+        location: { select: { name: true, parent: { select: { name: true } } } },
+      },
+    });
+    const otelBul = new Map(oteller.map((o) => [o.hotelCode, o]));
+
     // Pansiyon kodunu görünen ada çevir; arayüzde kullanıcıya "RO" yerine
     // "Sadece Oda" yazsın. Arama ucu bunu zaten yapıyordu.
     const pansiyonAdlari = await boardTypeAdlari();
-    const cikti = reservations.map((r) => ({
-      ...r,
-      boardTypeName: boardTypeAdi(r.boardType, pansiyonAdlari),
-    }));
+    const cikti = reservations.map((r) => {
+      const o = otelBul.get(r.hotelCode);
+      const ilkGorsel = Array.isArray(o?.images) ? (o.images as unknown[]).find((u): u is string => typeof u === "string") : undefined;
+      return {
+        ...r,
+        boardTypeName: boardTypeAdi(r.boardType, pansiyonAdlari),
+        hotel: o
+          ? {
+              image: o.thumbnailImage ?? ilkGorsel ?? null,
+              stars: o.stars,
+              place: [o.location?.name, o.location?.parent?.name].filter(Boolean).join(", ") || null,
+            }
+          : null,
+      };
+    });
 
     return NextResponse.json({
       data: cikti,
+      sayilar,
       pagination: {
         total,
         page,

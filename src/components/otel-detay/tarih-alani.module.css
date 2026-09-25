@@ -1,0 +1,62 @@
+.kok { position: relative; }
+.alan { border: 1px solid #b0b0b0; border-radius: 14px; display: grid; grid-template-columns: 1fr 1fr; }
+.alan > button {
+  display: block;
+  padding: 10px 14px;
+  border: 0;
+  background: none;
+  text-align: left;
+  font: inherit;
+  font-size: 14.5px;
+  color: inherit;
+  cursor: pointer;
+  border-radius: 13px;
+  min-width: 0;
+}
+.alan > button + button { border-left: 1px solid #b0b0b0; border-radius: 0 13px 0 0; }
+.alan > button:first-child { border-radius: 13px 0 0 0; }
+.alan > .misafir { grid-column: 1 / -1; border-left: 0; border-top: 1px solid #b0b0b0; border-radius: 0 0 13px 13px; display: flex; justify-content: space-between; align-items: center; }
+.alan > button[data-etkin] { box-shadow: inset 0 0 0 2px var(--lb-yazi); border-radius: 13px; }
+.alan small { display: block; font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+
+.acilir {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 30;
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 10px 40px rgb(0 0 0 / 0.18);
+  padding: 22px 26px 16px;
+  animation: gel 0.28s var(--lb-yay);
+}
+@keyframes gel { from { opacity: 0; transform: translateY(-6px) scale(0.98); } }
+.takvim { width: min(680px, calc(100vw - 48px)); }
+.misafirPanel { left: 0; width: auto; padding-top: 10px; }
+.altSatir { display: flex; justify-content: flex-end; padding-top: 10px; }
+.kapatDugme {
+  height: 36px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--lb-yazi);
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+.mobilMisafir { margin-top: 18px; padding-top: 6px; border-top: 1px solid var(--lb-cizgi); }
+.kaydet {
+  width: 100%;
+  height: 46px;
+  margin-top: 18px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--lb-turuncu);
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+}
+.kaydet:disabled { background: #d9d9d7; cursor: default; }
+@media (prefers-reduced-motion: reduce) { .acilir { animation: none; } }

@@ -4,27 +4,36 @@ import { z } from "zod";
 import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
 
-// Kullanıcının kendi profili. Yalnızca ad ve telefon değiştirilebilir:
-// email kimlik olarak kullanılıyor (girişin anahtarı), rol ve isActive ise
+// Kullanıcının kendi profili: ad, telefon, doğum tarihi, uyruk. Alanlar
+// ayrı ayrı güncellenebilir (Hesabım'da satır satır düzenleniyor). E-posta
+// kimlik olarak kullanılıyor (girişin anahtarı), rol ve isActive ise
 // yönetici yetkisinde — bunları buradan değiştirilebilir yapmak yetki
 // yükseltme yolu açardı.
 
-const profileSchema = z.object({
-  name: z.string().trim().min(2, "Ad en az 2 karakter olmalı").max(100),
-  phone: z
-    .string()
-    .trim()
-    .min(7, "Telefon numarası geçersiz")
-    .max(20)
-    .optional(),
-});
+const tarihGecerli = (s: string) => {
+  const d = new Date(`${s}T00:00:00Z`);
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s && d.getTime() < Date.now() && d.getUTCFullYear() >= 1900;
+};
+
+const profileSchema = z
+  .object({
+    name: z.string().trim().min(2, "Ad en az 2 karakter olmalı").max(100).optional(),
+    // Boş dize telefonu siler.
+    phone: z.union([z.literal(""), z.string().trim().min(7, "Telefon numarası geçersiz").max(20)]).optional(),
+    birthDate: z.union([z.literal(""), z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(tarihGecerli, "Doğum tarihi geçersiz")]).optional(),
+    nationality: z.string().regex(/^[A-Z]{2}$/, "Uyruk geçersiz").optional(),
+  })
+  .refine((v) => Object.values(v).some((x) => x !== undefined), "Değiştirilecek alan yok");
 
 const PUBLIC_FIELDS = {
   id: true,
   email: true,
   name: true,
   phone: true,
+  birthDate: true,
+  nationality: true,
   role: true,
+  createdAt: true,
 } as const;
 
 export async function GET() {
@@ -69,13 +78,18 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    const { name, phone } = parsed.data;
+    const { name, phone, birthDate, nationality } = parsed.data;
 
     // Hedef her zaman oturumdaki kullanıcı; gövdeden gelen bir id kabul
     // edilmiyor ki başkasının profili güncellenemesin.
     const user = await prisma.user.update({
       where: { id: session.user.id },
-      data: { name, phone: phone ?? null },
+      data: {
+        ...(name !== undefined ? { name } : {}),
+        ...(phone !== undefined ? { phone: phone || null } : {}),
+        ...(birthDate !== undefined ? { birthDate: birthDate || null } : {}),
+        ...(nationality !== undefined ? { nationality } : {}),
+      },
       select: PUBLIC_FIELDS,
     });
 

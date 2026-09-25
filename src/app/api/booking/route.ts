@@ -129,6 +129,8 @@ export async function POST(request: NextRequest) {
         roomConfirmationCodes: (apiBooking.roomConfirmationCodes ?? []) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
         appliedPriceRules: priceResult.appliedRules as any, // eslint-disable-line @typescript-eslint/no-explicit-any
         source: agencyId ? "AGENCY" : "CUSTOMER",
+        // Ödeme sayfasındaki özel istek; rezervasyon detayında görünür.
+        notes: input.additionalInfo ?? null,
       },
     });
 

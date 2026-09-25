@@ -1,0 +1,176 @@
+/* Masaüstü ızgara: 1 büyük + 4 küçük; az fotoğrafta sütunlar daralır. */
+.izgara {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 8px;
+  height: clamp(300px, 40vw, 500px);
+  border-radius: 20px;
+  overflow: hidden;
+}
+.izgara[data-adet="1"] { grid-template-columns: 1fr; }
+.izgara[data-adet="2"], .izgara[data-adet="3"] { grid-template-columns: 2fr 1fr; }
+.izgara[data-adet="4"] { grid-template-columns: 2fr 1fr 1fr; }
+.izgara[data-adet="4"] > button:nth-child(4) { grid-column: 2 / 4; }
+.izgara > button { padding: 0; border: 0; background: var(--lb-kart); cursor: pointer; overflow: hidden; min-height: 0; }
+.izgara > button:first-child { grid-row: 1 / 3; }
+.izgara[data-adet="2"] > button:nth-child(2) { grid-row: 1 / 3; }
+.izgara img { width: 100%; height: 100%; object-fit: cover; display: block; transition: filter 0.25s, transform 0.6s var(--lb-yay); }
+.izgara:hover img { filter: brightness(0.88); }
+.izgara > button:hover img { filter: none; transform: scale(1.02); }
+.izgara > .tumu {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 13px;
+  background: #fff;
+  border: 1px solid var(--lb-yazi);
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  overflow: visible;
+}
+.izgara > .tumu:hover { background: var(--lb-kart); }
+.mobil { display: none; }
+.bos {
+  position: relative;
+  height: 260px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 8px;
+  border-radius: 20px;
+  background: linear-gradient(160deg, #f6f5f3, #ecebe8);
+  color: var(--lb-soluk);
+  font-weight: 500;
+}
+.bos .mgDugmeler { display: none; }
+
+.mgDugmeler { position: absolute; inset: calc(12px + env(safe-area-inset-top, 0px)) 14px auto; display: flex; justify-content: space-between; pointer-events: none; }
+.mgDugmeler > * { pointer-events: auto; }
+
+@media (max-width: 720px) {
+  .izgara { display: none; }
+  .mobil { display: block; position: relative; }
+  .serit { display: flex; height: 300px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; background: var(--lb-kart); }
+  .serit::-webkit-scrollbar { display: none; }
+  .serit img { flex: none; width: 100%; height: 100%; object-fit: cover; scroll-snap-align: start; }
+  .sayac {
+    position: absolute;
+    right: 14px;
+    bottom: 14px;
+    padding: 3px 10px;
+    border-radius: 8px;
+    background: rgb(0 0 0 / 0.6);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .bos { border-radius: 0; }
+  .bos .mgDugmeler { display: flex; }
+}
+
+/* Fotoğraf turu */
+.tur {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: #fff;
+  overflow-y: auto;
+  opacity: 0;
+  transform: translateY(30px);
+  pointer-events: none;
+  transition: opacity 0.25s, transform 0.4s var(--lb-yay);
+}
+.tur[data-acik] { opacity: 1; transform: none; pointer-events: auto; }
+.turUst {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: calc(12px + env(safe-area-inset-top, 0px)) 24px 12px;
+  background: #fff;
+}
+.yuvarlak {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 0;
+  background: none;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: inherit;
+}
+.yuvarlak:hover { background: var(--lb-kart); }
+.turIc { max-width: 1040px; margin: 0 auto; padding: 8px 24px 80px; }
+.turIc h2 { font-size: 26px; margin: 8px 0 20px; }
+.turKucuk { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 16px; margin-bottom: 48px; }
+.turKucuk button { padding: 0; border: 0; background: none; text-align: left; cursor: pointer; font-size: 13.5px; line-height: 1.35; }
+.turKucuk img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 10px; display: block; margin-bottom: 6px; background: var(--lb-kart); transition: transform 0.3s var(--lb-yay); }
+.turKucuk button:hover img { transform: scale(1.04); }
+.turBolum { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 32px; padding-block: 24px; }
+.turBolum h3 { position: sticky; top: 80px; align-self: start; margin: 0; font-size: 20px; }
+.turFoto { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.turFoto button { padding: 0; border: 0; background: var(--lb-kart); cursor: zoom-in; border-radius: 4px; overflow: hidden; }
+.turFoto button:nth-child(3n + 1) { grid-column: 1 / -1; }
+.turFoto img { width: 100%; display: block; aspect-ratio: 3 / 2; object-fit: cover; }
+.turFoto button:nth-child(3n + 1) img { aspect-ratio: 16 / 10; }
+
+/* Işık kutusu */
+.isik {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: #0d0d0d;
+  color: #fff;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.isik[data-acik] { opacity: 1; pointer-events: auto; }
+.isikUst { display: flex; justify-content: space-between; align-items: center; padding: calc(12px + env(safe-area-inset-top, 0px)) 24px 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.isikUst .yuvarlak:hover { background: rgb(255 255 255 / 0.12); }
+.bosluk { width: 36px; }
+.isikIc { position: relative; display: grid; place-items: center; min-height: 0; padding: 0 88px 32px; }
+.isikIc img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 6px; animation: belir 0.3s; }
+@keyframes belir { from { opacity: 0; transform: scale(0.985); } }
+.ok {
+  position: absolute;
+  top: 50%;
+  width: 48px;
+  height: 48px;
+  margin-top: -40px;
+  border-radius: 999px;
+  border: 1px solid rgb(255 255 255 / 0.4);
+  background: rgb(255 255 255 / 0.06);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.ok:hover { background: rgb(255 255 255 / 0.16); }
+.okGeri { left: 24px; }
+.okIleri { right: 24px; }
+
+@media (max-width: 720px) {
+  .turIc { padding-inline: 16px; }
+  .turUst { padding-inline: 12px; }
+  .turBolum { grid-template-columns: 1fr; gap: 12px; }
+  .turBolum h3 { position: static; }
+  .isikIc { padding: 0 0 24px; }
+  .ok { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tur, .isik, .izgara img, .turKucuk img { transition: none; }
+  .isikIc img { animation: none; }
+}

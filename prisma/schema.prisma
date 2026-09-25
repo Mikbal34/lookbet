@@ -64,6 +64,10 @@ model User {
   email        String    @unique
   name         String
   phone        String?
+  /// YYYY-AA-GG. Ödeme adımında ilk misafirin doğum tarihini doldurur.
+  birthDate    String?
+  /// ISO ülke kodu (TR, DE...). Hesaptaki uyruk; aramaya henüz bağlı değil.
+  nationality  String?
   passwordHash String
   role         UserRole  @default(CUSTOMER)
   isActive     Boolean   @default(true)
@@ -78,8 +82,27 @@ model User {
   notifications   Notification[]
   priceRules      PriceRule[]    @relation("CreatedByAdmin")
   reviewedApplications AgencyApplication[] @relation("ReviewedApplications")
+  savedGuests     SavedGuest[]
 
   @@map("users")
+}
+
+// Hesaptaki "Kayıtlı misafirler": sık birlikte seyahat edilen kişiler.
+// Ödeme adımında misafir formuna tek dokunuşla eklenir.
+model SavedGuest {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  surname   String
+  /// YYYY-AA-GG
+  birthDate String
+  gender    String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("saved_guests")
 }
 
 // Müşteri girişi için tek kullanımlık email kodu (passwordless login).

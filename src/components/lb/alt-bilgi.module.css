@@ -1,0 +1,53 @@
+.alt { background: #f7f7f7; border-top: 1px solid var(--lb-cizgi); padding-block: 48px 32px; font-size: 14px; }
+.dis { max-width: 1760px; margin: 0 auto; padding-inline: var(--lb-kenar); }
+.baslik { margin: 0 0 12px; font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+.sekmeler { display: flex; gap: 28px; border-bottom: 1px solid #dddddd; overflow-x: auto; scrollbar-width: none; }
+.sekmeler::-webkit-scrollbar { display: none; }
+.sekme {
+  position: relative;
+  padding: 10px 0 12px;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  color: var(--lb-soluk);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.sekme[aria-selected="true"] { color: var(--lb-yazi); }
+.sekme::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--lb-yazi);
+  transform: scaleX(0);
+  transition: transform 0.3s var(--lb-yay);
+}
+.sekme[aria-selected="true"]::after { transform: none; }
+.liste { list-style: none; margin: 0; padding: 24px 0 8px; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 20px 24px; }
+.liste li { animation: gir 0.45s var(--lb-yay) both; animation-delay: calc(var(--s, 0) * 22ms); }
+@keyframes gir { from { opacity: 0; transform: translateY(8px); } }
+.liste a { color: var(--lb-yazi); text-decoration: none; display: grid; }
+.liste a:hover b { text-decoration: underline; }
+.liste b { font-weight: 600; }
+.liste span { color: var(--lb-soluk); }
+.daha { border: 0; background: none; font-weight: 600; cursor: pointer; padding: 0; display: inline-flex; align-items: center; gap: 4px; }
+.sutunlar { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; border-top: 1px solid #dddddd; margin-top: 32px; padding-block: 40px; }
+.sutunlar h3 { margin: 0 0 12px; font-size: 14px; font-weight: 700; }
+.sutunlar ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.sutunlar a, .taban a { color: var(--lb-yazi); text-decoration: none; }
+.sutunlar a:hover, .taban a:hover { text-decoration: underline; }
+.taban { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px 24px; border-top: 1px solid #dddddd; padding-top: 24px; }
+.taban p { margin: 0; }
+.taban span { margin: 0 4px; }
+.tabanSag { display: flex; gap: 16px; }
+.tabanSag button { display: inline-flex; align-items: center; gap: 6px; border: 0; background: none; font-weight: 600; cursor: pointer; padding: 0; }
+@media (max-width: 1100px) { .liste { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 720px) {
+  .liste { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sutunlar { grid-template-columns: 1fr; gap: 28px; }
+  .taban { flex-direction: column-reverse; align-items: flex-start; }
+}
+@media (prefers-reduced-motion: reduce) { .liste li { animation: none; } .sekme::after { transition: none; } }

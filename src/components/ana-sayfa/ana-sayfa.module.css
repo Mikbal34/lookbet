@@ -1,0 +1,209 @@
+.sayfa { min-height: 100dvh; }
+
+/* ── Üst çubuk: zemin kaydırdıkça (--p) ve genişleyince (--g) beliriyor ── */
+.ust { position: fixed; inset: 0 0 auto; z-index: 30; padding-top: env(safe-area-inset-top, 0px); pointer-events: none; }
+.ustZemin {
+  position: absolute;
+  inset: 0 0 auto;
+  height: calc(80px + var(--g, 0) * 106px + env(safe-area-inset-top, 0px));
+  background: rgb(255 255 255 / 0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--lb-cizgi);
+  opacity: var(--p, 0);
+}
+.ustIc { position: relative; height: 80px; display: flex; align-items: center; justify-content: flex-end; padding-inline: var(--lb-kenar); }
+.sag { display: flex; gap: 8px; pointer-events: auto; }
+.ustSekmeler {
+  position: absolute;
+  left: 50%;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  transform: translateX(-50%) translateY(calc((1 - var(--g, 0)) * -10px));
+  display: flex;
+  gap: 28px;
+  opacity: var(--g, 0);
+}
+.ust[data-genis] .ustSekmeler { pointer-events: auto; }
+.uSekme {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 56px;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  color: var(--lb-soluk);
+  font-weight: 600;
+}
+.uSekme img { transition: transform 0.3s var(--lb-zipla); }
+.uSekme:hover img { transform: scale(1.08); }
+.uSekme[aria-selected="true"] { color: var(--lb-yazi); }
+.uSekme::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--lb-yazi);
+  transform: scaleX(0);
+  transition: transform 0.3s var(--lb-yay);
+}
+.uSekme[aria-selected="true"]::after { transform: none; }
+.perde { position: fixed; inset: 0; z-index: 29; background: rgb(0 0 0 / 0.28); opacity: var(--g, 0); pointer-events: none; }
+.perde[data-acik] { pointer-events: auto; }
+
+/* ── Uçan logo ── */
+.logoUcan {
+  position: fixed;
+  z-index: 31;
+  left: 0;
+  top: 0;
+  margin: 0;
+  font-size: 80px;
+  line-height: 1;
+  white-space: nowrap;
+  transform-origin: 0 0;
+  will-change: transform;
+  color: var(--lb-yazi);
+  text-decoration: none;
+  animation: belir 0.7s var(--lb-yay) both;
+}
+@keyframes belir { from { opacity: 0; } }
+.logoYer { font-size: clamp(44px, 7vw, 80px); line-height: 1; visibility: hidden; margin: 0; }
+
+/* ── Açılış ── */
+.acilis { min-height: 100dvh; display: grid; grid-template-rows: 1fr auto; background: linear-gradient(#fff 55%, #f7f7f6); }
+.acilisIc {
+  width: 100%;
+  max-width: 1760px;
+  margin: 0 auto;
+  padding: 96px var(--lb-kenar) 24px;
+  align-self: center;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  gap: clamp(28px, 5vh, 44px);
+}
+.sekmeler { position: relative; display: flex; gap: clamp(8px, 3vw, 36px); transform-origin: 50% 0; }
+.sekme {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 6px 6px 12px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  color: var(--lb-soluk);
+  border-radius: 14px;
+  transition: color 0.2s;
+  animation: sekmeGir 0.6s var(--lb-yay) both;
+  animation-delay: calc(120ms + var(--i) * 70ms);
+}
+@keyframes sekmeGir { from { opacity: 0; transform: translateY(14px) scale(0.8); } }
+.nesne { display: block; width: 56px; height: 56px; }
+.nesne img { width: 100%; height: 100%; display: block; transition: transform 0.35s var(--lb-zipla), opacity 0.2s, filter 0.2s; }
+.etiket { font-size: 14px; font-weight: 600; }
+.sekme[aria-selected="true"] { color: var(--lb-yazi); }
+.sekme:not([aria-selected="true"]) img { filter: saturate(0.8); opacity: 0.8; }
+.sekme:hover img { transform: translateY(-3px) scale(1.07); opacity: 1; filter: none; }
+.sekme[data-oynuyor] img { animation: hopla 0.6s var(--lb-yay); }
+@keyframes hopla {
+  30% { transform: translateY(-9px) rotate(-8deg) scale(1.1); }
+  55% { transform: translateY(0) rotate(4deg) scale(0.96, 1.04); }
+  75% { transform: rotate(-2deg); }
+}
+.gosterge { position: absolute; bottom: 0; left: 0; height: 2px; border-radius: 2px; background: var(--lb-yazi); transition: transform 0.35s var(--lb-yay), width 0.35s var(--lb-yay); }
+.aramaYer { width: min(860px, 100%); height: 66px; }
+.asagi {
+  justify-self: center;
+  margin-bottom: 20px;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid var(--lb-cizgi);
+  background: #fff;
+  cursor: pointer;
+  color: var(--lb-soluk);
+  animation: salla 2.4s ease-in-out infinite;
+}
+@keyframes salla { 50% { transform: translateY(5px); } }
+
+/* ── Oteller ── */
+.oteller {
+  max-width: 1760px;
+  margin: 0 auto;
+  padding: 56px var(--lb-kenar) 96px;
+  display: grid;
+  gap: 48px;
+}
+.bolgeUst { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.bolge h2 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+.bolge h2 a { color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+.bolge h2 a svg { width: 28px; height: 28px; padding: 6px; border-radius: 999px; background: var(--lb-kart); transition: transform 0.25s var(--lb-yay); }
+.bolge h2 a:hover svg { transform: translateX(3px); }
+.oklar { display: flex; gap: 8px; }
+.ok {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid #d4d4d4;
+  background: #fff;
+  color: var(--lb-yazi);
+  cursor: pointer;
+  transition: opacity 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+.ok:hover:not(:disabled) { box-shadow: var(--lb-golge); transform: scale(1.06); }
+.ok:disabled { opacity: 0.3; cursor: default; }
+.serit {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - 5 * 16px) / 6);
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.serit::-webkit-scrollbar { display: none; }
+.kart { position: relative; scroll-snap-align: start; min-width: 0; opacity: 0; transform: translateY(16px); transition: opacity 0.5s, transform 0.6s var(--lb-yay); transition-delay: calc(var(--s, 0) * 60ms); }
+.bolge[data-goruldu] .kart { opacity: 1; transform: none; }
+.kartA { display: block; color: inherit; text-decoration: none; border-radius: 20px; }
+.foto { position: relative; aspect-ratio: 1; border-radius: 20px; overflow: hidden; background: var(--lb-kart); }
+.foto img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.6s var(--lb-yay); }
+.kart:hover .foto img { transform: scale(1.04); }
+.kalp { position: absolute; top: 10px; right: 10px; width: 36px; height: 36px; display: grid; place-items: center; background: none; border: 0; cursor: pointer; color: #fff; }
+.kalp svg { fill: rgb(0 0 0 / 0.35); transition: fill 0.15s; }
+.kalp[aria-pressed="true"] svg { fill: var(--lb-turuncu); animation: pat 0.45s var(--lb-zipla); }
+@keyframes pat { 35% { transform: scale(0.7); } }
+.kart h3 { margin: 10px 0 0; font-size: 15px; font-weight: 600; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kart p { margin: 2px 0 0; color: var(--lb-soluk); }
+.bos { display: grid; justify-items: center; gap: 12px; padding: 48px 16px; color: var(--lb-soluk); }
+
+@media (max-width: 1400px) { .serit { grid-auto-columns: calc((100% - 4 * 16px) / 5); } }
+@media (max-width: 1100px) { .serit { grid-auto-columns: calc((100% - 3 * 16px) / 4); } .ustSekmeler span { display: none; } .ustSekmeler { gap: 12px; } }
+@media (max-width: 860px) { .serit { grid-auto-columns: calc((100% - 2 * 16px) / 2.6); } }
+@media (hover: none) { .oklar { display: none; } }
+@media (max-width: 720px) {
+  .ustIc { height: 72px; padding-inline: 16px; }
+  .dunya { display: none; }
+  .aramaYer { height: 62px; max-width: 440px; }
+  .sekmeler { width: 100%; justify-content: space-between; gap: 0; }
+  .nesne { width: 46px; height: 46px; }
+  .etiket { font-size: 12.5px; }
+  .serit { grid-auto-columns: 72%; }
+  .oteller { padding-block: 32px 72px; gap: 36px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sekme, .asagi, .logoUcan, .kart, .kalp svg, .sekme img { animation: none !important; transition: none !important; }
+  .kart { opacity: 1; transform: none; }
+}

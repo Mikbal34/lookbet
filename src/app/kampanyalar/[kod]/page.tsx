@@ -1,13 +1,9 @@
 // Tek kampanya sayfası — Pegasus'un kampanya detayının karşılığı:
 // tepede fotoğraf ve üstünde başlık, ona binen "geçerlilik tarihi" kartı,
 // altında açıklama ve indirim kodu, en altta sabit CTA.
-//
-// Kapatma (X) app'te fotoğrafın üstünde duruyor; web'de normal navbar ve
-// footer olduğu için gerek yok.
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { X } from "lucide-react";
 import { Navbar, Footer } from "@/components/layout";
 import { CAMPAIGNS } from "@/lib/constants/campaigns";
 import type { Metadata } from "next";
@@ -40,9 +36,7 @@ export default async function KampanyaPage({ params }: RouteParams) {
 
   return (
     <div className="flex min-h-screen flex-col bg-paper">
-      <div className="web-only">
-        <Navbar />
-      </div>
+      <Navbar />
 
       <main className="flex-1">
         {/* Hero — fotoğraf ve üstünde başlık */}
@@ -59,16 +53,6 @@ export default async function KampanyaPage({ params }: RouteParams) {
             className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/40 to-ink/45"
           />
 
-          {/* z-10 şart: altındaki başlık bloğu da konumlandırılmış ve DOM'da
-              sonra geliyor; z-index verilmezse onun üstünde kalıp tıklamayı
-              yutuyor. */}
-          <Link
-            href="/kampanyalar"
-            aria-label="Kapat"
-            className="b2c-only absolute top-[calc(0.75rem+env(safe-area-inset-top))] right-3 z-10 flex size-11 items-center justify-center rounded-full bg-ink/40 text-white backdrop-blur active:bg-ink/60"
-          >
-            <X className="size-5" aria-hidden="true" />
-          </Link>
 
           <div className="relative mx-auto flex h-full max-w-[900px] flex-col justify-end px-4 pb-8 sm:px-6">
             <span className="text-[11px] font-bold tracking-[0.14em] text-white/80 uppercase">

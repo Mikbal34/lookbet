@@ -1,0 +1,88 @@
+.kucukBaslik { font-size: 12px; font-weight: 600; color: var(--lb-soluk); padding: 4px 12px 10px; margin: 0; }
+.yer {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 12px;
+  border: 0;
+  background: none;
+  border-radius: 16px;
+  cursor: pointer;
+  text-align: left;
+}
+.yer:hover, .yer:focus-visible { background: var(--lb-kart); }
+.kutu { width: 52px; height: 52px; border-radius: 14px; background: var(--lb-kart); display: grid; place-items: center; flex: none; }
+.yer b { display: block; font-weight: 600; }
+.yer small { color: var(--lb-soluk); font-size: 13px; }
+.bosOneri { display: grid; gap: 4px; padding: 8px 12px; }
+.bosOneri > span { color: var(--lb-soluk); font-size: 14px; margin-bottom: 8px; }
+.bosOneri .yer { margin-inline: -12px; width: calc(100% + 24px); }
+
+/* takvim */
+.takvimHizli { display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 32px; }
+.hizli { display: grid; gap: 12px; align-content: start; }
+.hizli button {
+  text-align: left;
+  padding: 16px 18px;
+  border: 1px solid var(--lb-cizgi);
+  border-radius: 16px;
+  background: #fff;
+  cursor: pointer;
+  display: grid;
+  gap: 2px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.hizli button:hover { border-color: #b0b0b0; }
+.hizli button[aria-pressed="true"] { border-color: var(--lb-yazi); box-shadow: inset 0 0 0 1px var(--lb-yazi); }
+.hizli b { font-weight: 600; font-size: 15px; }
+.hizli span { color: var(--lb-soluk); font-size: 13.5px; }
+.aylar { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+.aylar[data-tek] { grid-template-columns: 1fr; }
+.ay { width: 100%; max-width: 420px; justify-self: center; }
+.ayUst { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.ayUst h3 { margin: 0; font-size: 16px; flex: 1; text-align: center; font-weight: 700; }
+.ayOk { width: 32px; height: 32px; border-radius: 999px; border: 0; background: none; display: grid; place-items: center; cursor: pointer; }
+.ayOk:hover { background: var(--lb-kart); }
+.gunler { display: grid; grid-template-columns: repeat(7, 1fr); row-gap: 2px; text-align: center; }
+.hg { font-size: 12px; color: var(--lb-soluk); font-weight: 600; padding: 6px 0; }
+.gun {
+  height: 42px;
+  border: 0;
+  background: none;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.gun:hover:not(:disabled) { box-shadow: inset 0 0 0 1.5px var(--lb-yazi); }
+.gun:disabled { color: #c4c4c4; cursor: default; text-decoration: line-through; }
+.gun[data-arada] { background: var(--lb-kart); border-radius: 0; }
+.gun[data-bas], .gun[data-son] { background: var(--lb-yazi); color: #fff; }
+.tarihAlt { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; font-size: 14px; color: var(--lb-soluk); }
+.metinDugme { border: 0; background: none; font-weight: 600; text-decoration: underline; cursor: pointer; padding: 6px; color: var(--lb-yazi); }
+.metinDugme:disabled { opacity: 0.35; cursor: default; }
+
+/* misafirler */
+.sayac { display: flex; align-items: center; justify-content: space-between; padding: 16px 0; }
+.sayac + .sayac { border-top: 1px solid var(--lb-cizgi); }
+.sayac b { display: block; font-weight: 600; }
+.sayac small { color: var(--lb-soluk); font-size: 13px; }
+.sayacD { display: flex; align-items: center; gap: 14px; }
+.sayacD output { width: 20px; text-align: center; font-weight: 600; font-variant-numeric: tabular-nums; }
+.adim { width: 34px; height: 34px; border-radius: 12px; border: 1px solid #b0b0b0; background: #fff; display: grid; place-items: center; cursor: pointer; }
+.adim:disabled { opacity: 0.3; cursor: default; }
+.yaslar { border-top: 1px solid var(--lb-cizgi); padding: 14px 0 6px; }
+.yaslar p { margin: 0 0 10px; font-size: 13px; color: var(--lb-soluk); }
+.yaslar > div { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.yaslar label { display: grid; gap: 4px; font-size: 12.5px; color: var(--lb-soluk); }
+.yaslar select { height: 40px; border: 1px solid #b0b0b0; border-radius: 10px; padding: 0 10px; background: #fff; color: var(--lb-yazi); font-size: 14px; }
+
+@media (max-width: 720px) {
+  .takvimHizli { grid-template-columns: 1fr; gap: 16px; }
+  .hizli { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .hizli button { padding: 10px 12px; }
+  .hizli b { font-size: 13.5px; }
+  .hizli span { font-size: 12px; }
+}

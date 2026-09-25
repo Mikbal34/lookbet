@@ -88,9 +88,6 @@ export type { SkeletonProps } from "./skeleton";
 export { Spinner } from "./spinner";
 export type { SpinnerProps } from "./spinner";
 
-export { Stepper } from "./stepper";
-export type { StepperProps } from "./stepper";
-
 export { Switch } from "./switch";
 export type { SwitchProps } from "./switch";
 

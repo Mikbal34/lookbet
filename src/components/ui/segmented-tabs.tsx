@@ -7,7 +7,7 @@
 // duruyor; altta hap kayıyor, üstte de hap kayıyor.
 //
 // Gösterge ayrı bir katman ve transform ile kayıyor — her butona ayrı ayrı
-// arka plan verip renk geçirmek yerine. transform GPU'da çalışıyor, WebView'de
+// arka plan verip renk geçirmek yerine. transform GPU'da çalışıyor, telefonda
 // arka plan geçişinden belirgin biçimde akıcı.
 //
 // Görünen hap 36px ama buton 44px: dokunma hedefi küçülmeden çubuk inceliyor.

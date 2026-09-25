@@ -157,9 +157,7 @@ export function Navbar({
         </div>
 
         {/* Mobile */}
-        {/* Hamburger yalnızca web: app modunda gezinme alt sekme
-            çubuğunda, kalan maddeler Hesabım sekmesinde. */}
-        <div className="web-only ml-auto flex items-center gap-1 lg:hidden">
+        <div className="ml-auto flex items-center gap-1 lg:hidden">
           <button
             type="button"
             onClick={() => setMobileOpen((o) => !o)}
@@ -177,7 +175,7 @@ export function Navbar({
       </div>
 
       {mobileOpen && (
-        <div className="web-only max-h-[calc(100dvh-72px)] overflow-y-auto overscroll-contain border-t border-white/10 bg-navy lg:hidden">
+        <div className="max-h-[calc(100dvh-72px)] overflow-y-auto overscroll-contain border-t border-white/10 bg-navy lg:hidden">
           <div className="mx-auto max-w-[1200px] px-4 py-2 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:px-6">
             <nav className="flex flex-col">
               {[

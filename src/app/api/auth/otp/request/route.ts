@@ -1,7 +1,10 @@
 // POST /api/auth/otp/request (public)
-// Müşteri passwordless girişi: email'e 6 haneli kod gönderir.
-// Hesap yoksa da kod gönderilir — doğrulama sonrası hesap otomatik açılır.
-//   Body: { email }
+// Şifresiz giriş: e-postaya 6 haneli kod gönderir.
+//   Body: { email, tur?: "musteri" | "acente" }
+//   musteri (varsayılan): hesap yoksa da gönderilir, doğrulamada hesap açılır.
+//     Acente/yönetici hesapları bu akışı kullanamaz.
+//   acente: yalnız kayıtlı, etkin ve onaylı acente ya da yönetici hesabına
+//     gönderilir; bu yoldan hesap açılmaz.
 
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -10,6 +13,7 @@ import { createLoginCode, sendLoginCode } from "@/lib/auth/login-code";
 
 const schema = z.object({
   email: z.string().email("Geçerli bir email adresi girin"),
+  tur: z.enum(["musteri", "acente"]).default("musteri"),
 });
 
 export async function POST(request: Request): Promise<NextResponse> {
@@ -25,12 +29,26 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     const email = parsed.data.email.toLowerCase().trim();
 
-    // Şifreli hesaplar (acente/admin) bu akışı kullanamaz — kendi girişleri var.
     const existing = await prisma.user.findUnique({
       where: { email },
-      select: { role: true, isActive: true },
+      select: { role: true, isActive: true, agency: { select: { isApproved: true } } },
     });
-    if (existing && existing.role !== "CUSTOMER") {
+
+    if (parsed.data.tur === "acente") {
+      if (!existing || existing.role === "CUSTOMER") {
+        return NextResponse.json(
+          { error: "Bu e-postayla kayıtlı bir acente hesabı yok." },
+          { status: 404 }
+        );
+      }
+      if (existing.role === "AGENCY" && existing.agency && !existing.agency.isApproved) {
+        return NextResponse.json(
+          { error: "Acente hesabın henüz onaylanmadı." },
+          { status: 403 }
+        );
+      }
+    } else if (existing && existing.role !== "CUSTOMER") {
+      // Acente/yönetici hesapları kendi giriş sayfalarını kullanır.
       return NextResponse.json(
         { error: "Bu hesap için lütfen acente/yönetici girişini kullanın." },
         { status: 403 }

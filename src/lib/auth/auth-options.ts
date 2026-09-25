@@ -116,6 +116,44 @@ const providers: NextAuthOptions["providers"] = [
       };
     },
   }),
+
+  // Acente ve yönetici girişi: e-posta + tek kullanımlık kod (şifresiz).
+  // Hesap açmaz; yalnız kayıtlı, etkin ve onaylı hesaplar girer.
+  CredentialsProvider({
+    id: "acente-otp",
+    name: "Acente Kod",
+    credentials: {
+      email: { label: "Email", type: "email" },
+      code: { label: "Kod", type: "text" },
+    },
+    async authorize(credentials) {
+      if (!credentials?.email || !credentials?.code) {
+        throw new Error("E-posta ve kod gereklidir");
+      }
+      const email = credentials.email.toLowerCase().trim();
+      const valid = await verifyLoginCode(email, credentials.code.trim());
+      if (!valid) {
+        throw new Error("Kod hatalı veya süresi dolmuş");
+      }
+      const user = await prisma.user.findUnique({ where: { email }, include: { agency: true } });
+      if (!user || user.role === "CUSTOMER") {
+        throw new Error("Bu e-postayla kayıtlı bir acente hesabı yok");
+      }
+      if (!user.isActive) {
+        throw new Error("Hesabınız devre dışı bırakılmış");
+      }
+      if (user.role === "AGENCY" && user.agency && !user.agency.isApproved) {
+        throw new Error("Acente hesabınız henüz onaylanmamış");
+      }
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        agencyId: user.agency?.id || null,
+      };
+    },
+  }),
 ];
 
 // Google / Apple: env tanımlıysa aktif olur.
@@ -158,7 +196,12 @@ export const authOptions: NextAuthOptions = {
       }
       return true;
     },
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account, trigger, session }) {
+      // Giriş penceresindeki "Hesabını tamamla" adımı adı güncelliyor
+      // (useSession().update); jetondaki ad da yenilensin.
+      if (trigger === "update" && typeof session?.name === "string") {
+        token.name = session.name.trim().slice(0, 100);
+      }
       if (user) {
         if (account?.provider === "google" || account?.provider === "apple") {
           // OAuth user objesi bizim alanları taşımaz; DB'den doldur.

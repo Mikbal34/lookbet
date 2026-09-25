@@ -45,11 +45,11 @@ export function katla(s: string): string {
 }
 
 /** SQL'de katla()'nın karşılığı. translate lower'dan ÖNCE: lower('İ') güvenilmez. */
-const TR_KATLA = (kolon: string) =>
+export const TR_KATLA = (kolon: string) =>
   `lower(translate(${kolon}, 'İIığĞüÜşŞöÖçÇ', 'iiigguussoocc'))`;
 
 /** LIKE joker karakterlerini (% _ \) kaçır: kullanıcı "%" yazarsa her şey eşleşmesin. */
-const likeKacir = (s: string) => s.replace(/[\\%_]/g, (m) => `\\${m}`);
+export const likeKacir = (s: string) => s.replace(/[\\%_]/g, (m) => `\\${m}`);
 
 export interface HedefSonucu {
   kodlar: string[];
