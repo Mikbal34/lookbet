@@ -9,7 +9,7 @@
 import * as React from "react";
 import { Ikon } from "@/components/lb/ikon";
 import { Nesne } from "@/components/lb/nesne";
-import { useKatman } from "@/components/lb/pencere";
+import { Govdeye, useKatman } from "@/components/lb/pencere";
 import type { RoomResult } from "@/lib/royal-api/types";
 import { iptalOzeti, odaOzellikleri, para } from "./yardimci";
 import s from "./oda-penceresi.module.css";
@@ -92,7 +92,8 @@ export function OdaPenceresi({ baslangic, odalar, gece, misafir, seciliKod, onSe
   };
 
   return (
-    <div className={s.kap} data-acik={acik || undefined} onClick={kapatDis} aria-hidden={!acik}>
+    <Govdeye>
+    <div className={`lb ${s.kap}`} data-acik={acik || undefined} onClick={kapatDis} aria-hidden={!acik}>
       <div className={s.sahne} onClick={kapatDis}>
         {odalar.length > 1 && (
           <nav className={s.ray} aria-label="Diğer odalar">
@@ -119,6 +120,7 @@ export function OdaPenceresi({ baslangic, odalar, gece, misafir, seciliKod, onSe
         </div>
       </div>
     </div>
+    </Govdeye>
   );
 }
 

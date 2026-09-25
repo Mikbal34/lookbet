@@ -12,6 +12,7 @@
 // hızlı kaydırmada bile bir anda bitmiyor. Konum ve boyutlar requestAnimationFrame
 // içinde doğrudan stile yazılıyor; React yeniden çizimi yok.
 
+import { kampanyaHedefi, kampanyaNesnesi, type VitrinKampanya } from "@/components/kampanya/ortak";
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -107,7 +108,40 @@ function Satir({ satir, aramaEki, fav, onFav }: {
   );
 }
 
-export function AnaSayfa({ satirlar }: { satirlar: AnaSayfaSatiri[] }) {
+/** Vitrindeki kampanyalar (Yönetim › Kampanyalar), bölge satırlarının üstünde yatay şerit. */
+function Kampanyalar({ kampanyalar }: { kampanyalar: VitrinKampanya[] }) {
+  return (
+    <section className={s.kampanyalar} aria-labelledby="kampanya-baslik">
+      <div className={s.bolgeUst}>
+        <h2 id="kampanya-baslik" className={s.kampanyaBaslik}>
+          <Link href="/kampanyalar">
+            Kampanyalar <Ikon ad="chevron-right" boyut={16} kalinlik={2.2} />
+          </Link>
+        </h2>
+      </div>
+      <ul className={s.kampanyaSerit}>
+        {kampanyalar.map((k, i) => {
+          const hedef = kampanyaHedefi(k);
+          return (
+            <li key={k.id} style={{ "--s": i } as React.CSSProperties}>
+              <Link href={hedef.href} className={s.kampanya}>
+                <span className={s.kampanyaNesne}><Nesne ad={kampanyaNesnesi(k)} boyut={72} /></span>
+                <span className={s.kampanyaIc}>
+                  <small data-yakinda={k.yakinda || undefined}>{k.tarih}</small>
+                  <b>{k.ad}</b>
+                  <span>{k.aciklama}</span>
+                </span>
+                <b className={`lb-y ${s.kampanyaYuzde}`}>%{k.yuzde.toLocaleString("tr-TR")}</b>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
+export function AnaSayfa({ satirlar, kampanyalar = [] }: { satirlar: AnaSayfaSatiri[]; kampanyalar?: VitrinKampanya[] }) {
   const router = useRouter();
   const [kategori, setKategori] = React.useState<KategoriKodu>("hepsi");
   const [oynayan, setOynayan] = React.useState<KategoriKodu | null>(null);
@@ -384,6 +418,7 @@ export function AnaSayfa({ satirlar }: { satirlar: AnaSayfaSatiri[] }) {
       </section>
 
       <main ref={oteller} className={s.oteller} key={kategori}>
+        {kategori === KATEGORILER[0].kod && kampanyalar.length > 0 && <Kampanyalar kampanyalar={kampanyalar} />}
         {gosterilen.length ? (
           gosterilen.map((r) => <Satir key={r.kod} satir={r} aramaEki={aramaEki} fav={fav} onFav={favDegistir} />)
         ) : (

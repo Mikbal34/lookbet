@@ -4,6 +4,7 @@
 // canlı sonuç sayısını gösterir ve "göster" ile uygulanır.
 
 import * as React from "react";
+import { Govdeye } from "@/components/lb/pencere";
 import { Ikon } from "@/components/lb/ikon";
 import { Nesne, type NesneAdi } from "@/components/lb/nesne";
 import { NATIONALITIES } from "@/lib/constants/nationalities";
@@ -71,7 +72,8 @@ export function FiltrePenceresi({ acik, filtre, oteller, pansiyonlar, uyruk, par
   const degis = (p: Partial<Filtre>) => setT((x) => ({ ...x, ...p }));
 
   return (
-    <div className={s.kap} data-acik={acik || undefined} onClick={(e) => e.target === e.currentTarget && onKapat()} aria-hidden={!acik}>
+    <Govdeye>
+    <div className={`lb ${s.kap}`} data-acik={acik || undefined} onClick={(e) => e.target === e.currentTarget && onKapat()} aria-hidden={!acik}>
       <div className={s.pencere} role="dialog" aria-modal="true" aria-labelledby="filtre-baslik">
         <div className={s.ust}>
           <button ref={kapatDugme} type="button" className={s.kapat} onClick={onKapat} aria-label="Kapat">
@@ -158,5 +160,6 @@ export function FiltrePenceresi({ acik, filtre, oteller, pansiyonlar, uyruk, par
         </div>
       </div>
     </div>
+    </Govdeye>
   );
 }

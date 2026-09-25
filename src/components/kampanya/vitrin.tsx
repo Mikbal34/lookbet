@@ -9,30 +9,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { UstCubuk } from "@/components/lb/ust-cubuk";
 import { AltBilgi } from "@/components/lb/alt-bilgi";
-import { Nesne, type NesneAdi } from "@/components/lb/nesne";
+import { Nesne } from "@/components/lb/nesne";
 import { BOS_ARAMA, aramaAdresi } from "@/components/lb/arama/durum";
-import { katla } from "@/lib/katla";
+import { kampanyaHedefi, kampanyaNesnesi, type VitrinKampanya } from "./ortak";
 import s from "./vitrin.module.css";
-
-export interface VitrinKampanya {
-  id: string;
-  ad: string;
-  tur: "EARLY_BOOKING" | "LAST_MINUTE" | "LONG_STAY" | "DATE_RANGE";
-  yuzde: number;
-  aciklama: string;
-  tarih: string;
-  bolge: string | null;
-  oteller: { kod: string; ad: string }[];
-  yakinda: boolean;
-}
-
-const TUR_NESNE: Record<VitrinKampanya["tur"], NesneAdi> = {
-  EARLY_BOOKING: "kartpostal",
-  LAST_MINUTE: "bavul",
-  LONG_STAY: "anahtar-karti",
-  DATE_RANGE: "indirim",
-};
-const BOLGE_NESNE: Record<string, NesneAdi> = { bodrum: "bodrum", antalya: "antalya", kapadokya: "kapadokya" };
 
 export function KampanyaVitrini({ kampanyalar }: { kampanyalar: VitrinKampanya[] }) {
   const router = useRouter();
@@ -48,13 +28,8 @@ export function KampanyaVitrini({ kampanyalar }: { kampanyalar: VitrinKampanya[]
         {kampanyalar.length ? (
           <div className={s.kartlar}>
             {kampanyalar.map((k, i) => {
-              const nesne = (k.bolge && BOLGE_NESNE[katla(k.bolge)]) || TUR_NESNE[k.tur];
-              const hedef = k.bolge
-                ? aramaAdresi({ ...BOS_ARAMA, yer: k.bolge })
-                : k.oteller.length === 1
-                  ? `/hotel/${k.oteller[0].kod}`
-                  : "/";
-              const dugme = k.bolge ? `${k.bolge} otelleri` : k.oteller.length === 1 ? "Otele bak" : "Otel ara";
+              const nesne = kampanyaNesnesi(k);
+              const { href: hedef, dugme } = kampanyaHedefi(k);
               return (
                 <article key={k.id} className={s.kart} style={{ "--s": i } as React.CSSProperties}>
                   <div className={s.gorsel}>

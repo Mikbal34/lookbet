@@ -1,10 +1,13 @@
 "use client";
 
 // Ortak pencere (Airbnb gibi): bulanık perde, ortada kart; mobilde alttan açılır.
+// body'ye taşınır (portal): açan öğe sabit bir üst çubuğun içindeyse bile
+// (ana sayfada dil/bölge) sayfadaki her şeyin üstünde açılsın.
 // Üst üste açılabilir: Esc yalnız en üsttekini kapatır, sayfa kaydırması son
 // katman kapanınca döner, odak da açan öğeye geri gider.
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { Ikon } from "./ikon";
 import s from "./pencere.module.css";
 
@@ -37,6 +40,18 @@ export function useKatman(acik: boolean, onKapat: () => void, odak: React.RefObj
   }, [acik, odak]);
 }
 
+const abonelikYok = () => () => {};
+
+/**
+ * İçeriği body'ye taşır (portal): sabit bir üst çubuğun ya da kendi katmanı
+ * olan bir öğenin içinden açılan pencereler sayfadaki her şeyin üstünde
+ * kalsın. Sunucuda document yok; yalnız tarayıcıda çizilir.
+ */
+export function Govdeye({ children }: { children: React.ReactNode }) {
+  const istemci = React.useSyncExternalStore(abonelikYok, () => true, () => false);
+  return istemci ? createPortal(children, document.body) : null;
+}
+
 export function Pencere({ acik, onKapat, baslik, children, genislik = 760, className }: {
   acik: boolean;
   onKapat: () => void;
@@ -48,9 +63,9 @@ export function Pencere({ acik, onKapat, baslik, children, genislik = 760, class
   const kapat = React.useRef<HTMLButtonElement>(null);
   const kimlik = React.useId();
   useKatman(acik, onKapat, kapat);
-
   return (
-    <div className={s.kap} data-acik={acik || undefined} onClick={(e) => e.target === e.currentTarget && onKapat()} aria-hidden={!acik}>
+    <Govdeye>
+    <div className={`lb ${s.kap}`} data-acik={acik || undefined} onClick={(e) => e.target === e.currentTarget && onKapat()} aria-hidden={!acik}>
       <div
         className={`${s.pencere} ${className ?? ""}`}
         style={{ "--genislik": `${genislik}px` } as React.CSSProperties}
@@ -67,5 +82,6 @@ export function Pencere({ acik, onKapat, baslik, children, genislik = 760, class
         <div className={s.ic}>{acik && children}</div>
       </div>
     </div>
+    </Govdeye>
   );
 }

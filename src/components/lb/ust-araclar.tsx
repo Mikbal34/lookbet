@@ -7,6 +7,7 @@
 // hesabımızda tanımlı değil), TL gösterimi bizim tarafta kurla olacak.
 
 import * as React from "react";
+import { Govdeye } from "./pencere";
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { useLocale } from "@/components/providers/locale-provider";
@@ -76,7 +77,8 @@ export function BolgePenceresi({ acik, sekme, onSekme, onKapat }: {
   };
 
   return (
-    <div className={s.kap} data-acik={acik || undefined} onClick={(e) => e.target === e.currentTarget && onKapat()} aria-hidden={!acik}>
+    <Govdeye>
+    <div className={`lb ${s.kap}`} data-acik={acik || undefined} onClick={(e) => e.target === e.currentTarget && onKapat()} aria-hidden={!acik}>
       <div className={s.pencere} role="dialog" aria-modal="true" aria-labelledby="bolge-baslik">
         <button ref={kapat} type="button" className={s.kapat} onClick={onKapat} aria-label="Kapat">
           <Ikon ad="close" boyut={18} />
@@ -110,6 +112,7 @@ export function BolgePenceresi({ acik, sekme, onSekme, onKapat }: {
         </div>
       </div>
     </div>
+    </Govdeye>
   );
 }
 
