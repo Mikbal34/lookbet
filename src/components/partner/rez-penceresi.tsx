@@ -14,7 +14,7 @@ import { Pencere } from "@/components/lb/pencere";
 import { para } from "@/components/otel-detay/yardimci";
 import { IptalPenceresi } from "@/components/rezervasyonlar/rezervasyon-detay";
 import {
-  aralik, durumBilgisi, geceler, gunKisa, gunOku, gunUzun, gunYonelme, iptalDurumu, saat, tutar, type Rezervasyon,
+  aralik, durumBilgisi, geceler, gunKisa, gunOku, gunUzun, gunYonelme, iptalDurumu, komisyonTutari, saat, tutar, type Rezervasyon,
 } from "@/components/rezervasyonlar/ortak";
 import { grup, misafirAdi } from "./ortak";
 import s from "./partner.module.css";
@@ -59,7 +59,7 @@ function Icerik({ r, simdi, oran, onIptalAc }: { r: Rezervasyon; simdi: number; 
   const ip = iptalDurumu(r, simdi);
   const t = tutar(r);
   const iptalEdilebilir = (r.status === "CONFIRMED" || r.status === "PENDING") && g !== "tamam";
-  const komisyon = oran != null && r.status === "CONFIRMED" ? (t * oran) / 100 : null;
+  const komisyon = komisyonTutari(r, oran);
 
   return (
     <div className={s.pIc}>
@@ -78,7 +78,7 @@ function Icerik({ r, simdi, oran, onIptalAc }: { r: Rezervasyon; simdi: number; 
       </div>
       <div className={s.dokum}>
         <div><span>Tutar</span><span>{para(t, r.currency)}</span></div>
-        {komisyon != null && <div><span>Komisyonun (%{oran}, tahmini)</span><span>{para(komisyon, r.currency)}</span></div>}
+        {komisyon && <div><span>Komisyonun{komisyon.kayitli ? "" : ` (%${oran}, tahmini)`}</span><span>{para(komisyon.tutar, r.currency)}</span></div>}
         {r.status === "CANCELLED" && r.cancellationFee != null && (
           <div><span>İptal ücreti</span><span>{para(r.cancellationFee, r.cancellationFeeCurrency || r.currency)}</span></div>
         )}

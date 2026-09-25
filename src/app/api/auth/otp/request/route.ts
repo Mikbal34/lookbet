@@ -3,8 +3,9 @@
 //   Body: { email, tur?: "musteri" | "acente" }
 //   musteri (varsayılan): hesap yoksa da gönderilir, doğrulamada hesap açılır.
 //     Acente/yönetici hesapları bu akışı kullanamaz.
-//   acente: yalnız kayıtlı, etkin ve onaylı acente ya da yönetici hesabına
-//     gönderilir; bu yoldan hesap açılmaz.
+//   acente: acente/yönetici hesabına ya da yeni e-postaya gönderilir; yeni
+//     e-postada doğrulamada acente hesabı açılır, panel başvuru onaylanana
+//     kadar kilitli kalır. Müşteri hesabının e-postası kullanılamaz.
 
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -31,19 +32,13 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     const existing = await prisma.user.findUnique({
       where: { email },
-      select: { role: true, isActive: true, agency: { select: { isApproved: true } } },
+      select: { role: true, isActive: true },
     });
 
     if (parsed.data.tur === "acente") {
-      if (!existing || existing.role === "CUSTOMER") {
+      if (existing?.role === "CUSTOMER") {
         return NextResponse.json(
-          { error: "Bu e-postayla kayıtlı bir acente hesabı yok." },
-          { status: 404 }
-        );
-      }
-      if (existing.role === "AGENCY" && existing.agency && !existing.agency.isApproved) {
-        return NextResponse.json(
-          { error: "Acente hesabın henüz onaylanmadı." },
+          { error: "Bu e-posta bir müşteri hesabına ait. Acente için şirket e-postanı kullan." },
           { status: 403 }
         );
       }

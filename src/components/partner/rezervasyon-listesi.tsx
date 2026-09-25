@@ -9,7 +9,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Ikon } from "@/components/lb/ikon";
 import { Nesne } from "@/components/lb/nesne";
 import { para } from "@/components/otel-detay/yardimci";
-import { durumBilgisi, gunKisa, gunOku, tutar, type Rezervasyon } from "@/components/rezervasyonlar/ortak";
+import { durumBilgisi, gunKisa, gunOku, komisyonTutari, tutar, type Rezervasyon } from "@/components/rezervasyonlar/ortak";
 import { Bos } from "./bugun";
 import { grup, misafirAdi } from "./ortak";
 import { RezPenceresi } from "./rez-penceresi";
@@ -51,7 +51,7 @@ export function RezervasyonListesi() {
       );
   }, [q.data, filtre, ara, simdi]);
 
-  const komisyon = (r: Rezervasyon) => (oran != null && r.status === "CONFIRMED" ? (tutar(r) * oran) / 100 : null);
+  const komisyon = (r: Rezervasyon) => komisyonTutari(r, oran)?.tutar ?? null;
 
   const aktar = () => {
     const bas = ["Misafir", "Otel", "Giriş", "Çıkış", "Tutar", "Para birimi", "Komisyon (tahmini)", "Durum", "Rezervasyon no"];

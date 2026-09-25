@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
-import { priceRuleSchema } from "@/lib/validators";
+
+/** Yalnız tarih gelen bitiş, o günün sonuna kadar geçerli olsun. */
+const gunSonu = (s: string) => new Date(s.length === 10 ? `${s}T23:59:59` : s);
+import { priceRuleUpdateSchema } from "@/lib/validators";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
@@ -52,7 +55,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     }
 
     const body = await req.json();
-    const parsed = priceRuleSchema.partial().safeParse(body);
+    const parsed = priceRuleUpdateSchema.safeParse(body);
 
     if (!parsed.success) {
       return NextResponse.json(
@@ -68,7 +71,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
       data: {
         ...rest,
         ...(startDate !== undefined && { startDate: startDate ? new Date(startDate) : null }),
-        ...(endDate !== undefined && { endDate: endDate ? new Date(endDate) : null }),
+        ...(endDate !== undefined && { endDate: endDate ? gunSonu(endDate) : null }),
       },
       include: {
         agency: { select: { id: true, companyName: true } },

@@ -55,13 +55,17 @@ export async function GET(req: NextRequest) {
               isApproved: true,
             },
           },
+          _count: { select: { reservations: true } },
         },
       }),
       prisma.user.count({ where }),
     ]);
+    const roller = await prisma.user.groupBy({ by: ["role"], _count: { _all: true } });
+    const rolSayilari = Object.fromEntries(roller.map((r) => [r.role, r._count._all]));
 
     return NextResponse.json({
       users,
+      rolSayilari,
       pagination: {
         page,
         limit,

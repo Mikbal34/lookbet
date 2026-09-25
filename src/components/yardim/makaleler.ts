@@ -186,9 +186,21 @@ export const MAKALELER: Makale[] = [
     konu: "Giriş",
     baslik: "Acente girişi nasıl yapılır?",
     metin: [
-      "Menüden \"Acente girişi\"ne ya da doğrudan acente giriş sayfasına git. Hesabına kayıtlı e-postayı yaz.",
+      "Sayfanın altındaki \"Acente girişi\"ne git ve şirket e-postanı yaz.",
       "E-postana 6 haneli bir kod gelir; kodla girersin, şifre yoktur. Kod 10 dakika geçerlidir.",
-      "Acente hesabı LookBeds ile anlaşma yapılınca açılır. \"Bu e-postayla kayıtlı bir acente hesabı yok\" diyorsa temsilcine yaz.",
+      "Müşteri hesabında kullandığın e-postayla acente girişi yapılamaz; acente için ayrı bir (tercihen şirket) e-postası kullan.",
+    ],
+  },
+  {
+    id: "a-basvuru",
+    kitle: "acente",
+    konu: "Giriş",
+    baslik: "LookBeds Partner nasıl olurum?",
+    metin: [
+      "Acente girişinden şirket e-postanla gir; ilk girişte hesabın açılır ve panelde başvuru formu çıkar.",
+      "Formda yetkili kişi, şirket unvanı, vergi no ve vergi dairesi, adres ve varsa TÜRSAB belge no istenir. Başvuru bir kez gönderilir.",
+      "Ekibimiz bilgileri kontrol edip anlaşma oranlarını belirler. Onaylanınca aynı e-postayla girdiğinde panelin açık olur; yeniden başvurman gerekmez.",
+      "Bilgileri değiştirmen ya da başvurunun durumunu sorman gerekirse destek ekibine yaz.",
     ],
   },
   {

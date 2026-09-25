@@ -7,6 +7,10 @@ import { randomBytes } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { verifyLoginCode } from "@/lib/auth/login-code";
 
+// Hesaplar şifresiz (e-posta kodu); passwordHash sütunu zorunlu olduğu için
+// hiçbir şifreyle eşleşmeyecek rastgele bir hash yazılır.
+const rastgeleHash = () => bcrypt.hashSync(randomBytes(32).toString("hex"), 10);
+
 // OAuth veya OTP ile gelen müşteriyi bul/oluştur (passwordless hesap).
 async function findOrCreateCustomer(email: string, name?: string | null) {
   const existing = await prisma.user.findUnique({
@@ -19,8 +23,7 @@ async function findOrCreateCustomer(email: string, name?: string | null) {
     data: {
       email,
       name: name || email.split("@")[0],
-      // Passwordless hesap: şifreyle girilemesin diye rastgele hash.
-      passwordHash: bcrypt.hashSync(randomBytes(32).toString("hex"), 10),
+      passwordHash: rastgeleHash(),
       role: "CUSTOMER",
     },
     include: { agency: true },
@@ -28,56 +31,6 @@ async function findOrCreateCustomer(email: string, name?: string | null) {
 }
 
 const providers: NextAuthOptions["providers"] = [
-  // Acente + admin girişi (email + şifre). Müşteri tarafı bunu kullanmaz.
-  CredentialsProvider({
-    id: "credentials",
-    name: "credentials",
-    credentials: {
-      email: { label: "Email", type: "email" },
-      password: { label: "Password", type: "password" },
-    },
-    async authorize(credentials) {
-      if (!credentials?.email || !credentials?.password) {
-        throw new Error("Email ve şifre gereklidir");
-      }
-
-      const user = await prisma.user.findUnique({
-        where: { email: credentials.email },
-        include: { agency: true },
-      });
-
-      if (!user) {
-        throw new Error("Geçersiz email veya şifre");
-      }
-
-      if (!user.isActive) {
-        throw new Error("Hesabınız devre dışı bırakılmış");
-      }
-
-      const isPasswordValid = await bcrypt.compare(
-        credentials.password,
-        user.passwordHash
-      );
-
-      if (!isPasswordValid) {
-        throw new Error("Geçersiz email veya şifre");
-      }
-
-      // Check if agency user is approved
-      if (user.role === "AGENCY" && user.agency && !user.agency.isApproved) {
-        throw new Error("Acente hesabınız henüz onaylanmamış");
-      }
-
-      return {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        agencyId: user.agency?.id || null,
-      };
-    },
-  }),
-
   // Müşteri girişi: email + tek kullanımlık kod (şifresiz).
   // Hesap yoksa doğrulama sonrası otomatik oluşturulur.
   CredentialsProvider({
@@ -118,7 +71,8 @@ const providers: NextAuthOptions["providers"] = [
   }),
 
   // Acente ve yönetici girişi: e-posta + tek kullanımlık kod (şifresiz).
-  // Hesap açmaz; yalnız kayıtlı, etkin ve onaylı hesaplar girer.
+  // Yeni e-postada acente hesabı açılır; panel, başvuru onaylanana kadar
+  // kilitlidir (bkz. lib/acente-durumu). Müşteri hesabı bu yoldan girmez.
   CredentialsProvider({
     id: "acente-otp",
     name: "Acente Kod",
@@ -135,22 +89,29 @@ const providers: NextAuthOptions["providers"] = [
       if (!valid) {
         throw new Error("Kod hatalı veya süresi dolmuş");
       }
-      const user = await prisma.user.findUnique({ where: { email }, include: { agency: true } });
-      if (!user || user.role === "CUSTOMER") {
-        throw new Error("Bu e-postayla kayıtlı bir acente hesabı yok");
+      const user =
+        (await prisma.user.findUnique({ where: { email }, include: { agency: true } })) ??
+        (await prisma.user.create({
+          data: {
+            email,
+            name: email.split("@")[0],
+            passwordHash: rastgeleHash(),
+            role: "AGENCY",
+          },
+          include: { agency: true },
+        }));
+      if (user.role === "CUSTOMER") {
+        throw new Error("Bu e-posta bir müşteri hesabına ait");
       }
       if (!user.isActive) {
         throw new Error("Hesabınız devre dışı bırakılmış");
-      }
-      if (user.role === "AGENCY" && user.agency && !user.agency.isApproved) {
-        throw new Error("Acente hesabınız henüz onaylanmamış");
       }
       return {
         id: user.id,
         email: user.email,
         name: user.name,
         role: user.role,
-        agencyId: user.agency?.id || null,
+        agencyId: user.agency?.isApproved ? user.agency.id : null,
       };
     },
   }),
@@ -217,6 +178,16 @@ export const authOptions: NextAuthOptions = {
           token.userId = user.id;
           token.agencyId = user.agencyId;
         }
+      }
+      // Acentenin onayı jetonda bayatlamasın: admin onaylayınca (ya da onayı
+      // kaldırınca) yeniden giriş gerekmeden agencyId güncellensin. agencyId
+      // yalnız onaylı acentede dolu; API'ler buna bakıyor.
+      if (token.role === "AGENCY" && token.userId) {
+        const acente = await prisma.agency.findUnique({
+          where: { userId: token.userId as string },
+          select: { id: true, isApproved: true },
+        });
+        token.agencyId = acente?.isApproved ? acente.id : null;
       }
       return token;
     },

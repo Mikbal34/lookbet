@@ -77,9 +77,20 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     }
 
     const body = await req.json();
-    const { discountRate, commission, feedId, notes } = body;
+    const { discountRate, commission, feedId, notes, isApproved } = body;
+
+    const oran = (v: unknown) => typeof v === "number" && Number.isFinite(v) && v >= 0 && v <= 100;
+    if ((discountRate !== undefined && !oran(discountRate)) || (commission !== undefined && !oran(commission))) {
+      return NextResponse.json({ error: "Oranlar 0 ile 100 arasında olmalı" }, { status: 422 });
+    }
 
     const updateData: Record<string, unknown> = {};
+    // Acenteyi kapatmak/açmak: onay kalkınca paneli kilitlenir, jetondaki
+    // agencyId de bir sonraki istekte boşalır (bkz. auth-options jwt).
+    if (typeof isApproved === "boolean") {
+      updateData.isApproved = isApproved;
+      if (isApproved) updateData.approvedById = session.user.id;
+    }
     if (discountRate !== undefined) updateData.discountRate = discountRate;
     if (commission !== undefined) updateData.commission = commission;
     if (feedId !== undefined) updateData.feedId = feedId;

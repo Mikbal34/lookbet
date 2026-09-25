@@ -2,7 +2,8 @@
 
 // Partner · Kazançlar (Airbnb "Kazançlar" gibi): bu ayın komisyonu büyük,
 // altında son 12 ayın çubuk grafiği, yanda bu ayın dökümü. Komisyon,
-// anlaşmadaki orandan hesaplanan tahmindir; ödeme kaydı henüz yok.
+// rezervasyon anında kaydedilen komisyondan (özel oran ya da anlaşma);
+// ödeme kaydı henüz yok.
 
 import * as React from "react";
 import { AYLAR } from "@/components/lb/arama/durum";
@@ -42,7 +43,7 @@ export function Kazanclar() {
     <div className={s.dis}>
       <div className={s.kazancDuzen}>
         <div>
-          <h1 className={s.kazancBaslik}>{AYLAR[ay - 1]} {yil} komisyonun (tahmini)</h1>
+          <h1 className={s.kazancBaslik}>{AYLAR[ay - 1]} {yil} komisyonun</h1>
           <div className={s.buyuk}>
             <b className="lb-y">{para(bu.komisyon, paraBirimi)}</b>
             <span>son 12 ayda {para(toplam, paraBirimi)}</span>
@@ -92,10 +93,10 @@ export function Kazanclar() {
           <div className={s.dokum}>
             <div><span>Satış</span><span>{para(bu.satis, paraBirimi)}</span></div>
             <div><span>Rezervasyon</span><span>{bu.adet}</span></div>
-            <div><span>Komisyon oranı</span><span>%{komisyonOrani}</span></div>
+            <div><span>Anlaşmadaki oran</span><span>%{komisyonOrani}</span></div>
             <div className={s.toplam}><span>Komisyon</span><span>{para(bu.komisyon, paraBirimi)}</span></div>
           </div>
-          <span className={s.not}>Tutarlar anlaşmadaki orandan hesaplanan tahmindir; iptal edilen rezervasyonlar sayılmaz. Ödemeler anlaşmana göre yapılır.</span>
+          <span className={s.not}>Komisyon her rezervasyonda o anki orandan hesaplanır: bazı otellerde sana özel oran tanımlıysa o, yoksa anlaşmadaki oran. İptal edilen rezervasyonlar sayılmaz; ödemeler anlaşmana göre yapılır.</span>
         </aside>
       </div>
     </div>

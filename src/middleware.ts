@@ -12,7 +12,8 @@ export default withAuth(
         if (path.startsWith("/api/")) {
           return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 403 });
         }
-        return NextResponse.redirect(new URL("/login", req.url));
+        // Yönetici girişi acente girişiyle aynı sayfada (e-posta kodu).
+        return NextResponse.redirect(new URL("/agency/login?callbackUrl=/admin", req.url));
       }
     }
 
@@ -41,10 +42,10 @@ export default withAuth(
           return true;
         }
 
-        // /agency rotalarının auth kontrolü yukarıdaki middleware fonksiyonunda:
-        // girişsiz veya rolü uymayan kullanıcı /agency/login'e yönlendirilir
-        // (genel /login'e değil).
-        if (path.startsWith("/agency")) {
+        // /agency ve /admin rotalarının auth kontrolü yukarıdaki middleware
+        // fonksiyonunda: girişsiz veya rolü uymayan kullanıcı /agency/login'e
+        // yönlendirilir (genel /login'e değil), API'ye 403 döner.
+        if (path.startsWith("/agency") || path.startsWith("/admin") || path.startsWith("/api/admin")) {
           return true;
         }
 

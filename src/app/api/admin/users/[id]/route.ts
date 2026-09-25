@@ -92,6 +92,11 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
       );
     }
 
+    // Yönetici kendini kilitlemesin: kendi rolünü düşüremez, kendini kapatamaz.
+    if (id === session.user.id && ((parsed.data.role && parsed.data.role !== "ADMIN") || parsed.data.isActive === false)) {
+      return NextResponse.json({ error: "Kendi rolünü değiştiremez, hesabını kapatamazsın" }, { status: 400 });
+    }
+
     const updatedUser = await prisma.user.update({
       where: { id },
       data: parsed.data,

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
-import { boardTypeAdi, boardTypeAdlari } from "@/lib/board-types";
+import { otelBilgisiEkle } from "@/lib/rezervasyon-otel";
 
 type ReservationStatus = "PENDING" | "CONFIRMED" | "CANCELLED" | "FAILED";
 
@@ -130,37 +130,8 @@ export async function GET(request: NextRequest) {
         )
       : undefined;
 
-    // Kartlardaki fotoğraf, yıldız ve konum otelin yerel kaydından.
-    const oteller = await prisma.hotel.findMany({
-      where: { hotelCode: { in: [...new Set(reservations.map((r) => r.hotelCode))] } },
-      select: {
-        hotelCode: true,
-        thumbnailImage: true,
-        images: true,
-        stars: true,
-        location: { select: { name: true, parent: { select: { name: true } } } },
-      },
-    });
-    const otelBul = new Map(oteller.map((o) => [o.hotelCode, o]));
-
-    // Pansiyon kodunu görünen ada çevir; arayüzde kullanıcıya "RO" yerine
-    // "Sadece Oda" yazsın. Arama ucu bunu zaten yapıyordu.
-    const pansiyonAdlari = await boardTypeAdlari();
-    const cikti = reservations.map((r) => {
-      const o = otelBul.get(r.hotelCode);
-      const ilkGorsel = Array.isArray(o?.images) ? (o.images as unknown[]).find((u): u is string => typeof u === "string") : undefined;
-      return {
-        ...r,
-        boardTypeName: boardTypeAdi(r.boardType, pansiyonAdlari),
-        hotel: o
-          ? {
-              image: o.thumbnailImage ?? ilkGorsel ?? null,
-              stars: o.stars,
-              place: [o.location?.name, o.location?.parent?.name].filter(Boolean).join(", ") || null,
-            }
-          : null,
-      };
-    });
+    // Kartlardaki fotoğraf, yıldız, konum ve pansiyon adı.
+    const cikti = await otelBilgisiEkle(reservations);
 
     return NextResponse.json({
       data: cikti,

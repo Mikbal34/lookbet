@@ -1,18 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { timingSafeEqual } from "node:crypto";
-import {
-  syncPricedHotels,
-  syncBoardTypes,
-  syncFacilities,
-  syncHotelContent,
-  syncHotels,
-  syncRevisions,
-  syncRoomAttributes,
-} from "@/lib/royal-api/sync";
+import { ADIMLAR, MesgulHatasi, isCalistir, type Adim } from "@/lib/icerik-isleri";
 
 // POST /api/internal/sync?adim=revizyon|fiyat|icerik|listeler|oteller
 //
-// Zamanlanmış içerik işleri. Sunucudaki cron çağırır (bkz. deploy/cron):
+// Zamanlanmış içerik işleri. Sunucudaki cron çağırır (bkz. deploy/lookbet.cron);
+// iş mantığı lib/icerik-isleri'nde, yönetim paneli de aynısını çalıştırır:
 //   revizyon  — her gece: son 2 günde eklenen/değişen/silinen oteller
 //   fiyat     — her gece: hangi oteller fiyat veriyor (geniş şehir aramasının
 //               600 kodu buna göre seçiliyor)
@@ -27,12 +20,6 @@ import {
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 3600;
-
-const ADIMLAR = ["revizyon", "fiyat", "icerik", "listeler", "oteller"] as const;
-type Adim = (typeof ADIMLAR)[number];
-
-/** Aynı anda iki iş koşmasın: Etscore hız sınırını ve belleği paylaşıyorlar. */
-let calisan: Adim | null = null;
 
 function yetkili(req: NextRequest): boolean {
   const gizli = process.env.CRON_SECRET ?? "";
@@ -52,44 +39,14 @@ export async function POST(req: NextRequest) {
   if (!adim || !ADIMLAR.includes(adim)) {
     return NextResponse.json({ error: `adim: ${ADIMLAR.join(" | ")}` }, { status: 400 });
   }
-  if (calisan) {
-    return NextResponse.json({ error: `Şu an "${calisan}" çalışıyor` }, { status: 409 });
-  }
-
-  const feedId = process.env.ROYAL_API_FEED_ID_B2B || process.env.ROYAL_API_FEED_ID_B2C || "";
-  const baslangic = Date.now();
-  calisan = adim;
   try {
     const ilerleme = (satir: string) => console.log(`[internal/sync ${adim}] ${satir}`);
-    let sonuc: unknown;
-    switch (adim) {
-      case "revizyon":
-        sonuc = await syncRevisions({ gun: 2, ilerleme });
-        break;
-      case "fiyat":
-        sonuc = await syncPricedHotels({ feedId, ilerleme });
-        break;
-      case "icerik":
-        sonuc = await syncHotelContent({ ilerleme });
-        break;
-      case "listeler":
-        sonuc = {
-          pansiyon: await syncBoardTypes(),
-          olanak: await syncFacilities(),
-          odaOzelligi: await syncRoomAttributes(),
-        };
-        break;
-      case "oteller":
-        sonuc = await syncHotels(feedId);
-        break;
-    }
-    const sure = Math.round((Date.now() - baslangic) / 1000);
+    const { sure, sonuc } = await isCalistir(adim, ilerleme);
     console.log(`[internal/sync ${adim}] bitti, ${sure} sn`, JSON.stringify(sonuc).slice(0, 500));
     return NextResponse.json({ adim, sure, sonuc });
   } catch (e) {
+    if (e instanceof MesgulHatasi) return NextResponse.json({ error: e.message }, { status: 409 });
     console.error(`[internal/sync ${adim}]`, e);
     return NextResponse.json({ adim, error: e instanceof Error ? e.message : String(e) }, { status: 500 });
-  } finally {
-    calisan = null;
   }
 }

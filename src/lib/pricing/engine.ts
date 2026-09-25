@@ -99,7 +99,8 @@ export async function calculatePrice(input: PriceInput): Promise<PriceResult> {
     });
   }
 
-  // Apply agency-specific discount rate
+  // Acentenin indirim oranı (anlaşma) ve komisyonu.
+  let commissionAmount = 0;
   if (userType === "AGENCY" && agencyId) {
     const agency = await prisma.agency.findUnique({ where: { id: agencyId } });
     if (agency && agency.discountRate > 0) {
@@ -114,12 +115,7 @@ export async function calculatePrice(input: PriceInput): Promise<PriceResult> {
         discountAmount: agencyDiscount,
       });
     }
-  }
-
-  // Calculate commission
-  let commissionAmount = 0;
-  if (userType === "AGENCY" && agencyId) {
-    commissionAmount = await calculateCommission(agencyId, finalPrice, hotelCode, boardType);
+    commissionAmount = await calculateCommission(agencyId, Math.max(0, finalPrice), agency?.commission ?? 0, hotelCode, boardType);
   }
 
   // Ensure price doesn't go below 0
@@ -134,9 +130,17 @@ export async function calculatePrice(input: PriceInput): Promise<PriceResult> {
   };
 }
 
-async function calculateCommission(
+/**
+ * Acentenin komisyonu — oranları yönetim belirler (Yönetim › Acenteler ve
+ * Fiyatlar). Otel/pansiyon/tarihi uyan etkin özel komisyon varsa o (en
+ * özgülü: otel+pansiyon, otel, pansiyon, genel), yoksa acentenin anlaşmadaki
+ * oranı. Satış fiyatından hesaplanır; rezervasyonda commissionAmount olarak
+ * saklanır, oran sonradan değişse de geçmiş kazanç değişmez.
+ */
+export async function calculateCommission(
   agencyId: string,
   price: number,
+  anlasmaOrani: number,
   hotelCode?: string,
   boardType?: string
 ): Promise<number> {
@@ -155,15 +159,13 @@ async function calculateCommission(
     },
   });
 
-  if (commissions.length === 0) return 0;
-
-  // Use the most specific commission (with hotelCode match first)
   const commission =
     commissions.find((c: { hotelCode: string | null; boardType: string | null }) => c.hotelCode && c.boardType) ||
     commissions.find((c: { hotelCode: string | null }) => c.hotelCode) ||
     commissions.find((c: { boardType: string | null }) => c.boardType) ||
     commissions[0];
 
+  if (!commission) return price * (anlasmaOrani / 100);
   if (commission.type === "PERCENTAGE") {
     return price * (commission.value / 100);
   }

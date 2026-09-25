@@ -24,9 +24,11 @@ export function Sirket() {
         <div className={s.altDuzen}>
           <div>
             <Satir ad="Şirket adı" deger={a.companyName} />
-            <Satir ad="Vergi no" deger={a.taxId} />
+            <Satir ad="Vergi no" deger={a.taxOffice ? `${a.taxId} · ${a.taxOffice} VD` : a.taxId} />
+            <Satir ad="TÜRSAB belge no" deger={a.tursabNo} />
             <Satir ad="Adres" deger={a.address} />
             <Satir ad="Telefon" deger={a.phone} />
+            <Satir ad="Web sitesi" deger={a.website} />
             <Satir ad="Partner olduğun tarih" deger={new Date(a.createdAt).toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" })} />
             <Satir ad="Durum" deger={a.isApproved ? "Onaylı acente" : "Onay bekliyor"} />
           </div>

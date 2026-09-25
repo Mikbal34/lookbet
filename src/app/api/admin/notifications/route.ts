@@ -28,7 +28,8 @@ export async function GET(req: NextRequest) {
     const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") ?? "20", 10)));
     const isReadParam = searchParams.get("isRead");
-    const userId = searchParams.get("userId");
+    // ?kutu=ben: oturumdaki yöneticinin kendi bildirimleri (Yönetim › Bildirimler).
+    const userId = searchParams.get("kutu") === "ben" ? session.user.id : searchParams.get("userId");
 
     const skip = (page - 1) * limit;
 
@@ -53,7 +54,7 @@ export async function GET(req: NextRequest) {
         },
       }),
       prisma.notification.count({ where }),
-      prisma.notification.count({ where: { isRead: false } }),
+      prisma.notification.count({ where: { ...(userId ? { userId } : {}), isRead: false } }),
     ]);
 
     return NextResponse.json({
@@ -68,6 +69,29 @@ export async function GET(req: NextRequest) {
     });
   } catch (error) {
     console.error("[ADMIN_NOTIFICATIONS_GET]", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
+// PATCH /api/admin/notifications { markAllRead: true } — yöneticinin kendi
+// okunmamış bildirimlerini okundu yapar.
+export async function PATCH(req: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || session.user.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    const body = await req.json().catch(() => ({}));
+    if (body?.markAllRead !== true) {
+      return NextResponse.json({ error: "markAllRead: true gerekli" }, { status: 400 });
+    }
+    const { count } = await prisma.notification.updateMany({
+      where: { userId: session.user.id, isRead: false },
+      data: { isRead: true },
+    });
+    return NextResponse.json({ count });
+  } catch (error) {
+    console.error("[ADMIN_NOTIFICATIONS_PATCH]", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

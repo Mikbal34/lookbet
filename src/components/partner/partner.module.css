@@ -211,6 +211,7 @@
 }
 @media (max-width: 860px) {
   .ustIc { grid-template-columns: 1fr auto; height: 64px; }
+  .bosluk { display: none; }
   .sekmeler { position: fixed; inset: auto 0 0; z-index: 40; justify-content: space-around; padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0px)); background: #fff; border-top: 1px solid var(--lb-cizgi); }
   .sekmeler a { padding: 8px 10px; font-size: 13.5px; }
   .sekmeler a[aria-current="page"]::after { bottom: 0; }

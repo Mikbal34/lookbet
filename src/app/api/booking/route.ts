@@ -39,6 +39,13 @@ export async function POST(request: NextRequest) {
     const userId = session.user.id;
     const userRole = session.user.role as "CUSTOMER" | "AGENCY" | "ADMIN";
     const agencyId = session.user.agencyId ?? undefined;
+    // agencyId yalnız onaylı acentede dolu; onaysız acente rezervasyon yapamaz.
+    if (userRole === "AGENCY" && !agencyId) {
+      return NextResponse.json(
+        { error: "Acente hesabın onaylanınca rezervasyon yapabilirsin" },
+        { status: 403 }
+      );
+    }
 
     // Resolve feedId
     let feedId = process.env.ROYAL_API_FEED_ID_B2C ?? "";
@@ -128,6 +135,7 @@ export async function POST(request: NextRequest) {
         cancellationPolicy: input.cancellationPolicy ?? null,
         roomConfirmationCodes: (apiBooking.roomConfirmationCodes ?? []) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
         appliedPriceRules: priceResult.appliedRules as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+        commissionAmount: agencyId ? priceResult.commissionAmount : null,
         source: agencyId ? "AGENCY" : "CUSTOMER",
         // Ödeme sayfasındaki özel istek; rezervasyon detayında görünür.
         notes: input.additionalInfo ?? null,

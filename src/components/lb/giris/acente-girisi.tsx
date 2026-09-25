@@ -1,9 +1,9 @@
 "use client";
 
 // Acente (ve yönetici) girişi — Airbnb'nin giriş sayfası gibi: arka planda
-// nesne posterlerinden yatık bir ızgara, ortada tek kart. Şifresiz: kayıtlı
-// acente e-postasına 6 haneli kod gider, kodla girilir. Bu sayfadan hesap
-// açılmaz (acente hesabı anlaşmayla açılır).
+// nesne posterlerinden yatık bir ızgara, ortada tek kart. Şifresiz: e-postaya
+// 6 haneli kod gider, kodla girilir. Yeni e-postada acente hesabı açılır ve
+// panelde bir kez başvuru formu doldurulur; panel onaydan sonra açılır.
 
 import * as React from "react";
 import Link from "next/link";
@@ -114,7 +114,7 @@ export function AcenteGirisi() {
           <div className={s.kartBas}>
             <Nesne ad="anahtar-karti" boyut={72} className={s.nesne} />
             <h1 className="lb-y">Acente girişi</h1>
-            <p>{adim === "eposta" ? "LookBeds Partner hesabınla devam et" : "E-postana gelen kodu gir"}</p>
+            <p>{adim === "eposta" ? "Giriş yap ya da LookBeds Partner ol" : "E-postana gelen kodu gir"}</p>
           </div>
 
           {adim === "eposta" ? (
@@ -136,7 +136,7 @@ export function AcenteGirisi() {
               </div>
               {hata && <Hata>{hata}</Hata>}
               <button type="submit" className={s.devam} disabled={yukleniyor}>{yukleniyor ? "Kod gönderiliyor…" : "Devam et"}</button>
-              <p className={s.not}>Şifre yok: hesabına kayıtlı e-postaya 6 haneli bir kod gönderiyoruz.</p>
+              <p className={s.not}>Şifre yok: e-postana 6 haneli bir kod gönderiyoruz. Şirket e-postanı kullan.</p>
             </form>
           ) : (
             <form className={s.adim} onSubmit={(e) => { e.preventDefault(); kodDogrula(); }} noValidate>
@@ -157,7 +157,7 @@ export function AcenteGirisi() {
               <button type="submit" className={s.devam} disabled={kod.join("").length !== 6 || yukleniyor}>{yukleniyor ? "Giriş yapılıyor…" : "Giriş yap"}</button>
             </form>
           )}
-          <p className={s.not}>Acente hesabı LookBeds ile anlaşma yapılınca açılır.</p>
+          <p className={s.not}>İlk kez mi geliyorsun? Girişten sonra kısa bir başvuru formu doldurursun; onaylanınca panelin açılır.</p>
         </div>
       </main>
     </div>

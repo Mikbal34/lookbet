@@ -15,6 +15,9 @@ export interface Kazanc {
 export interface Sirket {
   companyName: string;
   taxId: string;
+  taxOffice: string | null;
+  tursabNo: string | null;
+  website: string | null;
   address: string | null;
   phone: string | null;
   discountRate: number;

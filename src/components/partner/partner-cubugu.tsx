@@ -2,7 +2,8 @@
 
 // LookBeds Partner üst çubuğu (Airbnb ev sahibi paneli gibi): solda marka,
 // ortada Bugün · Rezervasyonlar · Kazançlar, sağda "Otel ara" ve hesap menüsü.
-// Mobilde sekmeler ekranın altına iner.
+// Mobilde sekmeler ekranın altına iner. Onaysız acentede (kilitli) sekmeler
+// ve panel linkleri gizlenir; yalnız yardım ve çıkış kalır.
 
 import * as React from "react";
 import Link from "next/link";
@@ -17,7 +18,7 @@ const SEKMELER = [
   { href: "/agency/kazanclar", ad: "Kazançlar" },
 ];
 
-export function PartnerCubugu() {
+export function PartnerCubugu({ kilitli = false }: { kilitli?: boolean }) {
   const yol = usePathname();
   const { data: oturum } = useSession();
   const [acik, setAcik] = React.useState(false);
@@ -50,13 +51,17 @@ export function PartnerCubugu() {
           <span className="lb-y">LookBeds</span>
           <small>Partner</small>
         </Link>
-        <nav className={s.sekmeler} aria-label="Panel">
-          {SEKMELER.map((k) => (
-            <Link key={k.href} href={k.href} aria-current={yol?.startsWith(k.href) ? "page" : undefined}>
-              {k.ad}
-            </Link>
-          ))}
-        </nav>
+        {kilitli ? (
+          <span className={s.bosluk} />
+        ) : (
+          <nav className={s.sekmeler} aria-label="Panel">
+            {SEKMELER.map((k) => (
+              <Link key={k.href} href={k.href} aria-current={yol?.startsWith(k.href) ? "page" : undefined}>
+                {k.ad}
+              </Link>
+            ))}
+          </nav>
+        )}
         <div className={s.sag}>
           <Link href="/" className={s.araDugme}>
             <Ikon ad="search" boyut={16} kalinlik={2.6} />
@@ -73,10 +78,14 @@ export function PartnerCubugu() {
                 <span>{oturum?.user?.email}</span>
               </div>
               <hr />
-              <Link href="/agency/company" onClick={kapat}><Ikon ad="hotel" boyut={18} />Şirket bilgileri</Link>
-              <Link href="/agency/kazanclar" onClick={kapat}><Ikon ad="wallet" boyut={18} />Kazançlar</Link>
-              <Link href="/agency/reservations" onClick={kapat}><Ikon ad="calendar" boyut={18} />Rezervasyonlar</Link>
-              <hr />
+              {!kilitli && (
+                <>
+                  <Link href="/agency/company" onClick={kapat}><Ikon ad="hotel" boyut={18} />Şirket bilgileri</Link>
+                  <Link href="/agency/kazanclar" onClick={kapat}><Ikon ad="wallet" boyut={18} />Kazançlar</Link>
+                  <Link href="/agency/reservations" onClick={kapat}><Ikon ad="calendar" boyut={18} />Rezervasyonlar</Link>
+                  <hr />
+                </>
+              )}
               <Link href="/yardim?kitle=acente" onClick={kapat}><Ikon ad="help" boyut={18} />Yardım ve destek</Link>
               <button type="button" onClick={() => signOut({ callbackUrl: "/agency/login" })}><Ikon ad="logout" boyut={18} />Çıkış yap</button>
             </nav>

@@ -40,6 +40,11 @@ export async function GET(req: NextRequest) {
       where.status = status;
     }
 
+    const source = searchParams.get("source");
+    if (source === "CUSTOMER" || source === "AGENCY") {
+      where.source = source;
+    }
+
     if (agencyId) {
       where.agencyId = agencyId;
     }
@@ -59,6 +64,9 @@ export async function GET(req: NextRequest) {
       where.OR = [
         { bookingNumber: { contains: search, mode: "insensitive" } },
         { contactName: { contains: search, mode: "insensitive" } },
+        { contactEmail: { contains: search, mode: "insensitive" } },
+        { hotelName: { contains: search, mode: "insensitive" } },
+        { agency: { companyName: { contains: search, mode: "insensitive" } } },
       ];
     }
 

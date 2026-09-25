@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
+
+/** Yalnız tarih gelen bitiş, o günün sonuna kadar geçerli olsun. */
+const gunSonu = (s: string) => new Date(s.length === 10 ? `${s}T23:59:59` : s);
+import { otelAdlari } from "@/lib/rezervasyon-otel";
 import { commissionSchema } from "@/lib/validators";
 
 export async function GET(req: NextRequest) {
@@ -34,7 +38,8 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ commissions });
+    const adlar = await otelAdlari(commissions.map((x) => x.hotelCode));
+    return NextResponse.json({ commissions: commissions.map((x) => ({ ...x, hotelName: x.hotelCode ? adlar.get(x.hotelCode) ?? null : null })) });
   } catch (error) {
     console.error("[ADMIN_COMMISSIONS_GET]", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -73,7 +78,7 @@ export async function POST(req: NextRequest) {
       data: {
         ...rest,
         startDate: startDate ? new Date(startDate) : undefined,
-        endDate: endDate ? new Date(endDate) : undefined,
+        endDate: endDate ? gunSonu(endDate) : undefined,
       },
       include: {
         agency: { select: { id: true, companyName: true } },

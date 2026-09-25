@@ -55,8 +55,17 @@ export async function GET(req: NextRequest) {
       prisma.agency.count({ where }),
     ]);
 
+    // Bu yılın satışı: onaylı rezervasyonların satış fiyatı.
+    const yilBasi = new Date(new Date().getFullYear(), 0, 1);
+    const satislar = await prisma.reservation.findMany({
+      where: { agencyId: { in: agencies.map((a) => a.id) }, status: "CONFIRMED", createdAt: { gte: yilBasi } },
+      select: { agencyId: true, totalPrice: true, discountedPrice: true },
+    });
+    const satis = new Map<string, number>();
+    for (const r of satislar) satis.set(r.agencyId!, (satis.get(r.agencyId!) ?? 0) + (r.discountedPrice ?? r.totalPrice));
+
     return NextResponse.json({
-      agencies,
+      agencies: agencies.map((a) => ({ ...a, yilSatis: Math.round((satis.get(a.id) ?? 0) * 100) / 100 })),
       pagination: {
         page,
         limit,

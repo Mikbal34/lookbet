@@ -1,4 +1,4 @@
-// GET /api/admin/agency-applications?status=PENDING&page=1&limit=20&search=
+// GET /api/admin/agency-applications?status=PENDING|APPROVED|REJECTED|KARAR&page=1&limit=20&search=
 // Acente başvurularını listeler (sadece ADMIN).
 
 import { NextRequest, NextResponse } from "next/server";
@@ -25,6 +25,9 @@ export async function GET(req: NextRequest) {
 
     if (statusParam && (VALID_STATUSES as readonly string[]).includes(statusParam)) {
       where.status = statusParam;
+    } else if (statusParam === "KARAR") {
+      // Karar geçmişi: onaylanan ve reddedilenler.
+      where.status = { in: ["APPROVED", "REJECTED"] };
     }
 
     if (search) {
@@ -41,7 +44,7 @@ export async function GET(req: NextRequest) {
         where,
         skip: (page - 1) * limit,
         take: limit,
-        orderBy: { createdAt: "desc" },
+        orderBy: statusParam === "KARAR" ? { reviewedAt: "desc" } : { createdAt: "desc" },
         include: {
           reviewedBy: { select: { id: true, name: true } },
           agency: { select: { id: true, user: { select: { email: true } } } },

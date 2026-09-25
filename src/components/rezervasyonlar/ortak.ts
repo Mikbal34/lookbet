@@ -27,6 +27,8 @@ export interface Rezervasyon {
   cancellationPolicy?: CancellationPolicy[] | null;
   hotelConfirmationNumber?: string | null;
   cancellationFee?: number | null;
+  /** Acente rezervasyonunda rezervasyon anında kaydedilen komisyon. */
+  commissionAmount?: number | null;
   cancellationFeeCurrency?: string | null;
   notes?: string | null;
   createdAt: string;
@@ -49,6 +51,17 @@ export function aralik(r: Rezervasyon) {
 }
 
 export const tutar = (r: Rezervasyon) => r.discountedPrice ?? r.totalPrice;
+
+/**
+ * Acentenin bu rezervasyondan komisyonu: kaydedilen tutar (özel komisyon ya
+ * da anlaşma oranı); alan eklenmeden önceki eski rezervasyonlarda anlaşma
+ * oranıyla hesaplanır. Yalnız onaylı rezervasyonda.
+ */
+export function komisyonTutari(r: Rezervasyon, anlasmaOrani: number | null | undefined) {
+  if (r.status !== "CONFIRMED") return null;
+  if (r.commissionAmount != null) return { tutar: r.commissionAmount, kayitli: true };
+  return anlasmaOrani != null ? { tutar: (tutar(r) * anlasmaOrani) / 100, kayitli: false } : null;
+}
 
 export function misafirYazi(r: Rezervasyon) {
   const g = r.guests ?? [];

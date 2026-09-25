@@ -33,6 +33,9 @@ export async function GET() {
         select: {
           companyName: true,
           taxId: true,
+          taxOffice: true,
+          tursabNo: true,
+          website: true,
           address: true,
           phone: true,
           discountRate: true,

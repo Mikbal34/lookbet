@@ -1,7 +1,9 @@
 // GET /api/agency/kazanc (yalnız AGENCY)
-// Son 12 ayın satış ve komisyonu. Komisyon, anlaşmadaki orandan hesaplanan
-// tahmindir (ödeme kaydı henüz yok): girişi o ayda olan onaylı rezervasyonların
-// tutarı × komisyon oranı. İptal ve başarısız rezervasyonlar sayılmaz.
+// Son 12 ayın satış ve komisyonu: girişi o ayda olan onaylı rezervasyonlar.
+// Komisyon, rezervasyon anında kaydedilen tutar (özel komisyon ya da
+// anlaşma oranı; bkz. lib/pricing/engine). Bu alandan önceki eski
+// rezervasyonlarda anlaşmadaki oranla hesaplanır. İptal ve başarısız
+// rezervasyonlar sayılmaz; ödeme kaydı henüz yok.
 
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
@@ -23,7 +25,7 @@ export async function GET() {
       prisma.agency.findUnique({ where: { id: agencyId }, select: { commission: true, discountRate: true } }),
       prisma.reservation.findMany({
         where: { agencyId, status: "CONFIRMED", checkIn: { gte: bas, lt: son } },
-        select: { checkIn: true, totalPrice: true, discountedPrice: true, currency: true },
+        select: { checkIn: true, totalPrice: true, discountedPrice: true, commissionAmount: true, currency: true },
       }),
     ]);
     if (!agency) return NextResponse.json({ error: "Acente bulunamadı" }, { status: 404 });
@@ -39,11 +41,12 @@ export async function GET() {
       if (!k) continue;
       const tutar = r.discountedPrice ?? r.totalPrice;
       k.satis += tutar;
+      k.komisyon += r.commissionAmount ?? tutar * oran;
       k.adet += 1;
     }
     for (const a of aylar) {
       a.satis = Math.round(a.satis * 100) / 100;
-      a.komisyon = Math.round(a.satis * oran * 100) / 100;
+      a.komisyon = Math.round(a.komisyon * 100) / 100;
     }
 
     return NextResponse.json({

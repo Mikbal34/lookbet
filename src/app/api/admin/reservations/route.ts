@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
+import { otelBilgisiEkle } from "@/lib/rezervasyon-otel";
+
+// GET /api/admin/reservations — Yönetim › Rezervasyonlar.
+//   ?status ?source=CUSTOMER|AGENCY ?search ?agencyId ?hotelCode ?dateFrom ?dateTo ?page ?limit
+// Yanıtta durum çipleri için sayilar (durum filtresi hariç, diğer filtrelerle).
 
 export async function GET(req: NextRequest) {
   try {
@@ -19,15 +24,16 @@ export async function GET(req: NextRequest) {
     const hotelCode = searchParams.get("hotelCode");
     const dateFrom = searchParams.get("dateFrom");
     const dateTo = searchParams.get("dateTo");
-    const search = searchParams.get("search") ?? "";
+    const search = (searchParams.get("search") ?? "").trim();
+    const source = searchParams.get("source");
 
     const skip = (page - 1) * limit;
 
     const where: Record<string, unknown> = {};
 
-    const validStatuses = ["PENDING", "CONFIRMED", "CANCELLED", "FAILED"];
-    if (status && validStatuses.includes(status)) {
-      where.status = status;
+    const validStatuses = ["PENDING", "CONFIRMED", "CANCELLED", "FAILED"] as const;
+    if (source === "CUSTOMER" || source === "AGENCY") {
+      where.source = source;
     }
 
     if (agencyId) {
@@ -49,7 +55,14 @@ export async function GET(req: NextRequest) {
       where.OR = [
         { bookingNumber: { contains: search, mode: "insensitive" } },
         { contactName: { contains: search, mode: "insensitive" } },
+        { contactEmail: { contains: search, mode: "insensitive" } },
+        { hotelName: { contains: search, mode: "insensitive" } },
+        { agency: { companyName: { contains: search, mode: "insensitive" } } },
       ];
+    }
+    const temel = { ...where };
+    if (status && (validStatuses as readonly string[]).includes(status)) {
+      where.status = status;
     }
 
     const [reservations, total] = await Promise.all([
@@ -60,14 +73,17 @@ export async function GET(req: NextRequest) {
         orderBy: { createdAt: "desc" },
         include: {
           user: { select: { id: true, name: true, email: true } },
-          agency: { select: { id: true, companyName: true } },
+          agency: { select: { id: true, companyName: true, commission: true } },
         },
       }),
       prisma.reservation.count({ where }),
     ]);
+    const durumlar = await prisma.reservation.groupBy({ by: ["status"], where: temel, _count: { _all: true } });
+    const sayilar = Object.fromEntries(validStatuses.map((d) => [d, durumlar.find((x) => x.status === d)?._count._all ?? 0]));
 
     return NextResponse.json({
-      reservations,
+      reservations: await otelBilgisiEkle(reservations),
+      sayilar,
       pagination: {
         page,
         limit,

@@ -2,90 +2,63 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
-import { syncAll } from "@/lib/royal-api";
+import { ADIMLAR, MesgulHatasi, calisanIs, isCalistir, sonCalismalar, type Adim } from "@/lib/icerik-isleri";
 
-// GET /api/content/sync
-// Admin content sayfası için mevcut içerik istatistikleri.
-export async function GET(_request: NextRequest) {
+// Yönetim › İçerik senkronu.
+//   GET  — otel/konum sayıları, fiyat veren ve içeriği eksik oteller, her
+//          içerik işinin son çalışması ve şu an çalışan iş.
+//   POST — { adim } tek bir içerik işini arka planda başlatır (cron'la aynı
+//          iş) ve hemen 202 döner; panel GET'teki "calisan"ı yoklar. Uzun
+//          işler (dakikalar) nginx zaman aşımına takılmasın diye beklenmez.
+
+export const dynamic = "force-dynamic";
+
+async function yonetici() {
+  const session = await getServerSession(authOptions);
+  return session?.user?.role === "ADMIN" ? session : null;
+}
+
+export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    if (!(await yonetici())) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-    const [hotels, locations, currencies, lastSynced] = await Promise.all([
-      prisma.hotel.count(),
+    const gun = new Date(Date.now() - 24 * 3600 * 1000);
+    const [aktif, pasif, konum, fiyatVeren, fotografsiz, son] = await Promise.all([
+      prisma.hotel.count({ where: { isActive: true } }),
+      prisma.hotel.count({ where: { isActive: false } }),
       prisma.location.count(),
-      prisma.currency.count(),
-      prisma.hotel.findFirst({
-        orderBy: { updatedAt: "desc" },
-        select: { updatedAt: true },
-      }),
+      prisma.hotel.count({ where: { isActive: true, lastPricedAt: { gte: gun } } }),
+      prisma.hotel.count({ where: { isActive: true, thumbnailImage: null } }),
+      sonCalismalar(),
     ]);
 
     return NextResponse.json({
-      lastSync: lastSynced?.updatedAt ?? null,
-      counts: { hotels, locations, currencies },
+      sayilar: { aktif, pasif, konum, fiyatVeren, fotografsiz },
+      son,
+      calisan: calisanIs(),
     });
   } catch (error) {
     console.error("[CONTENT_SYNC_GET]", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "İçerik bilgisi alınamadı" }, { status: 500 });
   }
 }
 
-// POST /api/content/sync
-// Admin-only endpoint.
-// Triggers a full content synchronisation from the Royal API: currencies,
-// board types, facilities, room attributes, locations and hotels are all
-// upserted into the local database.
-//
-// The B2B feedId is used for hotel list retrieval because admins are
-// operating in a back-office context.  Fall back to B2C if the B2B env
-// variable is not configured.
-export async function POST(_request: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions);
+export async function POST(request: NextRequest) {
+  const session = await yonetici();
+  if (!session) return NextResponse.json({ error: "Bu işlem için yönetici yetkisi gerekiyor" }, { status: 403 });
 
-    if (!session?.user) {
-      return NextResponse.json(
-        { error: "Bu işlem için giriş yapmanız gerekiyor" },
-        { status: 401 }
-      );
-    }
-
-    if (session.user.role !== "ADMIN") {
-      return NextResponse.json(
-        { error: "Bu işlem için admin yetkisi gerekiyor" },
-        { status: 403 }
-      );
-    }
-
-    const feedId =
-      process.env.ROYAL_API_FEED_ID_B2B ??
-      process.env.ROYAL_API_FEED_ID_B2C ??
-      "";
-
-    if (!feedId) {
-      return NextResponse.json(
-        { error: "Feed ID yapılandırması eksik" },
-        { status: 500 }
-      );
-    }
-
-    const startedAt = Date.now();
-    const results = await syncAll(feedId);
-
-    return NextResponse.json({
-      success: true,
-      syncedAt: new Date().toISOString(),
-      duration: Date.now() - startedAt,
-      results,
-    });
-  } catch (error) {
-    console.error("[POST /api/content/sync]", error);
-    return NextResponse.json(
-      { error: "İçerik senkronizasyonu sırasında bir hata oluştu" },
-      { status: 500 }
-    );
+  const { adim } = (await request.json().catch(() => ({}))) as { adim?: string };
+  if (!adim || !ADIMLAR.includes(adim as Adim)) {
+    return NextResponse.json({ error: `adim: ${ADIMLAR.join(" | ")}` }, { status: 400 });
   }
+  if (calisanIs()) {
+    return NextResponse.json({ error: `Şu an "${calisanIs()}" çalışıyor` }, { status: 409 });
+  }
+  await prisma.auditLog.create({
+    data: { userId: session.user.id, action: "RUN_CONTENT_SYNC", entity: "Hotel", entityId: adim, newData: { adim } },
+  });
+  isCalistir(adim as Adim, (satir) => console.log(`[content/sync ${adim}] ${satir}`)).catch((e) => {
+    if (!(e instanceof MesgulHatasi)) console.error("[CONTENT_SYNC_POST]", e);
+  });
+  return NextResponse.json({ adim, basladi: true }, { status: 202 });
 }

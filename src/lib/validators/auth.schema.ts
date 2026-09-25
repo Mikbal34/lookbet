@@ -1,36 +1,20 @@
 import { z } from "zod";
 
-export const loginSchema = z.object({
-  email: z.string().email("Geçerli bir email adresi girin"),
-  password: z.string().min(6, "Şifre en az 6 karakter olmalı"),
+// Acente başvurusu: acente girişinden sonra panelde bir kez doldurulur.
+// E-posta formda yok; giriş yapılan (kodla doğrulanmış) e-posta kullanılır.
+const rakam = (v: string) => v.replace(/\D/g, "");
+
+export const acenteBasvuruSchema = z.object({
+  contactName: z.string().trim().min(3, "Adını ve soyadını yaz").max(100),
+  phone: z.string().trim().refine((v) => rakam(v).length >= 10 && rakam(v).length <= 15, "Telefon numarası eksik"),
+  companyName: z.string().trim().min(2, "Şirket unvanını yaz").max(200),
+  taxId: z.string().trim().regex(/^\d{10,11}$/, "Vergi no 10, TC kimlik no 11 hane olmalı"),
+  taxOffice: z.string().trim().min(2, "Vergi dairesini yaz").max(100),
+  tursabNo: z.string().trim().max(20).optional().or(z.literal("")),
+  address: z.string().trim().min(10, "Açık adresi yaz").max(500),
+  companyPhone: z.string().trim().max(20).optional().or(z.literal("")),
+  website: z.string().trim().max(200).optional().or(z.literal("")),
+  message: z.string().trim().max(1000, "En fazla 1000 karakter").optional().or(z.literal("")),
 });
 
-export const registerSchema = z
-  .object({
-    name: z.string().min(2, "İsim en az 2 karakter olmalı"),
-    email: z.string().email("Geçerli bir email adresi girin"),
-    phone: z.string().optional(),
-    password: z.string().min(6, "Şifre en az 6 karakter olmalı"),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Şifreler eşleşmiyor",
-    path: ["confirmPassword"],
-  });
-
-// Acente BAŞVURU formu — hesap oluşturmaz, şifre içermez.
-// Başvuru admin panele düşer; hesap admin onayıyla oluşturulur.
-export const agencyApplicationSchema = z.object({
-  contactName: z.string().min(2, "İsim en az 2 karakter olmalı"),
-  email: z.string().email("Geçerli bir email adresi girin"),
-  phone: z.string().min(10, "Geçerli bir telefon numarası girin"),
-  companyName: z.string().min(2, "Şirket adı gerekli"),
-  taxId: z.string().min(10, "Geçerli bir vergi numarası girin"),
-  address: z.string().optional(),
-  companyPhone: z.string().optional(),
-  message: z.string().max(1000, "Mesaj en fazla 1000 karakter olabilir").optional(),
-});
-
-export type LoginInput = z.infer<typeof loginSchema>;
-export type RegisterInput = z.infer<typeof registerSchema>;
-export type AgencyApplicationInput = z.infer<typeof agencyApplicationSchema>;
+export type AcenteBasvuruInput = z.infer<typeof acenteBasvuruSchema>;
