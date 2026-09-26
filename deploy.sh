@@ -150,7 +150,15 @@ cmd_health() {
         exit 1
     fi
     log "Health check: ${SITE_URL}"
-    DIS=$(curl -s -o /dev/null -w "%{http_code}" "${SITE_URL}/api/saglik" || true)
+    # Yerel modem eski DNS kaydını önbellekte tutabilir: adı açık bir DNS'le
+    # (1.1.1.1) çözüp o adrese bağlan.
+    HOST=$(echo "$SITE_URL" | sed -E 's#https?://([^/]+).*#\1#')
+    IP=$(dig +short "$HOST" @1.1.1.1 2>/dev/null | grep -E '^[0-9.]+$' | head -1 || true)
+    if [[ -n "$IP" ]]; then
+        DIS=$(curl -s -o /dev/null -w "%{http_code}" --resolve "${HOST}:443:${IP}" "${SITE_URL}/api/saglik" || true)
+    else
+        DIS=$(curl -s -o /dev/null -w "%{http_code}" "${SITE_URL}/api/saglik" || true)
+    fi
     if [[ "$DIS" == "200" ]]; then
         log "Site dışarıdan açılıyor (HTTP $DIS)"
     else
