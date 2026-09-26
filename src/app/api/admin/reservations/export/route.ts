@@ -2,11 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
+import { tarihAraligi } from "../../_ortak";
+
+// GET /api/admin/reservations/export — listedeki filtrelerle CSV (en fazla
+// SATIR_SINIRI satır; aşılırsa son satırda not ve X-Export-Truncated başlığı).
+
+const SATIR_SINIRI = 10_000;
 
 function escapeCsvField(value: unknown): string {
   if (value === null || value === undefined) return "";
-  const str = String(value);
-  if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+  let str = String(value);
+  // Formül enjeksiyonu: = + - @ sekme ya da CR ile başlayan metin hücresi
+  // Excel/Sheets'te formül olarak çalışabilir (misafir adı, not gibi dışarıdan
+  // gelen alanlar). Başına ' eklenir; sayılar olduğu gibi kalır.
+  if (typeof value === "string" && /^[=+\-@\t\r]/.test(str)) str = `'${str}`;
+  if (str.includes(",") || str.includes('"') || str.includes("\n") || str.includes("\r")) {
     return `"${str.replace(/"/g, '""')}"`;
   }
   return str;
@@ -29,9 +39,9 @@ export async function GET(req: NextRequest) {
     const status = searchParams.get("status");
     const agencyId = searchParams.get("agencyId");
     const hotelCode = searchParams.get("hotelCode");
-    const dateFrom = searchParams.get("dateFrom");
-    const dateTo = searchParams.get("dateTo");
-    const search = searchParams.get("search") ?? "";
+    const tarih = tarihAraligi(searchParams);
+    if (tarih.hata) return tarih.hata;
+    const search = (searchParams.get("search") ?? "").trim();
 
     const where: Record<string, unknown> = {};
 
@@ -53,11 +63,8 @@ export async function GET(req: NextRequest) {
       where.hotelCode = hotelCode;
     }
 
-    if (dateFrom || dateTo) {
-      const dateFilter: Record<string, Date> = {};
-      if (dateFrom) dateFilter.gte = new Date(dateFrom);
-      if (dateTo) dateFilter.lte = new Date(dateTo);
-      where.createdAt = dateFilter;
+    if (tarih.filtre) {
+      where.createdAt = tarih.filtre;
     }
 
     if (search) {
@@ -70,14 +77,18 @@ export async function GET(req: NextRequest) {
       ];
     }
 
-    const reservations = await prisma.reservation.findMany({
+    // Bir fazlası istenir: sınır aşıldı mı anlaşılsın.
+    const bulunan = await prisma.reservation.findMany({
       where,
       orderBy: { createdAt: "desc" },
+      take: SATIR_SINIRI + 1,
       include: {
         user: { select: { id: true, name: true, email: true } },
         agency: { select: { id: true, companyName: true } },
       },
     });
+    const kesildi = bulunan.length > SATIR_SINIRI;
+    const reservations = kesildi ? bulunan.slice(0, SATIR_SINIRI) : bulunan;
 
     const headers = [
       "ID",
@@ -130,15 +141,20 @@ export async function GET(req: NextRequest) {
     const csvContent = [
       headers.join(","),
       ...rows.map((row: string[]) => row.join(",")),
+      // Kesildiyse dosyada da görünsün (indirme bağlantısı başlığı göstermez).
+      ...(kesildi ? [escapeCsvField(`NOT: Yalnız en yeni ${SATIR_SINIRI.toLocaleString("tr-TR")} rezervasyon alındı; tamamı için tarih ya da durumla daraltın.`)] : []),
     ].join("\n");
 
     const filename = `reservations-export-${new Date().toISOString().substring(0, 10)}.csv`;
 
-    return new NextResponse(csvContent, {
+    // BOM: Excel UTF-8'i ancak bununla tanıyor (yoksa Türkçe harfler bozuluyor).
+    return new NextResponse(`\uFEFF${csvContent}`, {
       status: 200,
       headers: {
         "Content-Type": "text/csv; charset=utf-8",
         "Content-Disposition": `attachment; filename="${filename}"`,
+        "X-Export-Row-Limit": String(SATIR_SINIRI),
+        ...(kesildi ? { "X-Export-Truncated": "true" } : {}),
       },
     });
   } catch (error) {

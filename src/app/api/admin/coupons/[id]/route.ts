@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
 import { couponUpdateSchema } from "@/lib/validators";
 import { tarihAlani, trGunSonu } from "@/lib/kampanya-tarih";
+import { benzersizIhlali } from "../../_ortak";
 
 // PATCH  /api/admin/coupons/:id — yalnız gönderilen alanlar değişir.
 // DELETE /api/admin/coupons/:id — kullanılmış kupon silinmez; durdurulur.
@@ -29,7 +30,13 @@ export async function PATCH(req: NextRequest, { params }: P) {
   if (geri.code && geri.code !== eski.code && (await prisma.coupon.findUnique({ where: { code: geri.code } }))) {
     return NextResponse.json({ error: "Bu kod zaten var" }, { status: 409 });
   }
-  const kupon = await prisma.coupon.update({ where: { id }, data: { ...geri, expiresAt: tarihAlani(expiresAt, trGunSonu) } });
+  const kupon = await prisma.coupon
+    .update({ where: { id }, data: { ...geri, expiresAt: tarihAlani(expiresAt, trGunSonu) } })
+    .catch((e) => {
+      if (benzersizIhlali(e)) return null;
+      throw e;
+    });
+  if (!kupon) return NextResponse.json({ error: "Bu kod zaten var" }, { status: 409 });
   await prisma.auditLog.create({
     data: {
       userId: s.user.id,

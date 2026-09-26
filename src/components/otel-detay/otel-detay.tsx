@@ -7,6 +7,7 @@
 // fiyat ve düğme menüye taşınır. Odalar pencerede açılır (solda oda rayı);
 // seçilen oda ödeme sayfasına aynı parametrelerle gider.
 
+import { sunucuMesaji } from "@/lib/utils";
 import * as React from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -70,7 +71,7 @@ async function odalariGetir(kod: string, a: { giris: string; cikis: string; yeti
       rooms: [{ adult: a.yetiskin, childAges: a.cocuklar.length ? a.cocuklar : undefined }],
     }),
   });
-  if (!r.ok) throw new Error("Odalar alınamadı");
+  if (!r.ok) throw new Error(await sunucuMesaji(r, "Bağlantıda bir sorun oldu; birazdan tekrar dene."));
   return r.json();
 }
 
@@ -239,10 +240,9 @@ export function OtelDetay({ kod }: { kod: string }) {
       nationality: uyruk,
       currency: o.currency || paraBirimi,
       totalPrice: String(odaToplami(o)),
-      // Kampanyadan önceki fiyat (üstü çizili) ve kampanya; net fiyat kupon
-      // ön kontrolü için (fatura tedarikçi fiyatından).
+      // Kampanyadan önceki fiyat (üstü çizili) ve kampanya. Net fiyat sayfaya
+      // hiç gelmez; kupon ve rezervasyon fiyat kodunun sunucu kaydından hesaplar.
       originalPrice: String(o.pricing?.oncekiFiyat ?? odaToplami(o)),
-      netPrice: String(o.pricing?.originalPrice ?? o.totalPrice),
       ...(o.pricing?.kampanya ? { kampanya: o.pricing.kampanya.ad, kampanyaYuzde: String(o.pricing.kampanya.yuzde) } : {}),
     });
     if (o.cancellationPolicies?.length) qs.set("cancellationPolicy", JSON.stringify(o.cancellationPolicies));
@@ -388,7 +388,7 @@ export function OtelDetay({ kod }: { kod: string }) {
         <Nesne ad="zil" boyut={64} />
         <div>
           <b>Odalar şu an getirilemedi</b>
-          <span>Bağlantıda bir sorun oldu; birazdan tekrar dene.</span>
+          <span>{odaQ.error?.message || "Bağlantıda bir sorun oldu; birazdan tekrar dene."}</span>
         </div>
         <button type="button" className={s.ikincilKucuk} onClick={() => odaQ.refetch()}>Tekrar dene</button>
       </div>

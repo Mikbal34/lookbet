@@ -12,6 +12,7 @@
 // hızlı kaydırmada bile bir anda bitmiyor. Konum ve boyutlar requestAnimationFrame
 // içinde doğrudan stile yazılıyor; React yeniden çizimi yok.
 
+import { kartFotosu } from "@/lib/foto";
 import { kampanyaHedefi, kampanyaNesnesi, type VitrinKampanya } from "@/components/kampanya/ortak";
 import * as React from "react";
 import Link from "next/link";
@@ -87,7 +88,7 @@ function Satir({ satir, aramaEki, fav, onFav }: {
             >
               <div className={s.foto}>
                 {/* eslint-disable-next-line @next/next/no-img-element -- dış kaynaklı otel görseli */}
-                <img src={o.foto} alt="" loading="lazy" onError={(e) => (e.currentTarget.style.visibility = "hidden")} />
+                <img {...kartFotosu(o.foto)} alt="" loading="lazy" onError={(e) => (e.currentTarget.style.visibility = "hidden")} />
               </div>
               <h3>{o.ad}</h3>
               <p>{[o.yildiz ? `${o.yildiz} yıldızlı` : null, o.yer].filter(Boolean).join(" · ")}</p>

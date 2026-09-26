@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
+import { agencyUpdateSchema } from "@/lib/validators";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
@@ -76,18 +77,20 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "Agency not found" }, { status: 404 });
     }
 
-    const body = await req.json();
-    const { discountRate, commission, feedId, notes, isApproved } = body;
-
-    const oran = (v: unknown) => typeof v === "number" && Number.isFinite(v) && v >= 0 && v <= 100;
-    if ((discountRate !== undefined && !oran(discountRate)) || (commission !== undefined && !oran(commission))) {
-      return NextResponse.json({ error: "Oranlar 0 ile 100 arasında olmalı" }, { status: 422 });
+    // Oranlar 0–100, feedId/notes metin (uzunluk sınırlı); yalnız gönderilen alanlar değişir.
+    const parsed = agencyUpdateSchema.safeParse(await req.json().catch(() => ({})));
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0]?.message ?? "Bilgileri kontrol et", details: parsed.error.flatten().fieldErrors },
+        { status: 422 }
+      );
     }
+    const { discountRate, commission, feedId, notes, isApproved } = parsed.data;
 
     const updateData: Record<string, unknown> = {};
     // Acenteyi kapatmak/açmak: onay kalkınca paneli kilitlenir, jetondaki
     // agencyId de bir sonraki istekte boşalır (bkz. auth-options jwt).
-    if (typeof isApproved === "boolean") {
+    if (isApproved !== undefined) {
       updateData.isApproved = isApproved;
       if (isApproved) updateData.approvedById = session.user.id;
     }

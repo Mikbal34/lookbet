@@ -9,6 +9,7 @@ import { boardTypeAdlari } from "@/lib/board-types";
 import { hedefOtelKodlari } from "@/lib/otel-arama";
 import { aramaAnahtari, onbellegeYaz, onbellektenAl, type AramaKaydi } from "@/lib/arama-onbellegi";
 import { fiyatBaglami, fiyatla, otelKonumAdlari } from "@/lib/pricing";
+import { feedBul } from "@/lib/feed";
 
 // POST /api/hotels/search
 //
@@ -25,13 +26,21 @@ import { fiyatBaglami, fiyatla, otelKonumAdlari } from "@/lib/pricing";
 // (lib/arama-onbellegi.ts).
 //
 // B2B kullanıcılar (AGENCY + agencyId) kendi feedId'sini ya da B2B'yi,
-// diğerleri B2C feedId'sini kullanır.
+// diğerleri B2C feedId'sini kullanır (lib/feed).
 
 type Girdi = ReturnType<typeof hotelSearchSchema.parse>;
 
+/** Şu an Etscore'da yürüyen aramalar (anahtar → sonuç). */
+const yurutulen = new Map<string, Promise<AramaKaydi>>();
+function tekSeferde(anahtar: string, fn: () => Promise<AramaKaydi>): Promise<AramaKaydi> {
+  const p = fn().finally(() => yurutulen.delete(anahtar));
+  yurutulen.set(anahtar, p);
+  return p;
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const body = await request.json().catch(() => null);
 
     const parsed = hotelSearchSchema.safeParse(body);
     if (!parsed.success) {
@@ -43,21 +52,12 @@ export async function POST(request: NextRequest) {
     const input = parsed.data;
 
     const session = await getServerSession(authOptions);
-    let feedId = process.env.ROYAL_API_FEED_ID_B2C ?? "";
-    if (session?.user.role === "AGENCY" && session.user.agencyId) {
-      const agency = await prisma.agency.findUnique({
-        where: { id: session.user.agencyId },
-        select: { feedId: true },
-      });
-      feedId =
-        agency?.feedId ??
-        process.env.ROYAL_API_FEED_ID_B2B ??
-        process.env.ROYAL_API_FEED_ID_B2C ??
-        "";
-    }
+    const feedId = await feedBul(session?.user.role, session?.user.agencyId);
 
     const anahtar = aramaAnahtari({ ...input, feedId });
-    const kayit = onbellektenAl(anahtar);
+    // Önbellekte yoksa ama aynı arama şu an yürüyorsa onu bekle: aynı anda
+    // gelen aynı aramalar Etscore'a bir kez gider.
+    const kayit = onbellektenAl(anahtar) ?? (await yurutulen.get(anahtar)?.catch(() => null)) ?? null;
     const userId = session?.user?.id ?? null;
     const akis = request.headers.get("accept")?.includes("application/x-ndjson");
 
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
     const fiyatlat = await listeFiyatlayici(input, session?.user.role, session?.user.agencyId ?? undefined);
 
     if (!akis) {
-      const sonuc = kayit ?? (await aramayiYurut(input, feedId, userId, anahtar));
+      const sonuc = kayit ?? (await tekSeferde(anahtar, () => aramayiYurut(input, feedId, userId, anahtar)));
       return NextResponse.json({ ...sonuc, hotels: await fiyatlat(sonuc.hotels) });
     }
 
@@ -88,10 +88,12 @@ export async function POST(request: NextRequest) {
             if (kayit.hotels.length) yaz({ tip: "oteller", hotels: await fiyatlat(kayit.hotels) });
             yaz({ tip: "son", toplam: kayit.hotels.length });
           } else {
-            const sonuc = await aramayiYurut(input, feedId, userId, anahtar, {
-              onBas: (searchId, eslesme) => yaz({ tip: "bas", searchId, eslesme, onbellek: false }),
-              onParca: async (hotels) => yaz({ tip: "oteller", hotels: await fiyatlat(hotels) }),
-            });
+            const sonuc = await tekSeferde(anahtar, () =>
+              aramayiYurut(input, feedId, userId, anahtar, {
+                onBas: (searchId, eslesme) => yaz({ tip: "bas", searchId, eslesme, onbellek: false }),
+                onParca: async (hotels) => yaz({ tip: "oteller", hotels: await fiyatlat(hotels) }),
+              })
+            );
             yaz({ tip: "son", toplam: sonuc.hotels.length });
           }
         } catch (error) {
@@ -129,7 +131,8 @@ export async function POST(request: NextRequest) {
 async function listeFiyatlayici(input: Girdi, rol: string | undefined, agencyId: string | undefined) {
   const userType = rol === "AGENCY" ? "AGENCY" : rol === "ADMIN" ? "ADMIN" : "CUSTOMER";
   const b = await fiyatBaglami(userType, userType === "AGENCY" ? agencyId : undefined);
-  if (!b.kurallar.length && !b.indirimler.length && !b.acente?.discountRate) return async (h: HotelSearchResult[]) => h;
+  // Kural, kampanya ve acente yoksa satış fiyatı = net fiyat; hesaba gerek yok.
+  if (!b.kurallar.length && !b.indirimler.length && !b.acente) return async (h: HotelSearchResult[]) => h;
   const gece = Math.max(1, Math.round((Date.parse(input.checkOut) - Date.parse(input.checkIn)) / 864e5));
   return async (oteller: HotelSearchResult[]) => {
     const konumlar = await otelKonumAdlari(b, oteller.map((h) => h.hotelCode));

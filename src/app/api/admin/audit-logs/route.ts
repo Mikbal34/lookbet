@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
+import { sayfalama, tarihAraligi } from "../_ortak";
+
+// GET /api/admin/audit-logs ?entity ?userId ?dateFrom ?dateTo ?page ?limit
+// dateFrom/dateTo: "YYYY-AA-GG" (Türkiye günü) ya da ISO; geçersizse 400.
 
 export async function GET(req: NextRequest) {
   try {
@@ -12,14 +16,11 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
-    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") ?? "20", 10)));
+    const { page, limit, skip } = sayfalama(searchParams);
     const entity = searchParams.get("entity");
     const userId = searchParams.get("userId");
-    const dateFrom = searchParams.get("dateFrom");
-    const dateTo = searchParams.get("dateTo");
-
-    const skip = (page - 1) * limit;
+    const tarih = tarihAraligi(searchParams);
+    if (tarih.hata) return tarih.hata;
 
     const where: Record<string, unknown> = {};
 
@@ -31,11 +32,8 @@ export async function GET(req: NextRequest) {
       where.userId = userId;
     }
 
-    if (dateFrom || dateTo) {
-      const dateFilter: Record<string, Date> = {};
-      if (dateFrom) dateFilter.gte = new Date(dateFrom);
-      if (dateTo) dateFilter.lte = new Date(dateTo);
-      where.createdAt = dateFilter;
+    if (tarih.filtre) {
+      where.createdAt = tarih.filtre;
     }
 
     const [auditLogs, total] = await Promise.all([

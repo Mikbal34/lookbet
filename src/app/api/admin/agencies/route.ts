@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
+import { agencyCreateSchema } from "@/lib/validators";
+import { benzersizIhlali, sayfalama } from "../_ortak";
+
+// GET  /api/admin/agencies ?search ?isApproved ?page ?limit
+// POST /api/admin/agencies — var olan, etkin, rolü acente ve henüz acentesi
+//      olmayan kullanıcıya acente açar (başvuru dışı yol; yalnız API).
 
 export async function GET(req: NextRequest) {
   try {
@@ -12,12 +18,9 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
-    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") ?? "20", 10)));
+    const { page, limit, skip } = sayfalama(searchParams);
     const search = searchParams.get("search") ?? "";
     const isApprovedParam = searchParams.get("isApproved");
-
-    const skip = (page - 1) * limit;
 
     const where: Record<string, unknown> = {};
 
@@ -87,52 +90,62 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const body = await req.json();
-    const {
-      userId,
-      companyName,
-      taxId,
-      address,
-      phone,
-      discountRate,
-      commission,
-      feedId,
-      notes,
-      isApproved,
-    } = body;
-
-    if (!userId || !companyName || !taxId) {
+    const parsed = agencyCreateSchema.safeParse(await req.json().catch(() => ({})));
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "userId, companyName and taxId are required" },
-        { status: 400 }
+        { error: parsed.error.issues[0]?.message ?? "Bilgileri kontrol et", details: parsed.error.flatten().fieldErrors },
+        { status: 422 }
       );
     }
+    const { userId, companyName, taxId, address, phone, discountRate, commission, feedId, notes, isApproved } = parsed.data;
 
-    const userExists = await prisma.user.findUnique({ where: { id: userId } });
-    if (!userExists) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    const taxIdExists = await prisma.agency.findUnique({ where: { taxId } });
-    if (taxIdExists) {
-      return NextResponse.json({ error: "Tax ID already registered" }, { status: 409 });
-    }
-
-    const agency = await prisma.agency.create({
-      data: {
-        userId,
-        companyName,
-        taxId,
-        address,
-        phone,
-        discountRate: discountRate ?? 0,
-        commission: commission ?? 0,
-        feedId,
-        notes,
-        isApproved: isApproved ?? false,
-        approvedById: isApproved ? session.user.id : undefined,
-      },
+    // Acente yalnız etkin, rolü acente ve henüz acentesi olmayan kullanıcıya açılır.
+    const kullanici = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, role: true, isActive: true, agency: { select: { id: true } } },
     });
+    if (!kullanici) {
+      return NextResponse.json({ error: "Kullanıcı bulunamadı" }, { status: 404 });
+    }
+    if (!kullanici.isActive) {
+      return NextResponse.json({ error: "Kullanıcı hesabı kapalı; önce hesabı aç" }, { status: 422 });
+    }
+    if (kullanici.role !== "AGENCY") {
+      return NextResponse.json({ error: "Kullanıcının rolü acente değil" }, { status: 422 });
+    }
+    if (kullanici.agency) {
+      return NextResponse.json({ error: "Bu kullanıcının zaten bir acentesi var" }, { status: 409 });
+    }
+
+    const taxIdExists = await prisma.agency.findUnique({ where: { taxId }, select: { id: true } });
+    if (taxIdExists) {
+      return NextResponse.json({ error: "Bu vergi numarasıyla kayıtlı bir acente zaten var" }, { status: 409 });
+    }
+
+    const agency = await prisma.agency
+      .create({
+        data: {
+          userId,
+          companyName,
+          taxId,
+          address: address ?? null,
+          phone: phone ?? null,
+          discountRate,
+          commission,
+          feedId: feedId ?? null,
+          notes: notes ?? null,
+          isApproved,
+          approvedById: isApproved ? session.user.id : undefined,
+        },
+      })
+      .catch((e) => {
+        // Aynı kullanıcıya ya da vergi noya aynı anda ikinci acente.
+        if (benzersizIhlali(e)) return null;
+        throw e;
+      });
+    if (!agency) {
+      return NextResponse.json({ error: "Bu kullanıcıya ya da vergi numarasına bağlı bir acente zaten var" }, { status: 409 });
+    }
 
     await prisma.auditLog.create({
       data: {

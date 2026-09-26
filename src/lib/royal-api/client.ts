@@ -75,6 +75,35 @@ export class EtscoreError extends Error {
   get hizSiniri(): boolean {
     return this.status === 429 || this.code === ETS_HIZ_SINIRI;
   }
+
+  /**
+   * İsteğin sonucu bilinmiyor: zaman aşımı, bağlantı koptu ya da Etscore
+   * 5xx döndü. İstek işlenmiş olabilir — rezervasyonda "başarısız" sayılmaz,
+   * kontrol gerekir. 4xx ise istek reddedilmiştir (işlenmedi).
+   */
+  get belirsiz(): boolean {
+    return this.status >= 500 || this.code === ETS_ZAMAN_ASIMI || this.code === ETS_BAGLANTI;
+  }
+}
+
+export const ETS_ZAMAN_ASIMI = "ZAMAN_ASIMI";
+export const ETS_BAGLANTI = "BAGLANTI";
+
+/** Yanıt gelmezse istek bu kadar beklenir (rezervasyon uzun sürebiliyor, ayrıca verilir). */
+const VARSAYILAN_ZAMAN_ASIMI_MS = 30_000;
+
+/** fetch'i zaman aşımıyla çağırır; ağ hatalarını EtscoreError'a çevirir. */
+async function getir(url: string, init: RequestInit, zamanAsimiMs: number): Promise<Response> {
+  try {
+    return await fetch(url, { ...init, signal: AbortSignal.timeout(zamanAsimiMs) });
+  } catch (e) {
+    const zaman = e instanceof Error && (e.name === "TimeoutError" || e.name === "AbortError");
+    throw new EtscoreError(
+      zaman ? 504 : 503,
+      zaman ? ETS_ZAMAN_ASIMI : ETS_BAGLANTI,
+      zaman ? `Etscore ${Math.round(zamanAsimiMs / 1000)} sn içinde yanıt vermedi` : "Etscore'a bağlanılamadı"
+    );
+  }
 }
 
 /**
@@ -130,11 +159,15 @@ async function getStoredToken(): Promise<string | null> {
 
 async function login(): Promise<string> {
   await siraBekle();
-  const res = await fetch(`${BASE_URL}${LOGIN_PATH}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "Accept-Language": DIL },
-    body: JSON.stringify({ username: USERNAME, password: PASSWORD }),
-  });
+  const res = await getir(
+    `${BASE_URL}${LOGIN_PATH}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Accept-Language": DIL },
+      body: JSON.stringify({ username: USERNAME, password: PASSWORD }),
+    },
+    15_000
+  );
 
   if (!res.ok) {
     // 403 + HTML = Cloudflare IP engeli; gövdeyi mesaja koymak yerine
@@ -197,23 +230,29 @@ export interface EtsRequestOptions {
   retry?: boolean;
   /** 429 sonrası kaçıncı deneme (içeride kullanılıyor). */
   hizDenemesi?: number;
+  /** Yanıt için en fazla bekleme (ms); varsayılan 30 sn. */
+  zamanAsimiMs?: number;
 }
 
 async function request<T>(path: string, options: EtsRequestOptions = {}): Promise<T> {
-  const { method = "GET", body, currency, retry = true, hizDenemesi = 0 } = options;
+  const { method = "GET", body, currency, retry = true, hizDenemesi = 0, zamanAsimiMs = VARSAYILAN_ZAMAN_ASIMI_MS } = options;
   const token = await getAccessToken();
 
   await siraBekle();
-  const res = await fetch(`${BASE_URL}${path}`, {
-    method,
-    headers: {
-      "Content-Type": "application/json",
-      "Accept-Language": DIL,
-      Authorization: `Bearer ${token}`,
-      ...(currency ? { "X-Currency": currency } : {}),
+  const res = await getir(
+    `${BASE_URL}${path}`,
+    {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        "Accept-Language": DIL,
+        Authorization: `Bearer ${token}`,
+        ...(currency ? { "X-Currency": currency } : {}),
+      },
+      body: body !== undefined ? JSON.stringify(body) : undefined,
     },
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
+    zamanAsimiMs
+  );
 
   // Token süresi dolmuş ya da iptal edilmiş: bir kez taze token ile dene.
   if (res.status === 401 && retry) {
@@ -233,7 +272,8 @@ async function request<T>(path: string, options: EtsRequestOptions = {}): Promis
       message = err.errorMessage ?? message;
       traceId = err.traceId;
     } catch {
-      message = `${message}: ${text.slice(0, 200)}`;
+      // JSON olmayan gövde (HTML hata sayfası vb.) loga, mesaja değil.
+      console.warn(`[etscore] ${path} HTTP ${res.status}: ${text.slice(0, 200)}`);
     }
     const hata = new EtscoreError(res.status, code, message, traceId);
 

@@ -11,7 +11,7 @@ import { Nesne } from "@/components/lb/nesne";
 import { getir, gonder, neZaman, sayi, simdiAl, useBildiri } from "./ortak";
 import s from "./yonetim.module.css";
 
-type Adim = "revizyon" | "fiyat" | "listeler" | "oteller" | "icerik";
+type Adim = "revizyon" | "fiyat" | "listeler" | "oteller" | "icerik" | "temizlik";
 interface Son { zaman: string; sure: number; basarili: boolean; ozet: string }
 interface Durum {
   sayilar: { aktif: number; pasif: number; konum: number; fiyatVeren: number; fotografsiz: number };
@@ -25,6 +25,7 @@ const ISLER: { adim: Adim; ad: string; aciklama: string; zaman: string; uzun?: b
   { adim: "fiyat", ad: "Fiyat veren oteller", aciklama: "Şehir aramasının sıralaması buna bağlı", zaman: "Her gece, değişen otellerden sonra", uzun: true },
   { adim: "listeler", ad: "Listeler", aciklama: "Pansiyon, olanak ve oda özelliği adları", zaman: "Pazar 05:00" },
   { adim: "oteller", ad: "Otel listesi", aciklama: "Etscore'daki tüm oteller, yeni kodlar", zaman: "Pazar, listelerden sonra", uzun: true },
+  { adim: "temizlik", ad: "Temizlik", aciklama: "Süresi dolmuş giriş kodları, eski Etscore anahtarları, 90 günden eski arama kayıtları", zaman: "Her gece 03:45" },
   { adim: "icerik", ad: "Eksik içerik", aciklama: "Fotoğrafı ya da konumu eksik oteller", zaman: "Pazar, otel listesinden sonra", uzun: true },
 ];
 const sureYaz = (sn: number) => (sn < 60 ? `${sn} sn` : `${Math.floor(sn / 60)} dk ${sn % 60} sn`);

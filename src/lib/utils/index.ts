@@ -85,7 +85,9 @@ export function formatDateRange(
  * Şimdi "LB" + zaman (36 tabanında 8 hane) + 4 rastgele = 14 karakter.
  */
 export function generateClientReferenceId(): string {
-  const rastgele = Math.random().toString(36).substring(2, 6).padEnd(4, "0");
+  const r = new Uint32Array(1);
+  globalThis.crypto.getRandomValues(r);
+  const rastgele = r[0].toString(36).padStart(7, "0").slice(0, 6);
   return `LB${Date.now().toString(36)}${rastgele}`.toUpperCase();
 }
 
@@ -95,4 +97,20 @@ export function getNightCount(checkIn: Date | string, checkOut: Date | string): 
   // Geçersiz tarihlerde NaN dönüp arayüzde "NaN gece" yazılmasın.
   if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return 0;
   return Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+/**
+ * Başarısız API yanıtından kullanıcıya gösterilecek mesaj: doğrulama
+ * ayrıntısı ("Giriş tarihi geçmişte olamaz") varsa o, yoksa error; hız
+ * sınırında (nginx HTML döner) sabit metin.
+ */
+export async function sunucuMesaji(r: Response, yedek: string): Promise<string> {
+  if (r.status === 429) return "Çok sık istek gönderildi; biraz bekleyip tekrar dene.";
+  try {
+    const d = (await r.json()) as { error?: string; details?: Record<string, string[] | undefined> };
+    const ayrinti = d.details && Object.values(d.details).flat().find(Boolean);
+    return ayrinti || d.error || yedek;
+  } catch {
+    return yedek;
+  }
 }

@@ -48,6 +48,8 @@ const EYLEM: Record<string, string> = {
   UPDATE_COUPON: "kuponu güncelledi",
   DELETE_COUPON: "kuponu sildi",
 };
+// auditLog.create'teki tüm `entity` değerleri (api/admin/** ve içerik işi:
+// api/content/sync → "Hotel"). Yeni bir varlık kaydedilince buraya da ekle.
 const FILTRE = [
   { ad: "Hepsi", varlik: "" },
   { ad: "Acente", varlik: "Agency" },
@@ -57,7 +59,10 @@ const FILTRE = [
   { ad: "İndirim", varlik: "Discount" },
   { ad: "Kupon", varlik: "Coupon" },
   { ad: "Kullanıcı", varlik: "User" },
+  { ad: "Bildirim", varlik: "Notification" },
+  { ad: "İçerik", varlik: "Hotel" },
 ];
+const VARLIK_AD: Record<string, string> = Object.fromEntries(FILTRE.filter((f) => f.varlik).map((f) => [f.varlik, f.ad]));
 const yaz = (v: unknown) => (v === null || v === undefined || v === "" ? "—" : typeof v === "object" ? JSON.stringify(v) : String(v));
 
 function gunBasligi(iso: string, simdi: number) {
@@ -111,7 +116,7 @@ export function Denetim() {
                       <span className={s.kim} data-sistem={!k.user || undefined}>{kim[0]?.toLocaleUpperCase("tr")}</span>
                       <div>
                         <b>{kim}</b> {EYLEM[k.action] ?? k.action.toLocaleLowerCase("tr").replace(/_/g, " ")}
-                        <span className={s.varlik}>{k.entity}</span>
+                        <span className={s.varlik}>{VARLIK_AD[k.entity] ?? k.entity}</span>
                       </div>
                       <Ikon ad="chevron-down" boyut={18} className={s.acOk} />
                     </summary>

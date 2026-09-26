@@ -4,14 +4,16 @@
 // Yönetim › rezervasyon ayrıntısı: otel, tarihler, kaynak, iletişim,
 // misafirler ve fiyatın oluşumu (Etscore net fiyatı → uygulanan kural →
 // satış fiyatı → acente komisyonu). Belge müşteri sayfasında açılır; iptal
-// müşteri tarafıyla aynı pencereden gerçek iptal servisine gider.
+// müşteri tarafıyla aynı servise (/api/reservations/:id/cancel, tedarikçide
+// gerçek iptal) gider, pencere yönetici diliyle (müşterinin "Rezervasyonun
+// iptal edildi", "iptal hakkın var" metinleri değil).
 
 import * as React from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Pencere } from "@/components/lb/pencere";
-import { IptalPenceresi } from "@/components/rezervasyonlar/rezervasyon-detay";
-import { geceler, gunOku, gunUzun, komisyonTutari } from "@/components/rezervasyonlar/ortak";
-import { DurumRozet, eur, satisFiyati, simdiAl, tarihUzun, saatYazi, useBildiri, type YRez } from "./ortak";
+import { para } from "@/components/otel-detay/yardimci";
+import { aralik, geceler, gunOku, gunUzun, gunYonelme, iptalDurumu, komisyonTutari } from "@/components/rezervasyonlar/ortak";
+import { DurumRozet, HataYazi, eur, gonder, satisFiyati, simdiAl, tarihUzun, saatYazi, useBildiri, type YRez } from "./ortak";
 import s from "./yonetim.module.css";
 
 export function RezAyrinti({ r, onKapat }: { r: YRez | null; onKapat: () => void }) {
@@ -19,7 +21,6 @@ export function RezAyrinti({ r, onKapat }: { r: YRez | null; onKapat: () => void
   if (r && r !== son) setSon(r);
   const x = r ?? son;
   const [iptal, setIptal] = React.useState(false);
-  const [simdi] = React.useState(simdiAl);
   const istemci = useQueryClient();
   const bildiri = useBildiri();
 
@@ -29,10 +30,11 @@ export function RezAyrinti({ r, onKapat }: { r: YRez | null; onKapat: () => void
         {x && <Icerik r={x} onIptal={() => setIptal(true)} />}
       </Pencere>
       {x && (
-        <IptalPenceresi
+        // Rezervasyon başına ayrı durum: birini iptal edince sonrakinde "iptal edildi" kalmasın.
+        <IptalOnayi
+          key={x.id}
           acik={iptal}
           r={x}
-          simdi={simdi}
           onKapat={() => setIptal(false)}
           onIptal={() => {
             istemci.invalidateQueries({ queryKey: ["yonetim"] });
@@ -42,6 +44,76 @@ export function RezAyrinti({ r, onKapat }: { r: YRez | null; onKapat: () => void
         />
       )}
     </>
+  );
+}
+
+interface IptalYaniti {
+  reservation?: { cancellationFee?: number | null };
+  cancellation?: { cancellationFee?: number | null; currency?: string | null };
+}
+
+/** İptal onayı ve sonucu (yönetici dili); ücret tahmini rezervasyondaki iptal koşullarından. */
+function IptalOnayi({ acik, r, onKapat, onIptal }: { acik: boolean; r: YRez; onKapat: () => void; onIptal: () => void }) {
+  const [simdi] = React.useState(simdiAl);
+  const iptal = useMutation({
+    mutationFn: () => gonder<IptalYaniti>(`/api/reservations/${r.id}/cancel`, "POST"),
+    onSuccess: onIptal,
+  });
+  const ip = iptalDurumu(r, simdi);
+  const tahmin = ip.simdiUcret;
+  const birim = ip.ceza?.penaltyCurrency || r.currency;
+  const kesilen = iptal.data?.cancellation?.cancellationFee ?? iptal.data?.reservation?.cancellationFee ?? null;
+  // Hata kalmasın: yeniden açılınca soru temiz başlasın (sürerken ya da bittiyse dokunma).
+  const kapat = () => {
+    if (iptal.isError) iptal.reset();
+    onKapat();
+  };
+  return (
+    <Pencere acik={acik} onKapat={kapat} baslik="Rezervasyonu iptal et" genislik={520}>
+      {iptal.isSuccess ? (
+        <div className={s.pIc}>
+          <h3 className="lb-y">Rezervasyon iptal edildi</h3>
+          <p>
+            {kesilen == null
+              ? "İptal otele iletildi; tedarikçi ücret bildirmedi."
+              : kesilen > 0
+                ? `Kesilen iptal ücreti: ${para(kesilen, iptal.data?.cancellation?.currency || birim)}.`
+                : "İptal ücreti kesilmedi."}
+          </p>
+          <div className={s.pAlt}>
+            <button type="button" className={`${s.dugme} ${s.siyah}`} onClick={kapat}>Tamam</button>
+          </div>
+        </div>
+      ) : (
+        <div className={s.pIc}>
+          <div className={s.dokum}>
+            <div data-toplam>
+              <span>Şimdi iptal edilirse</span>
+              <b>{tahmin === 0 ? "Ücret yok" : tahmin != null ? para(tahmin, birim) : "Otelin koşullarına göre"}</b>
+            </div>
+          </div>
+          <p className={s.not}>
+            {tahmin === 0 && ip.ucretsizSon
+              ? `${gunYonelme(ip.ucretsizSon)} kadar ücretsiz iptal edilebilir.`
+              : tahmin != null
+                ? "Tutar rezervasyondaki iptal koşullarına göre kesilir."
+                : "İptal ücreti otelden gelen yanıta göre kesinleşir."}
+          </p>
+          <p className={s.not}>
+            <b>{r.hotelName ?? r.hotelCode}</b> · {aralik(r)} · {r.contactName || r.user?.name || "Misafir"}
+          </p>
+          {iptal.error && (
+            <HataYazi>{iptal.error instanceof TypeError ? "Bağlantıda bir sorun oldu; birazdan tekrar dene." : iptal.error.message}</HataYazi>
+          )}
+          <div className={s.pAlt}>
+            <button type="button" className={`${s.dugme} ${s.cerceve}`} onClick={kapat}>Vazgeç</button>
+            <button type="button" className={`${s.dugme} ${s.kirmizi}`} disabled={iptal.isPending} onClick={() => iptal.mutate()}>
+              {iptal.isPending ? "İptal ediliyor…" : "Rezervasyonu iptal et"}
+            </button>
+          </div>
+        </div>
+      )}
+    </Pencere>
   );
 }
 

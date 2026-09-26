@@ -5,6 +5,7 @@
 // varsa turuncu etiket ve üstü çizili önceki fiyat. Fotoğrafı açılmayan
 // otelde resepsiyon zilli boş durum. Her otel kendi sekmesinde açılır (Airbnb).
 
+import { kartFotosu } from "@/lib/foto";
 import * as React from "react";
 import { Ikon } from "./ikon";
 import { Nesne } from "./nesne";
@@ -49,7 +50,7 @@ export function OtelKarti({ otel, href, favori, onFavori, onUzerinde, sira = 0 }
             </span>
           ) : (
             // eslint-disable-next-line @next/next/no-img-element -- dış kaynaklı otel görseli
-            <img src={otel.foto!} alt="" loading="lazy" onError={() => setFotoYok(true)} />
+            <img {...kartFotosu(otel.foto!)} alt="" loading="lazy" onError={() => setFotoYok(true)} />
           )}
           {(otel.indirim || otel.iptal) && (
             <span className={s.etiketler}>

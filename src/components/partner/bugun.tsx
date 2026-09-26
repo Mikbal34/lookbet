@@ -167,7 +167,8 @@ export function Bugun() {
           <Link href="/agency/reservations">
             <span>Satış</span>
             <b className="lb-y">{ay ? para(ay.satis, pb) : "—"}</b>
-            <small>Onaylı rezervasyonlar</small>
+            {/* Kazançlar'la aynı taban: girişi bu ayda olan onaylı rezervasyonlar (checkIn). */}
+            <small>Girişi bu ayda, onaylı</small>
           </Link>
           <Link href="/agency/reservations">
             <span>Rezervasyon</span>

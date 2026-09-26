@@ -27,7 +27,8 @@ export function Raporlar() {
     <div className={s.dis}>
       <div className={s.sayfaBas}>
         <h1 className="lb-y">Raporlar</h1>
-        <span className={s.soluk}>{ilk && son ? `${ayAdi(ilk, true)} – ${ayAdi(son, true)} · onaylı rezervasyonlar` : "Son 12 ay"}</span>
+        {/* Taban: oluşturulma ayı (acentenin Kazançlar ekranı giriş ayına göre sayar). */}
+        <span className={s.soluk}>{ilk && son ? `${ayAdi(ilk, true)} – ${ayAdi(son, true)} · onaylı rezervasyonlar, oluşturulma ayına göre` : "Son 12 ay"}</span>
       </div>
       {q.isPending ? (
         <div className={s.iskelet} aria-busy="true" />

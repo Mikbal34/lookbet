@@ -49,6 +49,10 @@ export default withAuth(
           return true;
         }
 
+        // Diğer API'ler oturumu kendileri denetler ve JSON 401 döner; giriş
+        // sayfasına yönlendirme (HTML) istemciyi yanıltıyordu.
+        if (path.startsWith("/api/")) return true;
+
         // All other routes require authentication
         return !!token;
       },

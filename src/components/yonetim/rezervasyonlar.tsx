@@ -2,7 +2,9 @@
 
 // Yönetim › Rezervasyonlar: durum çipleri (sayılı), kaynak (müşteri/acente),
 // arama (misafir, e-posta, otel, rezervasyon no, acente), CSV ve sayfalı
-// liste. Satıra tıklayınca ayrıntı açılır. ?durum=PENDING ile gelinebilir.
+// liste. Satıra tıklayınca ayrıntı açılır. ?durum=PENDING ile gelinebilir;
+// ?dateFrom / ?dateTo (oluşturulma tarihi; YYYY-AA-GG ya da ISO) API'ye
+// aynen gider — Bugün'deki "son 14 gün başarısız" kartı böyle bağlanır.
 
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -20,11 +22,14 @@ interface Yanit {
 }
 const CIPLER = ["PENDING", "FAILED", "CONFIRMED", "CANCELLED"] as const;
 const CIP_AD: Record<string, string> = { PENDING: "Otel onayı bekleyen", FAILED: "Başarısız", CONFIRMED: "Onaylı", CANCELLED: "İptal" };
+const tarihEtiketi = (v: string) => (Number.isNaN(new Date(v).getTime()) ? v : tarihKisa(v));
 
 export function Rezervasyonlar() {
   const router = useRouter();
   const p = useSearchParams();
   const durum = CIPLER.includes(p.get("durum") as (typeof CIPLER)[number]) ? p.get("durum")! : "";
+  const tarihDen = p.get("dateFrom") ?? "";
+  const tarihKadar = p.get("dateTo") ?? "";
   const [kaynak, setKaynak] = React.useState("");
   const [ara, setAra] = React.useState("");
   const [aranan, setAranan] = React.useState("");
@@ -39,6 +44,8 @@ export function Rezervasyonlar() {
     if (durum) u.set("status", durum);
     if (kaynak) u.set("source", kaynak);
     if (aranan) u.set("search", aranan);
+    if (tarihDen) u.set("dateFrom", tarihDen);
+    if (tarihKadar) u.set("dateTo", tarihKadar);
     if (sayfa) {
       u.set("page", String(sayfa));
       u.set("limit", "40");
@@ -46,7 +53,7 @@ export function Rezervasyonlar() {
     return u.toString();
   };
   const q = useInfiniteQuery({
-    queryKey: ["yonetim", "rezervasyonlar", durum, kaynak, aranan],
+    queryKey: ["yonetim", "rezervasyonlar", durum, kaynak, aranan, tarihDen, tarihKadar],
     queryFn: ({ pageParam }) => getir<Yanit>(`/api/admin/reservations?${parametre(pageParam)}`),
     initialPageParam: 1,
     getNextPageParam: (son) => (son.pagination.page < son.pagination.totalPages ? son.pagination.page + 1 : undefined),
@@ -54,7 +61,17 @@ export function Rezervasyonlar() {
   const liste = q.data?.pages.flatMap((x) => x.reservations) ?? [];
   const sayilar = q.data?.pages[0]?.sayilar;
   const toplam = sayilar ? Object.values(sayilar).reduce((a, b) => a + b, 0) : null;
-  const durumSec = (d: string) => router.replace(d ? `/admin/reservations?durum=${d}` : "/admin/reservations", { scroll: false });
+  // Adres: durum çipi değişince tarih filtresi korunur; çipteki × kaldırır.
+  const adres = (d: string, tarihli = true) => {
+    const u = new URLSearchParams();
+    if (d) u.set("durum", d);
+    if (tarihli && tarihDen) u.set("dateFrom", tarihDen);
+    if (tarihli && tarihKadar) u.set("dateTo", tarihKadar);
+    const sorgu = u.toString();
+    return sorgu ? `/admin/reservations?${sorgu}` : "/admin/reservations";
+  };
+  const durumSec = (d: string) => router.replace(adres(d), { scroll: false });
+  const tarihYazi = tarihDen || tarihKadar ? `${tarihDen ? tarihEtiketi(tarihDen) : "…"} – ${tarihKadar ? tarihEtiketi(tarihKadar) : "bugün"}` : null;
 
   return (
     <div className={s.dis}>
@@ -77,6 +94,19 @@ export function Rezervasyonlar() {
           ))}
         </div>
         <div className={s.aracSag}>
+          {tarihYazi && (
+            <button
+              type="button"
+              className={s.cip}
+              aria-pressed="true"
+              aria-label={`Oluşturulma ${tarihYazi}; tarih filtresini kaldır`}
+              title="Oluşturulma tarihine göre süzülüyor; kaldırmak için tıkla"
+              onClick={() => router.replace(adres(durum, false), { scroll: false })}
+            >
+              {tarihYazi}
+              <Ikon ad="close" boyut={14} />
+            </button>
+          )}
           <div className={s.parca} role="radiogroup" aria-label="Kaynak">
             {[["", "Hepsi"], ["CUSTOMER", "Müşteri"], ["AGENCY", "Acente"]].map(([v, ad]) => (
               <label key={v}>
@@ -97,6 +127,7 @@ export function Rezervasyonlar() {
       ) : q.isError ? (
         <div className={s.bos}>
           <b>Rezervasyonlar alınamadı</b>
+          {q.error?.message && <span>{q.error.message}</span>}
           <button type="button" className={`${s.dugme} ${s.siyah}`} onClick={() => q.refetch()}>Tekrar dene</button>
         </div>
       ) : (

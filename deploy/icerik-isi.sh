@@ -2,7 +2,7 @@
 # Zamanlanmış içerik işi: /api/internal/sync?adim=$1
 # Cron çağırır (deploy/lookbet.cron). Elle: ./deploy/icerik-isi.sh revizyon
 set -euo pipefail
-ADIM="${1:?adim gerekli: revizyon | fiyat | icerik | listeler | oteller}"
+ADIM="${1:?adim gerekli: revizyon | fiyat | icerik | listeler | oteller | temizlik}"
 cd "$(dirname "$0")/.."
 SECRET=$(grep -E '^CRON_SECRET=' .env.production | cut -d= -f2- | tr -d '"')
 echo "[$(date -Is)] $ADIM başladı"

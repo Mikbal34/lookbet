@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
 
 // GET /api/admin/secenekler — yönetim formlarının seçenekleri.
-//   (parametresiz) pansiyon türleri ve onaylı acenteler
+//   (parametresiz) pansiyon türleri ve onaylı, kullanıcı hesabı açık acenteler
 //   ?otel=… ad ya da kodla en fazla 8 otel (fiyat kuralı / komisyon formu)
 
 export const dynamic = "force-dynamic";
@@ -37,7 +37,8 @@ export async function GET(req: NextRequest) {
   const [pansiyonlar, acenteler] = await Promise.all([
     prisma.boardType.findMany({ orderBy: { name: "asc" }, select: { code: true, name: true } }),
     prisma.agency.findMany({
-      where: { isApproved: true },
+      // Kapatılmış (kullanıcısı pasif) acente kural/komisyon seçicisinde çıkmasın.
+      where: { isApproved: true, user: { isActive: true } },
       orderBy: { companyName: "asc" },
       select: { id: true, companyName: true, commission: true, discountRate: true },
     }),

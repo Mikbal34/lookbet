@@ -12,6 +12,7 @@ import bcrypt from "bcryptjs";
 import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
 import { applicationApproveSchema } from "@/lib/validators";
+import { benzersizIhlali } from "../../../_ortak";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
@@ -142,6 +143,10 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       email: application.email,
     });
   } catch (error) {
+    // Ön kontrolden sonra aynı e-posta / vergi no / başvuru aynı anda işlendiyse.
+    if (benzersizIhlali(error)) {
+      return NextResponse.json({ error: "Bu e-posta ya da vergi numarası başka bir hesaba veya acenteye bağlı" }, { status: 409 });
+    }
     console.error("[ADMIN_AGENCY_APPLICATION_APPROVE]", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

@@ -28,6 +28,9 @@ export async function GET() {
     const gecenAy = new Date(simdi.getFullYear(), simdi.getMonth() - 1, 1);
     const altiAy = new Date(simdi.getFullYear(), simdi.getMonth() - 5, 1);
     const bugun = new Date(simdi.getFullYear(), simdi.getMonth(), simdi.getDate());
+    // Başarısız rezervasyonlar: son 14 gün. Kart aynı başlangıçla listeye
+    // bağlanır (?dateFrom), sayı ile liste aynı pencereyi gösterir.
+    const basarisizDen = new Date(simdi.getTime() - 14 * 864e5);
 
     const [
       basvuruSay, enEskiBasvuru, otelOnayi, basarisiz, aktifAcente, musteri, yeniMusteri,
@@ -36,7 +39,7 @@ export async function GET() {
       prisma.agencyApplication.count({ where: { status: "PENDING" } }),
       prisma.agencyApplication.findFirst({ where: { status: "PENDING" }, orderBy: { createdAt: "asc" }, select: { createdAt: true } }),
       prisma.reservation.count({ where: { status: "PENDING" } }),
-      prisma.reservation.count({ where: { status: "FAILED", createdAt: { gte: new Date(simdi.getTime() - 14 * 864e5) } } }),
+      prisma.reservation.count({ where: { status: "FAILED", createdAt: { gte: basarisizDen } } }),
       prisma.agency.count({ where: { isApproved: true, user: { isActive: true } } }),
       prisma.user.count({ where: { role: "CUSTOMER" } }),
       prisma.user.count({ where: { role: "CUSTOMER", createdAt: { gte: buAy } } }),
@@ -47,10 +50,15 @@ export async function GET() {
         where: { status: "CONFIRMED", createdAt: { gte: altiAy } },
         select: { createdAt: true, totalPrice: true, discountedPrice: true, source: true },
       }),
+      // Rezervasyon ayrıntısı (rez-ayrinti) buradan da açılır: liste
+      // route'uyla aynı biçim (hesap sahibi ve acentenin anlaşma oranı).
       prisma.reservation.findMany({
         orderBy: { createdAt: "desc" },
         take: 6,
-        include: { agency: { select: { id: true, companyName: true } } },
+        include: {
+          user: { select: { id: true, name: true, email: true } },
+          agency: { select: { id: true, companyName: true, commission: true } },
+        },
       }),
       sonCalismalar(),
     ]);
@@ -77,6 +85,7 @@ export async function GET() {
         enEskiBasvuru: enEskiBasvuru?.createdAt ?? null,
         otelOnayi,
         basarisiz,
+        basarisizDen: basarisizDen.toISOString(),
         icerik: enSonIs ? { adim: enSonIs[0], ...enSonIs[1] } : null,
         calisan: calisanIs(),
       },

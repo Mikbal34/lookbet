@@ -2,17 +2,20 @@
 
 // Yönetim › Fiyatlar: "Fiyat nasıl oluşuyor?" hesaplayıcısı, fiyat kuralları
 // ve acentelere özel komisyonlar. Hesaplayıcı lib/pricing/engine ile aynı
-// kuralı izler: etkin, tarihi tutan, kişiye (müşteri / tüm acenteler / tek
-// acente), otele ve pansiyona uyan kurallardan önceliği en yüksek TEK kural
-// uygulanır; acentede ardından acentenin indirim oranı düşülür. Komisyon
-// (motordaki calculateCommission): uyan özel komisyon varsa o, yoksa
-// acentenin anlaşma oranı; rezervasyonda o anki tutar saklanır.
+// sırayı izler: etkin, tarihi tutan, kişiye (müşteri / tüm acenteler / tek
+// acente), otele ve pansiyona uyan kurallardan önceliği en yüksek TEK kural;
+// sonra koşulu tutan (kime, otel/bölge, giriş tarihi, gece) yüzdesi en yüksek
+// TEK otomatik indirim (Kampanyalar); acentede ardından acentenin indirim
+// oranı. Komisyon (motordaki calculateCommission): uyan özel komisyon varsa
+// o, yoksa acentenin anlaşma oranı; rezervasyonda o anki tutar saklanır.
+// Kupon ödeme adımında uygulanır; hesaplayıcıda yok.
 
 import * as React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Ikon } from "@/components/lb/ikon";
 import { Pencere } from "@/components/lb/pencere";
-import { Anahtar, Girdi, HataYazi, Secim, eur, getir, gonder, tarihKisa, useBildiri } from "./ortak";
+import { katla } from "@/lib/katla";
+import { AYK, Anahtar, Girdi, HataYazi, Secim, eur, getir, gonder, tarihGirdisi, tarihKisa, trGun, useBildiri } from "./ortak";
 import s from "./yonetim.module.css";
 
 type Tur = "MARKUP" | "PERCENTAGE_DISCOUNT" | "FIXED_DISCOUNT";
@@ -50,6 +53,24 @@ interface Secenekler {
   pansiyonlar: { code: string; name: string }[];
   acenteler: { id: string; companyName: string; commission: number; discountRate: number }[];
 }
+/** Otomatik indirim (Kampanyalar; /api/admin/discounts) — hesaplayıcının kullandığı alanlar. */
+interface Kampanya {
+  id: string;
+  name: string;
+  type: "EARLY_BOOKING" | "LAST_MINUTE" | "LONG_STAY" | "DATE_RANGE";
+  percent: number;
+  minDays: number | null;
+  maxDays: number | null;
+  minNights: number | null;
+  stayStart: string | null;
+  stayEnd: string | null;
+  hotelCodes: string[];
+  locationName: string | null;
+  audience: "CUSTOMER" | "AGENCY" | "ALL";
+  startsAt: string | null;
+  endsAt: string | null;
+  isActive: boolean;
+}
 
 const TUR_AD: Record<Tur, string> = { MARKUP: "Kâr payı", PERCENTAGE_DISCOUNT: "Yüzde indirim", FIXED_DISCOUNT: "Tutar indirimi" };
 const HEDEF_AD: Record<Hedef, string> = { ALL_CUSTOMERS: "Tüm müşteriler", ALL_AGENCIES: "Tüm acenteler", SPECIFIC_AGENCY: "Tek acente" };
@@ -59,10 +80,49 @@ const tarihAraligi = (b: string | null, e: string | null) =>
   !b && !e ? "Süresiz" : `${b ? tarihKisa(b) : "…"} – ${e ? tarihKisa(e) : "…"}`;
 const suAn = (b: string | null, e: string | null, simdi: number) =>
   (!b || new Date(b).getTime() <= simdi) && (!e || new Date(e).getTime() >= simdi);
+const KAMPANYA_TUR: Record<Kampanya["type"], string> = { EARLY_BOOKING: "Erken rezervasyon", LAST_MINUTE: "Son dakika", LONG_STAY: "Uzun konaklama", DATE_RANGE: "Belirli tarihler" };
+/** İki YYYY-AA-GG arasındaki gün (motordaki gunFarki). */
+const gunFarki = (a: string, b: string) => Math.round((Date.parse(a) - Date.parse(b)) / 864e5);
+/** "2026-10-26" → "26 Eki" (saat dilimine bakmadan). */
+const gunYazi = (v: string) => {
+  const [, ay, gun] = v.split("-").map(Number);
+  return ay && gun ? `${gun} ${AYK[ay - 1]}` : v;
+};
+
+/**
+ * Motordaki uyanIndirim'in aynısı: yayında, kişiye uyan, otel/bölge kapsamı
+ * ve koşulu tutan indirimler. Bölge kapsamında otelin gerçek konumu burada
+ * bilinmez; hesaplayıcıda seçilen bölgeyle eşleşir (tahmini).
+ */
+function uyanKampanyalar(
+  liste: Kampanya[],
+  g: { acente: boolean; otel: string; bolge: string; giris: string; gece: number | null; bugun: string; simdi: number }
+) {
+  const gunKala = g.giris ? gunFarki(g.giris, g.bugun) : null;
+  return liste.filter((d) => {
+    if (!d.isActive || !suAn(d.startsAt, d.endsAt, g.simdi)) return false;
+    if (d.audience === "CUSTOMER" && g.acente) return false;
+    if (d.audience === "AGENCY" && !g.acente) return false;
+    if (d.hotelCodes.length) {
+      if (!g.otel || !d.hotelCodes.includes(g.otel)) return false;
+    } else if (d.locationName) {
+      if (!g.bolge || katla(g.bolge) !== katla(d.locationName)) return false;
+    }
+    if (d.type === "EARLY_BOOKING") return gunKala !== null && gunKala >= (d.minDays ?? 0);
+    if (d.type === "LAST_MINUTE") return gunKala !== null && gunKala >= 0 && gunKala <= (d.maxDays ?? 0);
+    if (d.type === "LONG_STAY") return g.gece !== null && g.gece >= (d.minNights ?? 1);
+    // DATE_RANGE: konaklama aralığı UTC gece yarısı saklanır; motor da ISO'nun gününe bakar.
+    const bas = d.stayStart?.slice(0, 10);
+    const son = d.stayEnd?.slice(0, 10);
+    return !!g.giris && !(bas && g.giris < bas) && !(son && g.giris > son);
+  });
+}
 
 export function Fiyatlar() {
   const kurallar = useQuery({ queryKey: ["yonetim", "kurallar"], queryFn: () => getir<{ priceRules: Kural[] }>("/api/admin/price-rules") });
   const komisyonlar = useQuery({ queryKey: ["yonetim", "komisyonlar"], queryFn: () => getir<{ commissions: Komisyon[] }>("/api/admin/commissions") });
+  // Kampanyalar sayfasıyla aynı sorgu (önbellek paylaşılır).
+  const indirimler = useQuery({ queryKey: ["yonetim", "indirimler"], queryFn: () => getir<{ indirimler: Kampanya[] }>("/api/admin/discounts") });
   const secenek = useQuery({ queryKey: ["yonetim", "secenekler"], queryFn: () => getir<Secenekler>("/api/admin/secenekler"), staleTime: 5 * 60_000 });
   const [kuralForm, setKuralForm] = React.useState<Kural | "yeni" | null>(null);
   const [komForm, setKomForm] = React.useState<Komisyon | "yeni" | null>(null);
@@ -78,7 +138,14 @@ export function Fiyatlar() {
         </button>
       </div>
 
-      <Hesaplayici kurallar={kurallar.data?.priceRules ?? []} komisyonlar={komisyonlar.data?.commissions ?? []} secenek={secenek.data} />
+      <Hesaplayici
+        kurallar={kurallar.data?.priceRules ?? []}
+        komisyonlar={komisyonlar.data?.commissions ?? []}
+        indirimler={indirimler.data?.indirimler ?? []}
+        indirimHata={indirimler.isError}
+        eksik={kurallar.isError || komisyonlar.isError}
+        secenek={secenek.data}
+      />
 
       <div className={s.bolumBas}>
         <h2>Fiyat kuralları</h2>
@@ -120,7 +187,9 @@ export function Fiyatlar() {
       </p>
       {komisyonlar.isPending ? (
         <div className={`${s.iskelet} ${s.iskeletKisa}`} aria-busy="true" />
-      ) : komisyonlar.data?.commissions.length ? (
+      ) : komisyonlar.isError ? (
+        <div className={s.bos}><b>Komisyonlar alınamadı</b><button type="button" className={`${s.dugme} ${s.siyah}`} onClick={() => komisyonlar.refetch()}>Tekrar dene</button></div>
+      ) : komisyonlar.data.commissions.length ? (
         <div className={s.tabloKap}>
           <table className={s.tablo}>
             <thead>
@@ -144,16 +213,35 @@ export function Fiyatlar() {
 }
 
 /* ── Hesaplayıcı ── */
-function Hesaplayici({ kurallar, komisyonlar, secenek }: { kurallar: Kural[]; komisyonlar: Komisyon[]; secenek?: Secenekler }) {
+function Hesaplayici({ kurallar, komisyonlar, indirimler, indirimHata, eksik, secenek }: {
+  kurallar: Kural[];
+  komisyonlar: Komisyon[];
+  indirimler: Kampanya[];
+  /** İndirimler alınamadı: kampanya adımı hesaba katılamaz. */
+  indirimHata: boolean;
+  /** Kurallar ya da komisyonlar alınamadı. */
+  eksik: boolean;
+  secenek?: Secenekler;
+}) {
   const [net, setNet] = React.useState("500");
   const [kim, setKim] = React.useState("");
   const [otel, setOtel] = React.useState("");
   const [pansiyon, setPansiyon] = React.useState("");
+  const [bolge, setBolge] = React.useState("");
   const [simdi] = React.useState(() => Date.now());
+  // Otomatik indirim koşulları için örnek konaklama: 30 gün sonra, 3 gece.
+  const [giris, setGiris] = React.useState(() => trGun(simdi + 30 * 864e5));
+  const [gece, setGece] = React.useState("3");
 
-  // Seçilebilir oteller/pansiyonlar: kurallarda ve komisyonlarda geçenler.
-  const oteller = [...new Map([...kurallar, ...komisyonlar].filter((k) => k.hotelCode).map((k) => [k.hotelCode!, k.hotelName ?? k.hotelCode!])).entries()];
+  // Yayındaki otomatik indirimler (kişiden bağımsız; seçenekler bunlardan).
+  const yayinda = indirimler.filter((d) => d.isActive && suAn(d.startsAt, d.endsAt, simdi));
+  // Seçilebilir oteller/pansiyonlar: kurallarda, komisyonlarda ve otele özel indirimlerde geçenler.
+  const otelAdlari = new Map([...kurallar, ...komisyonlar].filter((k) => k.hotelCode).map((k) => [k.hotelCode!, k.hotelName ?? k.hotelCode!]));
+  for (const d of yayinda) for (const kod of d.hotelCodes) if (!otelAdlari.has(kod)) otelAdlari.set(kod, `Otel ${kod}`);
+  const oteller = [...otelAdlari.entries()];
   const pansiyonlar = [...new Set([...kurallar, ...komisyonlar].map((k) => k.boardType).filter((b): b is string => !!b))];
+  // Bölgeye özel indirim varsa bölge seçilir (otelin konumu burada bilinmez).
+  const bolgeler = [...new Map(yayinda.filter((d) => !d.hotelCodes.length && d.locationName).map((d) => [katla(d.locationName!), d.locationName!])).values()];
   const acente = secenek?.acenteler.find((a) => a.id === kim);
 
   const n = Math.max(0, Number(net) || 0);
@@ -172,9 +260,23 @@ function Hesaplayici({ kurallar, komisyonlar, secenek }: { kurallar: Kural[]; ko
   let fark = 0;
   if (kural) {
     fark = kural.type === "MARKUP" ? (n * kural.value) / 100 : kural.type === "PERCENTAGE_DISCOUNT" ? (-n * kural.value) / 100 : -kural.value;
-    f = n + fark;
+    f = Math.max(0, n + fark);
   }
-  const indirim = acente && acente.discountRate > 0 ? (f * acente.discountRate) / 100 : 0;
+  // Otomatik indirim: kural sonrası fiyattan, uyanlardan yüzdesi en yüksek tek indirim.
+  const geceSayi = Math.round(Number(gece));
+  const kampanyalar = uyanKampanyalar(yayinda, {
+    acente: !!acente,
+    otel,
+    bolge,
+    giris,
+    gece: geceSayi >= 1 ? geceSayi : null,
+    bugun: trGun(simdi),
+    simdi,
+  });
+  const kampanya = kampanyalar.reduce<Kampanya | null>((en, d) => (!en || d.percent > en.percent ? d : en), null);
+  let kampanyaTutari = kampanya && f > 0 ? (f * kampanya.percent) / 100 : 0;
+  f -= kampanyaTutari;
+  let indirim = acente && acente.discountRate > 0 ? (f * acente.discountRate) / 100 : 0;
   f = Math.max(0, f - indirim);
 
   const ozelKom = acente
@@ -182,6 +284,24 @@ function Hesaplayici({ kurallar, komisyonlar, secenek }: { kurallar: Kural[]; ko
         .filter((c) => c.isActive && c.agencyId === acente.id && suAn(c.startDate, c.endDate, simdi) && (!c.hotelCode || c.hotelCode === otel) && (!c.boardType || c.boardType === pansiyon))
         .sort((a, b) => Number(!!b.hotelCode) * 2 + Number(!!b.boardType) - (Number(!!a.hotelCode) * 2 + Number(!!a.boardType)))[0]
     : undefined;
+  // Maliyet tabanı (motordaki tabanFiyat): komisyon düşülünce net fiyat kalmalı.
+  // Önce acente indirimi, sonra kampanya kısılır; yetmezse fiyat tabana çıkar.
+  // (Sunucuda MIN_KAR_ORANI tanımlıysa taban o kadar yukarıdadır.)
+  const komOran = acente ? (ozelKom ? (ozelKom.type === "PERCENTAGE" ? ozelKom.value : null) : acente.commission) : 0;
+  const taban = ozelKom?.type === "FIXED" ? n + ozelKom.value : komOran ? n / (1 - Math.min(komOran, 90) / 100) : n;
+  let tabanFarki = 0;
+  const kisildi = f < taban - 0.004;
+  if (kisildi) {
+    let eksik = taban - f;
+    const a = Math.min(indirim, eksik);
+    indirim -= a;
+    eksik -= a;
+    const c = Math.min(kampanyaTutari, eksik);
+    kampanyaTutari -= c;
+    eksik -= c;
+    tabanFarki = eksik;
+    f = taban;
+  }
   const komisyon = acente ? (ozelKom ? (ozelKom.type === "PERCENTAGE" ? (f * ozelKom.value) / 100 : ozelKom.value) : (f * acente.commission) / 100) : 0;
 
   let no = 1;
@@ -190,9 +310,16 @@ function Hesaplayici({ kurallar, komisyonlar, secenek }: { kurallar: Kural[]; ko
       <div>
         <h2 id="hesap-baslik">Fiyat nasıl oluşuyor?</h2>
         <p>
-          Etscore&apos;un net fiyatına eşleşen <b>önceliği en yüksek tek kural</b> uygulanır. Acentede ardından acentenin indirim oranı düşülür;
-          komisyon satış fiyatından hesaplanır. Kural yoksa satış fiyatı net fiyattır.
+          Etscore&apos;un net fiyatına eşleşen <b>önceliği en yüksek tek kural</b> uygulanır; ardından koşulu tutan <b>yüzdesi en yüksek tek
+          otomatik indirim</b> düşülür. Acentede sonra acentenin indirim oranı düşülür; komisyon bu fiyattan hesaplanır. Kupon ödeme adımında
+          uygulanır, burada yok.
         </p>
+        {eksik && (
+          <div className={s.hata} role="alert" style={{ marginBottom: 12 }}>
+            <Ikon ad="warning" boyut={16} kalinlik={2.1} />
+            Kurallar ya da komisyonlar alınamadı; hesap eksik olabilir.
+          </div>
+        )}
         <div className={s.hesapGirdi}>
           <Girdi id="h-net" etiket="Net fiyat (€)" type="number" min={0} inputMode="decimal" value={net} onDegis={setNet} />
           <Secim id="h-kim" etiket="Kim için" deger={kim} onDegis={setKim}>
@@ -209,6 +336,14 @@ function Hesaplayici({ kurallar, komisyonlar, secenek }: { kurallar: Kural[]; ko
               {pansiyonlar.map((p) => <option key={p} value={p}>{secenek?.pansiyonlar.find((x) => x.code === p)?.name ?? p}</option>)}
             </Secim>
           )}
+          <Girdi id="h-giris" etiket="Giriş tarihi" type="date" value={giris} onDegis={setGiris} />
+          <Girdi id="h-gece" etiket="Gece" type="number" min={1} inputMode="numeric" value={gece} onDegis={setGece} />
+          {bolgeler.length > 0 && (
+            <Secim id="h-bolge" etiket="Otelin bölgesi" deger={bolge} onDegis={setBolge}>
+              <option value="">Diğer bölgeler</option>
+              {bolgeler.map((b) => <option key={b} value={b}>{b}</option>)}
+            </Secim>
+          )}
         </div>
       </div>
       <ol className={s.adimlar} aria-live="polite">
@@ -222,8 +357,37 @@ function Hesaplayici({ kurallar, komisyonlar, secenek }: { kurallar: Kural[]; ko
         ) : (
           <li data-tur="yok"><i>{no++}</i><span>Uyan kural yok<small>Satış fiyatı net fiyat olur</small></span><b>{eur(0, true)}</b></li>
         )}
+        {indirimHata ? (
+          <li data-tur="yok"><i>{no++}</i><span>Otomatik indirimler alınamadı<small>Hesaba katılmadı; fiyat tahminidir</small></span><b>—</b></li>
+        ) : kampanya ? (
+          <li>
+            <i>{no++}</i>
+            <span>
+              {kampanya.name}
+              <small>
+                Otomatik indirim %{kampanya.percent} · {KAMPANYA_TUR[kampanya.type]}
+                {!kampanya.hotelCodes.length && kampanya.locationName ? " · bölge seçimine göre, tahmini" : ""}
+                {kampanyalar.length > 1 ? ` · ${kampanyalar.length - 1} indirim daha uydu, yüzdesi düşük` : ""}
+              </small>
+            </span>
+            <b>−{eur(kampanyaTutari, true)}</b>
+          </li>
+        ) : (
+          <li data-tur="yok">
+            <i>{no++}</i>
+            <span>Uyan otomatik indirim yok<small>{giris ? `Giriş ${gunYazi(giris)}, ${geceSayi >= 1 ? geceSayi : "?"} gece için` : "Giriş tarihi seçilmedi"}</small></span>
+            <b>{eur(0, true)}</b>
+          </li>
+        )}
         {indirim > 0 && acente && (
           <li><i>{no++}</i><span>Acente indirimi %{acente.discountRate}<small>{acente.companyName} anlaşması</small></span><b>−{eur(indirim, true)}</b></li>
+        )}
+        {kisildi && (
+          <li>
+            <i>{no++}</i>
+            <span>Maliyet tabanı<small>İndirimler kısıldı: satış, komisyon düşülünce net fiyatın altına inmez</small></span>
+            <b>{tabanFarki > 0.004 ? `+${eur(tabanFarki, true)}` : "—"}</b>
+          </li>
         )}
         <li data-tur="toplam"><i>{no++}</i><span>{acente ? "Acentenin göreceği fiyat" : "Müşterinin göreceği fiyat"}</span><b className="lb-y">{eur(f, true)}</b></li>
         {acente && (
@@ -363,7 +527,14 @@ function OtelSecici({ kod, ad, onSec }: { kod: string; ad: string | null; onSec:
 }
 
 /* ── Kural formu ── */
-const tarihGirdi = (iso: string | null) => (iso ? iso.slice(0, 10) : "");
+// Tarih girdisi Türkiye gününe göre: başlangıç İstanbul'da günün başı (UTC'de
+// önceki gün) saklanır; ISO'yu kesmek her kayıtta bir gün geri kaydırırdı.
+const tarihGirdi = tarihGirdisi;
+/** Düzenlenen kaydın acentesi seçicide yoksa (kapatılmış ya da onayı kalkmış) yine de görünsün. */
+function EskiAcente({ agency, secenek }: { agency: { id: string; companyName: string } | null | undefined; secenek?: Secenekler }) {
+  if (!agency || !secenek || secenek.acenteler.some((a) => a.id === agency.id)) return null;
+  return <option value={agency.id}>{agency.companyName} (kapalı)</option>;
+}
 function KuralPenceresi({ k, secenek, onKapat }: { k: Kural | "yeni" | null; secenek?: Secenekler; onKapat: () => void }) {
   const [son, setSon] = React.useState(k);
   if (k && k !== son) setSon(k);
@@ -444,6 +615,7 @@ function KuralFormu({ k, secenek, onKapat }: { k: Kural | null; secenek?: Secene
         <Secim id="f-acente" etiket="Acente" deger={acente} onDegis={setAcente}>
           <option value="">Seç</option>
           {secenek?.acenteler.map((a) => <option key={a.id} value={a.id}>{a.companyName}</option>)}
+          <EskiAcente agency={k?.agency} secenek={secenek} />
         </Secim>
       )}
       <OtelSecici kod={otel.kod} ad={otel.ad} onSec={(kod, ad) => setOtel({ kod, ad })} />
@@ -519,6 +691,7 @@ function KomisyonFormu({ k, secenek, onKapat }: { k: Komisyon | null; secenek?: 
       <Secim id="c-acente" etiket="Acente" deger={acente} onDegis={setAcente}>
         <option value="">Seç</option>
         {secenek?.acenteler.map((a) => <option key={a.id} value={a.id}>{a.companyName} (anlaşma %{a.commission})</option>)}
+        <EskiAcente agency={k?.agency} secenek={secenek} />
       </Secim>
       <div className={s.ikiAlan}>
         <Secim id="c-tur" etiket="Tür" deger={tur} onDegis={(v) => setTur(v as "PERCENTAGE" | "FIXED")}>

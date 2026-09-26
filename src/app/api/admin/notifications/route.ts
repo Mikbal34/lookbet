@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { sayfalama } from "../_ortak";
 
 const createNotificationSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -25,13 +26,10 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
-    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") ?? "20", 10)));
+    const { page, limit, skip } = sayfalama(searchParams);
     const isReadParam = searchParams.get("isRead");
     // ?kutu=ben: oturumdaki yöneticinin kendi bildirimleri (Yönetim › Bildirimler).
     const userId = searchParams.get("kutu") === "ben" ? session.user.id : searchParams.get("userId");
-
-    const skip = (page - 1) * limit;
 
     const where: Record<string, unknown> = {};
 

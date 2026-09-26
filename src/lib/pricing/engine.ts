@@ -11,6 +11,11 @@ import { katla } from "@/lib/katla";
 //   5. Kupon (yalnız rezervasyonda, lib/pricing/kupon)
 //   Komisyon son fiyattan: uyan özel komisyon, yoksa anlaşma oranı.
 //
+// Maliyet tabanı: indirimler üst üste binse de satış fiyatı, komisyon
+// düşüldükten sonra net maliyetin (+ MIN_KAR_ORANI) altına inmez. Taban
+// aşılırsa önce acente indirimi, sonra kampanya indirimi kısılır; kupon da
+// tabana kadar düşebilir (tabanFiyat). Böylece hiçbir kombinasyon zarar etmez.
+//
 // Arama listesi yüzlerce oteli fiyatlar; kurallar, indirimler ve acente bir
 // kez yüklenir (fiyatBaglami), otel başına hesap veritabanına gitmez (fiyatla).
 
@@ -36,6 +41,7 @@ export interface Kampanya {
 
 type Kural = Awaited<ReturnType<typeof kurallariGetir>>[number];
 type Indirim = Awaited<ReturnType<typeof indirimleriGetir>>[number];
+type OzelKomisyon = Awaited<ReturnType<typeof komisyonlariGetir>>[number];
 
 export interface FiyatBaglami {
   userType: UserType;
@@ -43,8 +49,13 @@ export interface FiyatBaglami {
   acente: { companyName: string; discountRate: number; commission: number } | null;
   kurallar: Kural[];
   indirimler: Indirim[];
+  /** Acentenin etkin özel komisyonları (acente değilse boş). */
+  komisyonlar: OzelKomisyon[];
   bugun: string;
 }
+
+/** Net maliyetin üstünde kalınacak en az kâr (yüzde; varsayılan 0 = maliyetin altına satılmaz). */
+const MIN_KAR = Math.max(0, Number(process.env.MIN_KAR_ORANI) || 0) / 100;
 
 const kurallariGetir = (simdi: Date) =>
   prisma.priceRule.findMany({
@@ -56,6 +67,18 @@ const kurallariGetir = (simdi: Date) =>
       ],
     },
     orderBy: { priority: "desc" },
+  });
+const komisyonlariGetir = (agencyId: string, simdi: Date) =>
+  prisma.commission.findMany({
+    where: {
+      agencyId,
+      isActive: true,
+      AND: [
+        { OR: [{ startDate: null }, { startDate: { lte: simdi } }] },
+        { OR: [{ endDate: null }, { endDate: { gte: simdi } }] },
+      ],
+    },
+    select: { type: true, value: true, hotelCode: true, boardType: true },
   });
 const indirimleriGetir = (simdi: Date) =>
   prisma.discount.findMany({
@@ -74,14 +97,14 @@ const gunFarki = (a: string, b: string) => Math.round((Date.parse(a.slice(0, 10)
 
 export async function fiyatBaglami(userType: UserType, agencyId?: string): Promise<FiyatBaglami> {
   const simdi = new Date();
-  const [kurallar, indirimler, acente] = await Promise.all([
+  const acenteMi = userType === "AGENCY" && !!agencyId;
+  const [kurallar, indirimler, acente, komisyonlar] = await Promise.all([
     kurallariGetir(simdi),
     indirimleriGetir(simdi),
-    userType === "AGENCY" && agencyId
-      ? prisma.agency.findUnique({ where: { id: agencyId }, select: { companyName: true, discountRate: true, commission: true } })
-      : null,
+    acenteMi ? prisma.agency.findUnique({ where: { id: agencyId }, select: { companyName: true, discountRate: true, commission: true } }) : null,
+    acenteMi ? komisyonlariGetir(agencyId!, simdi) : [],
   ]);
-  return { userType, agencyId, acente, kurallar, indirimler, bugun: bugunTR(simdi) };
+  return { userType, agencyId, acente, kurallar, indirimler, komisyonlar, bugun: bugunTR(simdi) };
 }
 
 /* ── Konum kapsamı: otelin konumu ve üstleri (adlarıyla) ── */
@@ -130,16 +153,58 @@ export interface FiyatGirdisi {
   konumAdlari?: Set<string>;
 }
 export interface FiyatSonucu {
+  /** Net maliyet (tedarikçi fiyatı) — yalnız sunucu ve yönetim içindir. */
   originalPrice: number;
   /** Kural sonrası, kampanya indiriminden önceki fiyat (üstü çizili fiyat). */
   oncekiFiyat: number;
   finalPrice: number;
+  /** Müşteriye verilen toplam indirim (kâr payı ve taban sayılmaz, ≥ 0). */
   totalDiscount: number;
   appliedRules: AppliedRule[];
   kampanya: Kampanya | null;
+  /** Acentenin bu satıştan komisyonu (acente değilse 0). */
+  commissionAmount: number;
+  /** İndirimler maliyet tabanına takıldı (kısıldı). */
+  tabanda: boolean;
 }
 
-export const yuvarla = (n: number) => Math.round(n * 100) / 100;
+// EPSILON: 1.005 gibi değerler ikili gösterimde 1.00499… olduğu için.
+export const yuvarla = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
+const yukariYuvarla = (n: number) => Math.ceil(n * 100 - 1e-6) / 100;
+
+type KomisyonKurali = { tip: "PERCENTAGE" | "FIXED"; deger: number };
+
+/**
+ * Acentenin bu otel/pansiyon için komisyonu — oranları yönetim belirler
+ * (Yönetim › Acenteler ve Fiyatlar). Uyan etkin özel komisyon varsa o (en
+ * özgülü: otel+pansiyon, otel, pansiyon, genel), yoksa anlaşmadaki oran.
+ * Satış fiyatından hesaplanır; rezervasyonda commissionAmount olarak
+ * saklanır, oran sonradan değişse de geçmiş kazanç değişmez.
+ */
+export function komisyonKurali(b: FiyatBaglami, hotelCode?: string, boardType?: string): KomisyonKurali | null {
+  if (b.userType !== "AGENCY" || !b.agencyId) return null;
+  const uyan = b.komisyonlar.filter(
+    (c) => (!c.hotelCode || c.hotelCode === hotelCode) && (!c.boardType || c.boardType === boardType)
+  );
+  const c = uyan.find((c) => c.hotelCode && c.boardType) || uyan.find((c) => c.hotelCode) || uyan.find((c) => c.boardType) || uyan[0];
+  if (c) return { tip: c.type, deger: c.value };
+  return { tip: "PERCENTAGE", deger: b.acente?.commission ?? 0 };
+}
+
+export function komisyonHesapla(b: FiyatBaglami, fiyat: number, hotelCode?: string, boardType?: string): number {
+  const k = komisyonKurali(b, hotelCode, boardType);
+  if (!k) return 0;
+  return yuvarla(k.tip === "PERCENTAGE" ? (fiyat * k.deger) / 100 : k.deger);
+}
+
+/** Satılabilecek en düşük fiyat: komisyon düşüldükten sonra net maliyet (+ en az kâr) kalmalı. */
+export function tabanFiyat(b: FiyatBaglami, g: Pick<FiyatGirdisi, "basePrice" | "hotelCode" | "boardType">): number {
+  const maliyet = g.basePrice * (1 + MIN_KAR);
+  const k = komisyonKurali(b, g.hotelCode, g.boardType);
+  if (!k || k.deger <= 0) return yukariYuvarla(maliyet);
+  if (k.tip === "FIXED") return yukariYuvarla(maliyet + k.deger);
+  return yukariYuvarla(maliyet / (1 - Math.min(k.deger, 90) / 100));
+}
 
 function kuralUyarMi(k: Kural, b: FiyatBaglami, g: FiyatGirdisi) {
   const kisi =
@@ -177,54 +242,77 @@ export function uyanIndirim(b: FiyatBaglami, g: FiyatGirdisi): Indirim | null {
   return en;
 }
 
-/** Saf hesap: kural → kampanya → acente indirimi (veritabanına gitmez). */
+/** Saf hesap: kural → kampanya → acente indirimi → maliyet tabanı (veritabanına gitmez). */
 export function fiyatla(b: FiyatBaglami, g: FiyatGirdisi, kampanyasiz = false): FiyatSonucu {
   const base = g.basePrice;
-  let fiyat = base;
-  let toplamIndirim = 0;
   const appliedRules: AppliedRule[] = [];
 
+  // 1. Kural (kâr payı ya da indirim)
+  let listeFiyati = base; // indirimlerden önceki fiyat (kâr payı dahil)
+  let fiyat = base;
   const kural = b.kurallar.find((k) => kuralUyarMi(k, b, g));
   if (kural) {
     const fark =
       kural.type === "PERCENTAGE_DISCOUNT" ? base * (kural.value / 100) : kural.type === "FIXED_DISCOUNT" ? kural.value : -(base * (kural.value / 100));
-    fiyat = base - fark;
-    toplamIndirim += fark;
-    appliedRules.push({ ruleId: kural.id, name: kural.name, type: kural.type, value: kural.value, discountAmount: fark });
+    fiyat = Math.max(0, base - fark);
+    if (kural.type === "MARKUP") listeFiyati = fiyat;
+    appliedRules.push({ ruleId: kural.id, name: kural.name, type: kural.type, value: kural.value, discountAmount: yuvarla(fark) });
   }
-  fiyat = Math.max(0, fiyat);
-  const oncekiFiyat = fiyat;
+  const kuralSonrasi = fiyat;
+
+  // 2. Kampanya, 3. acente indirimi
+  const ind = kampanyasiz ? null : uyanIndirim(b, g);
+  let kampanyaTutari = ind && fiyat > 0 ? fiyat * (ind.percent / 100) : 0;
+  fiyat -= kampanyaTutari;
+  let acenteTutari = b.acente && b.acente.discountRate > 0 ? fiyat * (b.acente.discountRate / 100) : 0;
+  fiyat -= acenteTutari;
+
+  // 4. Maliyet tabanı: önce acente indirimi, sonra kampanya kısılır; hâlâ
+  // eksikse (indirim kuralı ya da komisyon) fiyat tabana yükselir.
+  const taban = tabanFiyat(b, g);
+  let tabanda = false;
+  if (fiyat < taban) {
+    tabanda = true;
+    let eksik = taban - fiyat;
+    const a = Math.min(acenteTutari, eksik);
+    acenteTutari -= a;
+    eksik -= a;
+    const c = Math.min(kampanyaTutari, eksik);
+    kampanyaTutari -= c;
+    eksik -= c;
+    fiyat = taban;
+    if (eksik > 0.004) {
+      appliedRules.push({ ruleId: "taban", name: "Maliyet tabanı", type: "MARKUP", value: 0, discountAmount: -yuvarla(eksik) });
+    }
+  }
 
   let kampanya: Kampanya | null = null;
-  const ind = kampanyasiz ? null : uyanIndirim(b, g);
-  if (ind && fiyat > 0) {
-    const tutar = fiyat * (ind.percent / 100);
-    fiyat -= tutar;
-    toplamIndirim += tutar;
-    kampanya = { id: ind.id, ad: ind.name, tur: ind.type, yuzde: ind.percent, tutar: yuvarla(tutar) };
-    appliedRules.push({ ruleId: `kampanya-${ind.id}`, name: ind.name, type: "PERCENTAGE_DISCOUNT", value: ind.percent, discountAmount: tutar });
+  if (ind && kampanyaTutari > 0.004) {
+    kampanya = { id: ind.id, ad: ind.name, tur: ind.type, yuzde: ind.percent, tutar: yuvarla(kampanyaTutari) };
+    appliedRules.push({ ruleId: `kampanya-${ind.id}`, name: ind.name, type: "PERCENTAGE_DISCOUNT", value: ind.percent, discountAmount: yuvarla(kampanyaTutari) });
   }
-
-  if (b.acente && b.acente.discountRate > 0) {
-    const tutar = fiyat * (b.acente.discountRate / 100);
-    fiyat -= tutar;
-    toplamIndirim += tutar;
+  if (b.acente && acenteTutari > 0.004) {
     appliedRules.push({
       ruleId: `agency-${b.agencyId}`,
       name: `Acente İndirimi (${b.acente.companyName})`,
       type: "PERCENTAGE_DISCOUNT",
       value: b.acente.discountRate,
-      discountAmount: tutar,
+      discountAmount: yuvarla(acenteTutari),
     });
   }
 
+  const finalPrice = yuvarla(fiyat);
   return {
     originalPrice: base,
-    oncekiFiyat: yuvarla(oncekiFiyat),
-    finalPrice: yuvarla(Math.max(0, fiyat)),
-    totalDiscount: yuvarla(toplamIndirim),
+    // Üstü çizili fiyat: indirimlerden önceki (kural sonrası) fiyat; taban
+    // fiyatı onun üstüne çıkardıysa çizili fiyat yok (= son fiyat).
+    oncekiFiyat: yuvarla(Math.max(finalPrice, kuralSonrasi)),
+    finalPrice,
+    totalDiscount: yuvarla(Math.max(0, listeFiyati - finalPrice)),
     appliedRules,
     kampanya,
+    commissionAmount: komisyonHesapla(b, finalPrice, g.hotelCode, g.boardType),
+    tabanda,
   };
 }
 
@@ -237,58 +325,12 @@ interface PriceInput extends FiyatGirdisi {
   /** Kupon birleşmiyor ve daha avantajlıysa kampanyasız fiyat istenir. */
   kampanyasiz?: boolean;
 }
-export interface PriceResult extends FiyatSonucu {
-  commissionAmount: number;
-}
+export type PriceResult = FiyatSonucu;
 
 /** Tek konaklamanın fiyatı + komisyon (oda araması ve rezervasyon). */
 export async function calculatePrice(input: PriceInput): Promise<PriceResult> {
   const b = input.baglam ?? (await fiyatBaglami(input.userType, input.agencyId));
   const konumAdlari =
     input.konumAdlari ?? (input.hotelCode ? (await otelKonumAdlari(b, [input.hotelCode])).get(input.hotelCode) : undefined);
-  const sonuc = fiyatla(b, { ...input, konumAdlari }, input.kampanyasiz);
-  const commissionAmount = await komisyonHesapla(b, sonuc.finalPrice, input.hotelCode, input.boardType);
-  return { ...sonuc, commissionAmount };
-}
-
-export async function komisyonHesapla(b: FiyatBaglami, fiyat: number, hotelCode?: string, boardType?: string) {
-  if (b.userType !== "AGENCY" || !b.agencyId) return 0;
-  return yuvarla(await calculateCommission(b.agencyId, fiyat, b.acente?.commission ?? 0, hotelCode, boardType));
-}
-
-/**
- * Acentenin komisyonu — oranları yönetim belirler (Yönetim › Acenteler ve
- * Fiyatlar). Otel/pansiyon/tarihi uyan etkin özel komisyon varsa o (en
- * özgülü: otel+pansiyon, otel, pansiyon, genel), yoksa acentenin anlaşmadaki
- * oranı. Satış fiyatından hesaplanır; rezervasyonda commissionAmount olarak
- * saklanır, oran sonradan değişse de geçmiş kazanç değişmez.
- */
-export async function calculateCommission(
-  agencyId: string,
-  price: number,
-  anlasmaOrani: number,
-  hotelCode?: string,
-  boardType?: string
-): Promise<number> {
-  const now = new Date();
-  const commissions = await prisma.commission.findMany({
-    where: {
-      agencyId,
-      isActive: true,
-      AND: [
-        { OR: [{ startDate: null }, { startDate: { lte: now } }] },
-        { OR: [{ endDate: null }, { endDate: { gte: now } }] },
-        { OR: [{ hotelCode: null }, ...(hotelCode ? [{ hotelCode }] : [])] },
-        { OR: [{ boardType: null }, ...(boardType ? [{ boardType }] : [])] },
-      ],
-    },
-  });
-  const commission =
-    commissions.find((c) => c.hotelCode && c.boardType) ||
-    commissions.find((c) => c.hotelCode) ||
-    commissions.find((c) => c.boardType) ||
-    commissions[0];
-  if (!commission) return price * (anlasmaOrani / 100);
-  if (commission.type === "PERCENTAGE") return price * (commission.value / 100);
-  return commission.value;
+  return fiyatla(b, { ...input, konumAdlari }, input.kampanyasiz);
 }

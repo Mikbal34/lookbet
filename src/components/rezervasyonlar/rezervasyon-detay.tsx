@@ -307,21 +307,26 @@ export function RezervasyonDetay({ id }: { id: string }) {
                 ) : (
                   <p className={s.soluk}>İptal koşulları bu rezervasyon için kayıtlı değil; iptal ederken otelin koşulları uygulanır.</p>
                 )}
-                <div className={d.iptalKutu}>
-                  <div>
-                    <b>Planların mı değişti?</b>
-                    <span>
-                      {ip.simdiUcret === 0
-                        ? "Şu an iptal edersen ücret alınmaz."
-                        : ip.simdiUcret != null
-                          ? `Şu an iptal edersen ${para(ip.simdiUcret, ip.ceza?.penaltyCurrency || r.currency)} iptal ücreti kesilir.`
-                          : "İptal ücreti otelin koşullarına göre belirlenir."}
-                    </span>
+                {r.bookingNumber ? (
+                  <div className={d.iptalKutu}>
+                    <div>
+                      <b>Planların mı değişti?</b>
+                      <span>
+                        {ip.simdiUcret === 0
+                          ? "Şu an iptal edersen ücret alınmaz."
+                          : ip.simdiUcret != null
+                            ? `Şu an iptal edersen ${para(ip.simdiUcret, ip.ceza?.penaltyCurrency || r.currency)} iptal ücreti kesilir.`
+                            : "İptal ücreti otelin koşullarına göre belirlenir."}
+                      </span>
+                    </div>
+                    <button type="button" className={`${s.dugme} ${s.cerceve}`} onClick={() => { setSimdi(Date.now()); setIptalAcik(true); }}>
+                      Rezervasyonu iptal et
+                    </button>
                   </div>
-                  <button type="button" className={`${s.dugme} ${s.cerceve}`} onClick={() => { setSimdi(Date.now()); setIptalAcik(true); }}>
-                    Rezervasyonu iptal et
-                  </button>
-                </div>
+                ) : (
+                  // Otelden onay (rezervasyon numarası) gelmeden iptal edilecek kayıt yok.
+                  <p className={s.soluk}>Rezervasyonun otelden onay bekliyor; onay gelince buradan iptal edebilirsin.</p>
+                )}
               </section>
             )}
           </div>
@@ -477,7 +482,7 @@ export function IptalPenceresi({ acik, r, simdi, onKapat, onIptal }: {
         <div className={d.bitti}>
           <Nesne ad="iptal" boyut={96} />
           <h3 className="lb-y">Rezervasyonun iptal edildi</h3>
-          <p>{ucret ? (ucret.tutar > 0 ? `İptal ücreti: ${para(ucret.tutar, ucret.para)}.` : "İptal ücreti alınmadı.") : "İptal otele iletildi."} Onay e-posta adresine gönderilecek.</p>
+          <p>{ucret ? (ucret.tutar > 0 ? `İptal ücreti: ${para(ucret.tutar, ucret.para)}.` : "İptal ücreti alınmadı.") : "İptal otele iletildi."} Bilgisi e-posta adresine gönderildi.</p>
           <button type="button" className={`${s.dugme} ${s.siyah}`} onClick={onKapat}>Tamam</button>
         </div>
       ) : (

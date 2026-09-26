@@ -115,7 +115,8 @@ export function GirisPenceresi({ acik, hedef, onKapat }: {
     try {
       const r = await signIn("email-otp", { redirect: false, email: eposta.trim().toLowerCase(), code: tam });
       if (!r || r.error) {
-        setHata("Kod hatalı ya da süresi doldu");
+        // authorize() mesajı (kilit, rol uyuşmazlığı, kapalı hesap) varsa onu göster.
+        setHata(r?.error && r.error !== "CredentialsSignin" ? r.error : "Kod hatalı ya da süresi doldu");
         setTitre((t) => t + 1);
         setKod(Array(6).fill(""));
         return;

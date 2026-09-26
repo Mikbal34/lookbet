@@ -4,7 +4,8 @@
 // dakika, uzun konaklama, belirli tarihler) ve kuponlar. İndirim kâr payı
 // kuralından sonra satış fiyatından düşer; bir rezervasyona birden çok indirim
 // uyarsa en yüksek olanı uygulanır (bkz. lib/pricing/engine). Kâr payını aşan
-// indirim net fiyatın altına satış demek; kartta ve formda uyarılır.
+// indirim motorun maliyet tabanında kısılır (net fiyatın altına satılmaz);
+// kartta ve formda uyarılır.
 
 import * as React from "react";
 import { useMutation, useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
@@ -12,7 +13,7 @@ import { Ikon, type IkonAdi } from "@/components/lb/ikon";
 import { Nesne, type NesneAdi } from "@/components/lb/nesne";
 import { Pencere } from "@/components/lb/pencere";
 import { katla } from "@/lib/katla";
-import { Anahtar, Girdi, HataYazi, Secim, eur, getir, gonder, sayi, simdiAl, tarihUzun, useBildiri } from "./ortak";
+import { Anahtar, Girdi, HataYazi, Secim, eur, getir, gonder, sayi, simdiAl, tarihGirdisi, tarihUzun, useBildiri } from "./ortak";
 import s from "./yonetim.module.css";
 
 type Tur = "EARLY_BOOKING" | "LAST_MINUTE" | "LONG_STAY" | "DATE_RANGE";
@@ -35,7 +36,8 @@ interface Indirim {
   isActive: boolean;
   showcase: boolean;
   description: string | null;
-  kullanim: { adet: number; tutar: number };
+  /** adet/tutar: onaylı rezervasyonlar; bagli: her durumdan bağlı rezervasyon (varsa silinemez). */
+  kullanim: { adet: number; tutar: number; bagli: number };
 }
 interface Kupon {
   id: string;
@@ -63,7 +65,9 @@ const TUR: Record<Tur, { ad: string; aciklama: string; nesne: NesneAdi; ikon: Ik
 const KIME: Record<Kime, string> = { CUSTOMER: "Müşteriler", AGENCY: "Acenteler", ALL: "Müşteriler ve acenteler" };
 const BOLGE_NESNE: Record<string, NesneAdi> = { bodrum: "bodrum", antalya: "antalya", kapadokya: "kapadokya" };
 const bolgeNesnesi = (ad: string | null): NesneAdi | null => (ad ? BOLGE_NESNE[katla(ad)] ?? null : null);
-const gun = (iso: string | null) => (iso ? iso.slice(0, 10) : "");
+// Tarih girdileri Türkiye gününe göre (yayın başlangıcı İstanbul'da 00:00 =
+// UTC'de önceki gün; ISO'yu kesmek her kayıtta bir gün geri kaydırırdı).
+const gun = tarihGirdisi;
 const kisaTarih = (iso: string) => tarihUzun(iso).replace(/ \d{4}$/, "");
 
 function durum(d: Pick<Indirim, "isActive" | "startsAt" | "endsAt">, simdi: number): { ad: string; renk: string; kod: string } {
@@ -138,11 +142,11 @@ export function Kampanyalar() {
               <span>
                 {kar ? (
                   <>
-                    <b>{asanlar.map((x) => x.d.name).join(", ")}</b> müşteri kâr payından (%{kar.yuzde}) büyük. Bu indirimle satış Etscore net fiyatının altına iner.
+                    <b>{asanlar.map((x) => x.d.name).join(", ")}</b> müşteri kâr payından (%{kar.yuzde}) büyük. Satış net fiyatın altına inmez: indirim, kâr payı kadarıyla sınırlı kalır.
                   </>
                 ) : (
                   <>
-                    <b>Müşterilere kâr payı kuralı yok.</b> Satış fiyatı net fiyat olduğu için her indirim zararına satış demek. Önce Fiyatlar&apos;dan kâr payı ekle.
+                    <b>Müşterilere kâr payı kuralı yok.</b> Satış fiyatı net fiyat olduğu için indirimler uygulanamaz (fiyat maliyetin altına inmez). Önce Fiyatlar&apos;dan kâr payı ekle.
                   </>
                 )}
               </span>
@@ -229,10 +233,16 @@ function IndirimKarti({ d, du, asiyor, onDuzenle }: { d: Indirim; du: { ad: stri
           <li>{KIME[d.audience]}</li>
           <li>{yayinYazi(d)}</li>
         </ul>
-        {asiyor && <span className={s.uyari}><Ikon ad="warning" boyut={14} kalinlik={2.2} />Net fiyatın altına iner</span>}
+        {asiyor && <span className={s.uyari}><Ikon ad="warning" boyut={14} kalinlik={2.2} />Kâr payını aşıyor, kısılır</span>}
       </div>
       <div className={s.dkartAlt}>
-        <span>{d.kullanim.adet ? `${sayi(d.kullanim.adet)} rezervasyon · ${eur(d.kullanim.tutar)} indirim` : "Henüz kullanılmadı"}</span>
+        <span>
+          {d.kullanim.adet
+            ? `${sayi(d.kullanim.adet)} rezervasyon · ${eur(d.kullanim.tutar)} indirim`
+            : d.kullanim.bagli
+              ? `Onaylı rezervasyon yok · ${sayi(d.kullanim.bagli)} rezervasyona bağlı`
+              : "Henüz kullanılmadı"}
+        </span>
         {d.showcase && <span className={s.vitrinRozet}><Ikon ad="eye" boyut={13} kalinlik={2.2} />Vitrinde</span>}
       </div>
       <div className={s.islemler} style={{ justifyContent: "flex-start", marginTop: 10 }}>
@@ -244,7 +254,8 @@ function IndirimKarti({ d, du, asiyor, onDuzenle }: { d: Indirim; du: { ad: stri
         ) : (
           <>
             <button type="button" className={s.metinDugme} onClick={onDuzenle}>Düzenle</button>
-            {!d.kullanim.adet && <button type="button" className={s.metinDugme} onClick={() => setEmin(true)}>Sil</button>}
+            {/* Bekleyen, iptal ya da başarısız rezervasyona bağlı indirim de silinmez (API 409); durdurulur. */}
+            {!d.kullanim.bagli && <button type="button" className={s.metinDugme} onClick={() => setEmin(true)}>Sil</button>}
           </>
         )}
       </div>

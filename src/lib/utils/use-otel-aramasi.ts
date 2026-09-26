@@ -11,6 +11,7 @@
 // Sonuçlar 5 dakika bellekte: otelden geri dönünce iskelet yanıp sönmesin.
 // Sunucuda ayrıca 10 dakikalık önbellek var (lib/arama-onbellegi.ts).
 
+import { sunucuMesaji } from "@/lib/utils";
 import * as React from "react";
 import type { HotelSearchResult } from "@/lib/royal-api/types";
 
@@ -79,7 +80,7 @@ export function useOtelAramasi(payload: object, etkin: boolean): OtelAramasi {
           body: anahtar,
           signal: iptal.signal,
         });
-        if (!res.ok) throw new Error("Arama sırasında bir hata oluştu");
+        if (!res.ok) throw new Error(await sunucuMesaji(res, "Arama sırasında bir hata oluştu"));
 
         // Akış desteklenmiyorsa (ör. araya giren bir vekil) tek JSON'a düş.
         if (!res.body || !res.headers.get("content-type")?.includes("ndjson")) {

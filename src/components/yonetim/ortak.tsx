@@ -34,6 +34,18 @@ export const tarihUzun = (iso: string) => {
   return `${d.getDate()} ${AYLAR[d.getMonth()]} ${d.getFullYear()}`;
 };
 export const bugunYazi = (d = new Date()) => `${GUNLER[d.getDay()]}, ${d.getDate()} ${AYLAR[d.getMonth()]}`;
+const trGunParcalari = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Istanbul", year: "numeric", month: "2-digit", day: "2-digit" });
+/**
+ * Türkiye'deki gün (YYYY-AA-GG): tarih girdisi ve "bugün" için. Başlangıçlar
+ * İstanbul'da günün başı (UTC'de önceki gün 21:00) saklanır; ISO'yu kesmek
+ * (slice) her düzenlemede tarihi bir gün geri kaydırırdı.
+ */
+export function trGun(t: string | number | Date) {
+  const p = Object.fromEntries(trGunParcalari.formatToParts(new Date(t)).map((x) => [x.type, x.value]));
+  return `${p.year}-${p.month}-${p.day}`;
+}
+/** Sunucudaki tarih → <input type="date"> değeri (Türkiye günü); boşsa "". */
+export const tarihGirdisi = (iso: string | null | undefined) => (iso ? trGun(iso) : "");
 export const saatYazi = (iso: string) => new Date(iso).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
 /** "bugün 09:14", "dün 17:40", "3 gün önce" */
 export function neZaman(iso: string, simdi: number) {

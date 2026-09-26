@@ -183,6 +183,10 @@
 .sunucuHata > div { display: grid; gap: 4px; }
 .sunucuHata span { color: var(--lb-yazi); font-size: 14px; }
 .sunucuHata .metinDugme { justify-self: start; font-size: 14px; }
+.kapaliNot { display: grid; grid-template-columns: 20px 1fr; gap: 12px; padding: 14px 16px; border-radius: 14px; background: var(--lb-gri); color: var(--lb-yazi); }
+.kapaliNot > div { display: grid; gap: 4px; }
+.kapaliNot span { color: var(--lb-soluk); font-size: 14px; }
+.kapaliUst { margin: 0 0 24px; }
 
 /* Özet */
 .ozet { position: sticky; top: 24px; display: grid; gap: 16px; }

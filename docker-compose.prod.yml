@@ -26,6 +26,10 @@ services:
       - "127.0.0.1:3000:3000"
     env_file:
       - .env.production
+    environment:
+      # Raporlardaki "bugün" ve ay sınırları Türkiye saatiyle (Node ICU'yu
+      # kullanıyor; Alpine'de tzdata gerekmiyor).
+      TZ: Europe/Istanbul
     depends_on:
       db:
         condition: service_healthy
@@ -40,13 +44,15 @@ services:
       retries: 3
       start_period: 30s
 
-  # Şemayı DB'ye uygular (ilk kurulumda tabloları oluşturur).
+  # Bekleyen migration'ları uygular (prisma/migrations; ilk kurulumda tabloları
+  # oluşturur). `db push` değil: sütun adı değişikliği veri silmesin, her
+  # değişiklik gözden geçirilmiş SQL olarak depoda dursun.
   # `docker compose --profile migrate run --rm migrate` ile çalıştırılır.
   migrate:
     build:
       context: .
       target: builder
-    command: ["npx", "prisma", "db", "push"]
+    command: ["npx", "prisma", "migrate", "deploy"]
     env_file:
       - .env.production
     depends_on:

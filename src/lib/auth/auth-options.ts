@@ -5,7 +5,8 @@ import AppleProvider from "next-auth/providers/apple";
 import bcrypt from "bcryptjs";
 import { randomBytes } from "crypto";
 import { prisma } from "@/lib/prisma";
-import { verifyLoginCode } from "@/lib/auth/login-code";
+import { kodHatasi, verifyLoginCode } from "@/lib/auth/login-code";
+import { istemciIp } from "@/lib/hiz-siniri";
 
 // Hesaplar şifresiz (e-posta kodu); passwordHash sütunu zorunlu olduğu için
 // hiçbir şifreyle eşleşmeyecek rastgele bir hash yazılır.
@@ -30,6 +31,26 @@ async function findOrCreateCustomer(email: string, name?: string | null) {
   });
 }
 
+const HESAP_KAPALI = "Hesap kapalı ya da silinmiş";
+
+// Oturum başına DB okuması: aynı kullanıcı için 15 sn önbellek (her API
+// isteği ve useSession yoklaması DB'ye gitmesin). Yönetici bir hesabı
+// kapattığında ya da rolünü değiştirdiğinde en geç 15 sn'de etkili olur.
+type HesapDurumu = { role: string; isActive: boolean; agency: { id: string; isApproved: boolean } | null };
+const hesapOnbellegi = new Map<string, { zaman: number; deger: HesapDurumu | null }>();
+async function hesapDurumu(userId: string): Promise<HesapDurumu | null> {
+  const simdi = Date.now();
+  const o = hesapOnbellegi.get(userId);
+  if (o && simdi - o.zaman < 15_000) return o.deger;
+  const deger = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { role: true, isActive: true, agency: { select: { id: true, isApproved: true } } },
+  });
+  if (hesapOnbellegi.size > 5000) hesapOnbellegi.clear();
+  hesapOnbellegi.set(userId, { zaman: simdi, deger });
+  return deger;
+}
+
 const providers: NextAuthOptions["providers"] = [
   // Müşteri girişi: email + tek kullanımlık kod (şifresiz).
   // Hesap yoksa doğrulama sonrası otomatik oluşturulur.
@@ -40,17 +61,17 @@ const providers: NextAuthOptions["providers"] = [
       email: { label: "Email", type: "email" },
       code: { label: "Kod", type: "text" },
     },
-    async authorize(credentials) {
+    async authorize(credentials, req) {
       if (!credentials?.email || !credentials?.code) {
         throw new Error("Email ve kod gereklidir");
       }
 
       const email = credentials.email.toLowerCase().trim();
-      const valid = await verifyLoginCode(email, credentials.code.trim());
-      if (!valid) {
-        throw new Error("Kod hatalı veya süresi dolmuş");
-      }
+      const sonuc = await verifyLoginCode(email, credentials.code.trim(), istemciIp(req?.headers));
+      if (!sonuc.gecerli) throw kodHatasi(sonuc);
 
+      // Rol ve kapalı hesap mesajları kod doğrulandıktan sonra: e-postanın
+      // sahibi olduğu kanıtlanmadan hesabın varlığı söylenmez.
       const user = await findOrCreateCustomer(email);
 
       if (!user.isActive) {
@@ -80,15 +101,13 @@ const providers: NextAuthOptions["providers"] = [
       email: { label: "Email", type: "email" },
       code: { label: "Kod", type: "text" },
     },
-    async authorize(credentials) {
+    async authorize(credentials, req) {
       if (!credentials?.email || !credentials?.code) {
         throw new Error("E-posta ve kod gereklidir");
       }
       const email = credentials.email.toLowerCase().trim();
-      const valid = await verifyLoginCode(email, credentials.code.trim());
-      if (!valid) {
-        throw new Error("Kod hatalı veya süresi dolmuş");
-      }
+      const sonuc = await verifyLoginCode(email, credentials.code.trim(), istemciIp(req?.headers));
+      if (!sonuc.gecerli) throw kodHatasi(sonuc);
       const user =
         (await prisma.user.findUnique({ where: { email }, include: { agency: true } })) ??
         (await prisma.user.create({
@@ -101,7 +120,7 @@ const providers: NextAuthOptions["providers"] = [
           include: { agency: true },
         }));
       if (user.role === "CUSTOMER") {
-        throw new Error("Bu e-posta bir müşteri hesabına ait");
+        throw new Error("Bu e-posta bir müşteri hesabına ait. Acente için şirket e-postanı kullan.");
       }
       if (!user.isActive) {
         throw new Error("Hesabınız devre dışı bırakılmış");
@@ -145,6 +164,21 @@ export const authOptions: NextAuthOptions = {
     error: "/login",
   },
   providers,
+  // Kapatılan hesabın oturumu bilerek düşürülüyor (jwt callback); bunu
+  // yığın iziyle hata diye yazma.
+  logger: {
+    error(code, metadata) {
+      if (code === "JWT_SESSION_ERROR" && (metadata as { message?: string })?.message === HESAP_KAPALI) {
+        console.warn("[auth] kapatılan hesabın oturumu sonlandırıldı");
+        return;
+      }
+      console.error(`[next-auth][error][${code}]`, metadata);
+    },
+    warn(code) {
+      console.warn(`[next-auth][warn][${code}]`);
+    },
+    debug() {},
+  },
   callbacks: {
     // OAuth girişlerinde (Google/Apple) müşteri hesabını DB'de garanti et.
     async signIn({ user, account }) {
@@ -179,15 +213,15 @@ export const authOptions: NextAuthOptions = {
           token.agencyId = user.agencyId;
         }
       }
-      // Acentenin onayı jetonda bayatlamasın: admin onaylayınca (ya da onayı
-      // kaldırınca) yeniden giriş gerekmeden agencyId güncellensin. agencyId
-      // yalnız onaylı acentede dolu; API'ler buna bakıyor.
-      if (token.role === "AGENCY" && token.userId) {
-        const acente = await prisma.agency.findUnique({
-          where: { userId: token.userId as string },
-          select: { id: true, isApproved: true },
-        });
-        token.agencyId = acente?.isApproved ? acente.id : null;
+      // Rol, aktiflik ve acente onayı jetonda bayatlamasın: her oturum
+      // okumasında DB'den tazelenir. Kapatılan hesapta hata fırlatılır;
+      // next-auth çerezi siler, getServerSession null döner (oturum düşer).
+      // agencyId yalnız onaylı acentede dolu; API'ler buna bakıyor.
+      if (token.userId) {
+        const hesap = await hesapDurumu(token.userId as string);
+        if (!hesap || !hesap.isActive) throw new Error(HESAP_KAPALI);
+        token.role = hesap.role;
+        token.agencyId = hesap.role === "AGENCY" && hesap.agency?.isApproved ? hesap.agency.id : null;
       }
       return token;
     },

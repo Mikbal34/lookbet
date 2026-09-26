@@ -98,8 +98,11 @@ echo "==> Docker build..."
 ${COMPOSE} build app migrate
 
 # Şema, yeni kod ayağa kalkmadan önce: kod yeni sütunları sorguluyor.
-echo "==> Şema (prisma db push)..."
 ${COMPOSE} up -d db
+echo "==> Veritabanı yedeği (migration öncesi)..."
+# </dev/null: betik ssh heredoc'unu stdin'den okumasın (aşağıdaki run gibi).
+./deploy/yedek.sh deploy-oncesi </dev/null
+echo "==> Şema (prisma migrate deploy)..."
 # -T ve </dev/null: "run" varsayılan olarak stdin'i okuyor; burada stdin bu
 # betiğin kendisi (ssh heredoc). Olmadan migrate betiğin geri kalanını
 # yutuyor ve sonraki adımlar hiç çalışmıyordu.
@@ -126,6 +129,7 @@ DEPLOY_EOF
 cmd_migrate() {
     check_config
     log "Prisma migrate deploy çalıştırılıyor..."
+    ssh_cmd "cd ${APP_DIR} && ./deploy/yedek.sh migrate-oncesi </dev/null"
     ssh_cmd "cd ${APP_DIR} && ${COMPOSE} --profile migrate run --rm -T migrate </dev/null"
     log "Migration tamamlandı."
 }

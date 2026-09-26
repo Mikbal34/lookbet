@@ -3,33 +3,43 @@ import { getServerSession } from "next-auth";
 import { z } from "zod";
 import { authOptions } from "@/lib/auth/auth-options";
 import { kuponDegerlendir } from "@/lib/pricing/kupon";
+import { fiyatKaydi } from "@/lib/royal-api";
+import { feedBul } from "@/lib/feed";
+import { hizSiniri } from "@/lib/hiz-siniri";
 
 // POST /api/kupon — ödeme adımında kupon önizlemesi (giriş gerekli).
-// Kesin tutar rezervasyonda tedarikçi fiyatı üzerinden aynı kuralla
-// yeniden hesaplanır (bkz. /api/booking).
+// Tutar, fiyat kodunun sunucudaki kaydından (net fiyat, otel, pansiyon,
+// tarihler) hesaplanır; rezervasyon da aynı kuralla yeniden hesaplar.
+// Kod denemesine karşı kullanıcı başına 10 dk'da 20 istek.
 
 const semaya = z.object({
   kod: z.string().trim().min(1, "Kupon kodunu yaz").max(40),
-  hotelCode: z.string().min(1),
-  boardType: z.string().optional(),
-  checkIn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  checkOut: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  netPrice: z.number().positive(),
+  priceCode: z.string().min(1).max(300),
 });
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "Kupon için giriş yap" }, { status: 401 });
+  const sinir = hizSiniri(`kupon:${session.user.id}`, 20, 10 * 60_000);
+  if (!sinir.izin) {
+    return NextResponse.json({ error: `Çok fazla deneme. ${Math.ceil(sinir.bekle / 60)} dakika sonra tekrar dene.` }, { status: 429 });
+  }
   const parsed = semaya.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Geçersiz istek" }, { status: 422 });
-  const { kod, netPrice, ...girdi } = parsed.data;
+  const { kod, priceCode } = parsed.data;
   const role = session.user.role as "CUSTOMER" | "AGENCY" | "ADMIN";
+  const agencyId = session.user.agencyId ?? undefined;
+
+  const kayit = fiyatKaydi(priceCode);
+  if (!kayit || kayit.feedId !== (await feedBul(role, agencyId))) {
+    return NextResponse.json({ error: "Fiyatın geçerlilik süresi doldu, lütfen odaları yeniden ara" }, { status: 409 });
+  }
   const s = await kuponDegerlendir({
     kod,
     userId: session.user.id,
     userType: role,
-    agencyId: session.user.agencyId ?? undefined,
-    girdi: { ...girdi, basePrice: netPrice },
+    agencyId,
+    girdi: { basePrice: kayit.tutar, hotelCode: kayit.hotelCode, boardType: kayit.boardType, checkIn: kayit.checkIn, checkOut: kayit.checkOut },
   });
   if (s.durum === "gecersiz") return NextResponse.json({ durum: s.durum, mesaj: s.mesaj }, { status: 422 });
   return NextResponse.json({

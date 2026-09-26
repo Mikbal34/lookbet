@@ -4,6 +4,13 @@ import { z } from "zod";
 // motoru null'u "tümü" sayar; "" hiçbir otelle eşleşmezdi).
 // Gönderilmeyen alan (undefined) olduğu gibi kalır; güncellemede değişmez.
 const bosOlabilir = z.string().nullish().transform((v) => (v === undefined ? undefined : v || null));
+// Fiyat kuralı / komisyon tarihi: "YYYY-AA-GG" (Türkiye saatiyle günün başı
+// ya da sonu olarak saklanır) veya tam zaman damgası; boşsa null.
+const tarihMetni = z
+  .string()
+  .nullish()
+  .refine((v) => !v || !Number.isNaN(Date.parse(v)), "Tarih geçersiz (YYYY-AA-GG)")
+  .transform((v) => (v === undefined ? undefined : v || null));
 
 const priceRuleAlanlari = {
   name: z.string().min(1, "Kural adı gerekli"),
@@ -13,20 +20,29 @@ const priceRuleAlanlari = {
   agencyId: bosOlabilir,
   hotelCode: bosOlabilir,
   boardType: bosOlabilir,
-  startDate: bosOlabilir,
-  endDate: bosOlabilir,
+  startDate: tarihMetni,
+  endDate: tarihMetni,
   isActive: z.boolean(),
   priority: z.number().int(),
 };
-export const priceRuleSchema = z.object({
-  ...priceRuleAlanlari,
-  isActive: z.boolean().default(true),
-  priority: z.number().int().default(0),
-});
+// Yüzde sınırları: indirim %100'ü, kâr payı %500'ü aşamaz (fiyat motoru
+// ayrıca maliyet tabanını korur; bu yalnız yazım hatalarına karşı).
+const kuralDegeri = (k: { type?: string; value?: number }, ctx: z.RefinementCtx) => {
+  if (k.value === undefined) return;
+  if (k.type === "PERCENTAGE_DISCOUNT" && k.value > 100) ctx.addIssue({ code: "custom", path: ["value"], message: "İndirim yüzdesi en fazla 100 olabilir" });
+  if (k.type === "MARKUP" && k.value > 500) ctx.addIssue({ code: "custom", path: ["value"], message: "Kâr payı yüzdesi en fazla 500 olabilir" });
+};
+export const priceRuleSchema = z
+  .object({
+    ...priceRuleAlanlari,
+    isActive: z.boolean().default(true),
+    priority: z.number().int().default(0),
+  })
+  .superRefine(kuralDegeri);
 // Güncelleme: yalnız gönderilen alanlar değişir. partial() Zod 4'te
 // varsayılanları yine uygular (isActive → true, priority → 0); bu yüzden
 // varsayılansız alanlardan ayrı kurulur.
-export const priceRuleUpdateSchema = z.object(priceRuleAlanlari).partial();
+export const priceRuleUpdateSchema = z.object(priceRuleAlanlari).partial().superRefine(kuralDegeri);
 
 const commissionAlanlari = {
   agencyId: z.string().min(1, "Acente seçin"),
@@ -34,37 +50,75 @@ const commissionAlanlari = {
   value: z.number().positive("Değer pozitif olmalı"),
   hotelCode: bosOlabilir,
   boardType: bosOlabilir,
-  startDate: bosOlabilir,
-  endDate: bosOlabilir,
+  startDate: tarihMetni,
+  endDate: tarihMetni,
   isActive: z.boolean(),
 };
-export const commissionSchema = z.object({ ...commissionAlanlari, isActive: z.boolean().default(true) });
-export const commissionUpdateSchema = z.object(commissionAlanlari).partial();
+const komisyonDegeri = (k: { type?: string; value?: number }, ctx: z.RefinementCtx) => {
+  if (k.type === "PERCENTAGE" && k.value !== undefined && k.value > 90) ctx.addIssue({ code: "custom", path: ["value"], message: "Komisyon yüzdesi en fazla 90 olabilir" });
+};
+export const commissionSchema = z.object({ ...commissionAlanlari, isActive: z.boolean().default(true) }).superRefine(komisyonDegeri);
+export const commissionUpdateSchema = z.object(commissionAlanlari).partial().superRefine(komisyonDegeri);
+
+// ── Acenteler ──
+const ORAN_HATA = "Oranlar 0 ile 100 arasında olmalı";
+const oran = z.number({ error: ORAN_HATA }).min(0, ORAN_HATA).max(100, ORAN_HATA);
+const feedIdAlani = z.string().trim().max(100, "Feed kimliği en fazla 100 karakter").nullish();
+const notAlani = z.string().trim().max(2000, "Not en fazla 2000 karakter").nullish();
 
 export const agencyApproveSchema = z.object({
-  discountRate: z.number().min(0).max(100).optional(),
-  commission: z.number().min(0).max(100).optional(),
-  feedId: z.string().optional(),
-  notes: z.string().optional(),
+  discountRate: oran.optional(),
+  commission: oran.optional(),
+  feedId: feedIdAlani,
+  notes: notAlani,
 });
 
 // Başvuru onayı: anlaşma oranları. Şifre yok; acente e-posta koduyla girer.
 export const applicationApproveSchema = z.object({
-  discountRate: z.number().min(0).max(100).optional(),
-  commission: z.number().min(0).max(100).optional(),
-  feedId: z.string().optional(),
-  notes: z.string().optional(),
+  discountRate: oran.optional(),
+  commission: oran.optional(),
+  feedId: feedIdAlani,
+  notes: notAlani,
 });
+
+// Yönetimden acente açmak (API): kullanıcı önceden var olmalı (etkin, rolü
+// acente, henüz acentesi yok; route kontrol eder).
+export const agencyCreateSchema = z.object({
+  userId: z.string().trim().min(1, "Kullanıcı gerekli"),
+  companyName: z.string().trim().min(2, "Şirket unvanı gerekli").max(200, "Şirket unvanı en fazla 200 karakter"),
+  taxId: z.string().trim().regex(/^\d{10,11}$/, "Vergi no 10, TC kimlik no 11 hane olmalı"),
+  address: z.string().trim().max(500, "Adres en fazla 500 karakter").nullish(),
+  phone: z.string().trim().max(40, "Telefon en fazla 40 karakter").nullish(),
+  discountRate: oran.default(0),
+  commission: oran.default(0),
+  feedId: feedIdAlani,
+  notes: notAlani,
+  isApproved: z.boolean().default(false),
+});
+
+// Anlaşma güncellemesi: yalnız gönderilen alanlar değişir.
+export const agencyUpdateSchema = z
+  .object({ discountRate: oran, commission: oran, feedId: feedIdAlani, notes: notAlani, isApproved: z.boolean() })
+  .partial();
 
 export const applicationRejectSchema = z.object({
   reason: z.string().max(500).optional(),
 });
 
+// ── Kullanıcılar ── Giriş şifresiz (e-posta kodu); e-posta küçük harfle
+// saklanır, giriş de öyle arar.
+const epostaAlani = z.string().trim().toLowerCase().email("Geçerli bir e-posta adresi yaz").max(254);
+
+export const userCreateSchema = z.object({
+  name: z.string().trim().min(2, "Ad en az 2 harf olmalı").max(120, "Ad en fazla 120 karakter"),
+  email: epostaAlani,
+  role: z.enum(["CUSTOMER", "AGENCY", "ADMIN"]).default("CUSTOMER"),
+});
 
 export const userUpdateSchema = z.object({
-  name: z.string().min(2).optional(),
-  email: z.string().email().optional(),
-  phone: z.string().optional(),
+  name: z.string().trim().min(2, "Ad en az 2 harf olmalı").max(120, "Ad en fazla 120 karakter").optional(),
+  email: epostaAlani.optional(),
+  phone: z.string().trim().max(40, "Telefon en fazla 40 karakter").optional(),
   role: z.enum(["CUSTOMER", "AGENCY", "ADMIN"]).optional(),
   isActive: z.boolean().optional(),
 });
@@ -74,6 +128,9 @@ export type CommissionInput = z.input<typeof commissionSchema>;
 export type AgencyApproveInput = z.infer<typeof agencyApproveSchema>;
 export type ApplicationApproveInput = z.infer<typeof applicationApproveSchema>;
 export type ApplicationRejectInput = z.infer<typeof applicationRejectSchema>;
+export type AgencyCreateInput = z.input<typeof agencyCreateSchema>;
+export type AgencyUpdateInput = z.infer<typeof agencyUpdateSchema>;
+export type UserCreateInput = z.input<typeof userCreateSchema>;
 export type UserUpdateInput = z.infer<typeof userUpdateSchema>;
 
 // ── Kampanyalar ──

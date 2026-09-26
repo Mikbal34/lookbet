@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
 import { otelBilgisiEkle } from "@/lib/rezervasyon-otel";
+import { rezervasyonYaniti } from "@/lib/rezervasyon-yanit";
 
 type ReservationStatus = "PENDING" | "CONFIRMED" | "CANCELLED" | "FAILED";
 
@@ -20,9 +21,8 @@ const VALID_STATUSES: ReservationStatus[] = [
 // GET /api/reservations
 // Requires authentication.
 // Role-scoped listing:
-//   ADMIN   – all reservations
 //   AGENCY  – reservations belonging to their agency
-//   CUSTOMER – only their own reservations
+//   CUSTOMER, ADMIN – only their own reservations (admin: Yönetim › Rezervasyonlar)
 //
 // Query params:
 //   status  – filter by ReservationStatus
@@ -67,10 +67,11 @@ export async function GET(request: NextRequest) {
         );
       }
       where.agencyId = agencyId;
-    } else if (role === "CUSTOMER") {
+    } else {
+      // Müşteri ve yönetici: kendi rezervasyonları ("Rezervasyonlarım").
+      // Yönetici tüm rezervasyonları Yönetim › Rezervasyonlar'da görür.
       where.userId = userId;
     }
-    // ADMIN: no additional constraint – sees everything
 
     if (statusParam && VALID_STATUSES.includes(statusParam as ReservationStatus)) {
       where.status = statusParam as ReservationStatus;
@@ -130,8 +131,9 @@ export async function GET(request: NextRequest) {
         )
       : undefined;
 
-    // Kartlardaki fotoğraf, yıldız, konum ve pansiyon adı.
-    const cikti = await otelBilgisiEkle(reservations);
+    // Kartlardaki fotoğraf, yıldız, konum ve pansiyon adı; net fiyat ve
+    // yönetim alanları yalnız yöneticiye (lib/rezervasyon-yanit).
+    const cikti = (await otelBilgisiEkle(reservations)).map((r) => rezervasyonYaniti(r, role));
 
     return NextResponse.json({
       data: cikti,

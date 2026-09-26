@@ -5,6 +5,7 @@
 // şerit. Tıklayınca fotoğraf turu (Genel bakış + oda bölümleri) açılır; turdaki
 // fotoğrafa basınca ışık kutusu.
 
+import { fotoBoyutu, kartFotosu } from "@/lib/foto";
 import * as React from "react";
 import { Ikon } from "@/components/lb/ikon";
 import { useKatman } from "@/components/lb/pencere";
@@ -92,7 +93,7 @@ export function FotoTuru({ acik, onKapat, bolumler, onFoto, ustSag }: {
           <div className={s.turKucuk}>
             {bolumler.map((b, i) => (
               <button key={b.ad} type="button" onClick={() => bolumeGit(i)}>
-                <img src={b.gorseller[0]} alt="" loading="lazy" />
+                <img src={fotoBoyutu(b.gorseller[0], "400x300")} alt="" loading="lazy" />
                 {b.ad}
               </button>
             ))}
@@ -103,7 +104,7 @@ export function FotoTuru({ acik, onKapat, bolumler, onFoto, ustSag }: {
               <div className={s.turFoto}>
                 {b.gorseller.map((u, j) => (
                   <button key={u} type="button" onClick={() => onFoto(i, j)} aria-label={`${b.ad}, fotoğraf ${j + 1}`}>
-                    <img src={u} alt="" loading="lazy" />
+                    <img {...kartFotosu(u, "(max-width: 720px) 100vw, 45vw")} alt="" loading="lazy" />
                   </button>
                 ))}
               </div>

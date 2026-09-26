@@ -14,8 +14,9 @@ import {
   syncRoomAttributes,
 } from "@/lib/royal-api/sync";
 import { prisma } from "@/lib/prisma";
+import { temizle } from "@/lib/temizlik";
 
-export const ADIMLAR = ["revizyon", "fiyat", "listeler", "oteller", "icerik"] as const;
+export const ADIMLAR = ["revizyon", "fiyat", "listeler", "oteller", "icerik", "temizlik"] as const;
 export type Adim = (typeof ADIMLAR)[number];
 
 export interface SonCalisma {
@@ -73,6 +74,9 @@ export async function isCalistir(adim: Adim, ilerleme?: (satir: string) => void)
         break;
       case "oteller":
         sonuc = await syncHotels(feedId);
+        break;
+      case "temizlik":
+        sonuc = await temizle();
         break;
     }
     return { adim, sure: Math.round((Date.now() - baslangic) / 1000), sonuc };

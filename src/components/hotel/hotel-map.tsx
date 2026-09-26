@@ -7,6 +7,7 @@
 // Hapa tıklayınca fotoğraflı küçük kart açılır; haritanın boş yerine
 // tıklayınca kapanır. Sonuç listesi değişince harita otellere sığdırılır.
 
+import { fotoBoyutu } from "@/lib/foto";
 import * as React from "react";
 import { Map as GoogleMap, useMap } from "@vis.gl/react-google-maps";
 import type { HotelSearchResult } from "@/lib/royal-api/types";
@@ -77,7 +78,7 @@ function MiniKart({ h, href, fiyat, onKapat }: { h: HotelSearchResult; href: str
         <div className="lb-harita-kart-foto">
           {!fotoYok && (
             // eslint-disable-next-line @next/next/no-img-element -- dış kaynaklı otel görseli
-            <img src={h.thumbnailImage} alt="" onError={() => setFotoYok(true)} />
+            <img src={fotoBoyutu(h.thumbnailImage, "400x300")} alt="" onError={() => setFotoYok(true)} />
           )}
         </div>
         <div className="lb-harita-kart-alt">

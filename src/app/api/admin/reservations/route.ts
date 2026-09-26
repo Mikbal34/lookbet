@@ -3,9 +3,12 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
 import { otelBilgisiEkle } from "@/lib/rezervasyon-otel";
+import { sayfalama, tarihAraligi } from "../_ortak";
 
 // GET /api/admin/reservations — Yönetim › Rezervasyonlar.
 //   ?status ?source=CUSTOMER|AGENCY ?search ?agencyId ?hotelCode ?dateFrom ?dateTo ?page ?limit
+// dateFrom/dateTo oluşturulma tarihine uygulanır: "YYYY-AA-GG" Türkiye'de
+// günün başı/sonu, ISO zaman damgası olduğu gibi; geçersizse 400.
 // Yanıtta durum çipleri için sayilar (durum filtresi hariç, diğer filtrelerle).
 
 export async function GET(req: NextRequest) {
@@ -17,17 +20,14 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
-    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") ?? "20", 10)));
+    const { page, limit, skip } = sayfalama(searchParams);
     const status = searchParams.get("status");
     const agencyId = searchParams.get("agencyId");
     const hotelCode = searchParams.get("hotelCode");
-    const dateFrom = searchParams.get("dateFrom");
-    const dateTo = searchParams.get("dateTo");
+    const tarih = tarihAraligi(searchParams);
+    if (tarih.hata) return tarih.hata;
     const search = (searchParams.get("search") ?? "").trim();
     const source = searchParams.get("source");
-
-    const skip = (page - 1) * limit;
 
     const where: Record<string, unknown> = {};
 
@@ -44,11 +44,8 @@ export async function GET(req: NextRequest) {
       where.hotelCode = hotelCode;
     }
 
-    if (dateFrom || dateTo) {
-      const dateFilter: Record<string, Date> = {};
-      if (dateFrom) dateFilter.gte = new Date(dateFrom);
-      if (dateTo) dateFilter.lte = new Date(dateTo);
-      where.createdAt = dateFilter;
+    if (tarih.filtre) {
+      where.createdAt = tarih.filtre;
     }
 
     if (search) {

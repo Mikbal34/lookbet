@@ -1,6 +1,12 @@
 // GET /api/agency/dashboard (sadece AGENCY)
 // Acente panelinin özet verisi: şirket/anlaşma bilgileri, sunucuda hesaplanan
 // rezervasyon istatistikleri ve son rezervasyonlar.
+// Tutarlar /api/agency/kazanc ve yönetim raporlarıyla aynı: satış =
+// discountedPrice ?? totalPrice (totalPrice tedarikçinin net fiyatı),
+// komisyon = rezervasyonda saklanan commissionAmount, eski kayıtlarda satış ×
+// anlaşma oranı. Zaman tabanı: totalRevenue/estimatedCommission tüm onaylı
+// rezervasyonlar; monthRevenue/monthCommission bu ay OLUŞTURULANLAR
+// (createdAt). Kazançlar ekranı ise girişi o ayda olanları (checkIn) sayar.
 
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
@@ -24,8 +30,7 @@ export async function GET() {
       confirmedCount,
       pendingCount,
       cancelledCount,
-      revenueResult,
-      monthRevenueResult,
+      onaylilar,
       recentReservations,
     ] = await Promise.all([
       prisma.agency.findUnique({
@@ -48,17 +53,11 @@ export async function GET() {
       prisma.reservation.count({ where: { agencyId, status: "CONFIRMED" } }),
       prisma.reservation.count({ where: { agencyId, status: "PENDING" } }),
       prisma.reservation.count({ where: { agencyId, status: "CANCELLED" } }),
-      prisma.reservation.aggregate({
-        _sum: { totalPrice: true },
+      // Satış ve komisyon satır satır: satış = discountedPrice ?? totalPrice,
+      // komisyon saklanan tutar (toplama yapılamaz; kazanc ile aynı hesap).
+      prisma.reservation.findMany({
         where: { agencyId, status: "CONFIRMED" },
-      }),
-      prisma.reservation.aggregate({
-        _sum: { totalPrice: true },
-        where: {
-          agencyId,
-          status: "CONFIRMED",
-          createdAt: { gte: monthStart },
-        },
+        select: { totalPrice: true, discountedPrice: true, commissionAmount: true, createdAt: true },
       }),
       prisma.reservation.findMany({
         where: { agencyId },
@@ -72,6 +71,8 @@ export async function GET() {
           checkOut: true,
           status: true,
           totalPrice: true,
+          discountedPrice: true,
+          commissionAmount: true,
           currency: true,
           contactName: true,
         },
@@ -82,8 +83,19 @@ export async function GET() {
       return NextResponse.json({ error: "Acente bulunamadı" }, { status: 404 });
     }
 
-    const totalRevenue = revenueResult._sum.totalPrice ?? 0;
-    const monthRevenue = monthRevenueResult._sum.totalPrice ?? 0;
+    const oran = agency.commission / 100;
+    const yuvarla = (n: number) => Math.round(n * 100) / 100;
+    let totalRevenue = 0, monthRevenue = 0, totalCommission = 0, monthCommission = 0;
+    for (const r of onaylilar) {
+      const satis = r.discountedPrice ?? r.totalPrice;
+      const komisyon = r.commissionAmount ?? satis * oran;
+      totalRevenue += satis;
+      totalCommission += komisyon;
+      if (r.createdAt >= monthStart) {
+        monthRevenue += satis;
+        monthCommission += komisyon;
+      }
+    }
 
     return NextResponse.json({
       agency,
@@ -92,12 +104,23 @@ export async function GET() {
         confirmedCount,
         pendingCount,
         cancelledCount,
-        totalRevenue,
-        monthRevenue,
-        // Anlaşmadaki komisyon oranından tahmini kazanç.
-        estimatedCommission: totalRevenue * (agency.commission / 100),
+        // Satış fiyatı (acenteye); tüm onaylı rezervasyonlar.
+        totalRevenue: yuvarla(totalRevenue),
+        // Bu ay oluşturulan (createdAt) onaylı rezervasyonların satışı.
+        monthRevenue: yuvarla(monthRevenue),
+        // Saklanan komisyonların toplamı (eski kayıtlarda anlaşma oranıyla);
+        // alan adı geriye uyum için korunur.
+        estimatedCommission: yuvarla(totalCommission),
+        monthCommission: yuvarla(monthCommission),
+        // Yukarıdaki "month" alanlarının zaman tabanı (Kazançlar: checkIn).
+        monthBasis: "createdAt",
       },
-      recentReservations,
+      // Tedarikçi net fiyatı acenteye gitmez: tutar satış fiyatıdır.
+      recentReservations: recentReservations.map(({ totalPrice, discountedPrice, ...r }) => ({
+        ...r,
+        totalPrice: discountedPrice ?? totalPrice,
+        discountedPrice: discountedPrice ?? totalPrice,
+      })),
     });
   } catch (error) {
     console.error("[AGENCY_DASHBOARD_GET]", error);

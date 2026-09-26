@@ -16,7 +16,8 @@ import s from "./oda-penceresi.module.css";
 
 export type Oda = RoomResult & {
   pricing?: {
-    originalPrice: number;
+    /** Net fiyat; yalnız yöneticiye gelir. */
+    originalPrice?: number;
     /** Kural sonrası, kampanya indiriminden önceki fiyat. */
     oncekiFiyat?: number;
     finalPrice: number;

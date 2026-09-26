@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
 import { userUpdateSchema } from "@/lib/validators";
+import { benzersizIhlali } from "../../_ortak";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
@@ -82,12 +83,12 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const body = await req.json();
+    const body = await req.json().catch(() => ({}));
     const parsed = userUpdateSchema.safeParse(body);
 
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Validation failed", details: parsed.error.flatten() },
+        { error: parsed.error.issues[0]?.message ?? "Bilgileri kontrol et", details: parsed.error.flatten() },
         { status: 400 }
       );
     }
@@ -97,19 +98,37 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "Kendi rolünü değiştiremez, hesabını kapatamazsın" }, { status: 400 });
     }
 
-    const updatedUser = await prisma.user.update({
-      where: { id },
-      data: parsed.data,
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        role: true,
-        isActive: true,
-        updatedAt: true,
-      },
-    });
+    // E-posta değişiyorsa başka hesapta (büyük/küçük harf fark etmeden) olmasın.
+    if (parsed.data.email && parsed.data.email !== existing.email) {
+      const baska = await prisma.user.findFirst({
+        where: { id: { not: id }, email: { equals: parsed.data.email, mode: "insensitive" } },
+        select: { id: true },
+      });
+      if (baska) return NextResponse.json({ error: "Bu e-posta başka bir hesapta kayıtlı" }, { status: 409 });
+    }
+
+    const updatedUser = await prisma.user
+      .update({
+        where: { id },
+        data: parsed.data,
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          role: true,
+          isActive: true,
+          updatedAt: true,
+        },
+      })
+      .catch((e) => {
+        // E-posta başka bir hesaptaysa (benzersiz alan).
+        if (benzersizIhlali(e)) return null;
+        throw e;
+      });
+    if (!updatedUser) {
+      return NextResponse.json({ error: "Bu e-posta başka bir hesapta kayıtlı" }, { status: 409 });
+    }
 
     await prisma.auditLog.create({
       data: {

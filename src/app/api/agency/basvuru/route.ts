@@ -44,6 +44,14 @@ export async function POST(request: Request): Promise<NextResponse> {
     }
 
     const basvuru = await prisma.$transaction(async (tx) => {
+      // Aynı kullanıcının aynı anda gelen iki isteği (çift tıklama) sırayla
+      // işlensin; ikincisi bekleyen başvuruyu görüp durur.
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`basvuru:${session.user.id}`}))`;
+      const onceki = await tx.agencyApplication.findFirst({
+        where: { OR: [{ userId: session.user.id }, { taxId: d.taxId }], status: "PENDING" },
+        select: { id: true },
+      });
+      if (onceki) return null;
       const b = await tx.agencyApplication.create({
         data: {
           userId: session.user.id,
@@ -77,6 +85,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       return b;
     });
 
+    if (!basvuru) return NextResponse.json({ error: "Başvurun zaten alındı" }, { status: 409 });
     return NextResponse.json({ basvuru }, { status: 201 });
   } catch (error) {
     console.error("[AGENCY_BASVURU_POST]", error);

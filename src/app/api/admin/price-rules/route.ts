@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
-
-/** Yalnız tarih gelen bitiş, o günün sonuna kadar geçerli olsun. */
-const gunSonu = (s: string) => new Date(s.length === 10 ? `${s}T23:59:59` : s);
 import { otelAdlari } from "@/lib/rezervasyon-otel";
 import { priceRuleSchema } from "@/lib/validators";
+// Yalnız tarih gelirse Türkiye saatiyle: başlangıç günün başı, bitiş günün
+// sonu (kampanyalarla aynı; sunucunun saat dilimine bağlı değil).
+import { baslangicTarihi, bitisTarihi } from "../_ortak";
 
 export async function GET(req: NextRequest) {
   try {
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
 
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Validation failed", details: parsed.error.flatten() },
+        { error: parsed.error.issues[0]?.message ?? "Bilgileri kontrol et", details: parsed.error.flatten() },
         { status: 400 }
       );
     }
@@ -65,8 +65,8 @@ export async function POST(req: NextRequest) {
     const priceRule = await prisma.priceRule.create({
       data: {
         ...rest,
-        startDate: startDate ? new Date(startDate) : undefined,
-        endDate: endDate ? gunSonu(endDate) : undefined,
+        startDate: startDate ? baslangicTarihi(startDate) : undefined,
+        endDate: endDate ? bitisTarihi(endDate) : undefined,
         createdById: session.user.id,
       },
       include: {

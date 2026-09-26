@@ -44,15 +44,18 @@ const dogumMaskesi = (v: string) => {
 };
 const ALAN_ADI: Record<string, string> = { name: "ad", surname: "soyad", email: "eposta", phone: "telefon", gender: "cins", birthDate: "dogum" };
 
-export function Odeme() {
+/** `acik`: rezervasyonlar açık mı (REZERVASYON_ACIK); kapalıyken yalnız yönetici test edebilir. */
+export function Odeme({ acik = true }: { acik?: boolean }) {
   const p = useSearchParams();
   if (!p.get("roomSearchId") || !p.get("priceCode")) return <Bos />;
-  return <OdemeFormu key={p.get("priceCode")} p={p} />;
+  return <OdemeFormu key={p.get("priceCode")} p={p} acik={acik} />;
 }
 
-function OdemeFormu({ p }: { p: URLSearchParams }) {
+function OdemeFormu({ p, acik }: { p: URLSearchParams; acik: boolean }) {
   const router = useRouter();
   const oturum = useSession();
+  // Ödeme altyapısı gelene kadar rezervasyon kapalı; yönetici test için yapabilir.
+  const kapali = !acik && oturum.data?.user?.role !== "ADMIN";
 
   const hotelCode = p.get("hotelCode") ?? "";
   const hotelName = p.get("hotelName") || hotelCode;
@@ -70,7 +73,6 @@ function OdemeFormu({ p }: { p: URLSearchParams }) {
   const ilkFiyat = Math.max(toplam, parseFloat(p.get("originalPrice") ?? String(toplam)) || toplam);
   const kampanyaAd = p.get("kampanya");
   const kampanyaYuzde = p.get("kampanyaYuzde");
-  const netFiyat = parseFloat(p.get("netPrice") ?? "") || undefined;
   const politikalar = React.useMemo<CancellationPolicy[] | undefined>(() => {
     try {
       return JSON.parse(p.get("cancellationPolicy") ?? "");
@@ -131,7 +133,7 @@ function OdemeFormu({ p }: { p: URLSearchParams }) {
       const r = await fetch("/api/kupon", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ kod, hotelCode, boardType: boardType || undefined, checkIn, checkOut, netPrice: netFiyat ?? toplam }),
+        body: JSON.stringify({ kod, priceCode: p.get("priceCode") ?? "" }),
       });
       const d = await r.json().catch(() => ({}));
       if (!r.ok) {
@@ -232,7 +234,8 @@ function OdemeFormu({ p }: { p: URLSearchParams }) {
     roomType: roomName || undefined,
     checkIn,
     checkOut,
-    totalPrice: toplam,
+    // Müşterinin onayladığı ödenecek tutar (kupon dahil); sunucu kendi hesabıyla karşılaştırır.
+    totalPrice: odenecek,
     currency: paraBirimi,
     cancellationPolicy: politikalar,
     contact: { name: iletisim.ad.trim(), surname: iletisim.soyad.trim(), email: iletisim.eposta.trim(), phone: `${iletisim.ulke} ${iletisim.telefon.trim()}` },
@@ -251,7 +254,6 @@ function OdemeFormu({ p }: { p: URLSearchParams }) {
     ],
     additionalInfo: istek.trim() || undefined,
     couponCode: kupon?.kod,
-    netPrice: netFiyat,
   });
 
   /** Bir adımın hataları; anahtar alanın id'si. */
@@ -346,10 +348,14 @@ function OdemeFormu({ p }: { p: URLSearchParams }) {
         setGonderiliyor(false);
         return;
       }
-      const no = d.reservation?.bookingNumber ?? d.bookingConfirmation?.bookingNumber ?? d.reservation?.id ?? "";
+      // Rezervasyon numarası yalnız otelden onay gelince var; yoksa (onay
+      // bekleniyor, tedarikçi yanıtı gecikti) numara gösterilmez.
+      const no = d.reservation?.bookingNumber ?? d.bookingConfirmation?.bookingNumber ?? "";
+      const onayli = d.reservation?.status === "CONFIRMED" && !d.belirsiz;
       // Kart okutma katmanı yeşile dönsün, bir an görünsün, sonra onay sayfası.
-      setOnaylandi(d.reservation?.status === "CONFIRMED" ? "onay" : "alindi");
-      setTimeout(() => router.push(`/booking/confirmation?${new URLSearchParams({ bookingNumber: no, hotelName, checkIn, checkOut })}`), 1300);
+      setOnaylandi(onayli ? "onay" : "alindi");
+      const qs = new URLSearchParams({ hotelName, checkIn, checkOut, durum: onayli ? "onay" : "bekliyor", ...(no ? { bookingNumber: no } : {}) });
+      setTimeout(() => router.push(`/booking/confirmation?${qs}`), 1300);
     } catch {
       setSunucuHata({ mesaj: "Bağlantıda bir sorun oldu; birazdan tekrar dene.", odaYenile: false });
       setGonderiliyor(false);
@@ -401,6 +407,15 @@ function OdemeFormu({ p }: { p: URLSearchParams }) {
           </Link>
           <h1 className="lb-y">Onay ve ödeme</h1>
         </div>
+        {kapali && (
+          <div className={`${s.kapaliNot} ${s.kapaliUst}`} role="status">
+            <Ikon ad="lock" boyut={20} />
+            <div>
+              <b>Rezervasyonlar şu an kapalı</b>
+              <span>Ödeme altyapımız hazırlanıyor; bilgilerini gözden geçirebilirsin ama rezervasyon henüz tamamlanamıyor.</span>
+            </div>
+          </div>
+        )}
 
         <div className={s.duzen}>
           <div className={s.adimlar}>
@@ -597,8 +612,17 @@ function OdemeFormu({ p }: { p: URLSearchParams }) {
                   </div>
                 </div>
               )}
+              {kapali && (
+                <div className={s.kapaliNot} role="status">
+                  <Ikon ad="lock" boyut={20} />
+                  <div>
+                    <b>Rezervasyonlar şu an kapalı</b>
+                    <span>Ödeme altyapımız hazırlanıyor. Çok yakında buradan rezervasyon yapabileceksin.</span>
+                  </div>
+                </div>
+              )}
               <div className={`${s.adimAlt} ${s.solda}`}>
-                <button type="button" className={`${s.dugme} ${s.onayla}`} onClick={onayla} disabled={!sozlesme || gonderiliyor}>
+                <button type="button" className={`${s.dugme} ${s.onayla}`} onClick={onayla} disabled={kapali || !sozlesme || gonderiliyor}>
                   <Ikon ad={gonderiliyor ? "loading" : "lock"} boyut={18} className={gonderiliyor ? s.don : undefined} />
                   {gonderiliyor ? "Rezervasyon yapılıyor…" : `Rezervasyonu onayla · ${tl(odenecek)}`}
                 </button>

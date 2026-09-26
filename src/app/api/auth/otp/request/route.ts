@@ -1,59 +1,46 @@
 // POST /api/auth/otp/request (public)
 // Şifresiz giriş: e-postaya 6 haneli kod gönderir.
 //   Body: { email, tur?: "musteri" | "acente" }
-//   musteri (varsayılan): hesap yoksa da gönderilir, doğrulamada hesap açılır.
-//     Acente/yönetici hesapları bu akışı kullanamaz.
-//   acente: acente/yönetici hesabına ya da yeni e-postaya gönderilir; yeni
-//     e-postada doğrulamada acente hesabı açılır, panel başvuru onaylanana
-//     kadar kilitli kalır. Müşteri hesabının e-postası kullanılamaz.
+// Hesabın var olup olmadığı, rolü ya da kapalı olduğu burada SÖYLENMEZ (e-posta
+// listesi çıkarılmasın): kod her geçerli e-postaya gider. Rol uyuşmazlığı ve
+// kapalı hesap, kod doğrulandıktan sonra (e-postanın sahibi olduğu kanıtlanınca)
+// authorize() içinde bildirilir (lib/auth/auth-options).
+// Sınırlar: e-posta başına 30 sn'de 1 ve 15 dk'da 5 kod; IP başına 15 dk'da 20.
 
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
 import { createLoginCode, sendLoginCode } from "@/lib/auth/login-code";
+import { hizSiniri, istemciIp } from "@/lib/hiz-siniri";
 
 const schema = z.object({
-  email: z.string().email("Geçerli bir email adresi girin"),
+  email: z.string().trim().toLowerCase().email("Geçerli bir email adresi girin").max(254),
   tur: z.enum(["musteri", "acente"]).default("musteri"),
 });
 
+const cok = (bekle: number) =>
+  NextResponse.json(
+    { error: bekle > 90 ? `Çok fazla kod istendi. ${Math.ceil(bekle / 60)} dakika sonra tekrar dene.` : `Yeni kod için ${bekle} saniye bekle.` },
+    { status: 429, headers: { "Retry-After": String(bekle) } }
+  );
+
 export async function POST(request: Request): Promise<NextResponse> {
   try {
-    const body = await request.json();
+    const body = await request.json().catch(() => null);
     const parsed = schema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Geçerli bir email adresi girin" },
-        { status: 422 }
-      );
+      return NextResponse.json({ error: "Geçerli bir email adresi girin" }, { status: 422 });
     }
+    const { email } = parsed.data;
 
-    const email = parsed.data.email.toLowerCase().trim();
-
-    const existing = await prisma.user.findUnique({
-      where: { email },
-      select: { role: true, isActive: true },
-    });
-
-    if (parsed.data.tur === "acente") {
-      if (existing?.role === "CUSTOMER") {
-        return NextResponse.json(
-          { error: "Bu e-posta bir müşteri hesabına ait. Acente için şirket e-postanı kullan." },
-          { status: 403 }
-        );
-      }
-    } else if (existing && existing.role !== "CUSTOMER") {
-      // Acente/yönetici hesapları kendi giriş sayfalarını kullanır.
-      return NextResponse.json(
-        { error: "Bu hesap için lütfen acente/yönetici girişini kullanın." },
-        { status: 403 }
-      );
-    }
-    if (existing && !existing.isActive) {
-      return NextResponse.json(
-        { error: "Hesabınız devre dışı bırakılmış." },
-        { status: 403 }
-      );
+    const ip = istemciIp(request.headers);
+    const sinirlar: [string, number, number][] = [
+      [`otp-istek:e:${email}`, 5, 15 * 60_000],
+      [`otp-istek-aralik:${email}`, 1, 30_000],
+    ];
+    if (ip) sinirlar.unshift([`otp-istek:ip:${ip}`, 20, 15 * 60_000]);
+    for (const [anahtar, sinir, pencere] of sinirlar) {
+      const s = hizSiniri(anahtar, sinir, pencere);
+      if (!s.izin) return cok(s.bekle);
     }
 
     const code = await createLoginCode(email);
@@ -68,9 +55,6 @@ export async function POST(request: Request): Promise<NextResponse> {
     });
   } catch (error) {
     console.error("[OTP_REQUEST_POST]", error);
-    return NextResponse.json(
-      { error: "Kod gönderilirken bir hata oluştu" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Kod gönderilirken bir hata oluştu" }, { status: 500 });
   }
 }

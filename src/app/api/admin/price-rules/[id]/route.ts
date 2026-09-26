@@ -2,10 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
-
-/** Yalnız tarih gelen bitiş, o günün sonuna kadar geçerli olsun. */
-const gunSonu = (s: string) => new Date(s.length === 10 ? `${s}T23:59:59` : s);
 import { priceRuleUpdateSchema } from "@/lib/validators";
+// Yalnız tarih gelirse Türkiye saatiyle: başlangıç günün başı, bitiş günün sonu.
+import { baslangicTarihi, bitisTarihi } from "../../_ortak";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
@@ -59,7 +58,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Validation failed", details: parsed.error.flatten() },
+        { error: parsed.error.issues[0]?.message ?? "Bilgileri kontrol et", details: parsed.error.flatten() },
         { status: 400 }
       );
     }
@@ -70,8 +69,8 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
       where: { id },
       data: {
         ...rest,
-        ...(startDate !== undefined && { startDate: startDate ? new Date(startDate) : null }),
-        ...(endDate !== undefined && { endDate: endDate ? gunSonu(endDate) : null }),
+        ...(startDate !== undefined && { startDate: startDate ? baslangicTarihi(startDate) : null }),
+        ...(endDate !== undefined && { endDate: endDate ? bitisTarihi(endDate) : null }),
       },
       include: {
         agency: { select: { id: true, companyName: true } },

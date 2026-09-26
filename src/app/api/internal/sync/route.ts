@@ -12,6 +12,7 @@ import { ADIMLAR, MesgulHatasi, isCalistir, type Adim } from "@/lib/icerik-isler
 //   listeler  — haftalık: pansiyon, olanak, oda özelliği adları
 //   oteller   — haftalık: otel listesi (yeni kodlar)
 //   icerik    — haftalık: fotoğrafı ya da konumu eksik oteller
+//   temizlik  — her gece: süresi dolmuş kodlar, eski anahtarlar ve arama kayıtları
 //
 // Standalone Docker imajında tsx ve scripts/ yok; işler bu uçtan çalışıyor.
 // Kimlik: Authorization: Bearer $CRON_SECRET. nginx bu yolu dışarıya

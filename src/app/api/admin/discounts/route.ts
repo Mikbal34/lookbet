@@ -6,8 +6,10 @@ import { discountSchema } from "@/lib/validators";
 import { tarihAlani, tarihOlarak, trGunBasi, trGunSonu } from "@/lib/kampanya-tarih";
 
 // GET  /api/admin/discounts — otomatik indirimler, her birinin kullanımı
-//      (onaylı rezervasyon sayısı ve toplam indirim) ve müşterilere genel
-//      kâr payı (indirim bunu aşarsa satış net fiyatın altına iner).
+//      (onaylı rezervasyon sayısı ve toplam indirim; `bagli`: her durumdan
+//      bağlı rezervasyon sayısı — sıfır değilse silinemez, bkz. DELETE) ve
+//      müşterilere genel kâr payı (indirim bunu aşarsa satış net fiyatın
+//      altına iner).
 // POST /api/admin/discounts — yeni indirim.
 
 export const dynamic = "force-dynamic";
@@ -22,8 +24,8 @@ export async function GET() {
   const [indirimler, kullanim, karKurali] = await Promise.all([
     prisma.discount.findMany({ orderBy: [{ isActive: "desc" }, { createdAt: "desc" }] }),
     prisma.reservation.groupBy({
-      by: ["discountId"],
-      where: { discountId: { not: null }, status: "CONFIRMED" },
+      by: ["discountId", "status"],
+      where: { discountId: { not: null } },
       _count: { _all: true },
       _sum: { campaignDiscount: true },
     }),
@@ -33,9 +35,20 @@ export async function GET() {
       select: { value: true, name: true },
     }),
   ]);
-  const k = new Map(kullanim.map((x) => [x.discountId, { adet: x._count._all, tutar: x._sum.campaignDiscount ?? 0 }]));
+  const k = new Map<string, { adet: number; tutar: number; bagli: number }>();
+  for (const x of kullanim) {
+    if (!x.discountId) continue;
+    const v = k.get(x.discountId) ?? { adet: 0, tutar: 0, bagli: 0 };
+    v.bagli += x._count._all;
+    if (x.status === "CONFIRMED") {
+      v.adet += x._count._all;
+      // _sum ondalık (Decimal) gelebilir; sayıya çevrilir.
+      v.tutar += Number(x._sum.campaignDiscount ?? 0);
+    }
+    k.set(x.discountId, v);
+  }
   return NextResponse.json({
-    indirimler: indirimler.map((d) => ({ ...d, kullanim: k.get(d.id) ?? { adet: 0, tutar: 0 } })),
+    indirimler: indirimler.map((d) => ({ ...d, kullanim: k.get(d.id) ?? { adet: 0, tutar: 0, bagli: 0 } })),
     karPayi: karKurali ? { yuzde: karKurali.value, ad: karKurali.name } : null,
   });
 }

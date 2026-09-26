@@ -20,6 +20,8 @@ interface Ozet {
     enEskiBasvuru: string | null;
     otelOnayi: number;
     basarisiz: number;
+    /** Başarısız sayısının penceresi (son 14 gün) bu andan başlar; liste bağlantısı da. */
+    basarisizDen: string;
     icerik: { adim: string; zaman: string; basarili: boolean; ozet: string } | null;
     calisan: string | null;
   };
@@ -56,7 +58,10 @@ export function Bugun() {
           nesne: "iptal",
           baslik: d.bekleyen.basarisiz ? `${d.bekleyen.basarisiz} başarısız rezervasyon` : "Başarısız rezervasyon yok",
           aciklama: d.bekleyen.basarisiz ? "Son 14 gün · müşteriye dönüş yapılmalı" : "Son 14 günde tedarikçi hatası yok",
-          href: "/admin/reservations?durum=FAILED",
+          // Sayıyla aynı pencere: liste de son 14 günü gösterir.
+          href: d.bekleyen.basarisizDen
+            ? `/admin/reservations?durum=FAILED&dateFrom=${encodeURIComponent(d.bekleyen.basarisizDen)}`
+            : "/admin/reservations?durum=FAILED",
           acil: d.bekleyen.basarisiz > 0,
         },
         {

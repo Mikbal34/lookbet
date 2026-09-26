@@ -8,14 +8,17 @@ import { Nesne } from "@/components/lb/nesne";
 import { AYLAR, isoOku } from "@/components/lb/arama/durum";
 import s from "@/components/odeme/onay.module.css";
 
-export const metadata: Metadata = { title: "Rezervasyon onaylandı — LookBeds" };
+export const metadata: Metadata = { title: "Rezervasyon — LookBeds" };
 
 const gun = (d: Date | null) => (d ? `${d.getDate()} ${AYLAR[d.getMonth()]}` : "");
 
 export default async function OnaySayfasi({ searchParams }: {
-  searchParams: Promise<{ bookingNumber?: string; hotelName?: string; checkIn?: string; checkOut?: string }>;
+  searchParams: Promise<{ bookingNumber?: string; hotelName?: string; checkIn?: string; checkOut?: string; durum?: string }>;
 }) {
-  const { bookingNumber, hotelName, checkIn, checkOut } = await searchParams;
+  const { bookingNumber, hotelName, checkIn, checkOut, durum } = await searchParams;
+  // "bekliyor": talep alındı ama otelden onay henüz gelmedi (ya da tedarikçi
+  // yanıtı gecikti); "onaylandı" denmez, numara yoksa gösterilmez.
+  const onayli = durum !== "bekliyor";
   const giris = isoOku(checkIn);
   const cikis = isoOku(checkOut);
   const ozet = [hotelName, giris && cikis ? `${gun(giris)} – ${gun(cikis)} ${cikis.getFullYear()}` : null].filter(Boolean).join(" · ");
@@ -28,9 +31,13 @@ export default async function OnaySayfasi({ searchParams }: {
       <main className={s.ana}>
         <div className={s.kart}>
           <Nesne ad="anahtar-karti" boyut={150} className={s.nesne} />
-          <h1 className="lb-y">Rezervasyonun onaylandı!</h1>
+          <h1 className="lb-y">{onayli ? "Rezervasyonun onaylandı!" : "Rezervasyon talebin alındı"}</h1>
           {ozet && <p className={s.ozet}>{ozet}</p>}
-          <p>Onay bilgileri e-posta adresine gönderilecek.</p>
+          <p>
+            {onayli
+              ? "Onay bilgileri e-posta adresine gönderildi."
+              : "Otelden onay bekleniyor. Sonucu Rezervasyonlarım'da görebilirsin; ekibimiz de takip ediyor."}
+          </p>
           {bookingNumber && (
             <div className={s.no}>
               <small>Rezervasyon numarası</small>

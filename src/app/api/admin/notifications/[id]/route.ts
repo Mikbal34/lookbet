@@ -5,7 +5,8 @@ import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
 
 // Tek bildirimin okundu/okunmadı durumu. Admin bildirim listesindeki
-// işaretleme düğmesi buraya PATCH atıyor.
+// işaretleme düğmesi buraya PATCH atıyor. Yalnız oturumdaki yöneticinin
+// kendi bildirimi değişir; başkasınınki 404 (varlığı da sızmasın).
 
 type RouteParams = { params: Promise<{ id: string }> };
 
@@ -23,22 +24,19 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 
     const { id } = await params;
 
-    const body = await req.json();
+    const body = await req.json().catch(() => ({}));
     const parsed = patchSchema.safeParse(body);
 
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Validation failed", details: parsed.error.flatten() },
+        { error: "isRead (true/false) gerekli", details: parsed.error.flatten() },
         { status: 400 }
       );
     }
 
-    const existing = await prisma.notification.findUnique({ where: { id } });
+    const existing = await prisma.notification.findFirst({ where: { id, userId: session.user.id }, select: { id: true } });
     if (!existing) {
-      return NextResponse.json(
-        { error: "Notification not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Bildirim bulunamadı" }, { status: 404 });
     }
 
     const notification = await prisma.notification.update({

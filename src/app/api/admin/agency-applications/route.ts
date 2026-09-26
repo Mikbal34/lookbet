@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
+import { sayfalama } from "../_ortak";
 
 const VALID_STATUSES = ["PENDING", "APPROVED", "REJECTED"] as const;
 
@@ -16,8 +17,7 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
-    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") ?? "20", 10)));
+    const { page, limit, skip } = sayfalama(searchParams);
     const statusParam = searchParams.get("status");
     const search = searchParams.get("search") ?? "";
 
@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
     const [applications, total, pendingCount] = await Promise.all([
       prisma.agencyApplication.findMany({
         where,
-        skip: (page - 1) * limit,
+        skip,
         take: limit,
         orderBy: statusParam === "KARAR" ? { reviewedAt: "desc" } : { createdAt: "desc" },
         include: {
