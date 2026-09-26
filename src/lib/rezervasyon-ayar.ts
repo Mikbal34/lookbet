@@ -6,6 +6,3 @@
 export const rezervasyonAcik = () => process.env.REZERVASYON_ACIK === "1";
 
 export const rezervasyonYapabilir = (rol: string | undefined) => rezervasyonAcik() || rol === "ADMIN";
-
-export const REZERVASYON_KAPALI_MESAJI =
-  "Rezervasyonlar şu an kapalı: ödeme altyapımız hazırlanıyor. Çok yakında buradan rezervasyon yapabileceksin.";

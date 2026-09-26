@@ -1,3 +1,4 @@
+import { getLocale } from "next-intl/server";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
@@ -137,7 +138,8 @@ export async function GET(request: NextRequest) {
 
     // Kartlardaki fotoğraf, yıldız, konum ve pansiyon adı; net fiyat ve
     // yönetim alanları yalnız yöneticiye (lib/rezervasyon-yanit).
-    const cikti = (await otelBilgisiEkle(reservations)).map((r) => rezervasyonYaniti(r, role));
+    // Pansiyon adları: müşteride sitenin dili, acente panelinde Türkçe.
+    const cikti = (await otelBilgisiEkle(reservations, role === "CUSTOMER" ? await getLocale() : "tr")).map((r) => rezervasyonYaniti(r, role));
 
     return NextResponse.json({
       data: cikti,

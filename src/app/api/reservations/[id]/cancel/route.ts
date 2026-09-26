@@ -9,6 +9,7 @@ import { rezervasyonYaniti } from "@/lib/rezervasyon-yanit";
 import { yoneticilereBildir } from "@/lib/bildirim";
 import { epostaGonder, iptalEpostasi } from "@/lib/eposta";
 import { istemciIp } from "@/lib/hiz-siniri";
+import { getTranslations } from "next-intl/server";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -23,37 +24,36 @@ const surenler = new Set<string>();
 // doğrularsa CANCELLED olur (aksi halde otel tarafında rezervasyon canlı
 // kalırken bizde iptal görünürdü). Kupon kullanımı geri verilir.
 export async function POST(request: NextRequest, { params }: RouteParams) {
+  // Kullanıcıya dönen metinler isteğin dilinde (messages/<dil>/api.json › iptal).
+  const t = await getTranslations("api");
   const session = await getServerSession(authOptions);
   if (!session?.user) {
-    return NextResponse.json({ error: "Bu işlem için giriş yapmanız gerekiyor" }, { status: 401 });
+    return NextResponse.json({ error: t("genel.girisGerekli") }, { status: 401 });
   }
   const { id } = await params;
-  if (!id) return NextResponse.json({ error: "Rezervasyon ID gerekli" }, { status: 400 });
+  if (!id) return NextResponse.json({ error: t("iptal.bulunamadi") }, { status: 400 });
 
   const reservation = await prisma.reservation.findUnique({ where: { id } });
-  if (!reservation) return NextResponse.json({ error: "Rezervasyon bulunamadı" }, { status: 404 });
+  if (!reservation) return NextResponse.json({ error: t("iptal.bulunamadi") }, { status: 404 });
 
   const role = session.user.role;
   if (role === "CUSTOMER" && reservation.userId !== session.user.id) {
-    return NextResponse.json({ error: "Bu rezervasyonu iptal etme izniniz yok" }, { status: 403 });
+    return NextResponse.json({ error: t("iptal.yetkiYok") }, { status: 403 });
   }
   if (role === "AGENCY" && (!session.user.agencyId || reservation.agencyId !== session.user.agencyId)) {
-    return NextResponse.json({ error: "Bu rezervasyonu iptal etme izniniz yok" }, { status: 403 });
+    return NextResponse.json({ error: t("iptal.yetkiYok") }, { status: 403 });
   }
   if (reservation.status === "CANCELLED") {
-    return NextResponse.json({ error: "Rezervasyon zaten iptal edilmiş" }, { status: 409 });
+    return NextResponse.json({ error: t("iptal.zatenIptal") }, { status: 409 });
   }
   if (reservation.status === "FAILED") {
-    return NextResponse.json({ error: "Bu rezervasyon tamamlanmamış; iptal edilecek bir kayıt yok" }, { status: 409 });
+    return NextResponse.json({ error: t("iptal.tamamlanmamis") }, { status: 409 });
   }
   if (!reservation.bookingNumber) {
-    return NextResponse.json(
-      { error: "Rezervasyon henüz otelden onay almadı; iptal için bizimle iletişime geç" },
-      { status: 422 }
-    );
+    return NextResponse.json({ error: t("iptal.onayBekliyor") }, { status: 422 });
   }
   if (surenler.has(id)) {
-    return NextResponse.json({ error: "İptal işlemi sürüyor" }, { status: 409 });
+    return NextResponse.json({ error: t("iptal.suruyor") }, { status: 409 });
   }
   surenler.add(id);
 
@@ -71,27 +71,21 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         console.warn("[cancel] Etscore reddetti", reservation.bookingNumber, e.status, e.code, e.message);
         const bizde = e.code === null && (e.status === 401 || e.status === 403);
         return NextResponse.json(
-          bizde ? { error: "İptal şu an yapılamıyor; lütfen biraz sonra tekrar dene." } : { error: e.message, code: e.code },
+          bizde ? { error: t("iptal.yapilamiyor") } : { error: e.message, code: e.code },
           { status: bizde ? 503 : 422 }
         );
       }
       // Sonuç belirsiz: Etscore iptal etmiş olabilir.
       console.error("[cancel] sonuç belirsiz", reservation.bookingNumber, e);
       await kontrolIste(reservation.id, reservation.bookingNumber, `İptal isteğine Etscore yanıtı alınamadı: ${e instanceof Error ? e.message : String(e)}`);
-      return NextResponse.json(
-        { error: "İptal talebin iletildi ama otelden yanıt alınamadı. Ekibimiz kontrol edip sana dönecek." },
-        { status: 502 }
-      );
+      return NextResponse.json({ error: t("iptal.yanitYok") }, { status: 502 });
     }
 
     if (!/cancel/i.test(sonuc.status ?? "")) {
       // Etscore çağrısı başarılı ama durum iptal değil: yerelde iptal işaretleme.
       console.warn(`[cancel] Etscore durumu "${sonuc.status}" (${reservation.bookingNumber})`);
       await kontrolIste(reservation.id, reservation.bookingNumber, `İptal sonrası Etscore durumu: ${sonuc.status || "boş"}`);
-      return NextResponse.json(
-        { error: "İptal talebin alındı ama otelden iptal onayı gelmedi. Ekibimiz kontrol edip sana dönecek." },
-        { status: 502 }
-      );
+      return NextResponse.json({ error: t("iptal.onayGelmedi") }, { status: 502 });
     }
 
     const updated = await prisma.$transaction(async (tx) => {
@@ -123,8 +117,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     // İptal e-postası (müşteriye satış fiyatına oranlı ücretle).
     const musteriGozu = rezervasyonYaniti(updated, "CUSTOMER");
     if (updated.contactEmail) {
-      const e = iptalEpostasi({ ...updated, cancellationFee: musteriGozu.cancellationFee ?? null });
-      void epostaGonder({ to: updated.contactEmail, ...e }).catch((x) => console.error("[IPTAL_EPOSTA]", id, x));
+      // İçerik istek içinde (dil çerezi) hazırlanır, gönderim arka planda.
+      const e = await iptalEpostasi({ ...updated, cancellationFee: musteriGozu.cancellationFee ?? null }).catch(() => null);
+      if (e) void epostaGonder({ to: updated.contactEmail, ...e }).catch((x) => console.error("[IPTAL_EPOSTA]", id, x));
     }
 
     const yanit = rezervasyonYaniti(updated, role);
@@ -134,7 +129,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     });
   } catch (error) {
     console.error("[POST /api/reservations/[id]/cancel]", error);
-    return NextResponse.json({ error: "Rezervasyon iptal edilirken bir hata oluştu" }, { status: 500 });
+    return NextResponse.json({ error: t("iptal.hata") }, { status: 500 });
   } finally {
     surenler.delete(id);
   }

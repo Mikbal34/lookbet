@@ -14,5 +14,71 @@
     "euro": "Euro",
     "sterlin": "İngiliz sterlini",
     "kurNotu": "Fiyatlar EUR; seçtiğin birimde TCMB kuruyla yaklaşık gösterilir. Ödeme EUR ile alınır."
+  },
+  "cubuk": {
+    "aramayiDegistir": "Aramayı değiştir",
+    "nereye": "Nereye gidiyorsun?",
+    "tarihEkle": "Tarih ekle",
+    "misafirCocuklu": "{yetiskin} yetişkin, {cocuk} çocuk"
+  },
+  "menu": {
+    "etiket": "Menü",
+    "hesapMenusu": "Hesap menüsü",
+    "merhaba": "Merhaba, {ad}",
+    "merhabaAdsiz": "Merhaba, hoş geldin",
+    "partnerPaneli": "Partner paneli",
+    "rezervasyonlar": "Rezervasyonlar",
+    "kazanclar": "Kazançlar",
+    "sirketBilgileri": "Şirket bilgileri",
+    "yonetimPaneli": "Yönetim paneli",
+    "hesabim": "Hesabım",
+    "rezervasyonlarim": "Rezervasyonlarım",
+    "yardimMerkezi": "Yardım merkezi",
+    "cikis": "Çıkış yap",
+    "girisYap": "Giriş yap ya da üye ol",
+    "acenteGirisi": "Acente girişi",
+    "acenteAciklama": "Acentenize özel fiyatlar ve komisyonla rezervasyon",
+    "rezervasyonumuBul": "Rezervasyonumu bul"
+  },
+  "altBilgi": {
+    "fikirler": "Sonraki tatilin için fikirler",
+    "tatilTuru": "Tatil türü",
+    "sekme": {
+      "populer": "Popüler",
+      "deniz": "Deniz",
+      "termal": "Termal",
+      "kayak": "Kayak",
+      "sehir": "Şehir"
+    },
+    "tur": {
+      "deniz": "Deniz otelleri",
+      "herSeyDahil": "Her şey dahil oteller",
+      "magara": "Mağara oteller",
+      "sehir": "Şehir otelleri",
+      "butik": "Butik oteller",
+      "golf": "Golf ve tatil köyleri",
+      "kayak": "Kayak otelleri",
+      "termal": "Termal oteller",
+      "tas": "Taş oteller",
+      "golKenari": "Göl kenarı oteller"
+    },
+    "destek": "Destek",
+    "yardimMerkezi": "Yardım merkezi",
+    "rezervasyonumuBul": "Rezervasyonumu bul",
+    "iptalIade": "İptal ve iade seçenekleri",
+    "acenteler": "Acenteler",
+    "acenteGirisi": "Acente girişi",
+    "kampanyalar": "Kampanyalar",
+    "girisYap": "Giriş yap ya da üye ol",
+    "gizlilik": "Gizlilik",
+    "kosullar": "Kullanım koşulları",
+    "kvkk": "KVKK",
+    "dil": "Türkçe (TR)"
+  },
+  "bekleme": {
+    "zil": "Yükleniyor",
+    "bavul": "Oteller aranıyor",
+    "takvim": "Fiyatlar aranıyor",
+    "kart": "Rezervasyon yapılıyor"
   }
 }

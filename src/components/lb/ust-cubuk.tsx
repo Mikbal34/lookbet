@@ -8,9 +8,11 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { useBicim } from "@/i18n/use-bicim";
 import { AramaCubugu, type AramaKontrol } from "./arama/arama-cubugu";
 import { MobilArama } from "./arama/mobil-arama";
-import { misafirMetni, tarihMetni, type AramaDegeri, type PanelAdi } from "./arama/durum";
+import type { AramaDegeri, PanelAdi } from "./arama/durum";
 import { Ikon } from "./ikon";
 import { Nesne, type NesneAdi } from "./nesne";
 import { DunyaDugmesi, MenuDugmesi } from "./ust-araclar";
@@ -25,6 +27,9 @@ export function UstCubuk({ deger, onDegis, onAra, nesne = "zil", alt, aramaYok }
   /** Ödeme gibi sayfalarda arama hapı gösterilmez. */
   aramaYok?: boolean;
 }) {
+  const t = useTranslations("ust.cubuk");
+  const tk = useTranslations("ortak");
+  const b = useBicim();
   const [acik, setAcik] = React.useState(false);
   const [mobilAcik, setMobilAcik] = React.useState(false);
   const kok = React.useRef<HTMLDivElement | null>(null);
@@ -52,7 +57,11 @@ export function UstCubuk({ deger, onDegis, onAra, nesne = "zil", alt, aramaYok }
     };
   }, [acik, kapat]);
 
-  const tarih = tarihMetni(deger);
+  // Hapın tarih ve misafir satırı: "26–28 Eki", "2 yetişkin, 1 çocuk".
+  const tarih = !deger.giris ? null : deger.cikis ? b.aralik(deger.giris, deger.cikis) : `${b.gunAy(deger.giris)} – ?`;
+  const misafir = deger.cocuklar.length
+    ? t("misafirCocuklu", { yetiskin: deger.yetiskin, cocuk: deger.cocuklar.length })
+    : tk("yetiskin", { sayi: deger.yetiskin });
   const ara = () => {
     setAcik(false);
     setMobilAcik(false);
@@ -68,14 +77,14 @@ export function UstCubuk({ deger, onDegis, onAra, nesne = "zil", alt, aramaYok }
             <button
               type="button"
               className={s.hap}
-              aria-label="Aramayı değiştir"
+              aria-label={t("aramayiDegistir")}
               aria-expanded={acik}
               onClick={(e) => ac((e.target as HTMLElement).closest<HTMLElement>("[data-alan]")?.dataset.alan as PanelAdi | undefined)}
             >
               <Nesne ad={nesne} boyut={30} />
-              <span data-alan="yer">{deger.yer || "Nereye gidiyorsun?"}</span>
-              <span data-alan="tarih" className={s.soluk}>{tarih ?? "Tarih ekle"}</span>
-              <span data-alan="misafir" className={s.soluk}>{misafirMetni(deger)}</span>
+              <span data-alan="yer">{deger.yer || t("nereye")}</span>
+              <span data-alan="tarih" className={s.soluk}>{tarih ?? t("tarihEkle")}</span>
+              <span data-alan="misafir" className={s.soluk}>{misafir}</span>
               <i><Ikon ad="search" boyut={16} kalinlik={2.6} /></i>
             </button>
           )}

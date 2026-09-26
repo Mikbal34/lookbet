@@ -8,6 +8,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useQueries } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { useFavoriler } from "@/components/lb/favoriler";
 import { OtelKarti, OtelKartiIskelet } from "@/components/lb/otel-karti";
 import { Nesne } from "@/components/lb/nesne";
@@ -25,6 +26,7 @@ interface FavOtel {
 }
 
 export function Favoriler() {
+  const t = useTranslations("hesap.favoriler");
   const { fav, degistir, hazir } = useFavoriler();
   const girisli = useSession().status === "authenticated";
   // Kalpten çıkarılan kart hemen kaybolmasın: sayfa açıkken sırayı koru, geri eklenebilsin.
@@ -51,9 +53,9 @@ export function Favoriler() {
     govde = (
       <div className={s.bos}>
         <Nesne ad="kartpostal" boyut={110} />
-        <h2 className="lb-y">Henüz favorin yok</h2>
-        <p>Aramada beğendiğin otelin kalbine bas; hepsini burada toplarız.</p>
-        <Link href="/" className={`${s.dugme} ${s.siyah}`}>Otel ara</Link>
+        <h2 className="lb-y">{t("bosBaslik")}</h2>
+        <p>{t("bosMetin")}</p>
+        <Link href="/" className={`${s.dugme} ${s.siyah}`}>{t("otelAra")}</Link>
       </div>
     );
   } else {
@@ -84,14 +86,14 @@ export function Favoriler() {
 
   const sayi = kodlar ? kodlar.filter((k, i) => fav.has(k) && !sorgular[i]?.isError).length : 0;
   return (
-    <HesapKabugu kirinti="Favoriler" herkeseAcik>
+    <HesapKabugu kirinti={t("baslik")} herkeseAcik>
       <div className={s.favBas}>
         <div>
-          <h1 className="lb-y">Favoriler</h1>
+          <h1 className="lb-y">{t("baslik")}</h1>
           <p>
             {girisli
-              ? sayi ? `${sayi} otel · hesabına kayıtlı` : "Kalbe bastığın oteller hesabına kaydedilir"
-              : sayi ? `${sayi} otel · giriş yaptığında hesabına kaydedilir` : "Giriş yaptığında favorilerin hesabına kaydedilir"}
+              ? sayi ? t("girisliSayili", { sayi }) : t("girisli")
+              : sayi ? t("girissizSayili", { sayi }) : t("girissiz")}
           </p>
         </div>
       </div>

@@ -1,3 +1,5 @@
+import { getLocale } from "next-intl/server";
+import { etsDili } from "@/lib/royal-api/client";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getHotelDetail } from "@/lib/royal-api";
@@ -24,7 +26,8 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
         where: { hotelCode },
         include: { location: { include: { parent: true } } },
       }),
-      getHotelDetail(hotelCode),
+      // Açıklama ve olanaklar sitenin dilinde (Etscore Accept-Language).
+      getHotelDetail(hotelCode, etsDili(await getLocale())),
     ]);
 
     const local = localHotel.status === "fulfilled" ? localHotel.value : null;

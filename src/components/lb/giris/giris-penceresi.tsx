@@ -9,6 +9,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getProviders, getSession, signIn, useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { Ikon } from "@/components/lb/ikon";
 import { Nesne } from "@/components/lb/nesne";
 import { useKatman } from "@/components/lb/pencere";
@@ -27,6 +28,8 @@ export function GirisPenceresi({ acik, hedef, onKapat }: {
 }) {
   const router = useRouter();
   const { update } = useSession();
+  const t = useTranslations("giris");
+  const tk = useTranslations("ortak");
   const [adim, setAdim] = React.useState<Adim>("eposta");
   const [geri, setGeri] = React.useState(false);
   const [eposta, setEposta] = React.useState("");
@@ -90,19 +93,19 @@ export function GirisPenceresi({ acik, hedef, onKapat }: {
   const kodIste = async (e?: React.FormEvent) => {
     e?.preventDefault();
     const v = eposta.trim().toLowerCase();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return setHata("Geçerli bir e-posta yaz");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return setHata(t("hata.eposta"));
     setYukleniyor(true);
     setHata(null);
     try {
       const r = await fetch("/api/auth/otp/request", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: v }) });
       const d = await r.json().catch(() => ({}));
-      if (!r.ok) return setHata(d.error ?? "Kod gönderilemedi, birazdan tekrar dene");
-      setBilgi(d.devCode ? `Geliştirme modu, kod: ${d.devCode}` : null);
+      if (!r.ok) return setHata(d.error ?? t("hata.gonderilemedi"));
+      setBilgi(d.devCode ? t("kod.gelistirme", { kod: d.devCode }) : null);
       setKod(Array(6).fill(""));
       setKalan(60);
       if (adim !== "kod") git("kod");
     } catch {
-      setHata("Kod gönderilemedi, bağlantını kontrol et");
+      setHata(t("hata.baglanti"));
     } finally {
       setYukleniyor(false);
     }
@@ -116,8 +119,8 @@ export function GirisPenceresi({ acik, hedef, onKapat }: {
       const r = await signIn("email-otp", { redirect: false, email: eposta.trim().toLowerCase(), code: tam });
       if (!r || r.error) {
         // authorize() mesajı (kilit, rol uyuşmazlığı, kapalı hesap) varsa onu göster.
-        setHata(r?.error && r.error !== "CredentialsSignin" ? r.error : "Kod hatalı ya da süresi doldu");
-        setTitre((t) => t + 1);
+        setHata(r?.error && r.error !== "CredentialsSignin" ? r.error : t("hata.kodHatali"));
+        setTitre((x) => x + 1);
         setKod(Array(6).fill(""));
         return;
       }
@@ -136,9 +139,9 @@ export function GirisPenceresi({ acik, hedef, onKapat }: {
 
   const tamamla = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (ad.trim().length < 2 || soyad.trim().length < 2) return setHata("Adını ve soyadını yaz");
+    if (ad.trim().length < 2 || soyad.trim().length < 2) return setHata(t("hata.adSoyad"));
     const rakam = telefon.replace(/\D/g, "");
-    if (rakam && rakam.length < 7) return setHata("Telefon numarası eksik");
+    if (rakam && rakam.length < 7) return setHata(t("hata.telefon"));
     setYukleniyor(true);
     setHata(null);
     const isim = `${ad.trim()} ${soyad.trim()}`;
@@ -148,7 +151,7 @@ export function GirisPenceresi({ acik, hedef, onKapat }: {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: isim, ...(rakam ? { phone: `${ulke} ${telefon.trim()}` } : {}) }),
       });
-      if (!r.ok) return setHata("Bilgiler kaydedilemedi, tekrar dene");
+      if (!r.ok) return setHata(t("hata.kaydedilemedi"));
       await update({ name: isim });
       await bitir();
     } finally {
@@ -156,20 +159,20 @@ export function GirisPenceresi({ acik, hedef, onKapat }: {
     }
   };
 
-  const baslik = adim === "tamamla" ? "Üyeliği tamamla" : "Giriş yap ya da üye ol";
+  const baslik = adim === "tamamla" ? t("pencere.baslikTamamla") : t("pencere.baslik");
   return (
     <div className={s.perde} data-acik={acik || undefined} onClick={(e) => e.target === e.currentTarget && onKapat()} aria-hidden={!acik}>
       <div className={s.pencere} role="dialog" aria-modal="true" aria-labelledby="giris-baslik">
         <div className={s.ust}>
           {adim === "kod" ? (
-            <button type="button" className={s.yuvarlak} onClick={() => git("eposta")} aria-label="Geri" tabIndex={acik ? 0 : -1}>
+            <button type="button" className={s.yuvarlak} onClick={() => git("eposta")} aria-label={tk("geri")} tabIndex={acik ? 0 : -1}>
               <Ikon ad="back" boyut={18} />
             </button>
           ) : (
             <span />
           )}
           <h2 id="giris-baslik">{baslik}</h2>
-          <button type="button" className={s.yuvarlak} onClick={onKapat} aria-label="Kapat" tabIndex={acik ? 0 : -1}>
+          <button type="button" className={s.yuvarlak} onClick={onKapat} aria-label={tk("kapat")} tabIndex={acik ? 0 : -1}>
             <Ikon ad="close" boyut={18} />
           </button>
         </div>
@@ -179,11 +182,11 @@ export function GirisPenceresi({ acik, hedef, onKapat }: {
               <form key="eposta" className={s.adim} data-geri={geri || undefined} onSubmit={kodIste} noValidate>
                 <div className={s.karsilama}>
                   <Nesne ad="kapi" boyut={56} />
-                  <h3 className="lb-y">LookBeds&apos;e hoş geldin</h3>
+                  <h3 className="lb-y">{t("pencere.hosGeldin")}</h3>
                 </div>
-                <p className={s.soluk}>Şifre yok: e-postana 6 haneli bir kod gönderiyoruz. Hesabın yoksa aynı adımda açılır.</p>
+                <p className={s.soluk}>{t("pencere.aciklama")}</p>
                 <div className={s.alan} data-hatali={!!hata || undefined}>
-                  <label htmlFor="giris-eposta">E-posta</label>
+                  <label htmlFor="giris-eposta">{t("kod.eposta")}</label>
                   <input
                     ref={epostaRef}
                     id="giris-eposta"
@@ -198,21 +201,21 @@ export function GirisPenceresi({ acik, hedef, onKapat }: {
                   />
                 </div>
                 {hata && <Hata>{hata}</Hata>}
-                <button type="submit" className={s.turuncu} disabled={yukleniyor}>{yukleniyor ? "Kod gönderiliyor…" : "Devam et"}</button>
+                <button type="submit" className={s.turuncu} disabled={yukleniyor}>{yukleniyor ? t("kod.gonderiliyor") : tk("devam")}</button>
                 {(sosyal.google || sosyal.apple) && (
                   <>
-                    <div className={s.ayrac}>veya</div>
+                    <div className={s.ayrac}>{t("pencere.veya")}</div>
                     <div className={s.sosyal}>
                       {sosyal.google && (
                         <button type="button" onClick={() => signIn("google", { callbackUrl: hedef || location.href })}>
                           <GoogleLogo />
-                          Google ile devam et
+                          {t("pencere.google")}
                         </button>
                       )}
                       {sosyal.apple && (
                         <button type="button" onClick={() => signIn("apple", { callbackUrl: hedef || location.href })}>
                           <AppleLogo />
-                          Apple ile devam et
+                          {t("pencere.apple")}
                         </button>
                       )}
                     </div>
@@ -221,8 +224,8 @@ export function GirisPenceresi({ acik, hedef, onKapat }: {
                 <Link href="/agency/login" className={s.acente} onClick={onKapat}>
                   <Nesne ad="anahtar-karti" boyut={44} />
                   <span>
-                    <b>Acente misin?</b>
-                    <span>Acente girişi ayrı sayfada</span>
+                    <b>{t("pencere.acenteMisin")}</b>
+                    <span>{t("pencere.acenteAyri")}</span>
                   </span>
                   <Ikon ad="chevron-right" boyut={16} kalinlik={2.1} />
                 </Link>
@@ -231,58 +234,61 @@ export function GirisPenceresi({ acik, hedef, onKapat }: {
 
             {adim === "kod" && (
               <form key="kod" className={s.adim} data-geri={geri || undefined} onSubmit={(e) => { e.preventDefault(); kodDogrula(); }} noValidate>
-                <h3 className="lb-y">Kodu gir</h3>
+                <h3 className="lb-y">{t("pencere.kodBaslik")}</h3>
                 <p className={s.soluk}>
-                  <b className={s.koyu}>{eposta.trim()}</b> adresine 6 haneli bir kod gönderdik. Gelmediyse gereksiz klasörüne bak.
+                  {t.rich("pencere.kodGonderildi", { eposta: eposta.trim(), b: (c) => <b className={s.koyu}>{c}</b> })}
                 </p>
                 {bilgi && <p className={s.bilgi}>{bilgi}</p>}
                 <KodKutulari key={titre} deger={kod} titre={titre} onDegis={(y) => { setKod(y); setHata(null); }} onTamam={(k) => kodDogrula(k)} />
                 {hata && <Hata>{hata}</Hata>}
                 <div className={s.kodAlt}>
                   {kalan > 0 ? (
-                    <span className={s.soluk}>Yeni kod {kalan} sn sonra</span>
+                    <span className={s.soluk}>{t("kod.yeniKod", { kalan })}</span>
                   ) : (
-                    <button type="button" className={s.metinDugme} onClick={() => kodIste()} disabled={yukleniyor}>Kodu yeniden gönder</button>
+                    <button type="button" className={s.metinDugme} onClick={() => kodIste()} disabled={yukleniyor}>{t("kod.yenidenGonder")}</button>
                   )}
-                  <button type="button" className={s.metinDugme} onClick={() => git("eposta")}>E-postayı değiştir</button>
+                  <button type="button" className={s.metinDugme} onClick={() => git("eposta")}>{t("kod.epostaDegistir")}</button>
                 </div>
-                <button type="submit" className={s.turuncu} disabled={kod.join("").length !== 6 || yukleniyor}>{yukleniyor ? "Giriş yapılıyor…" : "Giriş yap"}</button>
+                <button type="submit" className={s.turuncu} disabled={kod.join("").length !== 6 || yukleniyor}>{yukleniyor ? t("kod.girisYapiliyor") : t("kod.girisYap")}</button>
               </form>
             )}
 
             {adim === "tamamla" && (
               <form key="tamamla" className={s.adim} onSubmit={tamamla} noValidate>
-                <h3 className="lb-y">Hesabını tamamla</h3>
-                <p className={s.soluk}>Rezervasyonlarda ve otelde görünecek adını yaz. Ödeme adımında bilgilerin hazır gelir.</p>
+                <h3 className="lb-y">{t("tamamla.baslik")}</h3>
+                <p className={s.soluk}>{t("tamamla.aciklama")}</p>
                 <div className={s.iki}>
                   <div className={s.alan}>
-                    <label htmlFor="giris-ad">Ad</label>
+                    <label htmlFor="giris-ad">{t("tamamla.ad")}</label>
                     <input id="giris-ad" autoComplete="given-name" value={ad} onChange={(e) => { setAd(e.target.value); setHata(null); }} autoFocus />
                   </div>
                   <div className={s.alan}>
-                    <label htmlFor="giris-soyad">Soyad</label>
+                    <label htmlFor="giris-soyad">{t("tamamla.soyad")}</label>
                     <input id="giris-soyad" autoComplete="family-name" value={soyad} onChange={(e) => { setSoyad(e.target.value); setHata(null); }} />
                   </div>
                 </div>
-                <small className={s.not}>Kimlikteki adınla aynı olsun; otel girişte kimlik ister.</small>
+                <small className={s.not}>{t("tamamla.kimlikNotu")}</small>
                 <div className={s.tel}>
                   <div className={s.alan}>
-                    <label htmlFor="giris-ulke">Ülke kodu</label>
+                    <label htmlFor="giris-ulke">{t("tamamla.ulkeKodu")}</label>
                     <select id="giris-ulke" value={ulke} onChange={(e) => setUlke(e.target.value)}>
                       {ULKELER.map((u) => <option key={u}>{u}</option>)}
                     </select>
                     <Ikon ad="chevron-down" boyut={16} className={s.secOk} />
                   </div>
                   <div className={s.alan}>
-                    <label htmlFor="giris-tel">Telefon (isteğe bağlı)</label>
+                    <label htmlFor="giris-tel">{t("tamamla.telefon")}</label>
                     <input id="giris-tel" type="tel" inputMode="tel" autoComplete="tel-national" placeholder={ulke === "+90" ? "5XX XXX XX XX" : undefined} value={telefon} onChange={(e) => { setTelefon(e.target.value); setHata(null); }} />
                   </div>
                 </div>
                 {hata && <Hata>{hata}</Hata>}
                 <p className={s.not}>
-                  &quot;Kabul et ve devam et&quot;e basarak <Link href="/yardim">Kullanım koşullarını</Link> kabul ediyor, <Link href="/yardim">Aydınlatma metnini</Link> okuduğunu onaylıyorsun.
+                  {t.rich("tamamla.onay", {
+                    kosullar: (c) => <Link href="/yardim">{c}</Link>,
+                    aydinlatma: (c) => <Link href="/yardim">{c}</Link>,
+                  })}
                 </p>
-                <button type="submit" className={s.turuncu} disabled={yukleniyor}>{yukleniyor ? "Kaydediliyor…" : "Kabul et ve devam et"}</button>
+                <button type="submit" className={s.turuncu} disabled={yukleniyor}>{yukleniyor ? t("tamamla.kaydediliyor") : t("tamamla.kabulEt")}</button>
               </form>
             )}
           </div>

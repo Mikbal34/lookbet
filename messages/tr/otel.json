@@ -1,1 +1,201 @@
-{}
+{
+  "yukleniyor": "Otel yükleniyor",
+  "hata": {
+    "yokBaslik": "Bu oteli bulamadık",
+    "yokMetin": "Bağlantı eski olabilir; aramadan tekrar bakabilirsin.",
+    "anaSayfa": "Ana sayfaya dön",
+    "baslik": "Otel bilgisi şu an alınamadı",
+    "metin": "Birazdan tekrar dene."
+  },
+  "bolumler": {
+    "etiket": "Sayfa bölümleri",
+    "fotograflar": "Fotoğraflar",
+    "odalar": "Odalar",
+    "olanaklar": "Olanaklar",
+    "konum": "Konum",
+    "bilinmesi": "Bilinmesi gerekenler"
+  },
+  "baslik": {
+    "yildizliOtel": "{sayi} yıldızlı otel",
+    "otel": "Otel"
+  },
+  "eylem": {
+    "paylas": "Paylaş",
+    "kaydet": "Kaydet",
+    "kaydedildi": "Kaydedildi"
+  },
+  "bildiri": {
+    "odaKalmadi": "Bu oda artık müsait değil, başka bir oda seçin",
+    "odaSecildi": "Oda seçildi",
+    "baglantiKopyalandi": "Bağlantı kopyalandı",
+    "baglantiKopyalanamadi": "Bağlantı kopyalanamadı",
+    "favoridenCikarildi": "Favorilerden çıkarıldı",
+    "favoriyeEklendi": "Favorilere eklendi"
+  },
+  "ana": {
+    "tarihSec": "Tarih seç",
+    "devam": "Rezervasyona devam et",
+    "odaSec": "Oda seç",
+    "hazirlaniyor": "Hazırlanıyor…"
+  },
+  "geceTarih": "{gece} gece · {tarih}",
+  "ozet": {
+    "baslik": "Otel · {yer}",
+    "musaitOda": "{sayi} oda seçeneği müsait",
+    "giris": "Giriş {giris}",
+    "girisCikis": "Giriş {giris}, çıkış {cikis}",
+    "ucretsizIptal": "Ücretsiz iptal seçenekleri"
+  },
+  "oneCikan": {
+    "etiket": "Öne çıkanlar",
+    "plaj": "Plaj olanakları",
+    "spa": "Spa ve rahatlama",
+    "termal": "Termal",
+    "kayak": "Kayak",
+    "iptalHepsi": "Bu tarihlerdeki bütün odalarda geçerli.",
+    "iptalBazi": "Ücretsiz iptalli {sayi} oda seçeneği var."
+  },
+  "aciklama": {
+    "devami": "Devamını göster",
+    "pencere": "Otel hakkında"
+  },
+  "odalar": {
+    "baslik": "Odanızı seçin",
+    "altBaslik": "{tarih} · {misafir} · fiyatlar {gece} gece için",
+    "tarihYok": "Fiyatları görmek için tarih seçin",
+    "tarihYokMetin": "Seçtiğin tarihlerde müsait odaları ve toplam fiyatı gösterelim.",
+    "soruluyor": "Müsait odalar soruluyor",
+    "araniyor": "Seçtiğin tarihlerde odalar aranıyor",
+    "fiyatlarGeliyor": "Fiyatlar ve iptal koşulları geliyor",
+    "hataBaslik": "Odalar şu an getirilemedi",
+    "hata": "Bağlantıda bir sorun oldu; birazdan tekrar dene.",
+    "yok": "Bu tarihlerde müsait oda yok",
+    "yokMetin": "Farklı tarihler ya da misafir sayısı deneyebilirsin.",
+    "tarihDegistir": "Tarihleri değiştir",
+    "tumu": "{sayi} seçeneğin tamamını göster",
+    "pencere": "Bütün odalar",
+    "pencereTarih": "Bütün odalar · {tarih}",
+    "geceToplam": "{gece} gece, toplam"
+  },
+  "olanaklar": {
+    "baslik": "Bu otel size neler sunuyor?",
+    "tumu": "{sayi} olanağın tümünü göster"
+  },
+  "olanakGrubu": {
+    "genel": "Genel",
+    "spor": "Spor ve aktivite",
+    "spa": "Spa ve sağlık",
+    "plaj": "Plaj",
+    "yemeIcme": "Yeme ve içme",
+    "cocukBebek": "Çocuk ve bebek",
+    "termal": "Termal",
+    "kayak": "Kayak",
+    "hizmetler": "Hizmetler",
+    "otel": "Otel",
+    "ozellik": "Özellik",
+    "diger": "Diğer"
+  },
+  "rez": {
+    "etiket": "Rezervasyon",
+    "teklifBaslik": "Üyelere özel fırsatlar",
+    "teklifMetin": "Giriş yapınca rezervasyonların ve favorilerin tek yerde.",
+    "girisYap": "Giriş yap",
+    "fiyatlarGeliyor": "Fiyatlar geliyor",
+    "geceIcin": "{gece} gece için",
+    "geceIcinEnUygun": "{gece} gece için, en uygun oda",
+    "kampanya": "{ad} · %{yuzde}",
+    "kampanyaAciklama": {
+      "erkenRezervasyon": "Girişine yeterince gün olduğu için indirimli. Kod gerekmez.",
+      "sonDakika": "Girişe az kaldığı için son dakika indirimi. Kod gerekmez.",
+      "uzunKonaklama": "Uzun konaklama indirimi. Kod gerekmez.",
+      "tarihAraligi": "Bu tarihlere özel indirim. Kod gerekmez."
+    },
+    "degistir": "Değiştir",
+    "odemeYok": "Henüz ödeme alınmaz"
+  },
+  "fiyat": {
+    "geceCarpi": "{fiyat} × {gece} gece",
+    "toplam": "Toplam"
+  },
+  "iptal": {
+    "baslik": "İptal koşulları",
+    "ucretsizKadar": "{tarih} kadar ücretsiz iptal",
+    "iadeEdilmez": "İade edilmez"
+  },
+  "konum": {
+    "baslik": "Nerede olacaksınız?",
+    "haritaYukleniyor": "Harita yükleniyor…",
+    "haritaYok": "Harita şu an gösterilemiyor.",
+    "googleHaritalar": "Google Haritalar'da aç"
+  },
+  "bilinmesi": {
+    "baslik": "Bilinmesi gerekenler",
+    "kurallar": "Otel kuralları",
+    "girisSaati": "Giriş saati: {saat} ve sonrası",
+    "cikisSaati": "Çıkış saati: en geç {saat}",
+    "saatlerTeyit": "Giriş ve çıkış saatleri otelden teyit edilir",
+    "ucretsizIptalSaat": "{tarih} kadar ücretsiz iptal (saat {saat})",
+    "iadeEdilmez": "Bu oda iade edilmez",
+    "odayaGore": "İptal koşulları odaya göre değişir; oda seçince gösterilir",
+    "sonraUcret": "Sonrasında iptal ücreti {tutar}",
+    "onemli": "Önemli bilgiler",
+    "dahaFazla": "Daha fazla bilgi"
+  },
+  "mobil": {
+    "fiyatlarGeliyor": "Fiyatlar geliyor…",
+    "odaYok": "Müsait oda yok",
+    "tarihSec": "Fiyat için tarih seç",
+    "tarihEkle": "Tarih ekle"
+  },
+  "galeri": {
+    "fotoYok": "Bu otelin fotoğrafı henüz yok",
+    "fotograflar": "Fotoğraflar",
+    "fotograf": "Fotoğraf {sira}",
+    "tumu": "Tüm fotoğrafları göster",
+    "genelBakis": "Genel bakış",
+    "tur": "Fotoğraf turu",
+    "turBaslik": "Otel turu",
+    "bolumFotografi": "{bolum}, fotoğraf {sira}",
+    "isik": "Fotoğraf",
+    "onceki": "Önceki",
+    "sonraki": "Sonraki"
+  },
+  "odaPenceresi": {
+    "digerOdalar": "Diğer odalar",
+    "fotoYok": "Bu odanın fotoğrafı yok",
+    "sunulanlar": "Bu oda neler sunuyor?",
+    "kadar": "{tarih} kadar",
+    "ucretsizOnce": "Saat {saat} öncesi ücretsiz iptal; ödemenin tamamı iade edilir",
+    "cezaSonrasi": "{gun}, saat {saat} ve sonrası",
+    "iptalUcreti": "İptal ücreti {tutar}",
+    "iptalUcretiToplam": "İptal ücreti {tutar} (toplam tutar)",
+    "iptalSonra": "İptal koşulları rezervasyon adımında gösterilir.",
+    "fiyat": "Fiyat",
+    "kampanya": "{ad} %{yuzde}",
+    "acenteIndirimi": "Acente indirimi",
+    "vergilerDahil": "{gece} gece, vergiler dahil",
+    "odayiSec": "Bu odayı seç"
+  },
+  "odaOzelligi": {
+    "kingYatak": "King yatak",
+    "queenYatak": "Queen yatak",
+    "ikiTekYatak": "İki tek yatak",
+    "kismiDenizManzarasi": "Kısmi deniz manzarası",
+    "denizManzarasi": "Deniz manzarası",
+    "bahceManzarasi": "Bahçe manzarası",
+    "havuzManzarasi": "Havuz manzarası",
+    "balkon": "Balkon",
+    "jakuzi": "Jakuzi"
+  },
+  "tarihAlani": {
+    "giris": "Giriş",
+    "cikis": "Çıkış",
+    "misafirler": "Misafirler",
+    "tarihEkle": "Tarih ekle",
+    "tarihSec": "Tarih seç",
+    "tamam": "Tamam",
+    "pencere": "Tarih ve misafirler",
+    "odalariGoster": "Odaları göster",
+    "girisCikisSec": "Giriş ve çıkış seç"
+  }
+}

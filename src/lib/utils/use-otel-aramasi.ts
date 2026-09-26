@@ -13,6 +13,7 @@
 
 import { sunucuMesaji } from "@/lib/utils";
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import type { HotelSearchResult } from "@/lib/royal-api/types";
 
 export type AramaDurumu = "bekliyor" | "akiyor" | "bitti" | "hata";
@@ -41,6 +42,11 @@ export function useOtelAramasi(payload: object, etkin: boolean): OtelAramasi {
   const [durum, setDurum] = React.useState<AramaDurumu>("bekliyor");
   const [hotels, setHotels] = React.useState<HotelSearchResult[]>([]);
   const [hata, setHata] = React.useState<string | null>(null);
+  // Sunucu mesaj vermezse gösterilen metin; dil değişince arama yeniden başlamasın.
+  const t = useTranslations("arama.hata");
+  const tk = useTranslations("ortak");
+  const yedekHata = React.useEffectEvent(() => t("arama"));
+  const cokSik = React.useEffectEvent(() => tk("cokSik"));
 
   React.useEffect(() => {
     if (!etkin) return;
@@ -80,7 +86,7 @@ export function useOtelAramasi(payload: object, etkin: boolean): OtelAramasi {
           body: anahtar,
           signal: iptal.signal,
         });
-        if (!res.ok) throw new Error(await sunucuMesaji(res, "Arama sırasında bir hata oluştu"));
+        if (!res.ok) throw new Error(await sunucuMesaji(res, yedekHata(), cokSik()));
 
         // Akış desteklenmiyorsa (ör. araya giren bir vekil) tek JSON'a düş.
         if (!res.body || !res.headers.get("content-type")?.includes("ndjson")) {
@@ -108,7 +114,7 @@ export function useOtelAramasi(payload: object, etkin: boolean): OtelAramasi {
         setDurum((d) => (d === "akiyor" ? "bitti" : d));
       } catch (e) {
         if (iptal.signal.aborted) return;
-        setHata(e instanceof Error ? e.message : "Arama sırasında bir hata oluştu");
+        setHata(e instanceof Error ? e.message : yedekHata());
         setDurum("hata");
       }
     })();

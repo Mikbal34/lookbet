@@ -12,5 +12,6 @@ export const ALANLAR = [
   "giris",
   "rezervasyon",
   "yardim",
+  "api",
 ] as const;
 export type Alan = (typeof ALANLAR)[number];

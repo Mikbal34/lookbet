@@ -1,1 +1,152 @@
-{}
+{
+  "nereye": "Nereye",
+  "nereyeGidiyorsun": "Nereye gidiyorsun?",
+  "yerAra": "Şehir, bölge ya da otel ara",
+  "tarihEkle": "Tarih ekle",
+  "otelAra": "Otel ara",
+  "tumunuTemizle": "Tümünü temizle",
+  "cubuk": {
+    "tarihler": "Tarihler",
+    "girisCikisEkle": "Giriş – çıkış ekle",
+    "misafirler": "Misafirler",
+    "buyut": "Aramayı büyüt"
+  },
+  "mobil": {
+    "esnek": "Esnek",
+    "neZaman": "Ne zaman",
+    "neZamanBaslik": "Ne zaman?",
+    "kim": "Kim",
+    "kimBaslik": "Kimler geliyor?"
+  },
+  "yer": {
+    "onerilen": "Önerilen yerler",
+    "populer": {
+      "bodrum": { "ad": "Bodrum", "alt": "Koylar, marina ve beach club'lar" },
+      "antalya": { "ad": "Antalya", "alt": "Her şey dahil, uzun sahil" },
+      "kapadokya": { "ad": "Kapadokya", "alt": "Mağara oteller ve balonlar" },
+      "istanbul": { "ad": "İstanbul", "alt": "Boğaz ve tarihi yarımada" },
+      "uludag": { "ad": "Uludağ", "alt": "Kayak merkezi otelleri" },
+      "afyonkarahisar": { "ad": "Afyonkarahisar", "alt": "Termal ve kaplıca otelleri" }
+    },
+    "bulunamadi": "“{q}” için bir yer bulamadık",
+    "ipucu": "Şehir, ilçe ya da bölge adıyla dene; otel adıyla da arayabilirsin.",
+    "adiylaAra": "“{q}” adıyla ara",
+    "adiylaAraAlt": "Otel adında geçenler",
+    "otelSayisi": "{sayi, number} otel"
+  },
+  "takvim": {
+    "oncekiAy": "Önceki ay",
+    "sonrakiAy": "Sonraki ay",
+    "hizli": {
+      "buHaftaSonu": "Bu hafta sonu",
+      "gelecekHaftaSonu": "Gelecek hafta sonu",
+      "birHafta": "Bir hafta"
+    },
+    "gunSec": "Giriş ve çıkış günlerini seç",
+    "temizle": "Temizle"
+  },
+  "misafir": {
+    "ozet": "{yetiskin} yetişkin{cocuk, plural, =0 {} other {, # çocuk}}",
+    "yetiskin": { "ad": "Yetişkin", "alt": "18 yaş ve üzeri", "azalt": "Yetişkin azalt", "artir": "Yetişkin artır" },
+    "cocuk": { "ad": "Çocuk", "alt": "0–17 yaş", "azalt": "Çocuk azalt", "artir": "Çocuk artır" },
+    "yasNotu": "Fiyat çocukların yaşına göre değişiyor.",
+    "cocukYasi": "{sira}. çocuğun yaşı",
+    "birYasAlti": "1 yaşından küçük",
+    "yas": "{sayi} yaş"
+  },
+  "sonuc": {
+    "haritaYukleniyor": "Harita yükleniyor…",
+    "bosMetin": "Yer ve tarih seçince uygun otelleri burada göreceksin.",
+    "araniyor": "Oteller aranıyor",
+    "soruluyor": "{yer} için müsait oteller soruluyor",
+    "karsilastiriliyor": "Fiyatlar karşılaştırılıyor",
+    "neredeyseHazir": "Neredeyse hazır",
+    "yukleniyor": "Oteller yükleniyor",
+    "hataBaslik": "Arama şu an yapılamadı",
+    "hataMetin": "Birazdan tekrar dene.",
+    "filtreBos": "Bu filtrelerle otel bulamadık",
+    "filtreBosMetin": "Birkaç filtreyi kaldırmayı ya da fiyat aralığını genişletmeyi dene.",
+    "tarihBos": "Bu tarihlerde uygun otel bulamadık",
+    "tarihBosMetin": "Tarihleri ya da yeri değiştirip tekrar ara.",
+    "filtreleriTemizle": "Filtreleri temizle",
+    "geceIcin": "{sayi} gece için",
+    "sayfalar": "Sayfalar",
+    "oncekiSayfa": "Önceki sayfa",
+    "sonrakiSayfa": "Sonraki sayfa",
+    "baslik": "{yer} bölgesinde <b>{sayi}</b> otel",
+    "baslikDevam": "{yer} bölgesinde <b>{sayi}+</b> otel",
+    "baslikBekliyor": "{yer} bölgesinde … otel",
+    "vergiDahil": "Fiyatlara vergiler dahil",
+    "sirala": "Sırala",
+    "siralama": {
+      "oneri": "Önerilen",
+      "ucuz": "Fiyat: düşükten yükseğe",
+      "pahali": "Fiyat: yüksekten düşüğe",
+      "yildiz": "Yıldız"
+    },
+    "dahaFazlaAraniyor": "Daha fazla otel aranıyor…",
+    "harita": "Harita",
+    "otellerGeliyor": "Oteller geliyor…",
+    "haritadaOtelYok": "Haritada gösterilecek otel yok",
+    "listeyiGoster": "Listeyi göster",
+    "haritayiBuyut": "Haritayı büyüt",
+    "liste": "Liste"
+  },
+  "filtre": {
+    "filtreler": "Filtreler",
+    "secenek": {
+      "iptal": "Ücretsiz iptal",
+      "kahvalti": "Kahvaltı dahil",
+      "hepsiDahil": "Her şey dahil",
+      "yildiz4": "4 yıldız ve üzeri"
+    },
+    "oneriler": "Sana özel öneriler",
+    "fiyatAraligi": "Fiyat aralığı",
+    "fiyatNotu": "Gecelik fiyat, vergiler dahil",
+    "enDusukEtiket": "En düşük gecelik fiyat",
+    "enYuksekEtiket": "En yüksek gecelik fiyat",
+    "enDusuk": "En düşük",
+    "enYuksek": "En yüksek",
+    "pansiyon": "Pansiyon",
+    "yildiz": "Yıldız",
+    "tumu": "Tümü",
+    "uyruk": "Misafir uyruğu",
+    "uyrukNotu": "Otel fiyatları misafirin uyruğuna göre değişebilir; değiştirince arama yeniden yapılır.",
+    "ulke": {
+      "tr": "Türkiye",
+      "de": "Almanya",
+      "gb": "İngiltere",
+      "fr": "Fransa",
+      "ru": "Rusya",
+      "us": "Amerika",
+      "nl": "Hollanda",
+      "be": "Belçika",
+      "it": "İtalya",
+      "es": "İspanya"
+    },
+    "yenidenAra": "Yeniden ara",
+    "goster": "{sayi} oteli göster"
+  },
+  "kart": {
+    "fotoYok": "Fotoğraf yok",
+    "ucretsizIptal": "Ücretsiz iptal",
+    "otel": "Otel",
+    "otelYer": "Otel · {yer}",
+    "favoriyeEkle": "{ad}: favorilere ekle",
+    "favoridenCikar": "{ad}: favorilerden çıkar"
+  },
+  "kampanya": {
+    "erkenRezervasyon": "%{yuzde, number} erken rezervasyon",
+    "sonDakika": "%{yuzde, number} son dakika",
+    "uzunKonaklama": "%{yuzde, number} uzun konaklama",
+    "donem": "%{yuzde, number} kampanya",
+    "indirim": "%{yuzde, number} indirim"
+  },
+  "harita": {
+    "konumYok": "Bu sonuçlar için konum bilgisi bulunmuyor.",
+    "gosterilemiyor": "Harita şu an gösterilemiyor."
+  },
+  "hata": {
+    "arama": "Arama sırasında bir hata oluştu"
+  }
+}

@@ -1,6 +1,12 @@
 // Rezervasyonlarım: ortak tipler, durum rozetleri, tarih ve iptal hesapları.
+// Türkçe yazı veren yardımcılar (gunKisa, gunUzun, aralik, misafirYazi,
+// durumBilgisi().ad, gunYonelme, saat) acente ve yönetim panelinde de
+// kullanılıyor (henüz çevrilmedi); müşteri tarafı dosyanın sonundaki
+// "…Yerel" sürümleri ve messages/<dil>/rezervasyon.json metinlerini kullanır.
 
+import type { useTranslations } from "next-intl";
 import { AYLAR, isoOku } from "@/components/lb/arama/durum";
+import type { Bicimleyici } from "@/i18n/bicim";
 import type { CancellationPolicy } from "@/lib/royal-api/types";
 
 export type Durum = "PENDING" | "CONFIRMED" | "CANCELLED" | "FAILED";
@@ -63,12 +69,18 @@ export function komisyonTutari(r: Rezervasyon, anlasmaOrani: number | null | und
   return anlasmaOrani != null ? { tutar: (tutar(r) * anlasmaOrani) / 100, kayitli: false } : null;
 }
 
-export function misafirYazi(r: Rezervasyon) {
+/** Misafir listesindeki yetişkin ve çocuk sayısı (liste yoksa null). */
+export function misafirSayilari(r: Rezervasyon) {
   const g = r.guests ?? [];
   if (!g.length) return null;
-  const y = g.filter((x) => x.type === "Adult").length;
-  const c = g.length - y;
-  return `${y} yetişkin${c ? `, ${c} çocuk` : ""}`;
+  const yetiskin = g.filter((x) => x.type === "Adult").length;
+  return { yetiskin, cocuk: g.length - yetiskin };
+}
+
+export function misafirYazi(r: Rezervasyon) {
+  const m = misafirSayilari(r);
+  if (!m) return null;
+  return `${m.yetiskin} yetişkin${m.cocuk ? `, ${m.cocuk} çocuk` : ""}`;
 }
 
 /** Bugünden girişe kalan gün (bugün = 0). */
@@ -77,12 +89,15 @@ export const kalanGun = (r: Rezervasyon, simdi: number) => {
   return Math.round((gunOku(r.checkIn).getTime() - new Date(b.getFullYear(), b.getMonth(), b.getDate()).getTime()) / 864e5);
 };
 
-export function durumBilgisi(r: Rezervasyon, simdi: number): { ad: string; renk: "yesil" | "sari" | "gri" | "kirmizi" } {
-  if (r.status === "CANCELLED") return { ad: "İptal edildi", renk: "kirmizi" };
-  if (r.status === "FAILED") return { ad: "Tamamlanamadı", renk: "kirmizi" };
-  if (gunOku(r.checkOut).getTime() < simdi) return { ad: "Tamamlandı", renk: "gri" };
-  if (r.status === "PENDING") return { ad: "Otel onayı bekleniyor", renk: "sari" };
-  return { ad: "Onaylandı", renk: "yesil" };
+export type DurumKodu = "iptal" | "tamamlanamadi" | "tamamlandi" | "bekliyor" | "onaylandi";
+
+/** Durum rozeti: ad Türkçe; müşteri tarafı kod'u t(`durum.${kod}`) ile yazar. */
+export function durumBilgisi(r: Rezervasyon, simdi: number): { kod: DurumKodu; ad: string; renk: "yesil" | "sari" | "gri" | "kirmizi" } {
+  if (r.status === "CANCELLED") return { kod: "iptal", ad: "İptal edildi", renk: "kirmizi" };
+  if (r.status === "FAILED") return { kod: "tamamlanamadi", ad: "Tamamlanamadı", renk: "kirmizi" };
+  if (gunOku(r.checkOut).getTime() < simdi) return { kod: "tamamlandi", ad: "Tamamlandı", renk: "gri" };
+  if (r.status === "PENDING") return { kod: "bekliyor", ad: "Otel onayı bekleniyor", renk: "sari" };
+  return { kod: "onaylandi", ad: "Onaylandı", renk: "yesil" };
 }
 
 /** Şu an iptal edilirse kesilecek ücret (koşullara göre tahmin) ve ücretsiz iptalin son anı. */
@@ -112,3 +127,34 @@ export const telefonGizle = (t: string) => {
   const r = p.join(" ");
   return r.length > 6 ? `${r.slice(0, 4)}${"•".repeat(r.length - 6)}${r.slice(-2)}` : r;
 };
+
+// Dile duyarlı sürümler (müşteri tarafı). b: useBicim() ya da bicimleyici(dil);
+// t: useTranslations("rezervasyon"). Türkçede yukarıdaki karşılıklarıyla aynı
+// yazıyı verirler. Tek gün için b.gunAyUzun (gunKisa), tam tarih için b.gunAyYil.
+
+type RezervasyonMetni = ReturnType<typeof useTranslations<"rezervasyon">>;
+
+/** gunUzun: "Pzt, 26 Ekim" · "Mon, 26 October". */
+export const gunUzunYerel = (b: Bicimleyici, d: Date) => `${b.gunlerKisa[(d.getDay() + 6) % 7]}, ${b.gunAyUzun(d)}`;
+
+/** aralik: "26–28 Ekim 2026" · "26 October – 2 November 2026". */
+export function aralikYerel(b: Bicimleyici, r: Rezervasyon) {
+  const g = gunOku(r.checkIn), c = gunOku(r.checkOut);
+  if (g.getMonth() === c.getMonth() && g.getFullYear() === c.getFullYear()) return `${g.getDate()}–${b.gunAyYil(c)}`;
+  return `${b.gunAyUzun(g)} – ${b.gunAyYil(c)}`;
+}
+
+/** gunYonelme: "{tarih} kadar" · "until {tarih}" kalıbındaki gün: "2 Ekim'e" · "2 October". */
+export const gunYonelmeYerel = (b: Bicimleyici, d: Date) =>
+  b.dil === "tr" ? `${b.gunAyUzun(d)}'${YONELME[d.getMonth()] ?? "a"}` : b.gunAyUzun(d);
+
+/** saat: Türkiye saatiyle "14:30". */
+export const saatYerel = (b: Bicimleyici, d: Date) =>
+  d.toLocaleTimeString(b.yerel, { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Istanbul" });
+
+/** misafirYazi: "2 yetişkin, 1 çocuk" · "2 adults, 1 child". */
+export function misafirYerel(t: RezervasyonMetni, r: Rezervasyon) {
+  const m = misafirSayilari(r);
+  if (!m) return null;
+  return m.cocuk ? t("misafirCocuklu", m) : t("misafir", { yetiskin: m.yetiskin });
+}

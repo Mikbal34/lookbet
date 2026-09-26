@@ -7,6 +7,7 @@
 
 import { kartFotosu } from "@/lib/foto";
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { Ikon } from "./ikon";
 import { Nesne } from "./nesne";
 import s from "./otel-karti.module.css";
@@ -33,6 +34,7 @@ export function OtelKarti({ otel, href, favori, onFavori, onUzerinde, sira = 0 }
   onUzerinde?: (girdi: boolean) => void;
   sira?: number;
 }) {
+  const t = useTranslations("arama.kart");
   const [fotoYok, setFotoYok] = React.useState(!otel.foto);
   return (
     <li
@@ -46,7 +48,7 @@ export function OtelKarti({ otel, href, favori, onFavori, onUzerinde, sira = 0 }
           {fotoYok ? (
             <span className={s.fotoYok}>
               <Nesne ad="zil" boyut={60} />
-              Fotoğraf yok
+              {t("fotoYok")}
             </span>
           ) : (
             // eslint-disable-next-line @next/next/no-img-element -- dış kaynaklı otel görseli
@@ -63,14 +65,14 @@ export function OtelKarti({ otel, href, favori, onFavori, onUzerinde, sira = 0 }
               {otel.iptal && (
                 <span className={s.etiket}>
                   <Ikon ad="check" boyut={14} kalinlik={2.4} />
-                  Ücretsiz iptal
+                  {t("ucretsizIptal")}
                 </span>
               )}
             </span>
           )}
         </div>
         <div className={s.satir1}>
-          <span>{otel.yer ? `Otel · ${otel.yer}` : "Otel"}</span>
+          <span>{otel.yer ? t("otelYer", { yer: otel.yer }) : t("otel")}</span>
           {!!otel.yildiz && (
             <span className={s.yildiz}>
               <Ikon ad="star" boyut={13} kalinlik={1.5} />
@@ -91,7 +93,7 @@ export function OtelKarti({ otel, href, favori, onFavori, onUzerinde, sira = 0 }
         type="button"
         className={s.kalp}
         aria-pressed={favori}
-        aria-label={`${otel.ad}: ${favori ? "favorilerden çıkar" : "favorilere ekle"}`}
+        aria-label={t(favori ? "favoridenCikar" : "favoriyeEkle", { ad: otel.ad })}
         onClick={onFavori}
       >
         <Ikon ad="heart" boyut={26} kalinlik={1.8} />

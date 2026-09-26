@@ -5,7 +5,8 @@
 import { prisma } from "@/lib/prisma";
 import { boardTypeAdi, boardTypeAdlari } from "@/lib/board-types";
 
-export async function otelBilgisiEkle<T extends { hotelCode: string; boardType: string | null }>(rezervasyonlar: T[]) {
+/** `dil`: pansiyon adlarının dili (müşteri listesi sitenin dilinde; paneller Türkçe). */
+export async function otelBilgisiEkle<T extends { hotelCode: string; boardType: string | null }>(rezervasyonlar: T[], dil = "tr") {
   const oteller = await prisma.hotel.findMany({
     where: { hotelCode: { in: [...new Set(rezervasyonlar.map((r) => r.hotelCode))] } },
     select: {
@@ -17,7 +18,7 @@ export async function otelBilgisiEkle<T extends { hotelCode: string; boardType: 
     },
   });
   const otelBul = new Map(oteller.map((o) => [o.hotelCode, o]));
-  const pansiyonAdlari = await boardTypeAdlari();
+  const pansiyonAdlari = await boardTypeAdlari(dil);
   return rezervasyonlar.map((r) => {
     const o = otelBul.get(r.hotelCode);
     const ilkGorsel = Array.isArray(o?.images) ? (o.images as unknown[]).find((u): u is string => typeof u === "string") : undefined;

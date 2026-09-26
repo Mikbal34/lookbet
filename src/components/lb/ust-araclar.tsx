@@ -144,56 +144,59 @@ function MenuBag({ href, kalin, onClick, children }: { href: string; kalin?: boo
 }
 
 export function MenuDugmesi() {
+  const t = useTranslations("ust.menu");
+  const { lang } = useLocale();
   const { acik, setAcik, kok } = useAcilir<HTMLDivElement>();
   const { data: oturum } = useSession();
   const giris = useGiris();
   const kapat = () => setAcik(false);
+  const ilkAd = oturum?.user?.name?.split(" ")[0];
   return (
     <div className={s.menuKok} ref={kok}>
-      <button type="button" className={s.menuDugme} aria-expanded={acik} aria-haspopup="true" onClick={() => setAcik((a) => !a)} aria-label="Menü">
+      <button type="button" className={s.menuDugme} aria-expanded={acik} aria-haspopup="true" onClick={() => setAcik((a) => !a)} aria-label={t("etiket")}>
         <Ikon ad="menu" boyut={18} />
         <span className={s.avatar}>
-          {oturum?.user?.name ? oturum.user.name.trim()[0]?.toLocaleUpperCase("tr") : <Ikon ad="user" boyut={18} />}
+          {oturum?.user?.name ? oturum.user.name.trim()[0]?.toLocaleUpperCase(lang) : <Ikon ad="user" boyut={18} />}
         </span>
       </button>
-      <nav className={s.acilir} data-acik={acik || undefined} aria-label="Hesap menüsü">
+      <nav className={s.acilir} data-acik={acik || undefined} aria-label={t("hesapMenusu")}>
         {oturum ? (
           <>
-            <span className={s.merhaba}>Merhaba, {oturum.user?.name?.split(" ")[0] ?? "hoş geldin"}</span>
+            <span className={s.merhaba}>{ilkAd != null ? t("merhaba", { ad: ilkAd }) : t("merhabaAdsiz")}</span>
             {oturum.user?.role === "AGENCY" ? (
               // Acente hesabının "hesabı" Partner paneli: taslaktaki menüyle aynı maddeler.
               <>
-                <MenuBag href="/agency/dashboard" kalin onClick={kapat}>Partner paneli</MenuBag>
-                <MenuBag href="/agency/reservations" onClick={kapat}>Rezervasyonlar</MenuBag>
-                <MenuBag href="/agency/kazanclar" onClick={kapat}>Kazançlar</MenuBag>
-                <MenuBag href="/agency/company" onClick={kapat}>Şirket bilgileri</MenuBag>
+                <MenuBag href="/agency/dashboard" kalin onClick={kapat}>{t("partnerPaneli")}</MenuBag>
+                <MenuBag href="/agency/reservations" onClick={kapat}>{t("rezervasyonlar")}</MenuBag>
+                <MenuBag href="/agency/kazanclar" onClick={kapat}>{t("kazanclar")}</MenuBag>
+                <MenuBag href="/agency/company" onClick={kapat}>{t("sirketBilgileri")}</MenuBag>
               </>
             ) : oturum.user?.role === "ADMIN" ? (
-              <MenuBag href="/admin" kalin onClick={kapat}>Yönetim paneli</MenuBag>
+              <MenuBag href="/admin" kalin onClick={kapat}>{t("yonetimPaneli")}</MenuBag>
             ) : (
               <>
-                <MenuBag href="/profile" kalin onClick={kapat}>Hesabım</MenuBag>
-                <MenuBag href="/reservations" onClick={kapat}>Rezervasyonlarım</MenuBag>
+                <MenuBag href="/profile" kalin onClick={kapat}>{t("hesabim")}</MenuBag>
+                <MenuBag href="/reservations" onClick={kapat}>{t("rezervasyonlarim")}</MenuBag>
               </>
             )}
             <hr />
-            <MenuBag href="/yardim" onClick={kapat}>Yardım merkezi</MenuBag>
-            <button type="button" onClick={() => signOut({ callbackUrl: oturum.user?.role === "AGENCY" ? "/agency/login" : "/" })}>Çıkış yap</button>
+            <MenuBag href="/yardim" onClick={kapat}>{t("yardimMerkezi")}</MenuBag>
+            <button type="button" onClick={() => signOut({ callbackUrl: oturum.user?.role === "AGENCY" ? "/agency/login" : "/" })}>{t("cikis")}</button>
           </>
         ) : (
           <>
-            <button type="button" className={s.kalin} onClick={() => { kapat(); giris.ac(); }}>Giriş yap ya da üye ol</button>
+            <button type="button" className={s.kalin} onClick={() => { kapat(); giris.ac(); }}>{t("girisYap")}</button>
             <hr />
             <Link href="/agency/login" onClick={kapat} className={s.acente}>
               <span>
-                <b>Acente girişi</b>
-                <small>Acentenize özel fiyatlar ve komisyonla rezervasyon</small>
+                <b>{t("acenteGirisi")}</b>
+                <small>{t("acenteAciklama")}</small>
               </span>
               <Nesne ad="anahtar-karti" boyut={52} />
             </Link>
             <hr />
-            <MenuBag href="/reservations" onClick={kapat}>Rezervasyonumu bul</MenuBag>
-            <MenuBag href="/yardim" onClick={kapat}>Yardım merkezi</MenuBag>
+            <MenuBag href="/reservations" onClick={kapat}>{t("rezervasyonumuBul")}</MenuBag>
+            <MenuBag href="/yardim" onClick={kapat}>{t("yardimMerkezi")}</MenuBag>
           </>
         )}
       </nav>

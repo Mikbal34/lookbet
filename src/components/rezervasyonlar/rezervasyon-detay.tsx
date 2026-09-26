@@ -11,17 +11,20 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { createTranslator, useTranslations, type Messages } from "next-intl";
 import { UstCubuk } from "@/components/lb/ust-cubuk";
 import { AltBilgi } from "@/components/lb/alt-bilgi";
 import { Ikon } from "@/components/lb/ikon";
 import { Nesne } from "@/components/lb/nesne";
 import { Pencere } from "@/components/lb/pencere";
 import { BOS_ARAMA, aramaAdresi } from "@/components/lb/arama/durum";
-import { para } from "@/components/otel-detay/yardimci";
+import { bicimleyici } from "@/i18n/bicim";
+import { useBicim } from "@/i18n/use-bicim";
 import type { HotelDetailResponse } from "@/lib/royal-api/types";
+import trMetinler from "../../../messages/tr/rezervasyon.json";
 import { Kopyala } from "./rezervasyonlar";
 import {
-  aralik, durumBilgisi, geceler, gunKisa, gunOku, gunUzun, gunYonelme, iptalDurumu, kalanGun, misafirYazi, saat, telefonGizle, tutar,
+  aralikYerel, durumBilgisi, geceler, gunOku, gunUzunYerel, gunYonelmeYerel, iptalDurumu, kalanGun, misafirYerel, saatYerel, telefonGizle, tutar,
   type Rezervasyon,
 } from "./ortak";
 import s from "./rezervasyonlar.module.css";
@@ -29,13 +32,21 @@ import d from "./rezervasyon-detay.module.css";
 
 const KonumHaritasi = dynamic(() => import("@/components/otel-detay/konum-haritasi").then((m) => m.KonumHaritasi), {
   ssr: false,
-  loading: () => <div className={d.haritaYedek}>Harita yükleniyor…</div>,
+  loading: () => <HaritaYukleniyor />,
 });
+
+function HaritaYukleniyor() {
+  const t = useTranslations("rezervasyon");
+  return <div className={d.haritaYedek}>{t("detay.konum.haritaYukleniyor")}</div>;
+}
 
 type OtelVerisi = Partial<HotelDetailResponse> & { location?: { name: string; parent?: { name: string } | null } | null };
 const simdiAl = () => Date.now();
 
 export function RezervasyonDetay({ id }: { id: string }) {
+  const t = useTranslations("rezervasyon");
+  const tk = useTranslations("ortak");
+  const b = useBicim();
   const router = useRouter();
   const istemci = useQueryClient();
   const [simdi, setSimdi] = React.useState(simdiAl);
@@ -69,7 +80,7 @@ export function RezervasyonDetay({ id }: { id: string }) {
     return (
       <div className={`lb ${s.sayfa}`}>
         {ust}
-        <main className={s.dis} aria-busy="true" aria-label="Rezervasyon yükleniyor">
+        <main className={s.dis} aria-busy="true" aria-label={t("detay.yukleniyor")}>
           <div className={d.iskeletBas}><i /><i /></div>
           <div className={`${s.iskelet} ${d.iskeletFoto}`} />
         </main>
@@ -83,9 +94,9 @@ export function RezervasyonDetay({ id }: { id: string }) {
         {ust}
         <div className={s.bos}>
           <Nesne ad="zil" boyut={110} />
-          <h1 className="lb-y">{yok ? "Bu rezervasyonu bulamadık" : "Rezervasyon şu an alınamadı"}</h1>
-          <p>{yok ? "Bağlantı eski olabilir ya da rezervasyon başka bir hesaba ait." : "Birazdan tekrar dene."}</p>
-          <Link href="/reservations" className={`${s.dugme} ${s.siyah}`}>Rezervasyonlarım</Link>
+          <h1 className="lb-y">{yok ? t("detay.bulunamadi") : t("detay.alinamadi")}</h1>
+          <p>{yok ? t("detay.bulunamadiMetin") : t("detay.alinamadiMetin")}</p>
+          <Link href="/reservations" className={`${s.dugme} ${s.siyah}`}>{t("baslik")}</Link>
         </div>
         <AltBilgi />
       </div>
@@ -100,7 +111,7 @@ export function RezervasyonDetay({ id }: { id: string }) {
   const gece = geceler(r);
   const toplam = tutar(r);
   const indirim = r.discountAmount ?? 0;
-  const misafir = misafirYazi(r);
+  const misafir = misafirYerel(t, r);
   const yer = [otel?.location?.name, otel?.location?.parent?.name].filter(Boolean).join(", ") || r.hotel?.city || "";
   const fotolar = [...new Set([...(otel?.images ?? []).sort((a, b) => Number(b.isMain) - Number(a.isMain)).map((i) => i.url), ...(r.hotel?.image ? [r.hotel.image] : [])])].slice(0, 3);
   const konum = otel?.latitude && otel?.longitude ? { lat: otel.latitude, lng: otel.longitude } : null;
@@ -111,10 +122,10 @@ export function RezervasyonDetay({ id }: { id: string }) {
 
   // Yolculuk çizelgesi: tarihli duraklar ve bugünün konumu (0–1).
   const duraklar: { ad: string; t: Date }[] = [
-    { ad: "Rezervasyon", t: new Date(r.createdAt) },
-    ...(ip.ucretsizSonHer && ip.ucretsizSonHer.getTime() > Date.parse(r.createdAt) && ip.ucretsizSonHer < gunOku(r.checkIn) ? [{ ad: "Ücretsiz iptal son gün", t: ip.ucretsizSonHer }] : []),
-    { ad: "Giriş", t: gunOku(r.checkIn) },
-    { ad: "Çıkış", t: gunOku(r.checkOut) },
+    { ad: t("detay.yolculuk.rezervasyon"), t: new Date(r.createdAt) },
+    ...(ip.ucretsizSonHer && ip.ucretsizSonHer.getTime() > Date.parse(r.createdAt) && ip.ucretsizSonHer < gunOku(r.checkIn) ? [{ ad: t("detay.yolculuk.ucretsizSon"), t: ip.ucretsizSonHer }] : []),
+    { ad: t("giris"), t: gunOku(r.checkIn) },
+    { ad: t("cikis"), t: gunOku(r.checkOut) },
   ];
   let oran = 1;
   if (simdi < duraklar[duraklar.length - 1].t.getTime()) {
@@ -129,16 +140,16 @@ export function RezervasyonDetay({ id }: { id: string }) {
       <main className={s.dis}>
         <Link href="/reservations" className={d.geri}>
           <Ikon ad="back" boyut={18} />
-          Rezervasyonlarım
+          {t("baslik")}
         </Link>
         <div className={d.bas}>
           <div>
-            <span className={s.rozet} data-renk={durum.renk}>{durum.ad}</span>
+            <span className={s.rozet} data-renk={durum.renk}>{t(`durum.${durum.kod}`)}</span>
             <h1 className="lb-y">{r.hotelName ?? r.hotelCode}</h1>
-            <p>{[r.hotel?.stars ? `${r.hotel.stars} yıldızlı` : null, yer || null, aralik(r)].filter(Boolean).join(" · ")}</p>
+            <p>{[r.hotel?.stars ? tk("yildizli", { sayi: r.hotel.stars }) : null, yer || null, aralikYerel(b, r)].filter(Boolean).join(" · ")}</p>
           </div>
           {aktif && !bitti && (
-            <p className={d.kalan}>{kalan > 0 ? <><b className="lb-y">{kalan} gün</b> kaldı</> : <b className="lb-y">{kalan === 0 ? "Giriş bugün" : "Konaklaman sürüyor"}</b>}</p>
+            <p className={d.kalan}>{kalan > 0 ? t.rich("kalan.gun", { sayi: kalan, b: (c) => <b className="lb-y">{c}</b> }) : <b className="lb-y">{kalan === 0 ? t("kalan.bugun") : t("kalan.suruyor")}</b>}</p>
           )}
         </div>
         <div className={d.foto} data-adet={Math.max(1, fotolar.length)}>
@@ -152,49 +163,49 @@ export function RezervasyonDetay({ id }: { id: string }) {
                 <div className={d.iptalBilgi}>
                   <Nesne ad="iptal" boyut={52} />
                   <div>
-                    <b>{r.status === "CANCELLED" ? "Bu rezervasyon iptal edildi" : "Bu rezervasyon tamamlanamadı"}</b>
+                    <b>{r.status === "CANCELLED" ? t("detay.iptalEdildi") : t("detay.tamamlanamadi")}</b>
                     <span>
                       {r.status === "CANCELLED"
                         ? r.cancellationFee != null
-                          ? `İptal ücreti ${para(r.cancellationFee, r.cancellationFeeCurrency || r.currency)}.`
-                          : "İptal ücreti bilgisi otelden gelmedi."
-                        : "Otel rezervasyonu onaylamadı; ücret alınmadı."}
+                          ? t("detay.iptalUcreti", { tutar: b.para(r.cancellationFee, r.cancellationFeeCurrency || r.currency) })
+                          : t("detay.iptalUcretiYok")
+                        : t("detay.onaylanmadi")}
                     </span>
                   </div>
                 </div>
               </section>
             ) : (
-              <section aria-label="Konaklama çizelgesi">
-                <h2>Yolculuğun</h2>
+              <section aria-label={t("detay.yolculuk.etiket")}>
+                <h2>{t("detay.yolculuk.baslik")}</h2>
                 <Yolculuk duraklar={duraklar} oran={oran} simdi={simdi} />
               </section>
             )}
 
             <section>
-              <h2>Giriş ve çıkış</h2>
+              <h2>{t("detay.girisCikis.baslik")}</h2>
               <div className={d.iki}>
                 <div className={d.kutu}>
-                  <small>Giriş</small>
-                  <b>{gunUzun(gunOku(r.checkIn))}</b>
-                  {girisSaati && <span>{girisSaati} ve sonrası</span>}
+                  <small>{t("giris")}</small>
+                  <b>{gunUzunYerel(b, gunOku(r.checkIn))}</b>
+                  {girisSaati && <span>{t("detay.girisCikis.girisSaati", { saat: girisSaati })}</span>}
                 </div>
                 <div className={d.kutu}>
-                  <small>Çıkış</small>
-                  <b>{gunUzun(gunOku(r.checkOut))}</b>
-                  {cikisSaati && <span>En geç {cikisSaati}</span>}
+                  <small>{t("cikis")}</small>
+                  <b>{gunUzunYerel(b, gunOku(r.checkOut))}</b>
+                  {cikisSaati && <span>{t("detay.girisCikis.cikisSaati", { saat: cikisSaati })}</span>}
                 </div>
               </div>
             </section>
 
             <section>
-              <h2>Oda ve misafirler</h2>
+              <h2>{t("detay.oda.baslik")}</h2>
               <ul className={d.liste}>
                 {(r.roomType || r.boardTypeName) && (
                   <li>
                     <Ikon ad="bed" boyut={22} />
                     <span>
-                      <b>{r.roomType ?? "Oda"}</b>
-                      {[r.boardTypeName, `${gece} gece`].filter(Boolean).join(" · ")}
+                      <b>{r.roomType ?? t("detay.oda.yedek")}</b>
+                      {[r.boardTypeName, tk("gece", { sayi: gece })].filter(Boolean).join(" · ")}
                     </span>
                   </li>
                 )}
@@ -203,7 +214,7 @@ export function RezervasyonDetay({ id }: { id: string }) {
                     <Ikon ad="guests" boyut={22} />
                     <span>
                       <b>{misafir}</b>
-                      {r.guests!.map((g) => `${g.name} ${g.surname}${g.type === "Child" && g.age !== undefined ? ` (${g.age} yaş)` : ""}`).join(", ")}
+                      {r.guests!.map((g) => (g.type === "Child" && g.age !== undefined ? t("detay.oda.cocukYasi", { ad: `${g.name} ${g.surname}`, yas: g.age }) : `${g.name} ${g.surname}`)).join(", ")}
                     </span>
                   </li>
                 )}
@@ -211,7 +222,7 @@ export function RezervasyonDetay({ id }: { id: string }) {
                   <li>
                     <Ikon ad="info" boyut={22} />
                     <span>
-                      <b>Özel istek</b>
+                      <b>{t("detay.oda.ozelIstek")}</b>
                       {r.notes}
                     </span>
                   </li>
@@ -220,39 +231,39 @@ export function RezervasyonDetay({ id }: { id: string }) {
             </section>
 
             <section>
-              <h2>Rezervasyon bilgileri</h2>
+              <h2>{t("detay.bilgi.baslik")}</h2>
               <dl className={d.tablo}>
                 {r.bookingNumber && (
                   <>
-                    <dt>Rezervasyon no</dt>
+                    <dt>{t("rezervasyonNo")}</dt>
                     <dd><Kopyala etiket="" deger={r.bookingNumber} /></dd>
                   </>
                 )}
-                <dt>Otel onay no</dt>
-                <dd>{r.hotelConfirmationNumber ?? <span className={s.soluk}>Otel onaylayınca burada görünür</span>}</dd>
+                <dt>{t("detay.bilgi.otelOnayNo")}</dt>
+                <dd>{r.hotelConfirmationNumber ?? <span className={s.soluk}>{t("detay.bilgi.onayBekleniyor")}</span>}</dd>
                 {r.contactName && (
                   <>
-                    <dt>İletişim</dt>
+                    <dt>{t("detay.bilgi.iletisim")}</dt>
                     <dd>{[r.contactName, r.contactEmail].filter(Boolean).join(" · ")}</dd>
                   </>
                 )}
                 {r.contactPhone && (
                   <>
-                    <dt>Telefon</dt>
+                    <dt>{t("detay.bilgi.telefon")}</dt>
                     <dd>{telefonGizle(r.contactPhone)}</dd>
                   </>
                 )}
-                <dt>Rezervasyon tarihi</dt>
-                <dd>{new Date(r.createdAt).toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" })}</dd>
+                <dt>{t("detay.bilgi.tarih")}</dt>
+                <dd>{b.gunAyYil(new Date(r.createdAt))}</dd>
               </dl>
             </section>
 
             {(konum || telefon || eposta) && (
               <section id="konum">
-                <h2>Konum ve iletişim</h2>
+                <h2>{t("detay.konum.baslik")}</h2>
                 {konum && (
                   <div className={d.harita}>
-                    <KonumHaritasi konum={konum} className={d.haritaIc} yedek={<div className={d.haritaYedek}>Harita şu an gösterilemiyor.</div>} />
+                    <KonumHaritasi konum={konum} className={d.haritaIc} yedek={<div className={d.haritaYedek}>{t("detay.konum.haritaYok")}</div>} />
                   </div>
                 )}
                 <div className={d.haritaAlt}>
@@ -263,7 +274,7 @@ export function RezervasyonDetay({ id }: { id: string }) {
                   {konum && (
                     <a className={`${s.dugme} ${s.cerceve}`} href={`https://www.google.com/maps/dir/?api=1&destination=${konum.lat},${konum.lng}`} target="_blank" rel="noopener noreferrer">
                       <Ikon ad="pin" boyut={16} kalinlik={2.1} />
-                      Yol tarifi al
+                      {t("detay.konum.yolTarifi")}
                     </a>
                   )}
                 </div>
@@ -288,44 +299,48 @@ export function RezervasyonDetay({ id }: { id: string }) {
 
             {aktif && !bitti && (
               <section id="iptal">
-                <h2>İptal koşulları</h2>
+                <h2>{t("detay.kosul.baslik")}</h2>
                 {ip.bilgiVar ? (
                   <div className={d.zaman}>
                     {ip.ucretsizSonHer && (
                       <div data-gecti={!ip.ucretsizSon || undefined}>
-                        <b>{gunYonelme(ip.ucretsizSonHer)} kadar (saat {saat(ip.ucretsizSonHer)})</b>
-                        <span>Ücretsiz iptal</span>
+                        <b>{t("detay.kosul.ucretsizSon", { tarih: gunYonelmeYerel(b, ip.ucretsizSonHer), saat: saatYerel(b, ip.ucretsizSonHer) })}</b>
+                        <span>{t("detay.kosul.ucretsiz")}</span>
                       </div>
                     )}
                     {ip.ceza && (
                       <div className={d.ceza}>
-                        <b>{ip.ucretsizSonHer ? `${gunKisa(new Date(ip.ceza.fromDate))}, saat ${saat(new Date(ip.ceza.fromDate))} ve sonrası` : "Rezervasyondan itibaren"}</b>
-                        <span>İptal ücreti {para(ip.ceza.penalty, ip.ceza.penaltyCurrency || r.currency)}</span>
+                        <b>
+                          {ip.ucretsizSonHer
+                            ? t("detay.kosul.cezaBaslangic", { tarih: b.gunAyUzun(new Date(ip.ceza.fromDate)), saat: saatYerel(b, new Date(ip.ceza.fromDate)) })
+                            : t("detay.kosul.rezervasyondan")}
+                        </b>
+                        <span>{t("detay.kosul.ceza", { tutar: b.para(ip.ceza.penalty, ip.ceza.penaltyCurrency || r.currency) })}</span>
                       </div>
                     )}
                   </div>
                 ) : (
-                  <p className={s.soluk}>İptal koşulları bu rezervasyon için kayıtlı değil; iptal ederken otelin koşulları uygulanır.</p>
+                  <p className={s.soluk}>{t("detay.kosul.yok")}</p>
                 )}
                 {r.bookingNumber ? (
                   <div className={d.iptalKutu}>
                     <div>
-                      <b>Planların mı değişti?</b>
+                      <b>{t("detay.kosul.planlar")}</b>
                       <span>
                         {ip.simdiUcret === 0
-                          ? "Şu an iptal edersen ücret alınmaz."
+                          ? t("detay.kosul.simdiUcretsiz")
                           : ip.simdiUcret != null
-                            ? `Şu an iptal edersen ${para(ip.simdiUcret, ip.ceza?.penaltyCurrency || r.currency)} iptal ücreti kesilir.`
-                            : "İptal ücreti otelin koşullarına göre belirlenir."}
+                            ? t("detay.kosul.simdiUcretli", { tutar: b.para(ip.simdiUcret, ip.ceza?.penaltyCurrency || r.currency) })
+                            : t("detay.kosul.simdiBelirsiz")}
                       </span>
                     </div>
                     <button type="button" className={`${s.dugme} ${s.cerceve}`} onClick={() => { setSimdi(Date.now()); setIptalAcik(true); }}>
-                      Rezervasyonu iptal et
+                      {t("iptalEt")}
                     </button>
                   </div>
                 ) : (
                   // Otelden onay (rezervasyon numarası) gelmeden iptal edilecek kayıt yok.
-                  <p className={s.soluk}>Rezervasyonun otelden onay bekliyor; onay gelince buradan iptal edebilirsin.</p>
+                  <p className={s.soluk}>{t("detay.kosul.onayBekliyor")}</p>
                 )}
               </section>
             )}
@@ -333,30 +348,30 @@ export function RezervasyonDetay({ id }: { id: string }) {
 
           <aside className={d.sag}>
             <div className={d.ozet}>
-              <h3>Ödeme özeti</h3>
+              <h3>{t("detay.ozet.baslik")}</h3>
               <div className={d.dokum}>
                 <div>
-                  <span>{para((toplam + indirim) / gece, r.currency)} × {gece} gece</span>
-                  <span>{para(toplam + indirim, r.currency)}</span>
+                  <span>{t("detay.ozet.geceBasi", { fiyat: b.para((toplam + indirim) / gece, r.currency), sayi: gece })}</span>
+                  <span>{b.para(toplam + indirim, r.currency)}</span>
                 </div>
                 {indirim > 0 && (
                   <div className={d.yesil}>
-                    <span>İndirim</span>
-                    <span>−{para(indirim, r.currency)}</span>
+                    <span>{t("detay.ozet.indirim")}</span>
+                    <span>−{b.para(indirim, r.currency)}</span>
                   </div>
                 )}
                 <div>
-                  <span>Vergiler ve ücretler</span>
-                  <span>Dahil</span>
+                  <span>{t("detay.ozet.vergiler")}</span>
+                  <span>{t("detay.ozet.dahil")}</span>
                 </div>
                 <div className={d.toplam}>
-                  <span>Toplam ({r.currency})</span>
-                  <span className="lb-y">{para(toplam, r.currency)}</span>
+                  <span>{t("detay.ozet.toplam", { birim: r.currency })}</span>
+                  <span className="lb-y">{b.para(toplam, r.currency)}</span>
                 </div>
                 {r.status === "CANCELLED" && r.cancellationFee != null && (
                   <div>
-                    <span>İptal ücreti</span>
-                    <span>{para(r.cancellationFee, r.cancellationFeeCurrency || r.currency)}</span>
+                    <span>{t("detay.ozet.iptalUcreti")}</span>
+                    <span>{b.para(r.cancellationFee, r.cancellationFeeCurrency || r.currency)}</span>
                   </div>
                 )}
               </div>
@@ -365,28 +380,28 @@ export function RezervasyonDetay({ id }: { id: string }) {
               <div className={d.tekrar}>
                 <Nesne ad="kartpostal" boyut={64} />
                 <div>
-                  <b>Yine gitmek ister misin?</b>
-                  <span>Aynı otel, yeni tarihler.</span>
+                  <b>{t("detay.tekrar.baslik")}</b>
+                  <span>{t("detay.tekrar.metin")}</span>
                 </div>
-                <Link href={`/hotel/${r.hotelCode}`} className={`${s.dugme} ${s.turuncu}`}>Tekrar rezervasyon yap</Link>
+                <Link href={`/hotel/${r.hotelCode}`} className={`${s.dugme} ${s.turuncu}`}>{t("tekrarRezervasyon")}</Link>
               </div>
             )}
-            <nav className={d.eylemler} aria-label="Rezervasyon işlemleri">
+            <nav className={d.eylemler} aria-label={t("detay.eylem.etiket")}>
               {(telefon || eposta) && (
                 <a href="#konum">
                   <Ikon ad="phone" boyut={20} />
-                  Otelle iletişime geç
+                  {t("detay.eylem.otelIletisim")}
                   <Ikon ad="chevron-right" boyut={16} className={d.okIkon} />
                 </a>
               )}
               <Link href={`/hotel/${r.hotelCode}`}>
                 <Ikon ad="hotel" boyut={20} />
-                Otel sayfası
+                {t("detay.eylem.otelSayfasi")}
                 <Ikon ad="chevron-right" boyut={16} className={d.okIkon} />
               </Link>
               <Link href="/yardim">
                 <Ikon ad="help" boyut={20} />
-                Yardım merkezi
+                {t("yardimMerkezi")}
                 <Ikon ad="chevron-right" boyut={16} className={d.okIkon} />
               </Link>
             </nav>
@@ -396,6 +411,7 @@ export function RezervasyonDetay({ id }: { id: string }) {
       <AltBilgi />
 
       <IptalPenceresi
+        ceviri
         acik={iptalAcik}
         r={r}
         simdi={simdi}
@@ -410,6 +426,8 @@ export function RezervasyonDetay({ id }: { id: string }) {
 }
 
 function Yolculuk({ duraklar, oran, simdi }: { duraklar: { ad: string; t: Date }[]; oran: number; simdi: number }) {
+  const t = useTranslations("rezervasyon");
+  const b = useBicim();
   const [o, setO] = React.useState(0);
   React.useEffect(() => {
     const k = requestAnimationFrame(() => setO(oran));
@@ -418,14 +436,14 @@ function Yolculuk({ duraklar, oran, simdi }: { duraklar: { ad: string; t: Date }
   return (
     <div className={d.yolculuk} style={{ "--o": o, "--n": duraklar.length } as React.CSSProperties}>
       <span className={d.ilerleme} />
-      {oran < 1 && <span className={d.bugun}>Bugün</span>}
+      {oran < 1 && <span className={d.bugun}>{t("detay.yolculuk.bugun")}</span>}
       {duraklar.map((x) => {
         const gecti = x.t.getTime() <= simdi;
         return (
           <div key={x.ad} className={d.durak} data-gecti={gecti || undefined}>
             <i>{gecti && <Ikon ad="check" boyut={13} kalinlik={3} />}</i>
             <b>{x.ad}</b>
-            <span>{gunKisa(x.t)}</span>
+            <span>{b.gunAyUzun(x.t)}</span>
           </div>
         );
       })}
@@ -433,13 +451,23 @@ function Yolculuk({ duraklar, oran, simdi }: { duraklar: { ad: string; t: Date }
   );
 }
 
-export function IptalPenceresi({ acik, r, simdi, onKapat, onIptal }: {
+/** Acente paneli henüz çevrilmedi: IptalPenceresi orada sabit Türkçe metin ve biçimle açılır. */
+const TR_METIN = createTranslator({ locale: "tr", messages: { rezervasyon: trMetinler } as Messages, namespace: "rezervasyon" });
+const TR_BICIM = bicimleyici("tr");
+
+export function IptalPenceresi({ acik, r, simdi, onKapat, onIptal, ceviri = false }: {
   acik: boolean;
   r: Rezervasyon;
   simdi: number;
   onKapat: () => void;
   onIptal: () => void;
+  /** Metinler geçerli dilde (müşteri sayfası); verilmezse Türkçe (acente paneli). */
+  ceviri?: boolean;
 }) {
+  const tDil = useTranslations("rezervasyon");
+  const bDil = useBicim();
+  const t = ceviri ? tDil : TR_METIN;
+  const b = ceviri ? bDil : TR_BICIM;
   const [asama, setAsama] = React.useState<"soru" | "gidiyor" | "bitti">("soru");
   const [hata, setHata] = React.useState<string | null>(null);
   const [ucret, setUcret] = React.useState<{ tutar: number; para: string } | null>(null);
@@ -462,7 +490,7 @@ export function IptalPenceresi({ acik, r, simdi, onKapat, onIptal }: {
       const x = await fetch(`/api/reservations/${r.id}/cancel`, { method: "POST" });
       const v = await x.json().catch(() => ({}));
       if (!x.ok) {
-        setHata(v.error ?? "Rezervasyon iptal edilemedi");
+        setHata(v.error ?? t("iptal.hata"));
         setAsama("soru");
         return;
       }
@@ -471,35 +499,35 @@ export function IptalPenceresi({ acik, r, simdi, onKapat, onIptal }: {
       setAsama("bitti");
       onIptal();
     } catch {
-      setHata("Bağlantıda bir sorun oldu; birazdan tekrar dene.");
+      setHata(t("baglantiHatasi"));
       setAsama("soru");
     }
   };
 
   return (
-    <Pencere acik={acik} onKapat={onKapat} baslik="Rezervasyonu iptal et" genislik={520}>
+    <Pencere acik={acik} onKapat={onKapat} baslik={t("iptalEt")} genislik={520}>
       {asama === "bitti" ? (
         <div className={d.bitti}>
           <Nesne ad="iptal" boyut={96} />
-          <h3 className="lb-y">Rezervasyonun iptal edildi</h3>
-          <p>{ucret ? (ucret.tutar > 0 ? `İptal ücreti: ${para(ucret.tutar, ucret.para)}.` : "İptal ücreti alınmadı.") : "İptal otele iletildi."} Bilgisi e-posta adresine gönderildi.</p>
-          <button type="button" className={`${s.dugme} ${s.siyah}`} onClick={onKapat}>Tamam</button>
+          <h3 className="lb-y">{t("iptal.bittiBaslik")}</h3>
+          <p>{ucret ? (ucret.tutar > 0 ? t("iptal.bittiUcretli", { tutar: b.para(ucret.tutar, ucret.para) }) : t("iptal.bittiUcretsiz")) : t("iptal.bittiIletildi")}</p>
+          <button type="button" className={`${s.dugme} ${s.siyah}`} onClick={onKapat}>{t("iptal.tamam")}</button>
         </div>
       ) : (
         <div className={d.iptalIc}>
           <div className={d.ucret} data-cezali={(tahmin ?? 0) > 0 || undefined}>
             <Nesne ad="iptal" boyut={64} />
-            <b className="lb-y">{tahmin === 0 ? "Ücret yok" : tahmin != null ? para(tahmin, birim) : "Ücret otelin koşullarına göre"}</b>
+            <b className="lb-y">{tahmin === 0 ? t("iptal.ucretYok") : tahmin != null ? b.para(tahmin, birim) : t("iptal.ucretBelirsiz")}</b>
             <span>
               {tahmin === 0 && ip.ucretsizSon
-                ? `${gunYonelme(ip.ucretsizSon)} kadar ücretsiz iptal hakkın var.`
+                ? t("iptal.ucretsizHak", { tarih: gunYonelmeYerel(b, ip.ucretsizSon) })
                 : tahmin != null
-                  ? "Bu tutar, rezervasyondaki iptal koşullarına göre kesilir."
-                  : "İptal ücreti otelden gelen yanıta göre kesinleşir."}
+                  ? t("iptal.kosulaGore")
+                  : t("iptal.otelYanitina")}
             </span>
           </div>
           <p>
-            <b>{r.hotelName ?? r.hotelCode}</b> · {aralik(r)}
+            <b>{r.hotelName ?? r.hotelCode}</b> · {aralikYerel(b, r)}
           </p>
           {hata && (
             <div className={d.hata} role="alert">
@@ -508,9 +536,9 @@ export function IptalPenceresi({ acik, r, simdi, onKapat, onIptal }: {
             </div>
           )}
           <div className={d.pencereAlt}>
-            <button type="button" className={s.metinDugme} onClick={onKapat}>Vazgeç</button>
+            <button type="button" className={s.metinDugme} onClick={onKapat}>{t("iptal.vazgec")}</button>
             <button type="button" className={`${s.dugme} ${s.kirmizi}`} onClick={iptalEt} disabled={asama === "gidiyor"}>
-              {asama === "gidiyor" ? "İptal ediliyor…" : "Rezervasyonu iptal et"}
+              {asama === "gidiyor" ? t("iptal.gidiyor") : t("iptalEt")}
             </button>
           </div>
         </div>

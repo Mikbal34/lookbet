@@ -16,6 +16,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { UstCubuk } from "@/components/lb/ust-cubuk";
 import { AltBilgi } from "@/components/lb/alt-bilgi";
 import { Ikon } from "@/components/lb/ikon";
@@ -24,17 +25,18 @@ import { Nesne } from "@/components/lb/nesne";
 import { Pencere } from "@/components/lb/pencere";
 import { useFavoriler } from "@/components/lb/favoriler";
 import { useGiris } from "@/components/lb/giris/giris-saglayici";
-import { aralikMetni, aramaAdresi, geceSayisi, iso, isoOku, misafirMetni, type AramaDegeri } from "@/components/lb/arama/durum";
+import { aramaAdresi, geceSayisi, iso, isoOku, type AramaDegeri } from "@/components/lb/arama/durum";
+import { useBicim } from "@/i18n/use-bicim";
 import type { HotelDetailResponse } from "@/lib/royal-api/types";
 import { FotoTuru, Galeri, IsikKutusu, type TurBolumu } from "./galeri";
 import { OdaPenceresi, odaOncekiFiyati, odaToplami, type Oda } from "./oda-penceresi";
-import { TarihAlani, TarihPenceresi, type TarihPaneli } from "./tarih-alani";
+import { TarihAlani, TarihPenceresi, useMisafirMetni, type TarihPaneli } from "./tarih-alani";
 import { iptalOzeti, olanakGruplari, olanakIkonu, oneCikanlar, oneCikanOlanaklar } from "./yardimci";
 import s from "./otel-detay.module.css";
 
 const KonumHaritasi = dynamic(() => import("./konum-haritasi").then((m) => m.KonumHaritasi), {
   ssr: false,
-  loading: () => <div className={s.haritaYedek}>Harita yükleniyor…</div>,
+  loading: () => <HaritaBekleme />,
 });
 
 interface OtelVerisi extends Partial<HotelDetailResponse> {
@@ -47,11 +49,12 @@ interface OdaAramasi {
   rooms: Oda[];
 }
 
-const KAMPANYA_ACIKLAMA: Record<string, string> = {
-  EARLY_BOOKING: "Girişine yeterince gün olduğu için indirimli",
-  LAST_MINUTE: "Girişe az kaldığı için son dakika indirimi",
-  LONG_STAY: "Uzun konaklama indirimi",
-  DATE_RANGE: "Bu tarihlere özel indirim",
+// Kampanya türünün açıklaması (otel.rez.kampanyaAciklama.*); bilinmeyen tür tarih indirimi sayılır.
+const KAMPANYA_ACIKLAMA: Record<string, "erkenRezervasyon" | "sonDakika" | "uzunKonaklama" | "tarihAraligi" | undefined> = {
+  EARLY_BOOKING: "erkenRezervasyon",
+  LAST_MINUTE: "sonDakika",
+  LONG_STAY: "uzunKonaklama",
+  DATE_RANGE: "tarihAraligi",
 };
 
 async function otelGetir(kod: string): Promise<OtelVerisi> {
@@ -60,7 +63,11 @@ async function otelGetir(kod: string): Promise<OtelVerisi> {
   return r.json();
 }
 
-async function odalariGetir(kod: string, a: { giris: string; cikis: string; yetiskin: number; cocuklar: number[]; uyruk: string; para: string }): Promise<OdaAramasi> {
+async function odalariGetir(
+  kod: string,
+  a: { giris: string; cikis: string; yetiskin: number; cocuklar: number[]; uyruk: string; para: string },
+  hata: { genel: string; cokSik: string }
+): Promise<OdaAramasi> {
   const r = await fetch("/api/rooms/search", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -73,17 +80,12 @@ async function odalariGetir(kod: string, a: { giris: string; cikis: string; yeti
       rooms: [{ adult: a.yetiskin, childAges: a.cocuklar.length ? a.cocuklar : undefined }],
     }),
   });
-  if (!r.ok) throw new Error(await sunucuMesaji(r, "Bağlantıda bir sorun oldu; birazdan tekrar dene."));
+  if (!r.ok) throw new Error(await sunucuMesaji(r, hata.genel, hata.cokSik));
   return r.json();
 }
 
-const BOLUMLER = [
-  { id: "fotograflar", ad: "Fotoğraflar" },
-  { id: "odalar", ad: "Odalar" },
-  { id: "olanaklar", ad: "Olanaklar" },
-  { id: "konum", ad: "Konum" },
-  { id: "bilinmesi", ad: "Bilinmesi gerekenler" },
-];
+// Bölüm menüsü: sayfadaki bölüm kimliği, aynı zamanda adının anahtarı (otel.bolumler.*).
+const BOLUMLER = ["fotograflar", "odalar", "olanaklar", "konum", "bilinmesi"] as const;
 
 /** Oda aramasının süresi (neredeyse) doldu mu — ödemeye geçmeden yenilemek için. */
 const sureDoldu = (bitis: string) => Date.parse(bitis) - Date.now() < 60_000;
@@ -94,6 +96,10 @@ const git = (id: string) => {
 };
 
 export function OtelDetay({ kod }: { kod: string }) {
+  const t = useTranslations("otel");
+  const tk = useTranslations("ortak");
+  const bicim = useBicim();
+  const misafirMetni = useMisafirMetni();
   // Fiyatlar seçilen para biriminde (TCMB kuruyla yaklaşık; bkz. lb/fiyat).
   const { yaz } = useFiyat();
   const params = useSearchParams();
@@ -137,7 +143,7 @@ export function OtelDetay({ kod }: { kod: string }) {
   });
   const odaQ = useQuery({
     queryKey: ["odalar", kod, giris, cikis, yetiskin, cocukMetni, uyruk, paraBirimi],
-    queryFn: () => odalariGetir(kod, { giris, cikis, yetiskin, cocuklar: urlDeger.cocuklar, uyruk, para: paraBirimi }),
+    queryFn: () => odalariGetir(kod, { giris, cikis, yetiskin, cocuklar: urlDeger.cocuklar, uyruk, para: paraBirimi }, { genel: t("odalar.hata"), cokSik: tk("cokSik") }),
     enabled: tarihVar && uyrukHazir,
     staleTime: 5 * 60_000,
     retry: 1,
@@ -179,7 +185,7 @@ export function OtelDetay({ kod }: { kod: string }) {
     const kaydir = () => {
       let a = 0;
       BOLUMLER.forEach((b, i) => {
-        const e = document.getElementById(b.id);
+        const e = document.getElementById(b);
         if (e && e.getBoundingClientRect().top < 140) a = i;
       });
       setAktifBolum(a);
@@ -227,7 +233,7 @@ export function OtelDetay({ kod }: { kod: string }) {
     if (!arama || !o) {
       setGidiyor(false);
       setSeciliKod(null);
-      bildir("Bu oda artık müsait değil, başka bir oda seçin");
+      bildir(t("bildiri.odaKalmadi"));
       return;
     }
     const qs = new URLSearchParams({
@@ -261,7 +267,7 @@ export function OtelDetay({ kod }: { kod: string }) {
   const odaSec = (o: Oda) => {
     setSeciliKod(o.priceCode);
     setOdaAcik(null);
-    bildir("Oda seçildi");
+    bildir(t("bildiri.odaSecildi"));
   };
   const paylas = async () => {
     const url = location.href;
@@ -273,13 +279,13 @@ export function OtelDetay({ kod }: { kod: string }) {
     }
     try {
       await navigator.clipboard.writeText(url);
-      bildir("Bağlantı kopyalandı");
+      bildir(t("bildiri.baglantiKopyalandi"));
     } catch {
-      bildir("Bağlantı kopyalanamadı");
+      bildir(t("bildiri.baglantiKopyalanamadi"));
     }
   };
   const kaydet = () => {
-    bildir(fav.has(kod) ? "Favorilerden çıkarıldı" : "Favorilere eklendi");
+    bildir(fav.has(kod) ? t("bildiri.favoridenCikarildi") : t("bildiri.favoriyeEklendi"));
     favDegistir(kod);
   };
   const geri = () => {
@@ -293,12 +299,12 @@ export function OtelDetay({ kod }: { kod: string }) {
     return [...new Set(g)];
   }, [otel?.images]);
   const turBolumleri = React.useMemo<TurBolumu[]>(() => {
-    const b: TurBolumu[] = gorseller.length ? [{ ad: "Genel bakış", gorseller }] : [];
+    const b: TurBolumu[] = gorseller.length ? [{ ad: t("galeri.genelBakis"), gorseller }] : [];
     odalar.forEach((o) => {
       if (o.images.length && !b.some((x) => x.ad === o.roomName)) b.push({ ad: o.roomName, gorseller: o.images });
     });
     return b;
-  }, [gorseller, odalar]);
+  }, [gorseller, odalar, t]);
   const odaFoto = (o: Oda, j: number) => {
     const b = turBolumleri.findIndex((x) => x.ad === o.roomName);
     if (b >= 0) setIsik({ b, j });
@@ -313,12 +319,12 @@ export function OtelDetay({ kod }: { kod: string }) {
         </div>
         <div className={s.durum}>
           <Nesne ad="zil" boyut={110} />
-          <h1 className="lb-y">{otelQ.error?.message === "yok" ? "Bu oteli bulamadık" : "Otel bilgisi şu an alınamadı"}</h1>
-          <p>{otelQ.error?.message === "yok" ? "Bağlantı eski olabilir; aramadan tekrar bakabilirsin." : "Birazdan tekrar dene."}</p>
+          <h1 className="lb-y">{otelQ.error?.message === "yok" ? t("hata.yokBaslik") : t("hata.baslik")}</h1>
+          <p>{otelQ.error?.message === "yok" ? t("hata.yokMetin") : t("hata.metin")}</p>
           {otelQ.error?.message === "yok" ? (
-            <Link href="/" className={s.siyah}>Ana sayfaya dön</Link>
+            <Link href="/" className={s.siyah}>{t("hata.anaSayfa")}</Link>
           ) : (
-            <button type="button" className={s.siyah} onClick={() => otelQ.refetch()}>Tekrar dene</button>
+            <button type="button" className={s.siyah} onClick={() => otelQ.refetch()}>{tk("tekrarDene")}</button>
           )}
         </div>
         <AltBilgi />
@@ -329,16 +335,16 @@ export function OtelDetay({ kod }: { kod: string }) {
   const yer = [otel.location?.name, otel.location?.parent?.name].filter(Boolean).join(", ") || otel.address || "";
   const ozetBolum = otel.location?.parent?.name && otel.location.name !== otel.location.parent.name ? `${otel.location.name}, ${otel.location.parent.name}` : yer;
   const olanaklar = otel.facilities ?? [];
-  const oneCikan = oneCikanlar(olanaklar);
+  const oneCikan = oneCikanlar(olanaklar, (tur) => t(`oneCikan.${tur}`));
   const iptalliOdalar = odalar.filter((o) => o.cancellationPolicies?.some((p) => p.penalty === 0));
-  const ilkIptal = iptalliOdalar[0] ? iptalOzeti(iptalliOdalar[0].cancellationPolicies).ucretsiz : null;
+  const ilkIptal = iptalliOdalar[0] ? iptalOzeti(iptalliOdalar[0].cancellationPolicies, bicim).ucretsiz : null;
   const pansiyonlar = [...new Set(odalar.map((o) => o.boardTypeName))];
   const aciklama = (otel.description ?? "").split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
   const onemli = (otel.policies?.importantInfo ?? []).flatMap((m) => m.split(/(?<=\.)\s+(?=[A-ZÇĞİÖŞÜ])/)).map((p) => p.trim()).filter(Boolean);
   const bilgiOdasi = secili ?? enUcuz;
-  const bilgiIptal = bilgiOdasi ? iptalOzeti(bilgiOdasi.cancellationPolicies) : null;
+  const bilgiIptal = bilgiOdasi ? iptalOzeti(bilgiOdasi.cancellationPolicies, bicim) : null;
   const konum = otel.latitude && otel.longitude ? { lat: otel.latitude, lng: otel.longitude } : null;
-  const tarihYazi = tarihVar ? aralikMetni(girisT!, cikisT!) : null;
+  const tarihYazi = tarihVar ? bicim.aralik(girisT!, cikisT!) : null;
   const favori = fav.has(kod);
 
   // Rezervasyon kutusu, bölüm menüsü ve mobil çubuğun ortak fiyat/düğme durumu.
@@ -346,18 +352,18 @@ export function OtelDetay({ kod }: { kod: string }) {
   const fiyat = fiyatOdasi ? yaz(odaToplami(fiyatOdasi), fiyatOdasi.currency) : null;
   const oncekiFiyat = fiyatOdasi && odaOncekiFiyati(fiyatOdasi) ? yaz(odaOncekiFiyati(fiyatOdasi)!, fiyatOdasi.currency) : null;
   const kampanya = fiyatOdasi?.pricing?.kampanya ?? null;
-  const anaMetin = !tarihVar ? "Tarih seç" : secili ? "Rezervasyona devam et" : "Oda seç";
+  const anaMetin = !tarihVar ? t("ana.tarihSec") : secili ? t("ana.devam") : t("ana.odaSec");
   const anaEylem = () => (!tarihVar ? tarihSec() : secili ? devam() : git("odalar"));
 
   const eylemler = (
     <div className={s.eylem}>
       <button type="button" onClick={paylas}>
         <Ikon ad="share" boyut={18} />
-        Paylaş
+        {t("eylem.paylas")}
       </button>
       <button type="button" onClick={kaydet} aria-pressed={favori} className={s.kaydet}>
         <Ikon ad="heart" boyut={18} />
-        {favori ? "Kaydedildi" : "Kaydet"}
+        {favori ? t("eylem.kaydedildi") : t("eylem.kaydet")}
       </button>
     </div>
   );
@@ -368,10 +374,10 @@ export function OtelDetay({ kod }: { kod: string }) {
       <div className={s.odaDurum}>
         <Nesne ad="bavul" boyut={64} />
         <div>
-          <b>Fiyatları görmek için tarih seçin</b>
-          <span>Seçtiğin tarihlerde müsait odaları ve toplam fiyatı gösterelim.</span>
+          <b>{t("odalar.tarihYok")}</b>
+          <span>{t("odalar.tarihYokMetin")}</span>
         </div>
-        <button type="button" className={s.dugme} onClick={tarihSec}>Tarih seç</button>
+        <button type="button" className={s.dugme} onClick={tarihSec}>{t("ana.tarihSec")}</button>
       </div>
     );
   } else if (odaQ.isPending) {
@@ -380,8 +386,8 @@ export function OtelDetay({ kod }: { kod: string }) {
         <div className={s.odaBekle}>
           <Bekleme tur="takvim" boyut={64} etiket={null} />
           <div>
-            <b>Müsait odalar soruluyor</b>
-            <DonenMetin metinler={["Seçtiğin tarihlerde odalar aranıyor", "Fiyatlar ve iptal koşulları geliyor"]} aralik={3000} />
+            <b>{t("odalar.soruluyor")}</b>
+            <DonenMetin metinler={[t("odalar.araniyor"), t("odalar.fiyatlarGeliyor")]} aralik={3000} />
           </div>
         </div>
         {[0, 1].map((i) => <div key={i} className={s.odaIskelet} />)}
@@ -392,10 +398,10 @@ export function OtelDetay({ kod }: { kod: string }) {
       <div className={s.odaDurum}>
         <Nesne ad="zil" boyut={64} />
         <div>
-          <b>Odalar şu an getirilemedi</b>
-          <span>{odaQ.error?.message || "Bağlantıda bir sorun oldu; birazdan tekrar dene."}</span>
+          <b>{t("odalar.hataBaslik")}</b>
+          <span>{odaQ.error?.message || t("odalar.hata")}</span>
         </div>
-        <button type="button" className={s.ikincilKucuk} onClick={() => odaQ.refetch()}>Tekrar dene</button>
+        <button type="button" className={s.ikincilKucuk} onClick={() => odaQ.refetch()}>{tk("tekrarDene")}</button>
       </div>
     );
   } else if (!odalar.length) {
@@ -403,10 +409,10 @@ export function OtelDetay({ kod }: { kod: string }) {
       <div className={s.odaDurum}>
         <Nesne ad="zil" boyut={64} />
         <div>
-          <b>Bu tarihlerde müsait oda yok</b>
-          <span>Farklı tarihler ya da misafir sayısı deneyebilirsin.</span>
+          <b>{t("odalar.yok")}</b>
+          <span>{t("odalar.yokMetin")}</span>
         </div>
-        <button type="button" className={s.ikincilKucuk} onClick={tarihSec}>Tarihleri değiştir</button>
+        <button type="button" className={s.ikincilKucuk} onClick={tarihSec}>{t("odalar.tarihDegistir")}</button>
       </div>
     );
   } else {
@@ -419,7 +425,7 @@ export function OtelDetay({ kod }: { kod: string }) {
         </div>
         {odalar.length > 4 && (
           <button type="button" className={s.ikincil} onClick={() => setPencere("odalar")}>
-            {odalar.length} seçeneğin tamamını göster
+            {t("odalar.tumu", { sayi: odalar.length })}
           </button>
         )}
       </>
@@ -432,21 +438,21 @@ export function OtelDetay({ kod }: { kod: string }) {
         <UstCubuk deger={ustDeger} onDegis={setUstDeger} onAra={() => router.push(aramaAdresi(ustDeger))} />
       </div>
 
-      <nav className={s.bolumNav} data-gorunur={navGorunur || undefined} aria-label="Sayfa bölümleri" aria-hidden={!navGorunur}>
+      <nav className={s.bolumNav} data-gorunur={navGorunur || undefined} aria-label={t("bolumler.etiket")} aria-hidden={!navGorunur}>
         <div className={s.dis}>
           <ul>
             {BOLUMLER.map((b, i) => (
-              <li key={b.id}>
+              <li key={b}>
                 <a
-                  href={`#${b.id}`}
+                  href={`#${b}`}
                   data-aktif={(navGorunur && i === aktifBolum) || undefined}
                   tabIndex={navGorunur ? 0 : -1}
                   onClick={(e) => {
                     e.preventDefault();
-                    git(b.id);
+                    git(b);
                   }}
                 >
-                  {b.ad}
+                  {t(`bolumler.${b}`)}
                 </a>
               </li>
             ))}
@@ -454,7 +460,7 @@ export function OtelDetay({ kod }: { kod: string }) {
           <div className={s.navRez} data-gorunur={(navFiyat && tarihVar && !!fiyat) || undefined}>
             <div>
               <b className="lb-y">{fiyat}</b>
-              <span>{gece} gece · {tarihYazi}</span>
+              <span>{t("geceTarih", { gece, tarih: tarihYazi ?? "" })}</span>
             </div>
             <button type="button" className={s.dugme} onClick={anaEylem} tabIndex={navFiyat ? 0 : -1}>{anaMetin}</button>
           </div>
@@ -467,7 +473,7 @@ export function OtelDetay({ kod }: { kod: string }) {
             <div>
               <h1 className="lb-y">{otel.name}</h1>
               <p>
-                {otel.stars ? `${otel.stars} yıldızlı otel` : "Otel"}
+                {otel.stars ? t("baslik.yildizliOtel", { sayi: otel.stars }) : t("baslik.otel")}
                 {yer && ` · ${yer}`}
               </p>
             </div>
@@ -479,14 +485,14 @@ export function OtelDetay({ kod }: { kod: string }) {
               onAc={() => setTurAcik(true)}
               ustDugmeler={
                 <>
-                  <button type="button" className={s.yuzen} onClick={geri} aria-label="Geri">
+                  <button type="button" className={s.yuzen} onClick={geri} aria-label={tk("geri")}>
                     <Ikon ad="back" boyut={18} />
                   </button>
                   <div className={s.yuzenGrup}>
-                    <button type="button" className={s.yuzen} onClick={paylas} aria-label="Paylaş">
+                    <button type="button" className={s.yuzen} onClick={paylas} aria-label={t("eylem.paylas")}>
                       <Ikon ad="share" boyut={18} />
                     </button>
-                    <button type="button" className={`${s.yuzen} ${s.kaydet}`} onClick={kaydet} aria-pressed={favori} aria-label="Kaydet">
+                    <button type="button" className={`${s.yuzen} ${s.kaydet}`} onClick={kaydet} aria-pressed={favori} aria-label={t("eylem.kaydet")}>
                       <Ikon ad="heart" boyut={18} />
                     </button>
                   </div>
@@ -499,12 +505,16 @@ export function OtelDetay({ kod }: { kod: string }) {
         <div className={s.govde}>
           <div className={s.sol}>
             <section className={s.ozet}>
-              <h2>Otel · {ozetBolum}</h2>
+              <h2>{t("ozet.baslik", { yer: ozetBolum })}</h2>
               <p>
                 {[
-                  tarihVar && odaQ.isSuccess && odalar.length ? `${odalar.length} oda seçeneği müsait` : null,
+                  tarihVar && odaQ.isSuccess && odalar.length ? t("ozet.musaitOda", { sayi: odalar.length }) : null,
                   pansiyonlar.slice(0, 2).join(", ") || null,
-                  otel.policies?.checkInFrom ? `Giriş ${otel.policies.checkInFrom}${otel.policies.checkOutUntil ? `, çıkış ${otel.policies.checkOutUntil}` : ""}` : null,
+                  otel.policies?.checkInFrom
+                    ? otel.policies.checkOutUntil
+                      ? t("ozet.girisCikis", { giris: otel.policies.checkInFrom, cikis: otel.policies.checkOutUntil })
+                      : t("ozet.giris", { giris: otel.policies.checkInFrom })
+                    : null,
                 ]
                   .filter(Boolean)
                   .join(" · ")}
@@ -513,14 +523,14 @@ export function OtelDetay({ kod }: { kod: string }) {
                 <div className={s.rozetler}>
                   <span className={s.rozet}>
                     <Ikon ad="check" boyut={14} kalinlik={2.4} />
-                    Ücretsiz iptal seçenekleri
+                    {t("ozet.ucretsizIptal")}
                   </span>
                 </div>
               )}
             </section>
 
             {(oneCikan.length > 0 || ilkIptal) && (
-              <section className={s.oneCikan} aria-label="Öne çıkanlar">
+              <section className={s.oneCikan} aria-label={t("oneCikan.etiket")}>
                 <ul>
                   {oneCikan.map((o) => (
                     <li key={o.baslik}>
@@ -535,9 +545,9 @@ export function OtelDetay({ kod }: { kod: string }) {
                     <li>
                       <Nesne ad="iptal" boyut={44} />
                       <div>
-                        <b>{ilkIptal.yonelme} kadar ücretsiz iptal</b>
+                        <b>{t("iptal.ucretsizKadar", { tarih: ilkIptal.yonelme })}</b>
                         <span>
-                          {iptalliOdalar.length === odalar.length ? "Bu tarihlerdeki bütün odalarda geçerli." : `Ücretsiz iptalli ${iptalliOdalar.length} oda seçeneği var.`}
+                          {iptalliOdalar.length === odalar.length ? t("oneCikan.iptalHepsi") : t("oneCikan.iptalBazi", { sayi: iptalliOdalar.length })}
                         </span>
                       </div>
                     </li>
@@ -552,22 +562,22 @@ export function OtelDetay({ kod }: { kod: string }) {
                   {aciklama.map((p, i) => <p key={i}>{p}</p>)}
                 </div>
                 <button type="button" className={s.metinDugme} onClick={() => setPencere("aciklama")}>
-                  Devamını göster <Ikon ad="chevron-right" boyut={16} kalinlik={2.2} />
+                  {t("aciklama.devami")} <Ikon ad="chevron-right" boyut={16} kalinlik={2.2} />
                 </button>
               </section>
             )}
 
             <section id="odalar" className={s.odalar}>
               <div className={s.odaUst}>
-                <h2>Odanızı seçin</h2>
-                {tarihVar && <p>{tarihYazi} · {misafir} · fiyatlar {gece} gece için</p>}
+                <h2>{t("odalar.baslik")}</h2>
+                {tarihVar && <p>{t("odalar.altBaslik", { tarih: tarihYazi ?? "", misafir, gece })}</p>}
               </div>
               {odaGovde}
             </section>
 
             {olanaklar.length > 0 && (
               <section id="olanaklar" className={s.olanak}>
-                <h2>Bu otel size neler sunuyor?</h2>
+                <h2>{t("olanaklar.baslik")}</h2>
                 <ul>
                   {oneCikanOlanaklar(olanaklar).map((o) => (
                     <li key={o.id}>
@@ -578,22 +588,22 @@ export function OtelDetay({ kod }: { kod: string }) {
                 </ul>
                 {olanaklar.length > 10 && (
                   <button type="button" className={s.ikincil} onClick={() => setPencere("olanak")}>
-                    {olanaklar.length} olanağın tümünü göster
+                    {t("olanaklar.tumu", { sayi: olanaklar.length })}
                   </button>
                 )}
               </section>
             )}
           </div>
 
-          <aside className={s.rez} aria-label="Rezervasyon">
+          <aside className={s.rez} aria-label={t("rez.etiket")}>
             {oturum === "unauthenticated" && (
               <div className={s.teklif}>
                 <Nesne ad="indirim" boyut={52} />
                 <div>
-                  <b>Üyelere özel fırsatlar</b>
+                  <b>{t("rez.teklifBaslik")}</b>
                   <span>
-                    Giriş yapınca rezervasyonların ve favorilerin tek yerde.{" "}
-                    <button type="button" className={s.metinDugme} onClick={() => girisPenceresi.ac()}>Giriş yap</button>
+                    {t("rez.teklifMetin")}{" "}
+                    <button type="button" className={s.metinDugme} onClick={() => girisPenceresi.ac()}>{t("rez.girisYap")}</button>
                   </span>
                 </div>
               </div>
@@ -601,27 +611,27 @@ export function OtelDetay({ kod }: { kod: string }) {
             <div ref={rezRef} className={s.rezKart}>
               <div className={s.rezFiyat}>
                 {!tarihVar ? (
-                  <span className={s.rezBaslik}>Fiyatları görmek için tarih seçin</span>
+                  <span className={s.rezBaslik}>{t("odalar.tarihYok")}</span>
                 ) : odaQ.isPending ? (
                   <span className={s.fiyatBekle}>
                     <Bekleme tur="takvim" boyut={40} etiket={null} />
-                    <span>Fiyatlar geliyor</span>
+                    <span>{t("rez.fiyatlarGeliyor")}</span>
                   </span>
                 ) : fiyat ? (
                   <>
                     {oncekiFiyat && <s className={s.onceki}>{oncekiFiyat}</s>}
-                    <b className="lb-y">{fiyat}</b> <span>{gece} gece için{secili ? "" : ", en uygun oda"}</span>
+                    <b className="lb-y">{fiyat}</b> <span>{secili ? t("rez.geceIcin", { gece }) : t("rez.geceIcinEnUygun", { gece })}</span>
                   </>
                 ) : (
-                  <span className={s.rezBaslik}>Bu tarihlerde müsait oda yok</span>
+                  <span className={s.rezBaslik}>{t("odalar.yok")}</span>
                 )}
               </div>
               {kampanya && tarihVar && !odaQ.isPending && (
                 <div className={s.kampanya}>
                   <Ikon ad="discount" boyut={20} kalinlik={2} />
                   <div>
-                    <b>{kampanya.ad} · %{kampanya.yuzde}</b>
-                    <span>{KAMPANYA_ACIKLAMA[kampanya.tur] ?? "Bu tarihlere özel indirim"}. Kod gerekmez.</span>
+                    <b>{t("rez.kampanya", { ad: kampanya.ad, yuzde: kampanya.yuzde })}</b>
+                    <span>{t(`rez.kampanyaAciklama.${KAMPANYA_ACIKLAMA[kampanya.tur] ?? "tarihAraligi"}`)}</span>
                   </div>
                 </div>
               )}
@@ -631,16 +641,16 @@ export function OtelDetay({ kod }: { kod: string }) {
                   <div>
                     <b>{secili.roomName}</b>
                     <span>
-                      {secili.boardTypeName} · {iptalOzeti(secili.cancellationPolicies).ucretsiz ? `${iptalOzeti(secili.cancellationPolicies).ucretsiz!.yonelme} kadar ücretsiz iptal` : "İade edilmez"}
+                      {secili.boardTypeName} · {iptalOzeti(secili.cancellationPolicies, bicim).ucretsiz ? t("iptal.ucretsizKadar", { tarih: iptalOzeti(secili.cancellationPolicies, bicim).ucretsiz!.yonelme }) : t("iptal.iadeEdilmez")}
                     </span>
                   </div>
-                  <button type="button" className={s.metinDugme} onClick={() => setOdaAcik(secili.priceCode)}>Değiştir</button>
+                  <button type="button" className={s.metinDugme} onClick={() => setOdaAcik(secili.priceCode)}>{t("rez.degistir")}</button>
                 </div>
               )}
               {secili && (
                 <div className={s.dokum}>
                   <div>
-                    <span>{yaz((odaOncekiFiyati(secili) ?? odaToplami(secili)) / gece, secili.currency)} × {gece} gece</span>
+                    <span>{t("fiyat.geceCarpi", { fiyat: yaz((odaOncekiFiyati(secili) ?? odaToplami(secili)) / gece, secili.currency), gece })}</span>
                     <span>{yaz(odaOncekiFiyati(secili) ?? odaToplami(secili), secili.currency)}</span>
                   </div>
                   {secili.pricing?.kampanya && (
@@ -650,15 +660,15 @@ export function OtelDetay({ kod }: { kod: string }) {
                     </div>
                   )}
                   <div className={s.toplam}>
-                    <span>Toplam</span>
+                    <span>{t("fiyat.toplam")}</span>
                     <span>{yaz(odaToplami(secili), secili.currency)}</span>
                   </div>
                 </div>
               )}
               <div className={s.rezAlt}>
-                <p>Henüz ödeme alınmaz</p>
+                <p>{t("rez.odemeYok")}</p>
                 <button type="button" className={s.dugme} onClick={anaEylem} disabled={gidiyor || (tarihVar && !odaQ.isPending && !odalar.length)}>
-                  {gidiyor ? "Hazırlanıyor…" : anaMetin}
+                  {gidiyor ? t("ana.hazirlaniyor") : anaMetin}
                 </button>
               </div>
             </div>
@@ -667,9 +677,9 @@ export function OtelDetay({ kod }: { kod: string }) {
 
         {konum && (
           <section id="konum" className={s.tam}>
-            <h2>Nerede olacaksınız?</h2>
+            <h2>{t("konum.baslik")}</h2>
             <div className={s.harita}>
-              <KonumHaritasi konum={konum} className={s.haritaIc} yedek={<div className={s.haritaYedek}>Harita şu an gösterilemiyor.</div>} />
+              <KonumHaritasi konum={konum} className={s.haritaIc} yedek={<div className={s.haritaYedek}>{t("konum.haritaYok")}</div>} />
             </div>
             <div className={s.haritaAlt}>
               <div>
@@ -677,47 +687,47 @@ export function OtelDetay({ kod }: { kod: string }) {
                 {otel.address && otel.address !== yer && <span>{otel.address}</span>}
               </div>
               <a className={s.metinDugme} href={`https://www.google.com/maps/search/?api=1&query=${konum.lat},${konum.lng}`} target="_blank" rel="noopener noreferrer">
-                Google Haritalar&apos;da aç <Ikon ad="chevron-right" boyut={16} kalinlik={2.2} />
+                {t("konum.googleHaritalar")} <Ikon ad="chevron-right" boyut={16} kalinlik={2.2} />
               </a>
             </div>
           </section>
         )}
 
         <section id="bilinmesi" className={s.tam}>
-          <h2>Bilinmesi gerekenler</h2>
+          <h2>{t("bilinmesi.baslik")}</h2>
           <div className={s.bilinmesi}>
             <div>
-              <h3>Otel kuralları</h3>
+              <h3>{t("bilinmesi.kurallar")}</h3>
               <ul>
-                {otel.policies?.checkInFrom && <li><Ikon ad="clock" boyut={20} /><span>Giriş saati: {otel.policies.checkInFrom} ve sonrası</span></li>}
-                {otel.policies?.checkOutUntil && <li><Ikon ad="clock" boyut={20} /><span>Çıkış saati: en geç {otel.policies.checkOutUntil}</span></li>}
+                {otel.policies?.checkInFrom && <li><Ikon ad="clock" boyut={20} /><span>{t("bilinmesi.girisSaati", { saat: otel.policies.checkInFrom })}</span></li>}
+                {otel.policies?.checkOutUntil && <li><Ikon ad="clock" boyut={20} /><span>{t("bilinmesi.cikisSaati", { saat: otel.policies.checkOutUntil })}</span></li>}
                 {otel.policies?.childrenText && <li><Ikon ad="child" boyut={20} /><span>{otel.policies.childrenText}</span></li>}
-                {!otel.policies?.checkInFrom && !otel.policies?.checkOutUntil && <li><Ikon ad="info" boyut={20} /><span>Giriş ve çıkış saatleri otelden teyit edilir</span></li>}
+                {!otel.policies?.checkInFrom && !otel.policies?.checkOutUntil && <li><Ikon ad="info" boyut={20} /><span>{t("bilinmesi.saatlerTeyit")}</span></li>}
               </ul>
             </div>
             <div>
-              <h3>İptal koşulları</h3>
+              <h3>{t("iptal.baslik")}</h3>
               <ul>
                 {bilgiIptal?.ucretsiz ? (
-                  <li><Ikon ad="free-cancel" boyut={20} /><span>{bilgiIptal.ucretsiz.yonelme} kadar ücretsiz iptal (saat {bilgiIptal.ucretsiz.saat})</span></li>
+                  <li><Ikon ad="free-cancel" boyut={20} /><span>{t("bilinmesi.ucretsizIptalSaat", { tarih: bilgiIptal.ucretsiz.yonelme, saat: bilgiIptal.ucretsiz.saat })}</span></li>
                 ) : bilgiIptal?.ceza ? (
-                  <li><Ikon ad="info" boyut={20} /><span>Bu oda iade edilmez</span></li>
+                  <li><Ikon ad="info" boyut={20} /><span>{t("bilinmesi.iadeEdilmez")}</span></li>
                 ) : (
-                  <li><Ikon ad="free-cancel" boyut={20} /><span>İptal koşulları odaya göre değişir; oda seçince gösterilir</span></li>
+                  <li><Ikon ad="free-cancel" boyut={20} /><span>{t("bilinmesi.odayaGore")}</span></li>
                 )}
                 {bilgiIptal?.ucretsiz && bilgiIptal.ceza && (
-                  <li><Ikon ad="info" boyut={20} /><span>Sonrasında iptal ücreti {yaz(bilgiIptal.ceza.tutar, bilgiIptal.ceza.para)}</span></li>
+                  <li><Ikon ad="info" boyut={20} /><span>{t("bilinmesi.sonraUcret", { tutar: yaz(bilgiIptal.ceza.tutar, bilgiIptal.ceza.para) })}</span></li>
                 )}
               </ul>
             </div>
             {onemli.length > 0 && (
               <div>
-                <h3>Önemli bilgiler</h3>
+                <h3>{t("bilinmesi.onemli")}</h3>
                 <ul>
                   <li className={s.kirp}><Ikon ad="secure" boyut={20} /><span>{onemli[0]}</span></li>
                 </ul>
                 <button type="button" className={s.metinDugme} onClick={() => setPencere("bilgi")}>
-                  Daha fazla bilgi <Ikon ad="chevron-right" boyut={16} kalinlik={2.2} />
+                  {t("bilinmesi.dahaFazla")} <Ikon ad="chevron-right" boyut={16} kalinlik={2.2} />
                 </button>
               </div>
             )}
@@ -729,26 +739,26 @@ export function OtelDetay({ kod }: { kod: string }) {
 
       <div className={s.mobilCubuk}>
         <div>
-          {tarihVar && fiyat ? <b className="lb-y">{fiyat}</b> : <b>{tarihVar ? (odaQ.isPending ? "Fiyatlar geliyor…" : "Müsait oda yok") : "Fiyat için tarih seç"}</b>}
+          {tarihVar && fiyat ? <b className="lb-y">{fiyat}</b> : <b>{tarihVar ? (odaQ.isPending ? t("mobil.fiyatlarGeliyor") : t("mobil.odaYok")) : t("mobil.tarihSec")}</b>}
           <button type="button" onClick={() => setMobilTarih(true)}>
-            {tarihVar ? `${gece} gece · ${tarihYazi}` : "Tarih ekle"}
+            {tarihVar ? t("geceTarih", { gece, tarih: tarihYazi ?? "" }) : t("mobil.tarihEkle")}
           </button>
         </div>
         <button type="button" className={s.dugme} onClick={anaEylem} disabled={gidiyor || (tarihVar && !odaQ.isPending && !odalar.length)}>
-          {gidiyor ? "Hazırlanıyor…" : anaMetin}
+          {gidiyor ? t("ana.hazirlaniyor") : anaMetin}
         </button>
       </div>
 
-      <Pencere acik={pencere === "odalar"} onKapat={() => setPencere(null)} baslik={`Bütün odalar${tarihYazi ? ` · ${tarihYazi}` : ""}`} genislik={820}>
+      <Pencere acik={pencere === "odalar"} onKapat={() => setPencere(null)} baslik={tarihYazi ? t("odalar.pencereTarih", { tarih: tarihYazi }) : t("odalar.pencere")} genislik={820}>
         <div className={s.odaListe}>
           {odalar.map((o) => (
             <OdaKarti key={o.priceCode} oda={o} gece={gece} misafir={misafir} secili={o.priceCode === seciliKod} liste onAc={() => { setPencere(null); setOdaAcik(o.priceCode); }} />
           ))}
         </div>
       </Pencere>
-      <Pencere acik={pencere === "olanak"} onKapat={() => setPencere(null)} baslik="Bu otel size neler sunuyor?">
+      <Pencere acik={pencere === "olanak"} onKapat={() => setPencere(null)} baslik={t("olanaklar.baslik")}>
         <div className={s.tumOlanak}>
-          {olanakGruplari(olanaklar).map(([k, v]) => (
+          {olanakGruplari(olanaklar, (g) => t(`olanakGrubu.${g}`)).map(([k, v]) => (
             <section key={k}>
               <h3>{k}</h3>
               <ul>
@@ -763,10 +773,10 @@ export function OtelDetay({ kod }: { kod: string }) {
           ))}
         </div>
       </Pencere>
-      <Pencere acik={pencere === "aciklama"} onKapat={() => setPencere(null)} baslik="Otel hakkında">
+      <Pencere acik={pencere === "aciklama"} onKapat={() => setPencere(null)} baslik={t("aciklama.pencere")}>
         <div className={s.pencereMetin}>{aciklama.map((p, i) => <p key={i}>{p}</p>)}</div>
       </Pencere>
-      <Pencere acik={pencere === "bilgi"} onKapat={() => setPencere(null)} baslik="Önemli bilgiler">
+      <Pencere acik={pencere === "bilgi"} onKapat={() => setPencere(null)} baslik={t("bilinmesi.onemli")}>
         <div className={s.pencereMetin}>{onemli.map((p, i) => <p key={i}>{p}</p>)}</div>
       </Pencere>
 
@@ -789,7 +799,7 @@ export function OtelDetay({ kod }: { kod: string }) {
         onKapat={() => setTurAcik(false)}
         bolumler={turBolumleri}
         onFoto={(b, j) => setIsik({ b, j })}
-        ustSag={<div className={s.eylem}><button type="button" onClick={paylas}><Ikon ad="share" boyut={18} />Paylaş</button></div>}
+        ustSag={<div className={s.eylem}><button type="button" onClick={paylas}><Ikon ad="share" boyut={18} />{t("eylem.paylas")}</button></div>}
       />
       <IsikKutusu konum={isik} bolumler={turBolumleri} onKapat={() => setIsik(null)} onDegis={(j) => setIsik((k) => (k ? { ...k, j } : k))} />
       <TarihPenceresi acik={mobilTarih} deger={urlDeger} onKapat={() => setMobilTarih(false)} onUygula={uygula} />
@@ -807,8 +817,10 @@ function OdaKarti({ oda, gece, misafir, secili, liste, onAc }: {
   liste?: boolean;
   onAc: () => void;
 }) {
+  const t = useTranslations("otel");
+  const bicim = useBicim();
   const { yaz } = useFiyat();
-  const ip = iptalOzeti(oda.cancellationPolicies);
+  const ip = iptalOzeti(oda.cancellationPolicies, bicim);
   const yatak = oda.attributes?.find((a) => a.categoryName === "Yatak")?.name;
   return (
     <button type="button" className={s.oda} data-liste={liste || undefined} data-secili={secili || undefined} onClick={onAc}>
@@ -825,24 +837,30 @@ function OdaKarti({ oda, gece, misafir, secili, liste, onAc }: {
         <span>{[yatak, misafir, oda.boardTypeName].filter(Boolean).join(" · ")}</span>
         {ip.ucretsiz ? (
           <span className={s.yesil}>
-            <Ikon ad="check" boyut={16} kalinlik={2.2} /> {ip.ucretsiz.yonelme} kadar ücretsiz iptal
+            <Ikon ad="check" boyut={16} kalinlik={2.2} /> {t("iptal.ucretsizKadar", { tarih: ip.ucretsiz.yonelme })}
           </span>
         ) : (
-          <span>İade edilmez</span>
+          <span>{t("iptal.iadeEdilmez")}</span>
         )}
       </span>
       <span className={s.odaFiyat}>
         {odaOncekiFiyati(oda) && <s>{yaz(odaOncekiFiyati(oda)!, oda.currency)}</s>}
         <b className="lb-y">{yaz(odaToplami(oda), oda.currency)}</b>
-        <small>{gece} gece, toplam</small>
+        <small>{t("odalar.geceToplam", { gece })}</small>
       </span>
     </button>
   );
 }
 
+function HaritaBekleme() {
+  const t = useTranslations("otel");
+  return <div className={s.haritaYedek}>{t("konum.haritaYukleniyor")}</div>;
+}
+
 function Iskelet() {
+  const t = useTranslations("otel");
   return (
-    <div className={`lb ${s.sayfa}`} aria-busy="true" aria-label="Otel yükleniyor">
+    <div className={`lb ${s.sayfa}`} aria-busy="true" aria-label={t("yukleniyor")}>
       <div className={s.ana}>
         <div className={s.iskeletBaslik}><i /><i /></div>
         <div className={s.iskeletGaleri} />

@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/prisma";
-import { EtscoreError, royalApiClient } from "./client";
+import { EtscoreError, royalApiClient, type EtsDil } from "./client";
 import {
   ETS_ARAMA_PAKETI,
   etsAramaIstegi,
@@ -160,24 +160,27 @@ const DETAY_EN_FAZLA = 500;
 const detayOnbellegi = new Map<string, { d: EtsHotelDetail; zaman: number }>();
 
 /** Ham otel detayı (önbellekli). Oda araması fotoğraflar için de kullanıyor. */
-export async function etsOtelDetayiGetir(hotelCode: string, taze = false): Promise<EtsHotelDetail> {
-  const kayit = detayOnbellegi.get(hotelCode);
+export async function etsOtelDetayiGetir(hotelCode: string, taze = false, dil: EtsDil = "tr-TR"): Promise<EtsHotelDetail> {
+  // Önbellek dile göre ayrı: açıklama ve olanak adları dile göre geliyor.
+  const anahtar = dil === "tr-TR" ? hotelCode : `${dil}:${hotelCode}`;
+  const kayit = detayOnbellegi.get(anahtar);
   if (!taze && kayit && Date.now() - kayit.zaman < DETAY_OMRU_MS) return kayit.d;
-  const d = await royalApiClient.post<EtsHotelDetail>(`${ICERIK}/hotel/detail`, { hotelId: hotelCode });
-  detayOnbellegi.delete(hotelCode);
-  detayOnbellegi.set(hotelCode, { d, zaman: Date.now() });
+  const d = await royalApiClient.post<EtsHotelDetail>(`${ICERIK}/hotel/detail`, { hotelId: hotelCode }, { dil });
+  detayOnbellegi.delete(anahtar);
+  detayOnbellegi.set(anahtar, { d, zaman: Date.now() });
   if (detayOnbellegi.size > DETAY_EN_FAZLA) {
     detayOnbellegi.delete(detayOnbellegi.keys().next().value!);
   }
   return d;
 }
 
-export async function getHotelDetail(hotelCode: string): Promise<HotelDetailResponse> {
+export async function getHotelDetail(hotelCode: string, dil: EtsDil = "tr-TR"): Promise<HotelDetailResponse> {
   if (USE_MOCK) return mockGetHotelDetail(hotelCode);
 
-  const d = await etsOtelDetayiGetir(hotelCode);
+  const d = await etsOtelDetayiGetir(hotelCode, false, dil);
   // Detay olanağın adını veriyor, grubunu vermiyor; grup bizim tabloda
-  // (syncFacilities).
+  // (syncFacilities). Türkçe kategori adı her dilde gruplama anahtarı: arayüz
+  // grubun adını dile göre yazar (otel-detay/yardimci olanakGruplari).
   const ids = (d.facilities ?? []).map((f) => String(f.id));
   const kategoriler = new Map(
     (
@@ -189,6 +192,7 @@ export async function getHotelDetail(hotelCode: string): Promise<HotelDetailResp
   );
   return etsOtelDetayi(d, kategoriler);
 }
+
 
 /** Tüm otel listesi — yalnızca ad ve kod gelir. */
 export async function getHotelList(params: HotelListRequest): Promise<HotelListItem[]> {

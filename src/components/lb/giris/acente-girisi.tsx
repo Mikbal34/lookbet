@@ -9,6 +9,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getSession, signIn } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { Ikon } from "@/components/lb/ikon";
 import { Nesne, type NesneAdi } from "@/components/lb/nesne";
 import { guvenliHedef } from "./hedef";
@@ -28,6 +29,8 @@ export function AcenteGirisi() {
   const router = useRouter();
   const p = useSearchParams();
   const ham = p.get("callbackUrl");
+  const t = useTranslations("giris");
+  const tk = useTranslations("ortak");
   const [adim, setAdim] = React.useState<"eposta" | "kod">("eposta");
   const [eposta, setEposta] = React.useState("");
   const [kod, setKod] = React.useState<string[]>(() => Array(6).fill(""));
@@ -46,7 +49,7 @@ export function AcenteGirisi() {
   const kodIste = async (e?: React.FormEvent) => {
     e?.preventDefault();
     const v = eposta.trim().toLowerCase();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return setHata("Geçerli bir e-posta yaz");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return setHata(t("hata.eposta"));
     setYukleniyor(true);
     setHata(null);
     try {
@@ -56,13 +59,13 @@ export function AcenteGirisi() {
         body: JSON.stringify({ email: v, tur: "acente" }),
       });
       const d = await r.json().catch(() => ({}));
-      if (!r.ok) return setHata(d.error ?? "Kod gönderilemedi, birazdan tekrar dene");
-      setBilgi(d.devCode ? `Geliştirme modu, kod: ${d.devCode}` : null);
+      if (!r.ok) return setHata(d.error ?? t("hata.gonderilemedi"));
+      setBilgi(d.devCode ? t("kod.gelistirme", { kod: d.devCode }) : null);
       setKod(Array(6).fill(""));
       setKalan(60);
       setAdim("kod");
     } catch {
-      setHata("Kod gönderilemedi, bağlantını kontrol et");
+      setHata(t("hata.baglanti"));
     } finally {
       setYukleniyor(false);
     }
@@ -76,8 +79,8 @@ export function AcenteGirisi() {
       const r = await signIn("acente-otp", { redirect: false, email: eposta.trim().toLowerCase(), code: tam });
       if (!r || r.error) {
         // authorize() mesajı (kilit, rol uyuşmazlığı, kapalı hesap) varsa onu göster.
-        setHata(r?.error && r.error !== "CredentialsSignin" ? r.error : "Kod hatalı ya da süresi doldu");
-        setTitre((t) => t + 1);
+        setHata(r?.error && r.error !== "CredentialsSignin" ? r.error : t("hata.kodHatali"));
+        setTitre((x) => x + 1);
         setKod(Array(6).fill(""));
         return;
       }
@@ -97,8 +100,8 @@ export function AcenteGirisi() {
           <small>Partner</small>
         </Link>
         <div className={s.ustSag}>
-          <span>Müşteri misin?</span>
-          <Link href="/">Siteye dön</Link>
+          <span>{t("acente.musteriMisin")}</span>
+          <Link href="/">{t("acente.siteyeDon")}</Link>
         </div>
       </header>
 
@@ -114,14 +117,14 @@ export function AcenteGirisi() {
         <div className={s.kart}>
           <div className={s.kartBas}>
             <Nesne ad="anahtar-karti" boyut={72} className={s.nesne} />
-            <h1 className="lb-y">Acente girişi</h1>
-            <p>{adim === "eposta" ? "Giriş yap ya da LookBeds Partner ol" : "E-postana gelen kodu gir"}</p>
+            <h1 className="lb-y">{t("acente.baslik")}</h1>
+            <p>{adim === "eposta" ? t("acente.altBaslikEposta") : t("acente.altBaslikKod")}</p>
           </div>
 
           {adim === "eposta" ? (
             <form className={s.adim} onSubmit={kodIste} noValidate>
               <div className={s.alan} data-hatali={!!hata || undefined}>
-                <label htmlFor="acente-eposta">E-posta</label>
+                <label htmlFor="acente-eposta">{t("kod.eposta")}</label>
                 <input
                   id="acente-eposta"
                   type="email"
@@ -136,29 +139,29 @@ export function AcenteGirisi() {
                 />
               </div>
               {hata && <Hata>{hata}</Hata>}
-              <button type="submit" className={s.devam} disabled={yukleniyor}>{yukleniyor ? "Kod gönderiliyor…" : "Devam et"}</button>
-              <p className={s.not}>Şifre yok: e-postana 6 haneli bir kod gönderiyoruz. Şirket e-postanı kullan.</p>
+              <button type="submit" className={s.devam} disabled={yukleniyor}>{yukleniyor ? t("kod.gonderiliyor") : tk("devam")}</button>
+              <p className={s.not}>{t("acente.sirketEpostasi")}</p>
             </form>
           ) : (
             <form className={s.adim} onSubmit={(e) => { e.preventDefault(); kodDogrula(); }} noValidate>
               <p className={s.aciklama}>
-                <b>{eposta.trim()}</b> adresine kod gönderdik. Gelmediyse gereksiz klasörüne bak.
+                {t.rich("acente.kodGonderildi", { eposta: eposta.trim(), b: (c) => <b>{c}</b> })}
               </p>
               {bilgi && <p className={s.bilgi}>{bilgi}</p>}
               <KodKutulari key={titre} deger={kod} titre={titre} onDegis={(y) => { setKod(y); setHata(null); }} onTamam={(k) => kodDogrula(k)} />
               {hata && <Hata>{hata}</Hata>}
               <div className={s.kodAlt}>
                 {kalan > 0 ? (
-                  <span>Yeni kod {kalan} sn sonra</span>
+                  <span>{t("kod.yeniKod", { kalan })}</span>
                 ) : (
-                  <button type="button" className={s.metin} onClick={() => kodIste()} disabled={yukleniyor}>Kodu yeniden gönder</button>
+                  <button type="button" className={s.metin} onClick={() => kodIste()} disabled={yukleniyor}>{t("kod.yenidenGonder")}</button>
                 )}
-                <button type="button" className={s.metin} onClick={() => { setAdim("eposta"); setHata(null); }}>E-postayı değiştir</button>
+                <button type="button" className={s.metin} onClick={() => { setAdim("eposta"); setHata(null); }}>{t("kod.epostaDegistir")}</button>
               </div>
-              <button type="submit" className={s.devam} disabled={kod.join("").length !== 6 || yukleniyor}>{yukleniyor ? "Giriş yapılıyor…" : "Giriş yap"}</button>
+              <button type="submit" className={s.devam} disabled={kod.join("").length !== 6 || yukleniyor}>{yukleniyor ? t("kod.girisYapiliyor") : t("kod.girisYap")}</button>
             </form>
           )}
-          <p className={s.not}>İlk kez mi geliyorsun? Girişten sonra kısa bir başvuru formu doldurursun; onaylanınca panelin açılır.</p>
+          <p className={s.not}>{t("acente.ilkKez")}</p>
         </div>
       </main>
     </div>

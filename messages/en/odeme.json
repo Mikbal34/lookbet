@@ -1,1 +1,183 @@
-{}
+{
+  "ust": {
+    "guvenliBaglanti": "Secure connection",
+    "oteleDon": "Back to the hotel page",
+    "baslik": "Confirm and pay"
+  },
+  "kapali": {
+    "baslik": "Bookings are currently closed",
+    "gozdenGecir": "We're getting our payment system ready. You can review your details, but you can't complete a booking just yet.",
+    "yakinda": "We're getting our payment system ready. You'll be able to book here very soon."
+  },
+  "adim": {
+    "iletisim": "Contact details",
+    "misafirler": "Who's staying",
+    "yontem": "Payment method",
+    "gozden": "Review your booking",
+    "duzenle": "Edit"
+  },
+  "iletisim": {
+    "girisYaptinAdli": "Logged in as {ad}",
+    "girisYaptin": "You're logged in",
+    "hesabaKaydedilir": "This booking will be saved to your account, so you can keep track of it in My bookings.",
+    "epostaNot": "We'll send your confirmation to this address",
+    "ulkeKodu": "Country code"
+  },
+  "alan": {
+    "ad": "First name",
+    "soyad": "Last name",
+    "eposta": "Email",
+    "telefon": "Phone",
+    "cinsiyet": "Gender",
+    "kadin": "Female",
+    "erkek": "Male",
+    "dogum": "Date of birth",
+    "dogumOrnek": "DD.MM.YYYY"
+  },
+  "misafir": {
+    "benDe": "The person booking is also staying",
+    "kayitliDolu": "Your saved guests · all spots are filled",
+    "kayitliSec": "Your saved guests · tap one to fill the next empty spot",
+    "yetiskinBaslik": "Guest {sira} · adult",
+    "cocukBaslik": "Guest {sira} · child (age {yas})",
+    "istek": "Special requests (optional)",
+    "istekOrnek": "For example, a high floor, early check-in or a cot",
+    "istekNot": "{sayi} / 500 · Shared with the hotel, but not guaranteed"
+  },
+  "yontem": {
+    "kart": "Pay by card",
+    "kartAlt": "Credit or debit card",
+    "havale": "Bank transfer",
+    "havaleAlt": "Straight to our bank account",
+    "kartBilgi": "After you confirm, you'll enter your card details on your bank's secure payment page. LookBeds doesn't store card details.",
+    "havaleBaslik": "Bank details will arrive with your confirmation email",
+    "havaleBilgi": "Just add your booking number as the payment reference.",
+    "ozetKart": "Card payment",
+    "ozetHavale": "Bank transfer"
+  },
+  "gozden": {
+    "iptalUcretsiz": "Free cancellation until {saat} on {gun} {ay}.",
+    "iptalUcretsizCezali": "Free cancellation until {saat} on {gun} {ay}; after that, you'll be charged {ceza}.",
+    "iadeEdilmez": "This booking is non-refundable.",
+    "iptalBilgiYok": "We couldn't load the cancellation policy; you can choose the room again on the hotel page.",
+    "girisCikisBaslik": "Check-in and check-out",
+    "girisCikis": "Check-in from {giris}, check-out by {cikis}. You'll need to show ID at check-in.",
+    "girisSaati": "Check-in from {giris}. You'll need to show ID at check-in.",
+    "notlarBaslik": "Important notes from the hotel",
+    "notlariOku": "Read the notes",
+    "sozlesme": "I've read the <dugme>pre-booking information</dugme> and accept the hotel rules and cancellation policy.",
+    "tamamlanamadi": "We couldn't complete your booking",
+    "odayiYenidenSec": "Go back to the hotel page and choose the room again",
+    "onayla": "Confirm booking · {tutar}",
+    "yapiliyor": "Making your booking…"
+  },
+  "ozet": {
+    "etiket": "Booking summary",
+    "iptalUcretsiz": "Free cancellation until {gun} {ay}",
+    "iadeYapilmaz": "This booking is non-refundable",
+    "iptalBilgiYok": "We couldn't load the cancellation policy",
+    "ayrintilar": "Details",
+    "tarihler": "Dates",
+    "tarihAraligi": "{giris} – {cikis} · {gece, plural, one {# night} other {# nights}}",
+    "degistir": "Change",
+    "misafirler": "Guests",
+    "misafirOzeti": "{yetiskin, plural, one {# adult} other {# adults}}{cocuk, plural, =0 {} one {, # child} other {, # children}} · 1 room",
+    "guvendeBaslik": "Your details are safe",
+    "guvendeMetin": "Your connection is encrypted. Your details are only shared with the hotel for this booking."
+  },
+  "fiyat": {
+    "baslik": "Price details",
+    "geceBasi": "{fiyat} × {gece, plural, one {# night} other {# nights}}",
+    "kampanya": "{ad} {yuzde}%",
+    "indirim": "Discount",
+    "kupon": "Coupon {kod}",
+    "kaldir": "Remove",
+    "vergiler": "Taxes and fees",
+    "dahil": "Included",
+    "toplam": "Total <kucuk>{birim}</kucuk>",
+    "kurNotu": "Payment is taken in {para}: <b>{tutar}</b>. The {birim} amount is approximate, based on the Central Bank of Türkiye rate.",
+    "kurNotuTarihli": "Payment is taken in {para}: <b>{tutar}</b>. The {birim} amount is approximate, based on the Central Bank of Türkiye rate ({tarih}).",
+    "dokum": "Price breakdown"
+  },
+  "kupon": {
+    "ekle": "Add a coupon",
+    "kod": "Coupon code",
+    "uygula": "Apply",
+    "kodYaz": "Enter the coupon code",
+    "uygulanamadi": "We couldn't apply this coupon"
+  },
+  "iptal": {
+    "baslik": "Cancellation policy",
+    "kadar": "Until {gun} {ay}",
+    "ucretsizTamIade": "Free cancellation before {saat}, with a full refund",
+    "cezaBaslangic": "From {saat} on {tarih}",
+    "rezervasyondan": "From the moment you book",
+    "ucret": "Cancellation fee: {tutar}",
+    "ucretToplam": "Cancellation fee: {tutar} (the full amount)",
+    "not": "Times are in Türkiye time. You can cancel from My bookings."
+  },
+  "dokum": {
+    "baslik": "Pre-booking information and price breakdown",
+    "hizmet": "Service",
+    "otelKonaklamasi": "Hotel stay",
+    "otel": "Hotel",
+    "oda": "Room",
+    "misafirler": "Guests",
+    "toplam": "Total ({birim}, taxes included)",
+    "odenecek": "Amount due ({para})",
+    "iptal": "Cancellation",
+    "ucretsizCezali": "Free until {gun} {ay}, then {tutar}",
+    "ucretsizUcretli": "Free until {gun} {ay}, then a fee applies",
+    "iadeEdilmez": "Non-refundable",
+    "bilgiYok": "Not available"
+  },
+  "katman": {
+    "onaylandi": "Your booking is confirmed",
+    "alindi": "We've received your booking",
+    "yapiliyor": "Making your booking",
+    "yonlendiriliyor": "Taking you to the confirmation page",
+    "iletiliyor": "Sending your details to the hotel",
+    "ayirtiliyor": "Reserving your room",
+    "bekleniyor": "Waiting for the hotel to confirm",
+    "sayfayiKapatma": "This may take a few seconds; please don't close this page."
+  },
+  "hata": {
+    "ad": "Enter your first name",
+    "soyad": "Enter your last name",
+    "eposta": "Enter a valid email address",
+    "telefon": "Enter your phone number",
+    "telefonTr": "Enter a 10-digit number (5XX XXX XX XX)",
+    "telefonEksik": "This phone number looks incomplete",
+    "misafirAd": "Enter the guest's first name",
+    "misafirSoyad": "Enter the guest's last name",
+    "cinsiyet": "Select a gender",
+    "dogumBicim": "Use the DD.MM.YYYY format",
+    "dogum": "Enter the date of birth",
+    "yetiskinYasi": "Adult guests must be at least 18 at check-in",
+    "cocukYasi": "Must be {yas} at check-in (the age in your search)",
+    "alan": "Please check this field",
+    "kuponKaldirildi": "{hata} We've removed the coupon; if you confirm, you'll book at the price without it.",
+    "olusturulamadi": "We couldn't create your booking",
+    "baglanti": "There was a connection problem; please try again shortly."
+  },
+  "bos": {
+    "baslik": "We couldn't find your booking details",
+    "metin": "You'll get to this page after choosing a room. If you'd already chosen one, your selection may have expired.",
+    "aramayaDon": "Back to hotel search"
+  },
+  "kartlar": {
+    "etiket": "Accepted cards: Visa, Mastercard, Troy, American Express"
+  },
+  "onay": {
+    "metaBaslik": "Booking — LookBeds",
+    "onaylandi": "Your booking is confirmed!",
+    "alindi": "We've received your booking request",
+    "epostaGonderildi": "We've sent the confirmation details to your email.",
+    "onayBekleniyor": "We're waiting for the hotel to confirm. You can check the status in My bookings, and our team is following up too.",
+    "numara": "Booking number",
+    "numaraEtiket": "Booking number: {no}",
+    "numaraNot": "The hotel may ask for this number",
+    "rezervasyonlarim": "My bookings",
+    "yeniArama": "New search"
+  }
+}

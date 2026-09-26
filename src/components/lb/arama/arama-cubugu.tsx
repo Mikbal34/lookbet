@@ -11,10 +11,12 @@
 // bir panel kutusu yeni içeriğin boyutuna yumuşakça uzayıp kısalır.
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
+import { useBicim } from "@/i18n/use-bicim";
 import { Ikon } from "../ikon";
 import { Nesne, type NesneAdi } from "../nesne";
 import { MisafirPaneli, Takvim, YerPaneli } from "./paneller";
-import { misafirMetni, tarihMetni, type AramaDegeri, type PanelAdi } from "./durum";
+import { misafirOzeti, tarihOzeti, type AramaDegeri, type PanelAdi } from "./durum";
 import s from "./arama-cubugu.module.css";
 
 export interface AramaKontrol {
@@ -45,6 +47,9 @@ export interface AramaCubuguProps {
 export function AramaCubugu({
   deger, onDegis, onAra, kokRef, buyukRef, kucukRef, tekRef, kontrol, nesne, onKucuk, onTek, onAcikDegis, akis, className,
 }: AramaCubuguProps) {
+  const t = useTranslations("arama");
+  const tk = useTranslations("ortak");
+  const b = useBicim();
   const [aktif, setAktif] = React.useState<PanelAdi | null>(null);
   const ilkAcilis = React.useRef(true);
   const kok = kokRef;
@@ -124,8 +129,8 @@ export function AramaCubugu({
     return () => ro.disconnect();
   }, [aktif, kok, buyuk]);
 
-  const tarih = tarihMetni(deger);
-  const misafir = misafirMetni(deger);
+  const tarih = tarihOzeti(deger, b);
+  const misafir = misafirOzeti(deger, t);
   return (
     <div ref={kokRef} className={`${s.arama} ${akis ? s.akis : ""} ${className ?? ""}`} data-acik={aktif ? "" : undefined} role="search">
       <div ref={buyukRef} className={`${s.katman} ${s.buyuk}`}>
@@ -136,12 +141,12 @@ export function AramaCubugu({
           data-secili={aktif === "yer" || undefined}
           onClick={() => ac("yer")}
         >
-          <label htmlFor="lb-nereye"><b>Nereye</b></label>
+          <label htmlFor="lb-nereye"><b>{t("nereye")}</b></label>
           <input
             id="lb-nereye"
             ref={yerGirdi}
             value={deger.yer}
-            placeholder="Şehir, bölge ya da otel ara"
+            placeholder={t("yerAra")}
             autoComplete="off"
             onFocus={() => aktif !== "yer" && ac("yer")}
             onChange={(e) => onDegis({ ...deger, yer: e.target.value, yerUst: null, yerId: null })}
@@ -161,8 +166,8 @@ export function AramaCubugu({
           aria-expanded={aktif === "tarih"}
           onClick={() => (aktif === "tarih" ? kapat() : ac("tarih"))}
         >
-          <b>Tarihler</b>
-          <span data-dolu={tarih ? "" : undefined}>{tarih ?? "Giriş – çıkış ekle"}</span>
+          <b>{t("cubuk.tarihler")}</b>
+          <span data-dolu={tarih ? "" : undefined}>{tarih ?? t("cubuk.girisCikisEkle")}</span>
         </button>
         <button
           ref={(el) => { alanlar.current.misafir = el; }}
@@ -172,19 +177,19 @@ export function AramaCubugu({
           aria-expanded={aktif === "misafir"}
           onClick={() => (aktif === "misafir" ? kapat() : ac("misafir"))}
         >
-          <b>Misafirler</b>
+          <b>{t("cubuk.misafirler")}</b>
           <span data-dolu="">{misafir}</span>
         </button>
-        <button type="button" className={s.ara} onClick={onAra} aria-label="Otel ara">
+        <button type="button" className={s.ara} onClick={onAra} aria-label={t("otelAra")}>
           <Ikon ad="search" boyut={20} kalinlik={2.4} />
-          <em>Ara</em>
+          <em>{tk("ara")}</em>
         </button>
       </div>
 
       <button ref={tekRef} type="button" className={`${s.katman} ${s.tek}`} onClick={onTek}>
         <div>
-          <b>{deger.yer || "Nereye gidiyorsun?"}</b>
-          <small>{tarih ?? "Tarih ekle"} · {misafir}</small>
+          <b>{deger.yer || t("nereyeGidiyorsun")}</b>
+          <small>{tarih ?? t("tarihEkle")} · {misafir}</small>
         </div>
         <i><Ikon ad="search" boyut={20} kalinlik={2.4} /></i>
       </button>
@@ -192,10 +197,10 @@ export function AramaCubugu({
       <button ref={kucukRef} type="button" className={`${s.katman} ${s.kucuk}`} onClick={(e) => {
         const alan = (e.target as HTMLElement).closest<HTMLElement>("[data-alan]")?.dataset.alan as PanelAdi | undefined;
         onKucuk(alan);
-      }} aria-label="Aramayı büyüt">
+      }} aria-label={t("cubuk.buyut")}>
         <Nesne ad={nesne} boyut={34} />
-        <span data-alan="yer">{deger.yer || "Nereye gidiyorsun?"}</span>
-        <span data-alan="tarih" className={s.soluk}>{tarih ?? "Tarih ekle"}</span>
+        <span data-alan="yer">{deger.yer || t("nereyeGidiyorsun")}</span>
+        <span data-alan="tarih" className={s.soluk}>{tarih ?? t("tarihEkle")}</span>
         <span data-alan="misafir" className={s.soluk}>{misafir}</span>
         <i><Ikon ad="search" boyut={16} kalinlik={2.6} /></i>
       </button>

@@ -1,1 +1,270 @@
-{}
+{
+  "meta": {
+    "baslik": "Yardım Merkezi — LookBeds",
+    "aciklama": "Giriş, rezervasyon, iptal ve acente paneliyle ilgili sık sorulan sorular",
+    "makale": "{baslik} — LookBeds Yardım"
+  },
+  "yardimMerkezi": "Yardım Merkezi",
+  "yardimAra": "Yardım ara",
+  "kitle": {
+    "misafir": "Misafir",
+    "acente": "Acente"
+  },
+  "ana": {
+    "merhaba": "Merhaba, nasıl yardımcı olabiliriz?",
+    "merhabaAd": "Merhaba {ad}, nasıl yardımcı olabiliriz?",
+    "araYer": "Soru ya da konu yaz: iptal, giriş kodu, fatura…",
+    "araEtiket": "Yardım makalelerinde ara",
+    "sonucYok": "\"{q}\" için makale bulamadık. Başka bir kelime dene ya da destek ekibine yaz.",
+    "kimIcin": "Kimin için",
+    "rezBaslik": "Rezervasyonunla ilgili yardım",
+    "iptalEtmek": "İptal etmek istiyorum",
+    "ayrintilar": "Ayrıntılar",
+    "baslarken": "Başlarken",
+    "sss": "Sık sorulanlar",
+    "konu": "Konu"
+  },
+  "rehber": {
+    "girisHesap": {
+      "baslik": "Giriş ve hesap",
+      "aciklama": "Şifresiz giriş, kod ve hesap bilgileri"
+    },
+    "rezervasyon": {
+      "baslik": "Rezervasyonun",
+      "aciklama": "Rezervasyonlarım, onay ve rezervasyon numarası"
+    },
+    "iptal": {
+      "baslik": "İptal ve değişiklik",
+      "aciklama": "Ücretsiz iptal süresi ve iptal ücreti"
+    },
+    "partnerGiris": {
+      "baslik": "Partner paneline giriş",
+      "aciklama": "Kodla giriş ve hesabın"
+    },
+    "musteriRezervasyon": {
+      "baslik": "Müşterin için rezervasyon",
+      "aciklama": "Arama, rezervasyon ve belge"
+    },
+    "komisyon": {
+      "baslik": "Komisyon ve kazanç",
+      "aciklama": "Komisyon nasıl hesaplanır"
+    }
+  },
+  "konu": {
+    "hesap": "Hesap ve giriş",
+    "rezervasyon": "Rezervasyon",
+    "iptal": "İptal ve değişiklik",
+    "fiyat": "Fiyat ve ödeme",
+    "konaklama": "Konaklama",
+    "giris": "Giriş",
+    "kazanc": "Kazanç",
+    "sirket": "Şirket"
+  },
+  "iletisim": {
+    "etiket": "Bize ulaş",
+    "baslik": "Aradığını bulamadın mı?",
+    "metin": "Destek ekibimize yaz ya da ara; rezervasyon numaranı hazır tut."
+  },
+  "geribildirim": {
+    "soru": "Bu makale işine yaradı mı?",
+    "evet": "Evet",
+    "hayir": "Hayır",
+    "tesekkur": "Teşekkürler!",
+    "uzgunuz": "Üzgünüz. Destek ekibine yazarsan yardımcı olalım."
+  },
+  "makaleSayfasi": {
+    "konum": "Konum",
+    "ilgili": "İlgili makaleler",
+    "halaYardim": "Hâlâ yardım lazım mı?",
+    "halaYardimMetin": "Destek ekibimize yaz; rezervasyon numaranı eklersen daha hızlı yanıtlarız.",
+    "destegeYaz": "Destek ekibine yaz"
+  },
+  "makale": {
+    "giris": {
+      "baslik": "Şifre olmadan nasıl giriş yaparım?",
+      "metin": {
+        "p1": "Sağ üstteki menüden \"Giriş yap ya da üye ol\"u seç. E-posta adresini yaz ve \"Devam et\"e bas.",
+        "p2": "E-postana 6 haneli bir kod gelir. Kodu kutulara yazdığında giriş tamamlanır; şifre hatırlaman gerekmez.",
+        "p3": "Bu e-postayla hesabın yoksa aynı adımda açılır. İlk girişte adını ve soyadını soruyoruz; rezervasyonlarda ve otelde bu ad görünür."
+      }
+    },
+    "kod": {
+      "baslik": "Giriş kodu gelmedi",
+      "metin": {
+        "p1": "Önce gereksiz (spam) klasörüne bak. Kod birkaç saniye içinde gelir.",
+        "p2": "60 saniye sonra \"Kodu yeniden gönder\" çıkar. Yeni kod gönderilince eskisi geçersiz olur; her zaman en son gelen kodu kullan.",
+        "p3": "Kod 10 dakika geçerlidir. Beş kez yanlış girilirse yeni kod istemen gerekir.",
+        "p4": "E-posta adresini yanlış yazdıysan kod ekranındaki \"E-postayı değiştir\"e bas."
+      }
+    },
+    "hesapBilgi": {
+      "baslik": "Adımı ya da telefonumu nasıl değiştiririm?",
+      "metin": {
+        "p1": "Menüden \"Hesabım\"a git. Ad ve telefon oradan değiştirilir.",
+        "p2": "E-posta adresin girişin anahtarı olduğu için değiştirmek istersen destek ekibine yaz."
+      }
+    },
+    "rezervasyonlarim": {
+      "baslik": "Rezervasyonlarımı nerede görürüm?",
+      "metin": {
+        "p1": "Menüden \"Rezervasyonlarım\"a git. Yaklaşan, Geçmiş ve İptal edilen sekmeleri var.",
+        "p2": "Sıradaki konaklaman üstte büyük kartta durur: kaç gün kaldığı, giriş ve çıkış günleri, ücretsiz iptalin son günü.",
+        "p3": "Bir karta basınca rezervasyonun tüm ayrıntıları açılır: oda, misafirler, konum, otelin iletişim bilgileri ve iptal koşulları."
+      }
+    },
+    "onayBekliyor": {
+      "baslik": "\"Otel onayı bekleniyor\" ne demek?",
+      "metin": {
+        "p1": "Bazı oteller rezervasyonu hemen değil, kısa bir süre içinde onaylar. Bu sürede rezervasyonun \"Otel onayı bekleniyor\" olarak görünür.",
+        "p2": "Otel onaylayınca durum \"Onaylandı\"ya döner ve otelin onay numarası rezervasyon ayrıntılarında çıkar.",
+        "p3": "Otel onaylamazsa rezervasyon tamamlanmaz ve ücret alınmaz."
+      }
+    },
+    "rezNo": {
+      "baslik": "Rezervasyon numaram nerede?",
+      "metin": {
+        "p1": "Rezervasyonlarım'daki kartta ve rezervasyon ayrıntılarında \"Rezervasyon no\" olarak yazar; yanındaki düğmeyle kopyalayabilirsin.",
+        "p2": "Otel onayladıktan sonra ayrıca otelin kendi onay numarası da görünür. Otelde ikisinden biri sorulabilir."
+      }
+    },
+    "ozelIstek": {
+      "baslik": "Özel isteğim otele iletilir mi?",
+      "metin": {
+        "p1": "Ödeme adımındaki \"Özel istek\" alanına yazdıkların otele iletilir ve rezervasyon ayrıntılarında görünür.",
+        "p2": "Yüksek kat, erken giriş gibi istekler otelin müsaitliğine bağlıdır; garanti edilmez."
+      }
+    },
+    "iptal": {
+      "baslik": "Rezervasyonumu nasıl iptal ederim?",
+      "metin": {
+        "p1": "Rezervasyonlarım'dan rezervasyonu aç, \"İptal koşulları\" bölümündeki \"Rezervasyonu iptal et\"e bas.",
+        "p2": "Açılan pencerede şu an iptal edersen kesilecek ücret gösterilir. Onaylarsan iptal otele iletilir ve sonucu aynı pencerede görürsün.",
+        "p3": "İptal edilen rezervasyon \"İptal edilen\" sekmesine geçer; iptal ücreti orada da yazar."
+      }
+    },
+    "ucretsizIptal": {
+      "baslik": "Ücretsiz iptal süresi nedir?",
+      "metin": {
+        "p1": "Oda seçerken ve rezervasyonunda \"… tarihine kadar ücretsiz iptal\" yazar. Bu saate kadar iptal edersen ücret alınmaz.",
+        "p2": "Saatler Türkiye saatine göredir. Süre geçtikten sonra otelin koşuldaki iptal ücreti uygulanır.",
+        "p3": "Bazı odalar iade edilmezdir; bu, oda seçerken ve rezervasyonda açıkça yazar."
+      }
+    },
+    "iptalUcreti": {
+      "baslik": "İptal ücreti nasıl belirlenir?",
+      "metin": {
+        "p1": "Ücret, rezervasyonu yaparken seçtiğin odanın iptal koşuluna göre belirlenir; iptal zamanına göre değişir.",
+        "p2": "İptal penceresinde gördüğün tutar bu koşula göre hesaplanır. Kesin tutar otelden gelen yanıtla belirlenir ve iptalden sonra gösterilir."
+      }
+    },
+    "tarih": {
+      "baslik": "Tarihleri değiştirebilir miyim?",
+      "metin": {
+        "p1": "Şu an rezervasyonun tarihleri doğrudan değiştirilemiyor.",
+        "p2": "Ücretsiz iptal süresindeysen rezervasyonu ücretsiz iptal edip yeni tarihlerle yeniden rezervasyon yapabilirsin."
+      }
+    },
+    "vergi": {
+      "baslik": "Fiyatlara vergiler dahil mi?",
+      "metin": {
+        "p1": "Evet. Arama sonuçlarında, otel sayfasında ve ödeme adımında gösterilen toplam tutara vergiler dahildir.",
+        "p2": "Otelin girişte isteyebileceği depozito ya da tesiste yaptığın ekstra harcamalar bu tutara dahil değildir."
+      }
+    },
+    "uyruk": {
+      "baslik": "Uyruk fiyatı neden değiştiriyor?",
+      "metin": {
+        "p1": "Oteller bazı ülkelerden gelen misafirlere farklı fiyat verebilir. Bu yüzden arama, misafirin uyruğuna göre yapılır.",
+        "p2": "Uyruğu arama sonuçlarındaki \"Filtreler\"den değiştirebilirsin; değiştirince arama yeniden yapılır."
+      }
+    },
+    "fatura": {
+      "baslik": "Faturamı nasıl alırım?",
+      "metin": {
+        "p1": "Konaklama faturası otel tarafından düzenlenir.",
+        "p2": "Kurumsal fatura gerekiyorsa rezervasyonu yaparken özel istek alanına şirket ve vergi bilgilerini yaz ya da destek ekibine ulaş."
+      }
+    },
+    "girisCikis": {
+      "baslik": "Giriş ve çıkış saatleri",
+      "metin": {
+        "p1": "Otelin giriş ve çıkış saatleri otel sayfasındaki \"Bilinmesi gerekenler\" bölümünde ve rezervasyon ayrıntılarında yazar.",
+        "p2": "Girişte kimlik istenir. Bazı oteller girişte depozito alır; harcama yapılmazsa çıkışta iade edilir."
+      }
+    },
+    "otelIletisim": {
+      "baslik": "Otelle nasıl iletişime geçerim?",
+      "metin": {
+        "p1": "Rezervasyon ayrıntılarındaki \"Konum ve iletişim\" bölümünde otelin telefonu ve e-postası, yanında yol tarifi bağlantısı var."
+      }
+    },
+    "aGiris": {
+      "baslik": "Acente girişi nasıl yapılır?",
+      "metin": {
+        "p1": "Sayfanın altındaki \"Acente girişi\"ne git ve şirket e-postanı yaz.",
+        "p2": "E-postana 6 haneli bir kod gelir; kodla girersin, şifre yoktur. Kod 10 dakika geçerlidir.",
+        "p3": "Müşteri hesabında kullandığın e-postayla acente girişi yapılamaz; acente için ayrı bir (tercihen şirket) e-postası kullan."
+      }
+    },
+    "aBasvuru": {
+      "baslik": "LookBeds Partner nasıl olurum?",
+      "metin": {
+        "p1": "Acente girişinden şirket e-postanla gir; ilk girişte hesabın açılır ve panelde başvuru formu çıkar.",
+        "p2": "Formda yetkili kişi, şirket unvanı, vergi no ve vergi dairesi, adres ve varsa TÜRSAB belge no istenir. Başvuru bir kez gönderilir.",
+        "p3": "Ekibimiz bilgileri kontrol edip anlaşma oranlarını belirler. Onaylanınca aynı e-postayla girdiğinde panelin açık olur; yeniden başvurman gerekmez.",
+        "p4": "Bilgileri değiştirmen ya da başvurunun durumunu sorman gerekirse destek ekibine yaz."
+      }
+    },
+    "aRezervasyon": {
+      "baslik": "Müşterim için nasıl rezervasyon yaparım?",
+      "metin": {
+        "p1": "Partner panelindeki \"Bugün\" sayfasında \"Müşterin için otel ara\" çubuğunu ya da sağ üstteki \"Otel ara\"yı kullan.",
+        "p2": "Acente hesabıyla giriş yapmışken aramada acente fiyatların görünür. Ödeme adımında iletişim ve misafir bilgilerine müşterinin bilgilerini yaz.",
+        "p3": "Rezervasyon panelde Rezervasyonlar ve Bugün sayfalarına düşer."
+      }
+    },
+    "aBugun": {
+      "baslik": "\"İptal süresi dolmak üzere\" ne gösterir?",
+      "metin": {
+        "p1": "Bugün sayfasındaki bu çip, ücretsiz iptal süresi 2 gün içinde bitecek yaklaşan rezervasyonları toplar.",
+        "p2": "Müşterin vazgeçebilecekse bu süre dolmadan iptal etmek ücret ödenmemesini sağlar."
+      }
+    },
+    "aIptal": {
+      "baslik": "Bir rezervasyonu nasıl iptal ederim?",
+      "metin": {
+        "p1": "Rezervasyonlar ya da Bugün sayfasında rezervasyona bas; ayrıntı penceresindeki \"Rezervasyonu iptal et\"i seç.",
+        "p2": "Pencerede şu an kesilecek ücret gösterilir; onaylayınca iptal otele iletilir."
+      }
+    },
+    "aBelge": {
+      "baslik": "Rezervasyon belgesini müşteriye nasıl iletirim?",
+      "metin": {
+        "p1": "Rezervasyonun ayrıntı penceresindeki \"Rezervasyon belgesi\" rezervasyon sayfasını yeni sekmede açar: otel, tarihler, misafirler, iptal koşulları.",
+        "p2": "Bu sayfayı yazdırabilir ya da PDF olarak kaydedip müşterine gönderebilirsin."
+      }
+    },
+    "aExcel": {
+      "baslik": "Rezervasyonları Excel'e nasıl aktarırım?",
+      "metin": {
+        "p1": "Rezervasyonlar sayfasında durum filtresini ve aramayı istediğin gibi ayarla, sonra \"Excel'e aktar\"a bas.",
+        "p2": "Ekrandaki liste Excel'in doğrudan açtığı bir dosya olarak iner."
+      }
+    },
+    "aKomisyon": {
+      "baslik": "Komisyonum nasıl hesaplanır?",
+      "metin": {
+        "p1": "Komisyon, anlaşmandaki oran ile onaylı rezervasyonların tutarı çarpılarak hesaplanır. Rezervasyon, girişinin olduğu aya yazılır.",
+        "p2": "İptal edilen ve tamamlanamayan rezervasyonlar sayılmaz.",
+        "p3": "Kazançlar sayfasındaki tutarlar bu hesaba göre tahminidir; ödemeler anlaşmana göre yapılır."
+      }
+    },
+    "aSirket": {
+      "baslik": "Şirket bilgilerimi nasıl değiştiririm?",
+      "metin": {
+        "p1": "Şirket bilgileri ve anlaşmadaki oranlar panelde yalnızca görüntülenir.",
+        "p2": "Adres, telefon ya da oranlarda değişiklik için LookBeds temsilcine yaz."
+      }
+    }
+  }
+}

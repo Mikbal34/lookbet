@@ -8,9 +8,11 @@
 
 import { useFiyat } from "@/components/lb/fiyat";
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { Ikon } from "@/components/lb/ikon";
 import { Nesne } from "@/components/lb/nesne";
 import { Govdeye, useKatman } from "@/components/lb/pencere";
+import { useBicim } from "@/i18n/use-bicim";
 import type { RoomResult } from "@/lib/royal-api/types";
 import { iptalOzeti, odaOzellikleri } from "./yardimci";
 import s from "./oda-penceresi.module.css";
@@ -43,6 +45,8 @@ export function OdaPenceresi({ baslangic, odalar, gece, misafir, seciliKod, onSe
   onKapat: () => void;
   onFoto: (o: Oda, j: number) => void;
 }) {
+  const t = useTranslations("otel");
+  const tk = useTranslations("ortak");
   const { yaz } = useFiyat();
   const [kod, setKod] = React.useState(baslangic);
   const [onceki, setOnceki] = React.useState(baslangic);
@@ -99,7 +103,7 @@ export function OdaPenceresi({ baslangic, odalar, gece, misafir, seciliKod, onSe
     <div className={`lb ${s.kap}`} data-acik={acik || undefined} onClick={kapatDis} aria-hidden={!acik}>
       <div className={s.sahne} onClick={kapatDis}>
         {odalar.length > 1 && (
-          <nav className={s.ray} aria-label="Diğer odalar">
+          <nav className={s.ray} aria-label={t("odaPenceresi.digerOdalar")}>
             {odalar.map((o) => (
               <button
                 key={o.priceCode}
@@ -116,7 +120,7 @@ export function OdaPenceresi({ baslangic, odalar, gece, misafir, seciliKod, onSe
           </nav>
         )}
         <div className={s.pencere} data-degisiyor={degisiyor || undefined} role="dialog" aria-modal="true" aria-labelledby="oda-baslik">
-          <button ref={kapat} type="button" className={s.kapat} onClick={onKapat} aria-label="Kapat" tabIndex={acik ? 0 : -1}>
+          <button ref={kapat} type="button" className={s.kapat} onClick={onKapat} aria-label={tk("kapat")} tabIndex={acik ? 0 : -1}>
             <Ikon ad="close" boyut={18} />
           </button>
           {oda && <OdaIcerik oda={oda} gece={gece} misafir={misafir} secili={oda.priceCode === seciliKod} onSec={onSec} onDevam={onDevam} onFoto={onFoto} sagRef={sag} />}
@@ -137,6 +141,8 @@ function OdaIcerik({ oda, gece, misafir, secili, onSec, onDevam, onFoto, sagRef 
   onFoto: (o: Oda, j: number) => void;
   sagRef: React.RefObject<HTMLDivElement | null>;
 }) {
+  const t = useTranslations("otel");
+  const bicim = useBicim();
   const { yaz } = useFiyat();
   const g = oda.images;
   const fazla = g.length - 3;
@@ -145,8 +151,8 @@ function OdaIcerik({ oda, gece, misafir, secili, onSec, onDevam, onFoto, sagRef 
   const kampanya = oda.pricing?.kampanya ?? null;
   // Kampanyadan sonra kalan fark acentenin anlaşma indirimi.
   const acenteIndirimi = Math.max(0, onceki - (kampanya?.tutar ?? 0) - toplam);
-  const ip = iptalOzeti(oda.cancellationPolicies);
-  const ozellik = odaOzellikleri(oda);
+  const ip = iptalOzeti(oda.cancellationPolicies, bicim);
+  const ozellik = odaOzellikleri(oda, (o) => t(`odaOzelligi.${o}`));
   ozellik.splice(ozellik[0]?.ikon === "bed" ? 1 : 0, 0, { ikon: "guests", metin: misafir });
   const yatak = ozellik.find((o) => o.ikon === "bed")?.metin;
 
@@ -155,7 +161,7 @@ function OdaIcerik({ oda, gece, misafir, secili, onSec, onDevam, onFoto, sagRef 
       <div className={s.mozaik} data-adet={Math.min(3, g.length)}>
         {g.length ? (
           g.slice(0, 3).map((u, i) => (
-            <button key={u} type="button" onClick={() => onFoto(oda, i)} aria-label={`Fotoğraf ${i + 1}`}>
+            <button key={u} type="button" onClick={() => onFoto(oda, i)} aria-label={t("galeri.fotograf", { sira: i + 1 })}>
               <img src={u} alt="" />
               {i === 2 && fazla > 0 && <span className={s.fazla}>+{fazla}</span>}
             </button>
@@ -163,7 +169,7 @@ function OdaIcerik({ oda, gece, misafir, secili, onSec, onDevam, onFoto, sagRef 
         ) : (
           <div className={s.fotoYok}>
             <Nesne ad="zil" boyut={72} />
-            Bu odanın fotoğrafı yok
+            {t("odaPenceresi.fotoYok")}
           </div>
         )}
       </div>
@@ -172,7 +178,7 @@ function OdaIcerik({ oda, gece, misafir, secili, onSec, onDevam, onFoto, sagRef 
           <h2 id="oda-baslik" className="lb-y">{oda.roomName}</h2>
           <p className={s.alt}>{[yatak, misafir, oda.boardTypeName].filter(Boolean).join(" · ")}</p>
           <section>
-            <h3>Bu oda neler sunuyor?</h3>
+            <h3>{t("odaPenceresi.sunulanlar")}</h3>
             <ul className={s.ozellik}>
               {ozellik.map((o) => (
                 <li key={o.metin}>
@@ -183,44 +189,48 @@ function OdaIcerik({ oda, gece, misafir, secili, onSec, onDevam, onFoto, sagRef 
             </ul>
           </section>
           <section>
-            <h3>İptal koşulları</h3>
+            <h3>{t("iptal.baslik")}</h3>
             <div className={s.zaman}>
               {ip.ucretsiz && (
                 <div>
-                  <b>{ip.ucretsiz.yonelme} kadar</b>
-                  <span>Saat {ip.ucretsiz.saat} öncesi ücretsiz iptal; ödemenin tamamı iade edilir</span>
+                  <b>{t("odaPenceresi.kadar", { tarih: ip.ucretsiz.yonelme })}</b>
+                  <span>{t("odaPenceresi.ucretsizOnce", { saat: ip.ucretsiz.saat })}</span>
                 </div>
               )}
               {ip.ceza && (
                 <div className={s.ceza}>
-                  <b>{ip.ucretsiz ? `${ip.ceza.gun}, saat ${ip.ceza.saat} ve sonrası` : "İade edilmez"}</b>
-                  <span>İptal ücreti {yaz(ip.ceza.tutar, ip.ceza.para)}{ip.ceza.tutar >= toplam ? " (toplam tutar)" : ""}</span>
+                  <b>{ip.ucretsiz ? t("odaPenceresi.cezaSonrasi", { gun: ip.ceza.gun, saat: ip.ceza.saat }) : t("iptal.iadeEdilmez")}</b>
+                  <span>
+                    {ip.ceza.tutar >= toplam
+                      ? t("odaPenceresi.iptalUcretiToplam", { tutar: yaz(ip.ceza.tutar, ip.ceza.para) })
+                      : t("odaPenceresi.iptalUcreti", { tutar: yaz(ip.ceza.tutar, ip.ceza.para) })}
+                  </span>
                 </div>
               )}
-              {!ip.ucretsiz && !ip.ceza && <p className={s.soluk}>İptal koşulları rezervasyon adımında gösterilir.</p>}
+              {!ip.ucretsiz && !ip.ceza && <p className={s.soluk}>{t("odaPenceresi.iptalSonra")}</p>}
             </div>
           </section>
           <section>
-            <h3>Fiyat</h3>
+            <h3>{t("odaPenceresi.fiyat")}</h3>
             <div className={s.dokum}>
               <div>
-                <span>{yaz(onceki / gece, oda.currency)} × {gece} gece</span>
+                <span>{t("fiyat.geceCarpi", { fiyat: yaz(onceki / gece, oda.currency), gece })}</span>
                 <span>{yaz(onceki, oda.currency)}</span>
               </div>
               {kampanya && (
                 <div className={s.indirim}>
-                  <span>{kampanya.ad} %{kampanya.yuzde}</span>
+                  <span>{t("odaPenceresi.kampanya", { ad: kampanya.ad, yuzde: kampanya.yuzde })}</span>
                   <span>−{yaz(kampanya.tutar, oda.currency)}</span>
                 </div>
               )}
               {acenteIndirimi >= 0.5 && (
                 <div className={s.indirim}>
-                  <span>Acente indirimi</span>
+                  <span>{t("odaPenceresi.acenteIndirimi")}</span>
                   <span>−{yaz(acenteIndirimi, oda.currency)}</span>
                 </div>
               )}
               <div className={s.toplam}>
-                <span>Toplam</span>
+                <span>{t("fiyat.toplam")}</span>
                 <span>{yaz(toplam, oda.currency)}</span>
               </div>
             </div>
@@ -229,10 +239,10 @@ function OdaIcerik({ oda, gece, misafir, secili, onSec, onDevam, onFoto, sagRef 
         <div className={s.altCubuk}>
           <div>
             <b className="lb-y">{yaz(toplam, oda.currency)}</b>
-            <span>{gece} gece, vergiler dahil</span>
+            <span>{t("odaPenceresi.vergilerDahil", { gece })}</span>
           </div>
           <button type="button" className={s.dugme} onClick={() => (secili ? onDevam() : onSec(oda))}>
-            {secili ? "Rezervasyona devam et" : "Bu odayı seç"}
+            {secili ? t("ana.devam") : t("odaPenceresi.odayiSec")}
           </button>
         </div>
       </div>

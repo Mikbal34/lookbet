@@ -1,11 +1,13 @@
 // Geçerli kart markaları (küçük rozetler). Resmî logo dosyaları gelene kadar
 // markaların renk ve yazı biçimine yakın basit çizimler.
 
+import { useTranslations } from "next-intl";
 import s from "./odeme.module.css";
 
 export function KartLogolari() {
+  const t = useTranslations("odeme");
   return (
-    <div className={s.kartlar} role="img" aria-label="Geçerli kartlar: Visa, Mastercard, Troy, American Express">
+    <div className={s.kartlar} role="img" aria-label={t("kartlar.etiket")}>
       <span title="Visa">
         <svg viewBox="0 0 48 30" aria-hidden="true">
           <text x="24" y="20.5" textAnchor="middle" fontFamily="Arial Black, Arial, sans-serif" fontWeight="900" fontStyle="italic" fontSize="13" letterSpacing=".5" fill="#1A1F71">VISA</text>

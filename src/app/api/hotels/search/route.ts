@@ -1,3 +1,5 @@
+import { aramaHatasi } from "@/lib/dogrulama";
+import { getLocale, getTranslations } from "next-intl/server";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
@@ -39,22 +41,23 @@ function tekSeferde(anahtar: string, fn: () => Promise<AramaKaydi>): Promise<Ara
 }
 
 export async function POST(request: NextRequest) {
+  // Kullanıcıya dönen hata metni isteğin dilinde (akışın içinde de kullanılır).
+  const ta = await getTranslations("api.arama");
+  const dil = await getLocale();
   try {
     const body = await request.json().catch(() => null);
 
     const parsed = hotelSearchSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Geçersiz istek verisi", details: parsed.error.flatten().fieldErrors },
-        { status: 400 }
-      );
+      return NextResponse.json(await aramaHatasi(parsed.error), { status: 400 });
     }
     const input = parsed.data;
 
     const session = await getServerSession(authOptions);
     const feedId = await feedBul(session?.user.role, session?.user.agencyId);
 
-    const anahtar = aramaAnahtari({ ...input, feedId });
+    // Pansiyon adları dile göre zenginleştirildiği için önbellek dil başına.
+    const anahtar = aramaAnahtari({ ...input, feedId, dil });
     // Önbellekte yoksa ama aynı arama şu an yürüyorsa onu bekle: aynı anda
     // gelen aynı aramalar Etscore'a bir kez gider.
     const kayit = onbellektenAl(anahtar) ?? (await yurutulen.get(anahtar)?.catch(() => null)) ?? null;
@@ -66,7 +69,7 @@ export async function POST(request: NextRequest) {
     const fiyatlat = await listeFiyatlayici(input, session?.user.role, session?.user.agencyId ?? undefined);
 
     if (!akis) {
-      const sonuc = kayit ?? (await tekSeferde(anahtar, () => aramayiYurut(input, feedId, userId, anahtar)));
+      const sonuc = kayit ?? (await tekSeferde(anahtar, () => aramayiYurut(input, feedId, userId, anahtar, dil)));
       return NextResponse.json({ ...sonuc, hotels: await fiyatlat(sonuc.hotels) });
     }
 
@@ -89,7 +92,7 @@ export async function POST(request: NextRequest) {
             yaz({ tip: "son", toplam: kayit.hotels.length });
           } else {
             const sonuc = await tekSeferde(anahtar, () =>
-              aramayiYurut(input, feedId, userId, anahtar, {
+              aramayiYurut(input, feedId, userId, anahtar, dil, {
                 onBas: (searchId, eslesme) => yaz({ tip: "bas", searchId, eslesme, onbellek: false }),
                 onParca: async (hotels) => yaz({ tip: "oteller", hotels: await fiyatlat(hotels) }),
               })
@@ -98,7 +101,7 @@ export async function POST(request: NextRequest) {
           }
         } catch (error) {
           console.error("[POST /api/hotels/search akış]", error);
-          yaz({ tip: "hata", error: "Otel arama sırasında bir hata oluştu" });
+          yaz({ tip: "hata", error: ta("otelHatasi") });
         } finally {
           if (acik) controller.close();
         }
@@ -115,10 +118,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("[POST /api/hotels/search]", error);
-    return NextResponse.json(
-      { error: "Otel arama sırasında bir hata oluştu" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: ta("otelHatasi") }, { status: 500 });
   }
 }
 
@@ -164,6 +164,7 @@ async function aramayiYurut(
   feedId: string,
   userId: string | null,
   anahtar: string,
+  dil: string,
   dinle: {
     onBas?: (searchId: string, eslesme: string) => void;
     onParca?: (hotels: HotelSearchResult[]) => void | Promise<void>;
@@ -180,7 +181,7 @@ async function aramayiYurut(
 
   const searchId = crypto.randomUUID();
   dinle.onBas?.(searchId, hedef.eslesme);
-  const boardTypeNames = await boardTypeAdlari();
+  const boardTypeNames = await boardTypeAdlari(dil);
   const tumu: HotelSearchResult[] = [];
 
   await searchHotels(

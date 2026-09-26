@@ -34,6 +34,8 @@ export function aramaAnahtari(a: {
   currency: string;
   nationality: string;
   feedId: string;
+  /** Sitenin dili: pansiyon adları dile göre. */
+  dil?: string;
 }): string {
   return JSON.stringify([
     katla(a.destination),
@@ -44,6 +46,7 @@ export function aramaAnahtari(a: {
     a.currency,
     a.nationality,
     a.feedId,
+    a.dil ?? "tr",
   ]);
 }
 

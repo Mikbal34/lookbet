@@ -7,6 +7,7 @@
 
 import { fotoBoyutu, kartFotosu } from "@/lib/foto";
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { Ikon } from "@/components/lb/ikon";
 import { useKatman } from "@/components/lb/pencere";
 import s from "./galeri.module.css";
@@ -22,28 +23,29 @@ export function Galeri({ gorseller, onAc, ustDugmeler }: {
   /** Mobil şeridin üstündeki düğmeler (geri, paylaş, kaydet). */
   ustDugmeler: React.ReactNode;
 }) {
+  const t = useTranslations("otel");
   const [sira, setSira] = React.useState(1);
   const mobil = gorseller.slice(0, 12);
   if (!gorseller.length) {
     return (
       <div className={s.bos}>
         <Ikon ad="image-off" boyut={28} />
-        Bu otelin fotoğrafı henüz yok
+        {t("galeri.fotoYok")}
         <div className={s.mgDugmeler}>{ustDugmeler}</div>
       </div>
     );
   }
   return (
     <>
-      <section className={s.izgara} data-adet={Math.min(5, gorseller.length)} id="fotograflar" aria-label="Fotoğraflar">
+      <section className={s.izgara} data-adet={Math.min(5, gorseller.length)} id="fotograflar" aria-label={t("galeri.fotograflar")}>
         {gorseller.slice(0, 5).map((u, i) => (
-          <button key={u} type="button" onClick={onAc} aria-label={`Fotoğraf ${i + 1}`}>
+          <button key={u} type="button" onClick={onAc} aria-label={t("galeri.fotograf", { sira: i + 1 })}>
             <img src={u} alt="" loading={i ? "lazy" : "eager"} />
           </button>
         ))}
         <button type="button" className={s.tumu} onClick={onAc}>
           <Ikon ad="photos" boyut={18} />
-          Tüm fotoğrafları göster
+          {t("galeri.tumu")}
         </button>
       </section>
       <div className={s.mobil}>
@@ -69,6 +71,8 @@ export function FotoTuru({ acik, onKapat, bolumler, onFoto, ustSag }: {
   onFoto: (b: number, j: number) => void;
   ustSag?: React.ReactNode;
 }) {
+  const t = useTranslations("otel");
+  const tk = useTranslations("ortak");
   const kap = React.useRef<HTMLDivElement>(null);
   const geri = React.useRef<HTMLButtonElement>(null);
   useKatman(acik, onKapat, geri);
@@ -80,16 +84,16 @@ export function FotoTuru({ acik, onKapat, bolumler, onFoto, ustSag }: {
     if (b && kap.current) kap.current.scrollTo({ top: b.offsetTop - 70, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
   };
   return (
-    <div ref={kap} className={s.tur} data-acik={acik || undefined} role="dialog" aria-modal="true" aria-label="Fotoğraf turu" aria-hidden={!acik}>
+    <div ref={kap} className={s.tur} data-acik={acik || undefined} role="dialog" aria-modal="true" aria-label={t("galeri.tur")} aria-hidden={!acik}>
       <div className={s.turUst}>
-        <button ref={geri} type="button" className={s.yuvarlak} onClick={onKapat} aria-label="Geri" tabIndex={acik ? 0 : -1}>
+        <button ref={geri} type="button" className={s.yuvarlak} onClick={onKapat} aria-label={tk("geri")} tabIndex={acik ? 0 : -1}>
           <Ikon ad="back" boyut={18} />
         </button>
         {ustSag}
       </div>
       {acik && (
         <div className={s.turIc}>
-          <h2 className="lb-y">Otel turu</h2>
+          <h2 className="lb-y">{t("galeri.turBaslik")}</h2>
           <div className={s.turKucuk}>
             {bolumler.map((b, i) => (
               <button key={b.ad} type="button" onClick={() => bolumeGit(i)}>
@@ -103,7 +107,7 @@ export function FotoTuru({ acik, onKapat, bolumler, onFoto, ustSag }: {
               <h3 className="lb-y">{b.ad}</h3>
               <div className={s.turFoto}>
                 {b.gorseller.map((u, j) => (
-                  <button key={u} type="button" onClick={() => onFoto(i, j)} aria-label={`${b.ad}, fotoğraf ${j + 1}`}>
+                  <button key={u} type="button" onClick={() => onFoto(i, j)} aria-label={t("galeri.bolumFotografi", { bolum: b.ad, sira: j + 1 })}>
                     <img {...kartFotosu(u, "(max-width: 720px) 100vw, 45vw")} alt="" loading="lazy" />
                   </button>
                 ))}
@@ -122,6 +126,8 @@ export function IsikKutusu({ konum, bolumler, onKapat, onDegis }: {
   onKapat: () => void;
   onDegis: (j: number) => void;
 }) {
+  const t = useTranslations("otel");
+  const tk = useTranslations("ortak");
   const kapat = React.useRef<HTMLButtonElement>(null);
   const dx = React.useRef<number | null>(null);
   useKatman(!!konum, onKapat, kapat);
@@ -144,7 +150,7 @@ export function IsikKutusu({ konum, bolumler, onKapat, onDegis }: {
       data-acik={konum ? true : undefined}
       role="dialog"
       aria-modal="true"
-      aria-label="Fotoğraf"
+      aria-label={t("galeri.isik")}
       aria-hidden={!konum}
       onTouchStart={(e) => (dx.current = e.touches[0].clientX)}
       onTouchEnd={(e) => {
@@ -155,7 +161,7 @@ export function IsikKutusu({ konum, bolumler, onKapat, onDegis }: {
       }}
     >
       <div className={s.isikUst}>
-        <button ref={kapat} type="button" className={s.yuvarlak} onClick={onKapat} aria-label="Kapat" tabIndex={konum ? 0 : -1}>
+        <button ref={kapat} type="button" className={s.yuvarlak} onClick={onKapat} aria-label={tk("kapat")} tabIndex={konum ? 0 : -1}>
           <Ikon ad="close" boyut={18} />
         </button>
         <span>{bolum && konum ? `${bolum.ad} · ${konum.j + 1} / ${n}` : ""}</span>
@@ -163,13 +169,13 @@ export function IsikKutusu({ konum, bolumler, onKapat, onDegis }: {
       </div>
       <div className={s.isikIc}>
         {n > 1 && (
-          <button type="button" className={`${s.ok} ${s.okGeri}`} onClick={() => git(-1)} aria-label="Önceki">
+          <button type="button" className={`${s.ok} ${s.okGeri}`} onClick={() => git(-1)} aria-label={t("galeri.onceki")}>
             <Ikon ad="chevron-left" boyut={20} />
           </button>
         )}
         {bolum && konum && <img key={`${konum.b}-${konum.j}`} src={bolum.gorseller[konum.j]} alt="" />}
         {n > 1 && (
-          <button type="button" className={`${s.ok} ${s.okIleri}`} onClick={() => git(1)} aria-label="Sonraki">
+          <button type="button" className={`${s.ok} ${s.okIleri}`} onClick={() => git(1)} aria-label={t("galeri.sonraki")}>
             <Ikon ad="chevron-right" boyut={20} />
           </button>
         )}

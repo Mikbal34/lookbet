@@ -6,6 +6,7 @@
 // yeniden kurulur ve ilk kutu odak alır.
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import s from "./kod-kutulari.module.css";
 
 export function KodKutulari({ deger, onDegis, onTamam, titre = 0 }: {
@@ -14,6 +15,7 @@ export function KodKutulari({ deger, onDegis, onTamam, titre = 0 }: {
   onTamam: (kod: string) => void;
   titre?: number;
 }) {
+  const t = useTranslations("giris.kod");
   const kutular = React.useRef<(HTMLInputElement | null)[]>([]);
 
   const yaz = (i: number, v: string) => {
@@ -31,7 +33,7 @@ export function KodKutulari({ deger, onDegis, onTamam, titre = 0 }: {
   };
 
   return (
-    <div key={titre} className={s.kod} data-titre={titre > 0 || undefined} role="group" aria-label="6 haneli kod">
+    <div key={titre} className={s.kod} data-titre={titre > 0 || undefined} role="group" aria-label={t("kutular")}>
       {deger.map((c, i) => (
         <input
           key={i}
@@ -42,7 +44,7 @@ export function KodKutulari({ deger, onDegis, onTamam, titre = 0 }: {
           inputMode="numeric"
           autoComplete={i === 0 ? "one-time-code" : "off"}
           autoFocus={i === 0}
-          aria-label={`${i + 1}. hane`}
+          aria-label={t("hane", { sira: i + 1 })}
           data-dolu={!!c || undefined}
           onChange={(e) => {
             const v = e.target.value;

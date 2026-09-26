@@ -1,1 +1,68 @@
-{}
+{
+  "meta": {
+    "giris": {
+      "baslik": "Giriş yap — LookBeds",
+      "aciklama": "LookBeds hesabına giriş yap ya da saniyeler içinde üye ol"
+    },
+    "acente": {
+      "baslik": "Acente girişi — LookBeds Partner",
+      "aciklama": "LookBeds Partner paneline giriş yap"
+    }
+  },
+  "pencere": {
+    "baslik": "Giriş yap ya da üye ol",
+    "baslikTamamla": "Üyeliği tamamla",
+    "hosGeldin": "LookBeds'e hoş geldin",
+    "aciklama": "Şifre yok: e-postana 6 haneli bir kod gönderiyoruz. Hesabın yoksa aynı adımda açılır.",
+    "veya": "veya",
+    "google": "Google ile devam et",
+    "apple": "Apple ile devam et",
+    "acenteMisin": "Acente misin?",
+    "acenteAyri": "Acente girişi ayrı sayfada",
+    "kodBaslik": "Kodu gir",
+    "kodGonderildi": "<b>{eposta}</b> adresine 6 haneli bir kod gönderdik. Gelmediyse gereksiz klasörüne bak."
+  },
+  "tamamla": {
+    "baslik": "Hesabını tamamla",
+    "aciklama": "Rezervasyonlarda ve otelde görünecek adını yaz. Ödeme adımında bilgilerin hazır gelir.",
+    "ad": "Ad",
+    "soyad": "Soyad",
+    "kimlikNotu": "Kimlikteki adınla aynı olsun; otel girişte kimlik ister.",
+    "ulkeKodu": "Ülke kodu",
+    "telefon": "Telefon (isteğe bağlı)",
+    "onay": "\"Kabul et ve devam et\"e basarak <kosullar>Kullanım koşullarını</kosullar> kabul ediyor, <aydinlatma>Aydınlatma metnini</aydinlatma> okuduğunu onaylıyorsun.",
+    "kaydediliyor": "Kaydediliyor…",
+    "kabulEt": "Kabul et ve devam et"
+  },
+  "acente": {
+    "musteriMisin": "Müşteri misin?",
+    "siteyeDon": "Siteye dön",
+    "baslik": "Acente girişi",
+    "altBaslikEposta": "Giriş yap ya da LookBeds Partner ol",
+    "altBaslikKod": "E-postana gelen kodu gir",
+    "sirketEpostasi": "Şifre yok: e-postana 6 haneli bir kod gönderiyoruz. Şirket e-postanı kullan.",
+    "kodGonderildi": "<b>{eposta}</b> adresine kod gönderdik. Gelmediyse gereksiz klasörüne bak.",
+    "ilkKez": "İlk kez mi geliyorsun? Girişten sonra kısa bir başvuru formu doldurursun; onaylanınca panelin açılır."
+  },
+  "kod": {
+    "eposta": "E-posta",
+    "gonderiliyor": "Kod gönderiliyor…",
+    "gelistirme": "Geliştirme modu, kod: {kod}",
+    "kutular": "6 haneli kod",
+    "hane": "{sira}. hane",
+    "yeniKod": "Yeni kod {kalan} sn sonra",
+    "yenidenGonder": "Kodu yeniden gönder",
+    "epostaDegistir": "E-postayı değiştir",
+    "girisYapiliyor": "Giriş yapılıyor…",
+    "girisYap": "Giriş yap"
+  },
+  "hata": {
+    "eposta": "Geçerli bir e-posta yaz",
+    "gonderilemedi": "Kod gönderilemedi, birazdan tekrar dene",
+    "baglanti": "Kod gönderilemedi, bağlantını kontrol et",
+    "kodHatali": "Kod hatalı ya da süresi doldu",
+    "adSoyad": "Adını ve soyadını yaz",
+    "telefon": "Telefon numarası eksik",
+    "kaydedilemedi": "Bilgiler kaydedilemedi, tekrar dene"
+  }
+}

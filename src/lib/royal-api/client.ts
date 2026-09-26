@@ -28,6 +28,11 @@ const LOGIN_PATH = "/api/v1/auth-service/auth/login";
  */
 const DIL = "tr-TR";
 
+/** Etscore içerik dili (Accept-Language): açıklama, olanak, oda ve pansiyon adları. */
+export type EtsDil = "tr-TR" | "en-US";
+/** Site dili → Etscore dili. */
+export const etsDili = (dil: string | undefined): EtsDil => (dil === "en" ? "en-US" : "tr-TR");
+
 /** Token'ın bitmesine bu kadar kala yenisini al — istek yolda düşmesin. */
 const TOKEN_PAYI_MS = 5 * 60 * 1000;
 
@@ -232,10 +237,12 @@ export interface EtsRequestOptions {
   hizDenemesi?: number;
   /** Yanıt için en fazla bekleme (ms); varsayılan 30 sn. */
   zamanAsimiMs?: number;
+  /** İçerik dili; varsayılan Türkçe. */
+  dil?: EtsDil;
 }
 
 async function request<T>(path: string, options: EtsRequestOptions = {}): Promise<T> {
-  const { method = "GET", body, currency, retry = true, hizDenemesi = 0, zamanAsimiMs = VARSAYILAN_ZAMAN_ASIMI_MS } = options;
+  const { method = "GET", body, currency, retry = true, hizDenemesi = 0, zamanAsimiMs = VARSAYILAN_ZAMAN_ASIMI_MS, dil = DIL } = options;
   const token = await getAccessToken();
 
   await siraBekle();
@@ -245,7 +252,7 @@ async function request<T>(path: string, options: EtsRequestOptions = {}): Promis
       method,
       headers: {
         "Content-Type": "application/json",
-        "Accept-Language": DIL,
+        "Accept-Language": dil,
         Authorization: `Bearer ${token}`,
         ...(currency ? { "X-Currency": currency } : {}),
       },

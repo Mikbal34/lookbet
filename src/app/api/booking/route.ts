@@ -5,16 +5,18 @@ import { prisma } from "@/lib/prisma";
 import { createBookingSchema } from "@/lib/validators";
 import { misafirleriDenetle } from "@/lib/validators/booking.schema";
 import { createBooking, fiyatKaydi, fiyatKodunuAyir, fiyatKodunuGeriKoy } from "@/lib/royal-api";
-import { EtscoreError } from "@/lib/royal-api/client";
+import { EtscoreError, etsDili } from "@/lib/royal-api/client";
 import { calculatePrice, fiyatBaglami } from "@/lib/pricing";
 import { KuponAlinamadi, kuponAyir, kuponBirak, kuponDegerlendir, type KuponOzeti } from "@/lib/pricing/kupon";
 import { feedBul } from "@/lib/feed";
-import { REZERVASYON_KAPALI_MESAJI, rezervasyonYapabilir } from "@/lib/rezervasyon-ayar";
+import { rezervasyonYapabilir } from "@/lib/rezervasyon-ayar";
 import { politikalariOranla, rezervasyonYaniti } from "@/lib/rezervasyon-yanit";
 import { yoneticilereBildir } from "@/lib/bildirim";
 import { epostaGonder, rezervasyonOnayEpostasi } from "@/lib/eposta";
 import { generateClientReferenceId } from "@/lib/utils";
 import type { Prisma } from "@/generated/prisma/client";
+import { getLocale, getTranslations } from "next-intl/server";
+import { bicimleyici } from "@/i18n/bicim";
 
 // POST /api/booking — rezervasyon (giriş gerekli).
 //
@@ -33,33 +35,36 @@ import type { Prisma } from "@/generated/prisma/client";
 //        "kontrol gerekli" işaretlenir, yöneticiye bildirim gider;
 //        clientReferenceId ile Etscore'dan kontrol edilir.
 
-const eur = (n: number) => new Intl.NumberFormat("tr-TR", { style: "currency", currency: "EUR" }).format(n);
 const kisalt = (s: string, n = 480) => (s.length > n ? `${s.slice(0, n)}…` : s);
 
 export async function POST(request: NextRequest) {
+  // Kullanıcıya dönen metinler isteğin dilinde (messages/*/api.json).
+  const t = await getTranslations("api");
+  const dil = await getLocale();
+  const eur = (n: number) => bicimleyici(dil).para(n, "EUR", true);
+  // Etscore'un ret mesajı zaten isteğin dilinde gelir; bizim ürettiklerimiz burada çevrilir.
+  const etsMesaji = (h: EtscoreError) =>
+    h.code === "TEK_ODA" ? t("rezervasyon.tekOda") : h.code === "REZERVASYON_BASARISIZ" ? t("rezervasyon.basarisiz") : h.message;
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
-      return NextResponse.json({ error: "Bu işlem için giriş yapmanız gerekiyor" }, { status: 401 });
+      return NextResponse.json({ error: t("genel.girisGerekli") }, { status: 401 });
     }
     const userId = session.user.id;
     const userRole = session.user.role as "CUSTOMER" | "AGENCY" | "ADMIN";
     const agencyId = session.user.agencyId ?? undefined;
 
     if (!rezervasyonYapabilir(userRole)) {
-      return NextResponse.json({ error: REZERVASYON_KAPALI_MESAJI, code: "REZERVASYON_KAPALI" }, { status: 503 });
+      return NextResponse.json({ error: t("rezervasyon.kapali"), code: "REZERVASYON_KAPALI" }, { status: 503 });
     }
     // agencyId yalnız onaylı acentede dolu; onaysız acente rezervasyon yapamaz.
     if (userRole === "AGENCY" && !agencyId) {
-      return NextResponse.json({ error: "Acente hesabın onaylanınca rezervasyon yapabilirsin" }, { status: 403 });
+      return NextResponse.json({ error: t("rezervasyon.acenteOnaysiz") }, { status: 403 });
     }
 
     const parsed = createBookingSchema.safeParse(await request.json().catch(() => null));
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Geçersiz istek verisi", details: parsed.error.flatten().fieldErrors },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: t("genel.gecersizIstek"), details: parsed.error.flatten().fieldErrors }, { status: 400 });
     }
     const input = parsed.data;
 
@@ -67,18 +72,12 @@ export async function POST(request: NextRequest) {
     const feedId = await feedBul(userRole, agencyId);
     const kayit = fiyatKaydi(input.priceCode);
     if (!kayit || kayit.hotelCode !== input.hotelCode || kayit.feedId !== feedId) {
-      return NextResponse.json(
-        { error: "Fiyatın geçerlilik süresi doldu, lütfen odaları yeniden ara", code: "FIYAT_SURESI_DOLDU" },
-        { status: 409 }
-      );
+      return NextResponse.json({ error: t("rezervasyon.fiyatSuresiDoldu"), code: "FIYAT_SURESI_DOLDU" }, { status: 409 });
     }
     const misafirler = input.rooms[0].guests;
-    const misafirHatalari = misafirleriDenetle(misafirler, kayit);
+    const misafirHatalari = misafirleriDenetle(misafirler, kayit).map((h) => t(`rezervasyon.${h.anahtar}`, h.degerler as never));
     if (misafirHatalari.length) {
-      return NextResponse.json(
-        { error: misafirHatalari[0].mesaj, details: { rooms: misafirHatalari.map((h) => h.mesaj) } },
-        { status: 422 }
-      );
+      return NextResponse.json({ error: misafirHatalari[0], details: { rooms: misafirHatalari } }, { status: 422 });
     }
 
     // ── Fiyat: net → kural → kampanya → acente indirimi → (kupon) → taban ──
@@ -112,11 +111,7 @@ export async function POST(request: NextRequest) {
     // değiştiyse sessizce başka tutar alınmaz.
     if (Math.abs(sonFiyat - input.totalPrice) > Math.max(1, sonFiyat * 0.005)) {
       return NextResponse.json(
-        {
-          error: `Fiyat güncellendi: ödenecek tutar artık ${eur(sonFiyat)}. Odaları yeniden arayıp güncel fiyatla devam et.`,
-          code: "FIYAT_DEGISTI",
-          yeniFiyat: sonFiyat,
-        },
+        { error: t("rezervasyon.fiyatDegisti", { tutar: eur(sonFiyat) }), code: "FIYAT_DEGISTI", yeniFiyat: sonFiyat },
         { status: 409 }
       );
     }
@@ -127,7 +122,7 @@ export async function POST(request: NextRequest) {
     // ── 1. Fiyat kodunu ayır ──
     const ayrilan = fiyatKodunuAyir(input.priceCode);
     if (!ayrilan) {
-      return NextResponse.json({ error: "Bu oda için rezervasyon zaten işleniyor", code: "ISLENIYOR" }, { status: 409 });
+      return NextResponse.json({ error: t("rezervasyon.isleniyor"), code: "ISLENIYOR" }, { status: 409 });
     }
 
     const otel = await prisma.hotel.findUnique({ where: { hotelCode: kayit.hotelCode }, select: { name: true } });
@@ -175,9 +170,9 @@ export async function POST(request: NextRequest) {
       });
     } catch (e) {
       fiyatKodunuGeriKoy(input.priceCode, ayrilan);
-      if (e instanceof KuponAlinamadi) return NextResponse.json({ error: e.message, alan: "kupon" }, { status: 422 });
+      if (e instanceof KuponAlinamadi) return NextResponse.json({ error: t(`kupon.${e.anahtar}`), alan: "kupon" }, { status: 422 });
       if ((e as { code?: string }).code === "P2002") {
-        return NextResponse.json({ error: "Bu oda için rezervasyon zaten yapıldı", code: "ISLENIYOR" }, { status: 409 });
+        return NextResponse.json({ error: t("rezervasyon.zatenYapildi"), code: "ISLENIYOR" }, { status: 409 });
       }
       throw e;
     }
@@ -199,7 +194,8 @@ export async function POST(request: NextRequest) {
           rooms: input.rooms,
           additionalInfo: input.additionalInfo,
         },
-        ayrilan
+        ayrilan,
+        etsDili(dil)
       );
     } catch (e) {
       const hata = e instanceof EtscoreError ? e : null;
@@ -219,9 +215,7 @@ export async function POST(request: NextRequest) {
         // Etscore'un giriş/yetki sorunu bizim tarafımızda: kullanıcıya iç mesaj gösterme.
         const bizde = hata.code === null && (hata.status === 401 || hata.status === 403);
         return NextResponse.json(
-          bizde
-            ? { error: "Rezervasyon şu an yapılamıyor; lütfen biraz sonra tekrar dene." }
-            : { error: hata.message, code: hata.code },
+          bizde ? { error: t("rezervasyon.yapilamiyor") } : { error: etsMesaji(hata), code: hata.code },
           { status: bizde ? 503 : hata.status === 409 ? 409 : 422 }
         );
       }
@@ -240,7 +234,7 @@ export async function POST(request: NextRequest) {
         {
           reservation: rezervasyonYaniti(rezervasyon, userRole),
           belirsiz: true,
-          message: "Rezervasyon talebin alındı; otelden onay bekleniyor. Sonucu Rezervasyonlarım'da göreceksin.",
+          message: t("rezervasyon.belirsiz"),
         },
         { status: 202 }
       );
@@ -278,8 +272,9 @@ export async function POST(request: NextRequest) {
 
     // Onay e-postası iletişim adresine (arka planda; gönderilemezse akış bozulmaz).
     if (guncel.status === "CONFIRMED" && guncel.contactEmail) {
-      const e = rezervasyonOnayEpostasi({ ...guncel, boardTypeName: kayit.boardTypeName });
-      void epostaGonder({ to: guncel.contactEmail, ...e }).catch((x) => console.error("[BOOKING_EPOSTA]", guncel.id, x));
+      // İçerik istek içinde (dil çerezi) hazırlanır, gönderim arka planda.
+      const e = await rezervasyonOnayEpostasi({ ...guncel, boardTypeName: kayit.boardTypeName }).catch(() => null);
+      if (e) void epostaGonder({ to: guncel.contactEmail, ...e }).catch((x) => console.error("[BOOKING_EPOSTA]", guncel.id, x));
     }
 
     return NextResponse.json(
@@ -299,6 +294,6 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error("[POST /api/booking]", error);
-    return NextResponse.json({ error: "Rezervasyon oluşturulurken bir hata oluştu" }, { status: 500 });
+    return NextResponse.json({ error: t("rezervasyon.hata") }, { status: 500 });
   }
 }

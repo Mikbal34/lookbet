@@ -8,6 +8,7 @@
 
 import * as React from "react";
 import { createPortal } from "react-dom";
+import { useTranslations } from "next-intl";
 import { Ikon } from "./ikon";
 import s from "./pencere.module.css";
 
@@ -60,6 +61,7 @@ export function Pencere({ acik, onKapat, baslik, children, genislik = 760, class
   genislik?: number;
   className?: string;
 }) {
+  const tk = useTranslations("ortak");
   const kapat = React.useRef<HTMLButtonElement>(null);
   const kimlik = React.useId();
   useKatman(acik, onKapat, kapat);
@@ -74,7 +76,7 @@ export function Pencere({ acik, onKapat, baslik, children, genislik = 760, class
         aria-labelledby={kimlik}
       >
         <div className={s.ust}>
-          <button ref={kapat} type="button" className={s.kapat} onClick={onKapat} aria-label="Kapat" tabIndex={acik ? 0 : -1}>
+          <button ref={kapat} type="button" className={s.kapat} onClick={onKapat} aria-label={tk("kapat")} tabIndex={acik ? 0 : -1}>
             <Ikon ad="close" boyut={18} />
           </button>
           <h2 id={kimlik}>{baslik}</h2>

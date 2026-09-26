@@ -11,24 +11,25 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createLoginCode, sendLoginCode } from "@/lib/auth/login-code";
 import { hizSiniri, istemciIp } from "@/lib/hiz-siniri";
+import { getTranslations } from "next-intl/server";
 
 const schema = z.object({
-  email: z.string().trim().toLowerCase().email("Geçerli bir email adresi girin").max(254),
+  email: z.string().trim().toLowerCase().email().max(254),
   tur: z.enum(["musteri", "acente"]).default("musteri"),
 });
 
-const cok = (bekle: number) =>
-  NextResponse.json(
-    { error: bekle > 90 ? `Çok fazla kod istendi. ${Math.ceil(bekle / 60)} dakika sonra tekrar dene.` : `Yeni kod için ${bekle} saniye bekle.` },
-    { status: 429, headers: { "Retry-After": String(bekle) } }
-  );
-
 export async function POST(request: Request): Promise<NextResponse> {
+  const t = await getTranslations("api.giris");
+  const cok = (bekle: number) =>
+    NextResponse.json(
+      { error: bekle > 90 ? t("cokKodDakika", { dk: Math.ceil(bekle / 60) }) : t("cokKodSaniye", { sn: bekle }) },
+      { status: 429, headers: { "Retry-After": String(bekle) } }
+    );
   try {
     const body = await request.json().catch(() => null);
     const parsed = schema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json({ error: "Geçerli bir email adresi girin" }, { status: 422 });
+      return NextResponse.json({ error: t("gecersizEposta") }, { status: 422 });
     }
     const { email } = parsed.data;
 
@@ -50,11 +51,11 @@ export async function POST(request: Request): Promise<NextResponse> {
     const devMode = !process.env.RESEND_API_KEY && process.env.NODE_ENV !== "production";
 
     return NextResponse.json({
-      message: "Giriş kodu email adresinize gönderildi",
+      message: t("kodGonderildi"),
       ...(devMode ? { devCode: code } : {}),
     });
   } catch (error) {
     console.error("[OTP_REQUEST_POST]", error);
-    return NextResponse.json({ error: "Kod gönderilirken bir hata oluştu" }, { status: 500 });
+    return NextResponse.json({ error: t("kodGonderilemedi") }, { status: 500 });
   }
 }

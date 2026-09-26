@@ -5,46 +5,54 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Ikon } from "./ikon";
 import { useLocale } from "@/components/providers/locale-provider";
 import { BolgePenceresi } from "./ust-araclar";
 import s from "./alt-bilgi.module.css";
 
-const FIKIR: Record<string, { ad: string; liste: [string, string][] }> = {
-  populer: {
-    ad: "Popüler",
-    liste: [
-      ["Bodrum", "Deniz otelleri"], ["Antalya", "Her şey dahil oteller"], ["Kapadokya", "Mağara oteller"], ["İstanbul", "Şehir otelleri"],
-      ["Fethiye", "Deniz otelleri"], ["Marmaris", "Deniz otelleri"], ["Çeşme", "Butik oteller"], ["Kuşadası", "Deniz otelleri"],
-      ["Alanya", "Her şey dahil oteller"], ["Side", "Her şey dahil oteller"], ["Belek", "Golf ve tatil köyleri"], ["Kemer", "Deniz otelleri"],
-      ["Uludağ", "Kayak otelleri"], ["Afyonkarahisar", "Termal oteller"], ["Kaş", "Butik oteller"], ["Ayvalık", "Taş oteller"], ["Sapanca", "Göl kenarı oteller"],
-    ],
-  },
-  deniz: { ad: "Deniz", liste: ["Bodrum", "Antalya", "Fethiye", "Marmaris", "Çeşme", "Kuşadası", "Alanya", "Side", "Kemer", "Didim", "Kaş", "Dalyan", "Datça", "Ayvalık", "Akyaka", "Göcek"].map((a) => [a, "Deniz otelleri"]) },
-  termal: { ad: "Termal", liste: ["Afyonkarahisar", "Pamukkale", "Yalova", "Kızılcahamam", "Sandıklı", "Bursa", "Kozaklı", "Gönen", "Haymana", "Balçova", "Bolu", "Sındırgı"].map((a) => [a, "Termal oteller"]) },
-  kayak: { ad: "Kayak", liste: ["Uludağ", "Palandöken", "Kartalkaya", "Kartepe", "Erciyes", "Sarıkamış", "Davraz", "Ilgaz"].map((a) => [a, "Kayak otelleri"]) },
-  sehir: { ad: "Şehir", liste: ["İstanbul", "Ankara", "İzmir", "Bursa", "Eskişehir", "Gaziantep", "Trabzon", "Konya", "Mardin", "Antakya", "Adana", "Samsun"].map((a) => [a, "Şehir otelleri"]) },
+// Sekme ve otel türü adları metin dosyasında: ust.altBilgi.sekme.* ve
+// ust.altBilgi.tur.*. Yer adları aramaya da gittiği için olduğu gibi;
+// İngilizcede yalnız yerleşik karşılığı olan farklı yazılır.
+type Sekme = "populer" | "deniz" | "termal" | "kayak" | "sehir";
+type Tur = "deniz" | "herSeyDahil" | "magara" | "sehir" | "butik" | "golf" | "kayak" | "termal" | "tas" | "golKenari";
+const ayniTur = (tur: Tur, yerler: string[]) => yerler.map((a): [string, Tur] => [a, tur]);
+
+const FIKIR: Record<Sekme, [string, Tur][]> = {
+  populer: [
+    ["Bodrum", "deniz"], ["Antalya", "herSeyDahil"], ["Kapadokya", "magara"], ["İstanbul", "sehir"],
+    ["Fethiye", "deniz"], ["Marmaris", "deniz"], ["Çeşme", "butik"], ["Kuşadası", "deniz"],
+    ["Alanya", "herSeyDahil"], ["Side", "herSeyDahil"], ["Belek", "golf"], ["Kemer", "deniz"],
+    ["Uludağ", "kayak"], ["Afyonkarahisar", "termal"], ["Kaş", "butik"], ["Ayvalık", "tas"], ["Sapanca", "golKenari"],
+  ],
+  deniz: ayniTur("deniz", ["Bodrum", "Antalya", "Fethiye", "Marmaris", "Çeşme", "Kuşadası", "Alanya", "Side", "Kemer", "Didim", "Kaş", "Dalyan", "Datça", "Ayvalık", "Akyaka", "Göcek"]),
+  termal: ayniTur("termal", ["Afyonkarahisar", "Pamukkale", "Yalova", "Kızılcahamam", "Sandıklı", "Bursa", "Kozaklı", "Gönen", "Haymana", "Balçova", "Bolu", "Sındırgı"]),
+  kayak: ayniTur("kayak", ["Uludağ", "Palandöken", "Kartalkaya", "Kartepe", "Erciyes", "Sarıkamış", "Davraz", "Ilgaz"]),
+  sehir: ayniTur("sehir", ["İstanbul", "Ankara", "İzmir", "Bursa", "Eskişehir", "Gaziantep", "Trabzon", "Konya", "Mardin", "Antakya", "Adana", "Samsun"]),
 };
 const ILK = 11;
+const INGILIZCE_AD: Record<string, string> = { Kapadokya: "Cappadocia" };
 
 export function AltBilgi() {
-  const [sekme, setSekme] = React.useState("populer");
+  const t = useTranslations("ust.altBilgi");
+  const tk = useTranslations("ortak");
+  const [sekme, setSekme] = React.useState<Sekme>("populer");
   const [hepsi, setHepsi] = React.useState(false);
   const [pencere, setPencere] = React.useState<"dil" | "para" | null>(null);
-  const { lang, currency } = useLocale();
+  const { currency, lang } = useLocale();
   const kapat = React.useCallback(() => setPencere(null), []);
-  const liste = FIKIR[sekme].liste;
+  const liste = FIKIR[sekme];
   const gosterilen = hepsi ? liste : liste.slice(0, ILK);
 
   return (
     <footer className={`lb ${s.alt}`}>
       <div className={s.dis}>
         <section aria-labelledby="fikir-baslik">
-          <h2 id="fikir-baslik" className={s.baslik}>Sonraki tatilin için fikirler</h2>
-          <div className={s.sekmeler} role="tablist" aria-label="Tatil türü">
-            {Object.entries(FIKIR).map(([k, v]) => (
+          <h2 id="fikir-baslik" className={s.baslik}>{t("fikirler")}</h2>
+          <div className={s.sekmeler} role="tablist" aria-label={t("tatilTuru")}>
+            {(Object.keys(FIKIR) as Sekme[]).map((k) => (
               <button key={k} type="button" role="tab" aria-selected={sekme === k} className={s.sekme} onClick={() => { setSekme(k); setHepsi(false); }}>
-                {v.ad}
+                {t(`sekme.${k}`)}
               </button>
             ))}
           </div>
@@ -52,15 +60,15 @@ export function AltBilgi() {
             {gosterilen.map(([ad, tur], i) => (
               <li key={ad} style={{ "--s": i } as React.CSSProperties}>
                 <Link href={`/search?destination=${encodeURIComponent(ad)}`}>
-                  <b>{ad}</b>
-                  <span>{tur}</span>
+                  <b>{lang === "en" ? (INGILIZCE_AD[ad] ?? ad) : ad}</b>
+                  <span>{t(`tur.${tur}`)}</span>
                 </Link>
               </li>
             ))}
             {liste.length > gosterilen.length && (
               <li style={{ "--s": gosterilen.length } as React.CSSProperties}>
                 <button type="button" className={s.daha} onClick={() => setHepsi(true)}>
-                  Daha fazla göster <Ikon ad="chevron-down" boyut={16} kalinlik={2.2} />
+                  {tk("dahaFazla")} <Ikon ad="chevron-down" boyut={16} kalinlik={2.2} />
                 </button>
               </li>
             )}
@@ -69,36 +77,36 @@ export function AltBilgi() {
 
         <div className={s.sutunlar}>
           <section>
-            <h3>Destek</h3>
+            <h3>{t("destek")}</h3>
             <ul>
-              <li><Link href="/yardim">Yardım merkezi</Link></li>
-              <li><Link href="/reservations">Rezervasyonumu bul</Link></li>
-              <li><Link href="/yardim">İptal ve iade seçenekleri</Link></li>
+              <li><Link href="/yardim">{t("yardimMerkezi")}</Link></li>
+              <li><Link href="/reservations">{t("rezervasyonumuBul")}</Link></li>
+              <li><Link href="/yardim">{t("iptalIade")}</Link></li>
             </ul>
           </section>
           <section>
-            <h3>Acenteler</h3>
+            <h3>{t("acenteler")}</h3>
             <ul>
-              <li><Link href="/agency/login">Acente girişi</Link></li>
+              <li><Link href="/agency/login">{t("acenteGirisi")}</Link></li>
             </ul>
           </section>
           <section>
             <h3>LookBeds</h3>
             <ul>
-              <li><Link href="/kampanyalar">Kampanyalar</Link></li>
-              <li><Link href="/login">Giriş yap ya da üye ol</Link></li>
+              <li><Link href="/kampanyalar">{t("kampanyalar")}</Link></li>
+              <li><Link href="/login">{t("girisYap")}</Link></li>
             </ul>
           </section>
         </div>
 
         <div className={s.taban}>
           <p>
-            © {new Date().getFullYear()} LookBeds <span>·</span> <Link href="/yardim">Gizlilik</Link> <span>·</span>{" "}
-            <Link href="/yardim">Kullanım koşulları</Link> <span>·</span> <Link href="/yardim">KVKK</Link>
+            © {new Date().getFullYear()} LookBeds <span>·</span> <Link href="/yardim">{t("gizlilik")}</Link> <span>·</span>{" "}
+            <Link href="/yardim">{t("kosullar")}</Link> <span>·</span> <Link href="/yardim">{t("kvkk")}</Link>
           </p>
           <p className={s.tabanSag}>
             <button type="button" onClick={() => setPencere("dil")}>
-              <Ikon ad="globe" boyut={16} kalinlik={2} /> {lang === "en" ? "English (US)" : "Türkçe (TR)"}
+              <Ikon ad="globe" boyut={16} kalinlik={2} /> {t("dil")}
             </button>
             <button type="button" onClick={() => setPencere("para")}>
               {{ TRY: "₺", USD: "$", EUR: "€", GBP: "£" }[currency] ?? ""} {currency}

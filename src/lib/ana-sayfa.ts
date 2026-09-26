@@ -13,9 +13,13 @@ import type { KategoriKodu } from "@/lib/ana-sayfa-kategoriler";
 
 export type { KategoriKodu };
 
+/** Satırın kodu; başlığı metin dosyasında (anaSayfa.satirlar.<kod>). */
+export type SatirKodu =
+  | "bodrum" | "antalya" | "kapadokya" | "istanbul" | "fethiye" | "termal" | "kayak"
+  | "marmaris" | "cesme" | "afyon" | "uludag" | "izmir" | "ankara";
+
 interface SatirTanimi {
-  kod: string;
-  baslik: string;
+  kod: SatirKodu;
   /** "Tümünü gör" araması; boşsa başlık bağlantı olmaz. */
   arama: string;
   kategoriler: KategoriKodu[];
@@ -26,19 +30,19 @@ interface SatirTanimi {
 }
 
 const SATIRLAR: SatirTanimi[] = [
-  { kod: "bodrum", baslik: "Bodrum'daki oteller", arama: "Bodrum", kategoriler: ["hepsi", "deniz"], adres: "bodrum|yalikavak|gumbet|turgutreis|bitez|torba|turkbuku|gundogan|ortakent" },
-  { kod: "antalya", baslik: "Antalya'daki oteller", arama: "Antalya", kategoriler: ["hepsi", "deniz"], adres: "antalya|lara|belek|kemer|side|alanya|konyaalti|manavgat" },
-  { kod: "kapadokya", baslik: "Kapadokya'daki oteller", arama: "Kapadokya", kategoriler: ["hepsi"], adres: "nevsehir|goreme|urgup|uchisar|avanos|kapadokya|cappadocia" },
-  { kod: "istanbul", baslik: "İstanbul'daki oteller", arama: "İstanbul", kategoriler: ["hepsi", "sehir"], adres: "istanbul" },
-  { kod: "fethiye", baslik: "Fethiye'deki oteller", arama: "Fethiye", kategoriler: ["hepsi", "deniz"], adres: "fethiye|oludeniz|gocek|hisaronu|kayakoy" },
-  { kod: "termal", baslik: "Termal oteller", arama: "", kategoriler: ["hepsi", "termal"], olanak: "Termal" },
-  { kod: "kayak", baslik: "Kayak otelleri", arama: "", kategoriler: ["hepsi", "kayak"], olanak: "Kayak" },
-  { kod: "marmaris", baslik: "Marmaris'teki oteller", arama: "Marmaris", kategoriler: ["deniz"], adres: "marmaris|icmeler|turunc" },
-  { kod: "cesme", baslik: "Çeşme'deki oteller", arama: "Çeşme", kategoriler: ["deniz"], adres: "cesme|alacati" },
-  { kod: "afyon", baslik: "Afyon'daki termal oteller", arama: "Afyon", kategoriler: ["termal"], adres: "afyon" },
-  { kod: "uludag", baslik: "Uludağ'daki oteller", arama: "Uludağ", kategoriler: ["kayak"], adres: "uludag" },
-  { kod: "izmir", baslik: "İzmir'deki oteller", arama: "İzmir", kategoriler: ["sehir"], adres: "izmir" },
-  { kod: "ankara", baslik: "Ankara'daki oteller", arama: "Ankara", kategoriler: ["sehir"], adres: "ankara" },
+  { kod: "bodrum", arama: "Bodrum", kategoriler: ["hepsi", "deniz"], adres: "bodrum|yalikavak|gumbet|turgutreis|bitez|torba|turkbuku|gundogan|ortakent" },
+  { kod: "antalya", arama: "Antalya", kategoriler: ["hepsi", "deniz"], adres: "antalya|lara|belek|kemer|side|alanya|konyaalti|manavgat" },
+  { kod: "kapadokya", arama: "Kapadokya", kategoriler: ["hepsi"], adres: "nevsehir|goreme|urgup|uchisar|avanos|kapadokya|cappadocia" },
+  { kod: "istanbul", arama: "İstanbul", kategoriler: ["hepsi", "sehir"], adres: "istanbul" },
+  { kod: "fethiye", arama: "Fethiye", kategoriler: ["hepsi", "deniz"], adres: "fethiye|oludeniz|gocek|hisaronu|kayakoy" },
+  { kod: "termal", arama: "", kategoriler: ["hepsi", "termal"], olanak: "Termal" },
+  { kod: "kayak", arama: "", kategoriler: ["hepsi", "kayak"], olanak: "Kayak" },
+  { kod: "marmaris", arama: "Marmaris", kategoriler: ["deniz"], adres: "marmaris|icmeler|turunc" },
+  { kod: "cesme", arama: "Çeşme", kategoriler: ["deniz"], adres: "cesme|alacati" },
+  { kod: "afyon", arama: "Afyon", kategoriler: ["termal"], adres: "afyon" },
+  { kod: "uludag", arama: "Uludağ", kategoriler: ["kayak"], adres: "uludag" },
+  { kod: "izmir", arama: "İzmir", kategoriler: ["sehir"], adres: "izmir" },
+  { kod: "ankara", arama: "Ankara", kategoriler: ["sehir"], adres: "ankara" },
 ];
 
 export interface AnaSayfaOteli {
@@ -50,8 +54,7 @@ export interface AnaSayfaOteli {
 }
 
 export interface AnaSayfaSatiri {
-  kod: string;
-  baslik: string;
+  kod: SatirKodu;
   arama: string;
   kategoriler: KategoriKodu[];
   oteller: AnaSayfaOteli[];
@@ -90,7 +93,7 @@ async function satirOtelleri(t: SatirTanimi): Promise<AnaSayfaOteli[]> {
 export const anaSayfaSatirlari = unstable_cache(
   async (): Promise<AnaSayfaSatiri[]> => {
     const sonuc = await Promise.all(
-      SATIRLAR.map(async (t) => ({ kod: t.kod, baslik: t.baslik, arama: t.arama, kategoriler: t.kategoriler, oteller: await satirOtelleri(t) }))
+      SATIRLAR.map(async (t) => ({ kod: t.kod, arama: t.arama, kategoriler: t.kategoriler, oteller: await satirOtelleri(t) }))
     );
     return sonuc.filter((s) => s.oteller.length >= EN_AZ);
   },

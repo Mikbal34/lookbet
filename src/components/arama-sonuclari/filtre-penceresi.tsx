@@ -5,6 +5,7 @@
 
 import { useFiyat } from "@/components/lb/fiyat";
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { Govdeye } from "@/components/lb/pencere";
 import { Ikon } from "@/components/lb/ikon";
 import { Nesne, type NesneAdi } from "@/components/lb/nesne";
@@ -13,13 +14,18 @@ import type { HotelSearchResult } from "@/lib/royal-api/types";
 import { BOS_FILTRE, uyar, type Filtre } from "./filtre";
 import s from "./filtre-penceresi.module.css";
 
-const ONERILER: { k: "iptal" | "kahvalti" | "hepsiDahil" | "yildiz4"; ad: string; nesne: NesneAdi }[] = [
-  { k: "iptal", ad: "Ücretsiz iptal", nesne: "iptal" },
-  { k: "kahvalti", ad: "Kahvaltı dahil", nesne: "kahvalti" },
-  { k: "hepsiDahil", ad: "Her şey dahil", nesne: "hersey-dahil" },
-  { k: "yildiz4", ad: "4 yıldız ve üzeri", nesne: "zil" },
+// Adları arama.filtre.secenek.<k>.
+const ONERILER: { k: "iptal" | "kahvalti" | "hepsiDahil" | "yildiz4"; nesne: NesneAdi }[] = [
+  { k: "iptal", nesne: "iptal" },
+  { k: "kahvalti", nesne: "kahvalti" },
+  { k: "hepsiDahil", nesne: "hersey-dahil" },
+  { k: "yildiz4", nesne: "zil" },
 ];
 const KUTU = 16;
+
+/** Uyruk kodunun görünen adı: arama.filtre.ulke.<kod> ("TR" → "tr"). */
+const ulkeAnahtari = (kod: (typeof NATIONALITIES)[number]["code"]) =>
+  `filtre.ulke.${kod.toLowerCase() as Lowercase<typeof kod>}` as const;
 
 export function FiltrePenceresi({ acik, filtre, oteller, pansiyonlar, uyruk, paraBirimi, onUygula, onKapat }: {
   acik: boolean;
@@ -33,6 +39,9 @@ export function FiltrePenceresi({ acik, filtre, oteller, pansiyonlar, uyruk, par
 }) {
   // Fiyat etiketleri seçilen para biriminde (filtre değerleri EUR kalır).
   const { yaz } = useFiyat();
+  // `t` burada taslak filtre; metinler `ceviri` ile.
+  const ceviri = useTranslations("arama");
+  const tk = useTranslations("ortak");
   const [t, setT] = React.useState(filtre);
   const [u, setU] = React.useState(uyruk);
   const kapatDugme = React.useRef<HTMLButtonElement>(null);
@@ -79,19 +88,19 @@ export function FiltrePenceresi({ acik, filtre, oteller, pansiyonlar, uyruk, par
     <div className={`lb ${s.kap}`} data-acik={acik || undefined} onClick={(e) => e.target === e.currentTarget && onKapat()} aria-hidden={!acik}>
       <div className={s.pencere} role="dialog" aria-modal="true" aria-labelledby="filtre-baslik">
         <div className={s.ust}>
-          <button ref={kapatDugme} type="button" className={s.kapat} onClick={onKapat} aria-label="Kapat">
+          <button ref={kapatDugme} type="button" className={s.kapat} onClick={onKapat} aria-label={tk("kapat")}>
             <Ikon ad="close" boyut={18} />
           </button>
-          <h2 id="filtre-baslik">Filtreler</h2>
+          <h2 id="filtre-baslik">{ceviri("filtre.filtreler")}</h2>
         </div>
         <div className={s.ic}>
           <section>
-            <h3>Sana özel öneriler</h3>
+            <h3>{ceviri("filtre.oneriler")}</h3>
             <div className={s.oneri}>
               {ONERILER.map((o) => (
                 <button key={o.k} type="button" aria-pressed={t[o.k]} onClick={() => degis({ [o.k]: !t[o.k] })}>
                   <Nesne ad={o.nesne} boyut={56} />
-                  {o.ad}
+                  {ceviri(`filtre.secenek.${o.k}`)}
                 </button>
               ))}
             </div>
@@ -99,8 +108,8 @@ export function FiltrePenceresi({ acik, filtre, oteller, pansiyonlar, uyruk, par
 
           {enCok > enAz && (
             <section>
-              <h3>Fiyat aralığı</h3>
-              <p className={s.alt}>Gecelik fiyat, vergiler dahil</p>
+              <h3>{ceviri("filtre.fiyatAraligi")}</h3>
+              <p className={s.alt}>{ceviri("filtre.fiyatNotu")}</p>
               <div className={s.histo} aria-hidden="true">
                 {kutular.map((n, i) => {
                   const orta = enAz + ((i + 0.5) * (enCok - enAz)) / KUTU;
@@ -110,21 +119,21 @@ export function FiltrePenceresi({ acik, filtre, oteller, pansiyonlar, uyruk, par
               <div className={s.aralik}>
                 <span className={s.ray} />
                 <span className={s.dolu} style={{ left: `calc(14px + ${oran(tMin)} * (100% - 28px))`, width: `calc(${oran(tMax) - oran(tMin)} * (100% - 28px))` }} />
-                <input type="range" min={enAz} max={enCok} step={adim} value={tMin} aria-label="En düşük gecelik fiyat"
+                <input type="range" min={enAz} max={enCok} step={adim} value={tMin} aria-label={ceviri("filtre.enDusukEtiket")}
                   onChange={(e) => { const v = Math.min(+e.target.value, tMax - adim); degis({ min: v <= enAz ? null : v }); }} />
-                <input type="range" min={enAz} max={enCok} step={adim} value={tMax} aria-label="En yüksek gecelik fiyat"
+                <input type="range" min={enAz} max={enCok} step={adim} value={tMax} aria-label={ceviri("filtre.enYuksekEtiket")}
                   onChange={(e) => { const v = Math.max(+e.target.value, tMin + adim); degis({ max: v >= enCok ? null : v }); }} />
               </div>
               <div className={s.uclar}>
-                <div>En düşük<output>{para(tMin)}</output></div>
-                <div>En yüksek<output>{para(tMax)}{t.max === null ? "+" : ""}</output></div>
+                <div>{ceviri("filtre.enDusuk")}<output>{para(tMin)}</output></div>
+                <div>{ceviri("filtre.enYuksek")}<output>{para(tMax)}{t.max === null ? "+" : ""}</output></div>
               </div>
             </section>
           )}
 
           {pansiyonlar.length > 0 && (
             <section>
-              <h3>Pansiyon</h3>
+              <h3>{ceviri("filtre.pansiyon")}</h3>
               <div className={s.cipler}>
                 {pansiyonlar.map((p) => (
                   <button key={p} type="button" className={s.cip} aria-pressed={t.pansiyon.includes(p)}
@@ -137,28 +146,28 @@ export function FiltrePenceresi({ acik, filtre, oteller, pansiyonlar, uyruk, par
           )}
 
           <section>
-            <h3>Yıldız</h3>
+            <h3>{ceviri("filtre.yildiz")}</h3>
             <div className={s.parca}>
               {([0, 3, 4, 5] as const).map((y) => (
                 <button key={y} type="button" aria-pressed={t.yildiz === y} onClick={() => degis({ yildiz: y })}>
-                  {y === 0 ? "Tümü" : y === 5 ? "5" : `${y}+`}
+                  {y === 0 ? ceviri("filtre.tumu") : y === 5 ? "5" : `${y}+`}
                 </button>
               ))}
             </div>
           </section>
 
           <section>
-            <h3>Misafir uyruğu</h3>
-            <p className={s.alt}>Otel fiyatları misafirin uyruğuna göre değişebilir; değiştirince arama yeniden yapılır.</p>
-            <select className={s.secim} value={u} onChange={(e) => setU(e.target.value)} aria-label="Misafir uyruğu">
-              {NATIONALITIES.map((n) => <option key={n.code} value={n.code}>{n.label}</option>)}
+            <h3>{ceviri("filtre.uyruk")}</h3>
+            <p className={s.alt}>{ceviri("filtre.uyrukNotu")}</p>
+            <select className={s.secim} value={u} onChange={(e) => setU(e.target.value)} aria-label={ceviri("filtre.uyruk")}>
+              {NATIONALITIES.map((n) => <option key={n.code} value={n.code}>{ceviri(ulkeAnahtari(n.code))}</option>)}
             </select>
           </section>
         </div>
         <div className={s.altCubuk}>
-          <button type="button" className={s.metin} onClick={() => { setT(BOS_FILTRE); setU(uyruk); }}>Tümünü temizle</button>
+          <button type="button" className={s.metin} onClick={() => { setT(BOS_FILTRE); setU(uyruk); }}>{ceviri("tumunuTemizle")}</button>
           <button type="button" className={s.siyah} onClick={() => onUygula(t, u)}>
-            {u !== uyruk ? "Yeniden ara" : `${sayi} oteli göster`}
+            {u !== uyruk ? ceviri("filtre.yenidenAra") : ceviri("filtre.goster", { sayi })}
           </button>
         </div>
       </div>

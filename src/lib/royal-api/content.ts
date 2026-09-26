@@ -1,4 +1,4 @@
-import { royalApiClient } from "./client";
+import { royalApiClient, type EtsDil } from "./client";
 import { etsOzellik, etsParaBirimi } from "./etscore-map";
 import {
   USE_MOCK,
@@ -19,9 +19,9 @@ export async function getCurrencies(): Promise<CurrencyDto[]> {
 const ICERIK = "/api/v1/generic-api-service/content";
 
 /** Pansiyon tipleri — Türkçe adlarıyla ("BB" → "Oda Kahvaltı"). */
-export async function getBoardTypes(): Promise<BoardTypeDto[]> {
+export async function getBoardTypes(dil: EtsDil = "tr-TR"): Promise<BoardTypeDto[]> {
   if (USE_MOCK) return mockGetBoardTypes();
-  const d = await royalApiClient.get<EtsBoardType[]>(`${ICERIK}/list-board-types`);
+  const d = await royalApiClient.get<EtsBoardType[]>(`${ICERIK}/list-board-types`, { dil });
   return (d ?? []).filter((b) => b.code && b.name).map((b) => ({ code: b.code, name: b.name.trim() }));
 }
 
@@ -30,11 +30,11 @@ export async function getBoardTypes(): Promise<BoardTypeDto[]> {
  * kesiliyor (1837 oda özelliğinden 996'sı geldi), boş sayfa gelene ya da
  * toplam dolana kadar okunuyor.
  */
-async function ozellikListesi(yol: string): Promise<FacilityDto[]> {
+async function ozellikListesi(yol: string, dil: EtsDil = "tr-TR"): Promise<FacilityDto[]> {
   const BOYUT = 500;
   const hepsi: FacilityDto[] = [];
   for (let sayfa = 0; sayfa < 20; sayfa++) {
-    const d = await royalApiClient.get<EtsOzellikSayfasi>(`${yol}?page=${sayfa}&size=${BOYUT}`);
+    const d = await royalApiClient.get<EtsOzellikSayfasi>(`${yol}?page=${sayfa}&size=${BOYUT}`, { dil });
     const parca = d?.attributes ?? [];
     hepsi.push(...parca.map(etsOzellik).filter((x) => x.id && x.name));
     if (parca.length === 0 || (d?.totalCount && (sayfa + 1) * BOYUT >= d.totalCount)) break;
@@ -42,9 +42,9 @@ async function ozellikListesi(yol: string): Promise<FacilityDto[]> {
   return [...new Map(hepsi.map((x) => [x.id, x])).values()];
 }
 
-export async function getFacilities(): Promise<FacilityDto[]> {
+export async function getFacilities(dil: EtsDil = "tr-TR"): Promise<FacilityDto[]> {
   if (USE_MOCK) return mockGetFacilities();
-  return ozellikListesi(`${ICERIK}/list-hotel-facilities/ATTRIBUTE_ALL`);
+  return ozellikListesi(`${ICERIK}/list-hotel-facilities/ATTRIBUTE_ALL`, dil);
 }
 
 export async function getRoomAttributes(): Promise<RoomAttributeDto[]> {

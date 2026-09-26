@@ -6,6 +6,7 @@
 
 import * as React from "react";
 import { signOut, useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { Ikon } from "@/components/lb/ikon";
 import { Nesne } from "@/components/lb/nesne";
 import { DESTEK } from "@/components/yardim/makaleler";
@@ -14,24 +15,27 @@ import { useProfil } from "./veri";
 import s from "./hesap.module.css";
 
 export function Guvenlik() {
+  const t = useTranslations("hesap.guvenlik");
   const { status } = useSession();
   const profil = useProfil(status === "authenticated");
   const eposta = profil.data?.email;
-  const silKonu = encodeURIComponent("Hesabımı silmek istiyorum");
-  const silGovde = encodeURIComponent(`Merhaba,\n\n${eposta ?? ""} adresli LookBeds hesabımın silinmesini istiyorum.\n`);
+  const silKonu = encodeURIComponent(t("silKonu"));
+  const silGovde = encodeURIComponent(t("silGovde", { eposta: eposta ?? "" }));
 
   return (
-    <HesapKabugu kirinti="Giriş ve güvenlik">
-      <h1 className={`lb-y ${s.altBaslik}`}>Giriş ve güvenlik</h1>
+    <HesapKabugu kirinti={t("baslik")}>
+      <h1 className={`lb-y ${s.altBaslik}`}>{t("baslik")}</h1>
       <div className={s.altDuzen}>
         <div>
           <div className={s.satir}>
             <div className={s.yontem}>
               <span className={s.yontemIkon}><Ikon ad="mail" boyut={20} /></span>
               <div>
-                <b>Giriş yöntemi</b>
+                <b>{t("yontem")}</b>
                 <div className={s.not}>
-                  E-posta koduyla, şifresiz.{eposta ? <> Her girişte <b style={{ display: "inline", color: "var(--lb-yazi)" }}>{eposta}</b> adresine kod gelir.</> : null}
+                  {eposta
+                    ? t.rich("yontemEposta", { eposta, b: (c) => <b style={{ display: "inline", color: "var(--lb-yazi)" }}>{c}</b> })
+                    : t("yontemSifresiz")}
                 </div>
               </div>
             </div>
@@ -39,34 +43,34 @@ export function Guvenlik() {
           <div className={s.satir}>
             <div className={s.satirUst}>
               <div>
-                <b>Bu cihazdaki oturum</b>
-                <span>Ortak bir bilgisayardaysan işin bitince çıkış yap.</span>
+                <b>{t("oturum")}</b>
+                <span>{t("oturumMetin")}</span>
               </div>
-              <button type="button" className={s.metinDugme} onClick={() => signOut({ callbackUrl: "/" })}>Çıkış yap</button>
+              <button type="button" className={s.metinDugme} onClick={() => signOut({ callbackUrl: "/" })}>{t("cikis")}</button>
             </div>
           </div>
 
-          <h2 className={s.bolumBaslik}>Hesap</h2>
+          <h2 className={s.bolumBaslik}>{t("hesapBolumu")}</h2>
           <div className={s.satir}>
             <div className={s.satirUst}>
               <div>
-                <b>Hesabı sil</b>
-                <span>Kişisel bilgilerin ve kayıtlı misafirlerin silinir. Yaklaşan rezervasyonun varsa önce onu birlikte ele alırız.</span>
+                <b>{t("sil")}</b>
+                <span>{t("silMetin")}</span>
               </div>
-              <a className={`${s.metinDugme} ${s.tehlike}`} href={`mailto:${DESTEK.eposta}?subject=${silKonu}&body=${silGovde}`}>Hesabı sil</a>
+              <a className={`${s.metinDugme} ${s.tehlike}`} href={`mailto:${DESTEK.eposta}?subject=${silKonu}&body=${silGovde}`}>{t("sil")}</a>
             </div>
           </div>
         </div>
         <aside className={s.bilgiKart}>
           <div>
             <Nesne ad="kilit" boyut={48} />
-            <b>Şifre yok, derdi de yok</b>
-            <span>Şifre yerine her girişte e-postana tek kullanımlık kod gönderiyoruz. Kod 10 dakika geçerli ve bir kez kullanılır.</span>
+            <b>{t("sifreYokBaslik")}</b>
+            <span>{t("sifreYokMetin")}</span>
           </div>
           <div>
             <Nesne ad="zil" boyut={48} />
-            <b>Şüpheli bir şey mi gördün?</b>
-            <span>İstemediğin bir kod geldiyse kimseyle paylaşma. E-postana erişimin güvendeyse hesabın da güvendedir. Sorun olursa {DESTEK.telefon}.</span>
+            <b>{t("supheliBaslik")}</b>
+            <span>{t("supheliMetin", { telefon: DESTEK.telefon })}</span>
           </div>
         </aside>
       </div>

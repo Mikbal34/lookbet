@@ -1,21 +1,19 @@
 // Vitrin kampanyaları: "vitrinde göster" işaretli, müşterilere açık, yayında
 // ya da 30 gün içinde başlayacak otomatik indirimler. /kampanyalar ve ana
-// sayfa kullanır.
+// sayfa kullanır. Yalnız veri: tarih ve koşul metinleri dile göre bileşende
+// kurulur (components/kampanya/metin).
 import { prisma } from "@/lib/prisma";
-import { AYLAR } from "@/components/lb/arama/durum";
-import { gunYonelme } from "@/components/rezervasyonlar/ortak";
 import type { VitrinKampanya } from "@/components/kampanya/ortak";
 
 const trTarih = (d: Date) => new Date(d.toLocaleString("en-US", { timeZone: "Europe/Istanbul" }));
-
-function kosulMetni(d: { type: string; percent: number; minDays: number | null; maxDays: number | null; minNights: number | null; stayStart: Date | null; stayEnd: Date | null }, yer: string) {
-  const y = `%${d.percent.toLocaleString("tr-TR")}`;
-  if (d.type === "EARLY_BOOKING") return `Girişine ${d.minDays} gün ve fazlası olan rezervasyonlarda ${yer} ${y} indirim.`;
-  if (d.type === "LAST_MINUTE") return `Girişe ${d.maxDays} gün ya da daha az kaldıysa ${yer} ${y} son dakika indirimi.`;
-  if (d.type === "LONG_STAY") return `${d.minNights} gece ve fazlası konaklamalarda ${yer} ${y} indirim.`;
-  const g = (x: Date | null) => (x ? `${x.getUTCDate()} ${AYLAR[x.getUTCMonth()]}` : "");
-  return `${g(d.stayStart)} – ${g(d.stayEnd)} arası girişlerde ${yer} ${y} indirim.`;
-}
+const ikiHane = (n: number) => String(n).padStart(2, "0");
+/** Anın İstanbul'daki günü (YYYY-MM-DD). */
+const istanbulGunu = (d: Date) => {
+  const t = trTarih(d);
+  return `${t.getFullYear()}-${ikiHane(t.getMonth() + 1)}-${ikiHane(t.getDate())}`;
+};
+/** Yalnız tarih alanı (@db.Date, UTC gece yarısı) → YYYY-MM-DD. */
+const gunAlani = (d: Date | null) => (d ? d.toISOString().slice(0, 10) : null);
 
 export async function vitrinKampanyalari(): Promise<VitrinKampanya[]> {
   const simdi = new Date();
@@ -33,21 +31,21 @@ export async function vitrinKampanyalari(): Promise<VitrinKampanya[]> {
   const oteller = new Map(
     (kodlar.length ? await prisma.hotel.findMany({ where: { hotelCode: { in: kodlar } }, select: { hotelCode: true, name: true } }) : []).map((o) => [o.hotelCode, o.name])
   );
-  return indirimler.map((d) => {
-    const yakinda = !!d.startsAt && d.startsAt > simdi;
-    const yer = d.hotelCodes.length ? "seçili otellerde" : d.locationName ? `${d.locationName} otellerinde` : "tüm otellerde";
-    const bas = d.startsAt ? trTarih(d.startsAt) : null;
-    const tarih = yakinda && bas ? `Başlangıç ${bas.getDate()} ${AYLAR[bas.getMonth()]}` : d.endsAt ? `${gunYonelme(trTarih(d.endsAt))} kadar` : "Süresiz";
-    return {
-      id: d.id,
-      ad: d.name,
-      tur: d.type,
-      yuzde: d.percent,
-      aciklama: d.description || kosulMetni(d, yer),
-      tarih,
-      bolge: d.hotelCodes.length ? null : d.locationName,
-      oteller: d.hotelCodes.map((k) => ({ kod: k, ad: oteller.get(k) ?? k })),
-      yakinda,
-    };
-  });
+  return indirimler.map((d) => ({
+    id: d.id,
+    ad: d.name,
+    tur: d.type,
+    yuzde: d.percent,
+    aciklama: d.description || null,
+    minGun: d.minDays,
+    maxGun: d.maxDays,
+    minGece: d.minNights,
+    girisBas: gunAlani(d.stayStart),
+    girisSon: gunAlani(d.stayEnd),
+    baslangic: d.startsAt ? istanbulGunu(d.startsAt) : null,
+    bitis: d.endsAt ? istanbulGunu(d.endsAt) : null,
+    bolge: d.hotelCodes.length ? null : d.locationName,
+    oteller: d.hotelCodes.map((k) => ({ kod: k, ad: oteller.get(k) ?? k })),
+    yakinda: !!d.startsAt && d.startsAt > simdi,
+  }));
 }

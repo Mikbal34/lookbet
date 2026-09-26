@@ -9,6 +9,7 @@
 
 import * as React from "react";
 import { createPortal } from "react-dom";
+import { useLocale } from "next-intl";
 import { APIProvider, useMap, useMapsLibrary } from "@vis.gl/react-google-maps";
 
 export const HARITA_ANAHTARI = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
@@ -32,10 +33,15 @@ export const HARITA_STILI: google.maps.MapTypeStyle[] = [
   { elementType: "labels.text.stroke", stylers: [{ color: "#ffffff" }, { weight: 3 }] },
 ];
 
+/**
+ * Harita yazıları sayfanın dilinde. Maps betiği sayfada bir kez yüklenir:
+ * dil değişince yeni dil sayfa yeniden yüklenene kadar haritaya geçmez.
+ */
 export function HaritaSaglayici({ children, yedek }: { children: React.ReactNode; yedek?: React.ReactNode }) {
+  const dil = useLocale();
   if (!HARITA_ANAHTARI) return <>{yedek ?? null}</>;
   return (
-    <APIProvider apiKey={HARITA_ANAHTARI} language="tr" region="TR">
+    <APIProvider apiKey={HARITA_ANAHTARI} language={dil} region="TR">
       {children}
     </APIProvider>
   );

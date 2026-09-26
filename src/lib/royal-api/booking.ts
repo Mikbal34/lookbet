@@ -1,4 +1,4 @@
-import { EtscoreError, royalApiClient } from "./client";
+import { EtscoreError, royalApiClient, type EtsDil } from "./client";
 import {
   etsOdaAramaIstegi,
   etsOdaAramaYaniti,
@@ -105,7 +105,7 @@ export const FIYAT_SURESI_DOLDU = "FIYAT_SURESI_DOLDU";
  * koduna göre ekleniyor. Detay alınamazsa odalar fotoğrafsız gelir, arama
  * bundan etkilenmez.
  */
-export async function searchRooms(params: RoomSearchRequest): Promise<RoomSearchResponse> {
+export async function searchRooms(params: RoomSearchRequest, dil: EtsDil = "tr-TR"): Promise<RoomSearchResponse> {
   if (USE_MOCK) {
     const yanit = await mockSearchRooms(params);
     fiyatlariKaydet(yanit, params);
@@ -116,12 +116,13 @@ export async function searchRooms(params: RoomSearchRequest): Promise<RoomSearch
     royalApiClient
       .post<EtsRoomSearchResponse>(`${ROYAL}/room/search`, etsOdaAramaIstegi(params), {
         currency: params.currency,
+        dil,
       })
       .catch((e) => {
         if (e instanceof EtscoreError && e.musaitlikYok) return null;
         throw e;
       }),
-    etsOtelDetayiGetir(params.hotelCode).catch(() => null),
+    etsOtelDetayiGetir(params.hotelCode, false, dil).catch(() => null),
   ]);
 
   const yanit = etsOdaAramaYaniti(arama, params, etsOdaGorselleri(detay));
@@ -137,7 +138,7 @@ export async function searchRooms(params: RoomSearchRequest): Promise<RoomSearch
  *   • belirsiz (zaman aşımı, bağlantı, 5xx): rezervasyon oluşmuş olabilir;
  *   • diğer 4xx: Etscore reddetti, rezervasyon oluşmadı.
  */
-export async function createBooking(params: CreateBookingRequest, kayit: FiyatKaydi): Promise<CreateBookingResponse> {
+export async function createBooking(params: CreateBookingRequest, kayit: FiyatKaydi, dil: EtsDil = "tr-TR"): Promise<CreateBookingResponse> {
   if (USE_MOCK) return mockCreateBooking(params);
 
   // Dokümana göre şimdilik rezervasyon başına tek oda.
@@ -152,7 +153,8 @@ export async function createBooking(params: CreateBookingRequest, kayit: FiyatKa
       kayit
     ),
     // Rezervasyon oteli de onaylatabiliyor; aramadan uzun bekle.
-    { currency: kayit.para, zamanAsimiMs: 90_000 }
+    // dil: Etscore'un ret mesajları kullanıcının dilinde gelsin.
+    { currency: kayit.para, zamanAsimiMs: 90_000, dil }
   );
   if (!d?.success || !d.voucher) {
     throw new EtscoreError(422, "REZERVASYON_BASARISIZ", "Rezervasyon tamamlanamadı, lütfen tekrar deneyin");

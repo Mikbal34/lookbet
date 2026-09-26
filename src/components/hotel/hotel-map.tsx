@@ -9,8 +9,10 @@
 
 import { fotoBoyutu } from "@/lib/foto";
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { Map as GoogleMap, useMap } from "@vis.gl/react-google-maps";
 import type { HotelSearchResult } from "@/lib/royal-api/types";
+import { useBicim } from "@/i18n/use-bicim";
 import { HARITA_STILI, HaritaSaglayici, HtmlIsaret } from "@/components/harita/google-harita";
 
 export interface HotelMapProps {
@@ -33,15 +35,6 @@ function koordinatliMi(h: HotelSearchResult): boolean {
     Number.isFinite(h.longitude) &&
     !(h.latitude === 0 && h.longitude === 0)
   );
-}
-
-function fiyatEtiketi(h: HotelSearchResult): string {
-  return new Intl.NumberFormat("tr-TR", {
-    style: "currency",
-    currency: h.currency || "EUR",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(h.minPrice);
 }
 
 /** Otel kümesi değişince (akışla yeni oteller gelince de) haritayı sığdırır. */
@@ -68,10 +61,12 @@ function Sigdir({ hotels }: { hotels: HotelSearchResult[] }) {
 }
 
 function MiniKart({ h, href, fiyat, onKapat }: { h: HotelSearchResult; href: string; fiyat: string; onKapat: () => void }) {
+  const t = useTranslations("arama.kart");
+  const tk = useTranslations("ortak");
   const [fotoYok, setFotoYok] = React.useState(!h.thumbnailImage);
   return (
     <div className="lb-harita-kart" role="dialog" aria-label={h.hotelName}>
-      <button type="button" className="lb-harita-kart-kapat" onClick={onKapat} aria-label="Kapat">
+      <button type="button" className="lb-harita-kart-kapat" onClick={onKapat} aria-label={tk("kapat")}>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
       </button>
       <a href={href} target={`otel_${h.hotelCode}`}>
@@ -84,11 +79,11 @@ function MiniKart({ h, href, fiyat, onKapat }: { h: HotelSearchResult; href: str
         <div className="lb-harita-kart-alt">
           <b>{h.hotelName}</b>
           <span>
-            {h.stars > 0 ? `${h.stars} yıldızlı · ` : ""}
+            {h.stars > 0 ? `${tk("yildizli", { sayi: h.stars })} · ` : ""}
             {h.boardTypes[0] ?? ""}
           </span>
           <span>
-            <b>{fiyat}</b>{h.freeCancellation ? " · Ücretsiz iptal" : ""}
+            <b>{fiyat}</b>{h.freeCancellation ? ` · ${t("ucretsizIptal")}` : ""}
           </span>
         </div>
       </a>
@@ -96,7 +91,11 @@ function MiniKart({ h, href, fiyat, onKapat }: { h: HotelSearchResult; href: str
   );
 }
 
-export function HotelMap({ hotels, searchParams, className, aktifKod, fiyatYaz = fiyatEtiketi }: HotelMapProps) {
+export function HotelMap({ hotels, searchParams, className, aktifKod, fiyatYaz }: HotelMapProps) {
+  const t = useTranslations("arama.harita");
+  const bicim = useBicim();
+  // Varsayılan iğne metni: gecelik en düşük fiyat, geçerli dilin biçiminde.
+  const yaz = fiyatYaz ?? ((h: HotelSearchResult) => bicim.para(h.minPrice, h.currency || "EUR"));
   const gecerli = React.useMemo(() => hotels.filter(koordinatliMi), [hotels]);
   const [acik, setAcik] = React.useState<string | null>(null);
   const [gorulen, setGorulen] = React.useState<Set<string>>(() => new Set());
@@ -108,11 +107,11 @@ export function HotelMap({ hotels, searchParams, className, aktifKod, fiyatYaz =
       <div className="flex h-full items-center justify-center px-6 text-center text-[13.5px] text-muted">{mesaj}</div>
     </div>
   );
-  if (gecerli.length === 0) return bos("Bu sonuçlar için konum bilgisi bulunmuyor.");
+  if (gecerli.length === 0) return bos(t("konumYok"));
 
   return (
     <div className={className}>
-      <HaritaSaglayici yedek={bos("Harita şu an gösterilemiyor.")}>
+      <HaritaSaglayici yedek={bos(t("gosterilemiyor"))}>
         <GoogleMap
           className="h-full w-full"
           defaultCenter={{ lat: gecerli[0].latitude, lng: gecerli[0].longitude }}
@@ -136,19 +135,19 @@ export function HotelMap({ hotels, searchParams, className, aktifKod, fiyatYaz =
                 className="lb-fiyat-pini"
                 data-acik={acik === h.hotelCode || aktifKod === h.hotelCode || undefined}
                 data-gorulen={gorulen.has(h.hotelCode) || undefined}
-                aria-label={`${h.hotelName}, ${fiyatYaz(h)}`}
+                aria-label={`${h.hotelName}, ${yaz(h)}`}
                 onClick={() => {
                   setAcik(h.hotelCode);
                   setGorulen((g) => new Set(g).add(h.hotelCode));
                 }}
               >
-                {fiyatYaz(h)}
+                {yaz(h)}
               </button>
             </HtmlIsaret>
           ))}
           {acikOtel && (
             <HtmlIsaret position={{ lat: acikOtel.latitude, lng: acikOtel.longitude }} zIndex={10}>
-              <MiniKart h={acikOtel} href={href(acikOtel)} fiyat={fiyatYaz(acikOtel)} onKapat={() => setAcik(null)} />
+              <MiniKart h={acikOtel} href={href(acikOtel)} fiyat={yaz(acikOtel)} onKapat={() => setAcik(null)} />
             </HtmlIsaret>
           )}
         </GoogleMap>

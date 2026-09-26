@@ -1,11 +1,12 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { AcenteGirisi } from "@/components/lb/giris/acente-girisi";
 
-export const metadata: Metadata = {
-  title: "Acente girişi — LookBeds Partner",
-  description: "LookBeds Partner paneline giriş yap",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("giris.meta.acente");
+  return { title: t("baslik"), description: t("aciklama") };
+}
 
 export default function AcenteGirisSayfasi() {
   return (

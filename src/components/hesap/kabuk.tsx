@@ -7,6 +7,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { UstCubuk } from "@/components/lb/ust-cubuk";
 import { AltBilgi } from "@/components/lb/alt-bilgi";
 import { Ikon } from "@/components/lb/ikon";
@@ -23,6 +24,7 @@ export function HesapKabugu({ kirinti, herkeseAcik, children }: {
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const t = useTranslations("hesap");
   const { data: oturum, status } = useSession();
   const giris = useGiris();
   const [arama, setArama] = React.useState(BOS_ARAMA);
@@ -36,14 +38,14 @@ export function HesapKabugu({ kirinti, herkeseAcik, children }: {
   if (herkeseAcik) {
     govde = children;
   } else if (status === "loading" || panel) {
-    govde = <div className={s.iskelet} aria-busy="true" aria-label="Yükleniyor" />;
+    govde = <div className={s.iskelet} aria-busy="true" aria-label={t("kabuk.yukleniyor")} />;
   } else if (status === "unauthenticated") {
     govde = (
       <div className={s.bos}>
         <Nesne ad="kapi" boyut={110} />
-        <h1 className="lb-y">Hesabını görmek için giriş yap</h1>
-        <p>Şifre yok: e-postana gelen kodla saniyeler içinde girersin.</p>
-        <button type="button" className={`${s.dugme} ${s.turuncu}`} onClick={() => giris.ac()}>Giriş yap ya da üye ol</button>
+        <h1 className="lb-y">{t("kabuk.girisBaslik")}</h1>
+        <p>{t("kabuk.girisMetin")}</p>
+        <button type="button" className={`${s.dugme} ${s.turuncu}`} onClick={() => giris.ac()}>{t("kabuk.girisDugme")}</button>
       </div>
     );
   }
@@ -53,8 +55,8 @@ export function HesapKabugu({ kirinti, herkeseAcik, children }: {
       <UstCubuk deger={arama} onDegis={setArama} onAra={() => router.push(aramaAdresi(arama))} />
       <main className={s.dis}>
         {kirinti && status === "authenticated" && !panel && rol === "CUSTOMER" && (
-          <nav className={s.kirinti} aria-label="Konum">
-            <Link href="/profile">Hesap</Link>
+          <nav className={s.kirinti} aria-label={t("kabuk.kirinti")}>
+            <Link href="/profile">{t("ana.baslik")}</Link>
             <Ikon ad="chevron-right" boyut={14} />
             <span>{kirinti}</span>
           </nav>

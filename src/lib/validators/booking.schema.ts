@@ -71,33 +71,41 @@ export const createBookingSchema = z.object({
 
 /**
  * Misafirleri fiyat kodunun kaydındaki kişi sayıları ve giriş tarihine göre
- * denetler (sunucu). Hata varsa createBookingSchema ile aynı yolda iletir.
+ * denetler (sunucu). Hata metin değil anahtardır (messages/<dil>/api.json ›
+ * rezervasyon); uç isteğin dilinde yazar.
  */
+export type MisafirHatasi =
+  | { yol: (string | number)[]; anahtar: "misafirSayisi"; degerler: { yetiskin: number } }
+  | { yol: (string | number)[]; anahtar: "misafirSayisiCocuklu"; degerler: { yetiskin: number; cocuk: number } }
+  | { yol: (string | number)[]; anahtar: "dogumGecersiz" | "yetiskin18"; degerler?: undefined }
+  | { yol: (string | number)[]; anahtar: "cocukYasi"; degerler: { yaslar: string } };
+
 export function misafirleriDenetle(
   misafirler: GuestInput[],
   kayit: { checkIn: string; odalar: { adult: number; childAges?: number[] }[] }
-): { yol: (string | number)[]; mesaj: string }[] {
-  const hatalar: { yol: (string | number)[]; mesaj: string }[] = [];
+): MisafirHatasi[] {
+  const hatalar: MisafirHatasi[] = [];
   const oda = kayit.odalar[0] ?? { adult: 1, childAges: [] };
   const yetiskin = misafirler.filter((g) => g.type === "Adult").length;
   const cocukYaslari = [...(oda.childAges ?? [])].sort((a, b) => a - b);
   const cocuklar = misafirler.filter((g) => g.type === "Child");
   if (yetiskin !== oda.adult || cocuklar.length !== cocukYaslari.length) {
-    hatalar.push({
-      yol: ["rooms", 0, "guests"],
-      mesaj: `Bu fiyat ${oda.adult} yetişkin${cocukYaslari.length ? ` ve ${cocukYaslari.length} çocuk` : ""} için; misafir sayısı uyuşmuyor.`,
-    });
+    hatalar.push(
+      cocukYaslari.length
+        ? { yol: ["rooms", 0, "guests"], anahtar: "misafirSayisiCocuklu", degerler: { yetiskin: oda.adult, cocuk: cocukYaslari.length } }
+        : { yol: ["rooms", 0, "guests"], anahtar: "misafirSayisi", degerler: { yetiskin: oda.adult } }
+    );
     return hatalar;
   }
   const kalan = [...cocukYaslari];
   misafirler.forEach((g, j) => {
     const yas = yasHesapla(g.birthDate, kayit.checkIn);
     const yol = ["rooms", 0, "guests", j, "birthDate"];
-    if (Number.isNaN(yas) || yas < 0 || yas > 120) return hatalar.push({ yol, mesaj: "Doğum tarihi geçersiz" });
-    if (g.type === "Adult" && yas < 18) return hatalar.push({ yol, mesaj: "Yetişkin misafir girişte en az 18 yaşında olmalı" });
+    if (Number.isNaN(yas) || yas < 0 || yas > 120) return hatalar.push({ yol, anahtar: "dogumGecersiz" });
+    if (g.type === "Adult" && yas < 18) return hatalar.push({ yol, anahtar: "yetiskin18" });
     if (g.type === "Child") {
       const i = kalan.indexOf(yas);
-      if (i === -1) hatalar.push({ yol, mesaj: `Girişteki yaş aramadaki çocuk yaşlarıyla (${cocukYaslari.join(", ")}) uyuşmuyor` });
+      if (i === -1) hatalar.push({ yol, anahtar: "cocukYasi", degerler: { yaslar: cocukYaslari.join(", ") } });
       else kalan.splice(i, 1);
     }
   });

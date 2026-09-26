@@ -12,7 +12,8 @@
 import { createHmac, randomInt, timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { hizSiniri, sifirla, sinirdaMi } from "@/lib/hiz-siniri";
-import { epostaGonder } from "@/lib/eposta";
+import { epostaGonder, kacir } from "@/lib/eposta";
+import { getTranslations } from "next-intl/server";
 
 const CODE_TTL_MS = 10 * 60 * 1000; // 10 dakika
 const MAX_ATTEMPTS = 5;
@@ -53,16 +54,18 @@ export async function sendLoginCode(email: string, code: string): Promise<void> 
     console.log(`[LOGIN_CODE] ${email} için giriş kodu: ${code}`);
     return;
   }
+  // İsteği yapanın dilinde (i18n: çerez ya da tarayıcı dili).
+  const t = await getTranslations("api.eposta");
   await epostaGonder({
     to: email,
-    subject: `LookBeds giriş kodun: ${code}`,
+    subject: t("kodKonu", { kod: code }),
     html: `
         <div style="font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;max-width:420px;margin:0 auto;color:#141414">
-          <h2 style="margin:0 0 8px">LookBeds giriş kodun</h2>
+          <h2 style="margin:0 0 8px">${kacir(t("kodBaslik"))}</h2>
           <p style="font-size:34px;font-weight:700;letter-spacing:8px;margin:16px 0;color:#141414">${code}</p>
-          <p style="color:#6b6b6b;line-height:1.5">Kod 10 dakika geçerli. Bu girişi sen istemediysen e-postayı yok sayabilirsin.</p>
+          <p style="color:#6b6b6b;line-height:1.5">${kacir(t("kodAciklama"))}</p>
         </div>`,
-    text: `LookBeds giriş kodun: ${code}\nKod 10 dakika geçerli. Bu girişi sen istemediysen e-postayı yok sayabilirsin.`,
+    text: `${t("kodKonu", { kod: code })}\n${t("kodAciklama")}`,
   });
 }
 
@@ -113,11 +116,8 @@ export async function verifyLoginCode(email: string, code: string, ip: string | 
   return { gecerli: true };
 }
 
-/** authorize() içinde: geçersiz kodda kullanıcıya gösterilecek hata. */
-export function kodHatasi(s: Extract<KodSonucu, { gecerli: false }>): Error {
-  return new Error(
-    s.kilitDk
-      ? `Çok fazla hatalı deneme. ${s.kilitDk} dakika sonra tekrar dene.`
-      : "Kod hatalı veya süresi dolmuş"
-  );
+/** authorize() içinde: geçersiz kodda kullanıcıya gösterilecek hata (isteğin dilinde). */
+export async function kodHatasi(s: Extract<KodSonucu, { gecerli: false }>): Promise<Error> {
+  const t = await getTranslations("api.giris");
+  return new Error(s.kilitDk ? t("kilit", { dk: s.kilitDk }) : t("kodHatali"));
 }

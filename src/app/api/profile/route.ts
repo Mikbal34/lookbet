@@ -3,12 +3,13 @@ import { getServerSession } from "next-auth";
 import { z } from "zod";
 import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
+import { profilHatasi } from "@/lib/dogrulama";
 
 // Kullanıcının kendi profili: ad, telefon, doğum tarihi, uyruk. Alanlar
 // ayrı ayrı güncellenebilir (Hesabım'da satır satır düzenleniyor). E-posta
 // kimlik olarak kullanılıyor (girişin anahtarı), rol ve isActive ise
 // yönetici yetkisinde — bunları buradan değiştirilebilir yapmak yetki
-// yükseltme yolu açardı.
+// yükseltme yolu açardı. Şema mesajları metin anahtarı (api.profil.*).
 
 const tarihGecerli = (s: string) => {
   const d = new Date(`${s}T00:00:00Z`);
@@ -17,13 +18,13 @@ const tarihGecerli = (s: string) => {
 
 const profileSchema = z
   .object({
-    name: z.string().trim().min(2, "Ad en az 2 karakter olmalı").max(100).optional(),
+    name: z.string().trim().min(2, "adKisa").max(100).optional(),
     // Boş dize telefonu siler.
-    phone: z.union([z.literal(""), z.string().trim().min(7, "Telefon numarası geçersiz").max(20)]).optional(),
-    birthDate: z.union([z.literal(""), z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(tarihGecerli, "Doğum tarihi geçersiz")]).optional(),
-    nationality: z.string().regex(/^[A-Z]{2}$/, "Uyruk geçersiz").optional(),
+    phone: z.union([z.literal(""), z.string().trim().min(7, "telefonGecersiz").max(20)]).optional(),
+    birthDate: z.union([z.literal(""), z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(tarihGecerli, "dogumGecersiz")]).optional(),
+    nationality: z.string().regex(/^[A-Z]{2}$/, "uyrukGecersiz").optional(),
   })
-  .refine((v) => Object.values(v).some((x) => x !== undefined), "Değiştirilecek alan yok");
+  .refine((v) => Object.values(v).some((x) => x !== undefined), "alanYok");
 
 const PUBLIC_FIELDS = {
   id: true,
@@ -72,10 +73,7 @@ export async function PUT(req: NextRequest) {
     const parsed = profileSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Validation failed", details: parsed.error.flatten() },
-        { status: 400 }
-      );
+      return NextResponse.json(await profilHatasi(parsed.error), { status: 400 });
     }
 
     const { name, phone, birthDate, nationality } = parsed.data;

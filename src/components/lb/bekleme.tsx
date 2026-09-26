@@ -8,16 +8,11 @@
 // durağan kalır (SVG'lerin içinde ve aşağıdaki CSS'te).
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import s from "./bekleme.module.css";
 
+// Varsayılan ekran okuyucu metinleri: ust.bekleme.<tür>.
 export type BeklemeTuru = "zil" | "bavul" | "takvim" | "kart";
-
-const ETIKET: Record<BeklemeTuru, string> = {
-  zil: "Yükleniyor",
-  bavul: "Oteller aranıyor",
-  takvim: "Fiyatlar aranıyor",
-  kart: "Rezervasyon yapılıyor",
-};
 
 export function Bekleme({ tur = "zil", boyut = 120, bitti = false, etiket, className }: {
   tur?: BeklemeTuru;
@@ -28,7 +23,8 @@ export function Bekleme({ tur = "zil", boyut = 120, bitti = false, etiket, class
   etiket?: string | null;
   className?: string;
 }) {
-  const aria = etiket === null ? { "aria-hidden": true as const } : { role: "img", "aria-label": etiket ?? ETIKET[tur] };
+  const t = useTranslations("ust.bekleme");
+  const aria = etiket === null ? { "aria-hidden": true as const } : { role: "img", "aria-label": etiket ?? t(tur) };
   const stil = { width: boyut, height: boyut } as React.CSSProperties;
   if (tur === "bavul") {
     return (

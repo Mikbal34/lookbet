@@ -7,6 +7,7 @@ import { randomBytes } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { kodHatasi, verifyLoginCode } from "@/lib/auth/login-code";
 import { istemciIp } from "@/lib/hiz-siniri";
+import { getTranslations } from "next-intl/server";
 
 // Hesaplar şifresiz (e-posta kodu); passwordHash sütunu zorunlu olduğu için
 // hiçbir şifreyle eşleşmeyecek rastgele bir hash yazılır.
@@ -62,23 +63,24 @@ const providers: NextAuthOptions["providers"] = [
       code: { label: "Kod", type: "text" },
     },
     async authorize(credentials, req) {
+      const t = await getTranslations("api.giris");
       if (!credentials?.email || !credentials?.code) {
-        throw new Error("Email ve kod gereklidir");
+        throw new Error(t("epostaVeKodGerekli"));
       }
 
       const email = credentials.email.toLowerCase().trim();
       const sonuc = await verifyLoginCode(email, credentials.code.trim(), istemciIp(req?.headers));
-      if (!sonuc.gecerli) throw kodHatasi(sonuc);
+      if (!sonuc.gecerli) throw await kodHatasi(sonuc);
 
       // Rol ve kapalı hesap mesajları kod doğrulandıktan sonra: e-postanın
       // sahibi olduğu kanıtlanmadan hesabın varlığı söylenmez.
       const user = await findOrCreateCustomer(email);
 
       if (!user.isActive) {
-        throw new Error("Hesabınız devre dışı bırakılmış");
+        throw new Error(t("hesapKapali"));
       }
       if (user.role !== "CUSTOMER") {
-        throw new Error("Bu hesap için acente/yönetici girişini kullanın");
+        throw new Error(t("acenteGirisiKullan"));
       }
 
       return {
@@ -102,12 +104,13 @@ const providers: NextAuthOptions["providers"] = [
       code: { label: "Kod", type: "text" },
     },
     async authorize(credentials, req) {
+      const t = await getTranslations("api.giris");
       if (!credentials?.email || !credentials?.code) {
-        throw new Error("E-posta ve kod gereklidir");
+        throw new Error(t("epostaVeKodGerekli"));
       }
       const email = credentials.email.toLowerCase().trim();
       const sonuc = await verifyLoginCode(email, credentials.code.trim(), istemciIp(req?.headers));
-      if (!sonuc.gecerli) throw kodHatasi(sonuc);
+      if (!sonuc.gecerli) throw await kodHatasi(sonuc);
       const user =
         (await prisma.user.findUnique({ where: { email }, include: { agency: true } })) ??
         (await prisma.user.create({
@@ -120,10 +123,10 @@ const providers: NextAuthOptions["providers"] = [
           include: { agency: true },
         }));
       if (user.role === "CUSTOMER") {
-        throw new Error("Bu e-posta bir müşteri hesabına ait. Acente için şirket e-postanı kullan.");
+        throw new Error(t("musteriHesabi"));
       }
       if (!user.isActive) {
-        throw new Error("Hesabınız devre dışı bırakılmış");
+        throw new Error(t("hesapKapali"));
       }
       return {
         id: user.id,

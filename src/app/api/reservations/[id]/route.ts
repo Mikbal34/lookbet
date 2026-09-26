@@ -1,3 +1,4 @@
+import { getLocale } from "next-intl/server";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
@@ -126,7 +127,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
     // İkinci bir istemci isteği yerine burada birleştiriliyor — tedarikçiye
     // değil yerel tabloya bakıldığı için ek gecikme getirmiyor.
     const [pansiyonAdlari, otel] = await Promise.all([
-      boardTypeAdlari(),
+      boardTypeAdlari(role === "CUSTOMER" ? await getLocale() : "tr"),
       prisma.hotel.findUnique({
         where: { hotelCode: reservation.hotelCode },
         select: {

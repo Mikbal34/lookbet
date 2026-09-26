@@ -7,11 +7,11 @@
 
 import { useFiyat } from "@/components/lb/fiyat";
 import { useUyruk } from "@/components/lb/uyruk";
-import { kampanyaEtiketi } from "@/lib/kampanya-etiket";
 import { Bekleme, DonenMetin } from "@/components/lb/bekleme";
 import * as React from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { UstCubuk } from "@/components/lb/ust-cubuk";
 import { OtelKarti, OtelKartiIskelet } from "@/components/lb/otel-karti";
 import { AltBilgi } from "@/components/lb/alt-bilgi";
@@ -29,18 +29,35 @@ import s from "./arama-sonuclari.module.css";
 // Google Maps tarayıcıda yükleniyor; ayrı parça.
 const HotelMap = dynamic(() => import("@/components/hotel/hotel-map").then((m) => m.HotelMap), {
   ssr: false,
-  loading: () => <div className={s.haritaYukleniyor}>Harita yükleniyor…</div>,
+  loading: () => <HaritaYukleniyor />,
 });
 
+function HaritaYukleniyor() {
+  const t = useTranslations("arama.sonuc");
+  return <div className={s.haritaYukleniyor}>{t("haritaYukleniyor")}</div>;
+}
+
 const SAYFA = 18;
-const HIZLI: { k: "iptal" | "kahvalti" | "hepsiDahil" | "yildiz4"; ad: string }[] = [
-  { k: "iptal", ad: "Ücretsiz iptal" },
-  { k: "kahvalti", ad: "Kahvaltı dahil" },
-  { k: "hepsiDahil", ad: "Her şey dahil" },
-  { k: "yildiz4", ad: "4 yıldız ve üzeri" },
+// Hızlı filtreler; adları arama.filtre.secenek.<k>.
+const HIZLI: { k: "iptal" | "kahvalti" | "hepsiDahil" | "yildiz4" }[] = [
+  { k: "iptal" },
+  { k: "kahvalti" },
+  { k: "hepsiDahil" },
+  { k: "yildiz4" },
 ];
 
+// Otomatik indirim etiketi ("%15 erken rezervasyon"): türün metin anahtarı
+// (arama.kampanya.*); bilinmeyen tür "indirim".
+const KAMPANYA_METNI: Partial<Record<string, "erkenRezervasyon" | "sonDakika" | "uzunKonaklama" | "donem">> = {
+  EARLY_BOOKING: "erkenRezervasyon",
+  LAST_MINUTE: "sonDakika",
+  LONG_STAY: "uzunKonaklama",
+  DATE_RANGE: "donem",
+};
+
 export function AramaSonuclari({ params }: { params: URLSearchParams }) {
+  const t = useTranslations("arama");
+  const tk = useTranslations("ortak");
   const router = useRouter();
   const { fav, degistir: favDegistir } = useFavoriler();
 
@@ -117,15 +134,14 @@ export function AramaSonuclari({ params }: { params: URLSearchParams }) {
   };
 
   const filtreSayac = filtreSayisi(filtre);
-  const seritSayi = arama.devamEdiyor ? `${liste.length}+` : String(liste.length);
 
   let govde: React.ReactNode;
   if (!etkin) {
     govde = (
       <div className={s.durum}>
         <Nesne ad="bavul" boyut={110} />
-        <h2 className="lb-y">Nereye gidiyorsun?</h2>
-        <p>Yer ve tarih seçince uygun otelleri burada göreceksin.</p>
+        <h2 className="lb-y">{t("nereyeGidiyorsun")}</h2>
+        <p>{t("sonuc.bosMetin")}</p>
       </div>
     );
   } else if (arama.ilkYukleme) {
@@ -134,29 +150,29 @@ export function AramaSonuclari({ params }: { params: URLSearchParams }) {
         <div className={s.bekleme}>
           <Bekleme tur="bavul" boyut={76} etiket={null} />
           <div>
-            <b>Oteller aranıyor</b>
-            <DonenMetin metinler={[`${hedef} için müsait oteller soruluyor`, "Fiyatlar karşılaştırılıyor", "Neredeyse hazır"]} />
+            <b>{t("sonuc.araniyor")}</b>
+            <DonenMetin metinler={[t("sonuc.soruluyor", { yer: hedef }), t("sonuc.karsilastiriliyor"), t("sonuc.neredeyseHazir")]} />
           </div>
         </div>
-        <ul className={s.kartlar} aria-busy="true" aria-label="Oteller yükleniyor">{Array.from({ length: 6 }, (_, i) => <OtelKartiIskelet key={i} />)}</ul>
+        <ul className={s.kartlar} aria-busy="true" aria-label={t("sonuc.yukleniyor")}>{Array.from({ length: 6 }, (_, i) => <OtelKartiIskelet key={i} />)}</ul>
       </>
     );
   } else if (arama.durum === "hata" && arama.hotels.length === 0) {
     govde = (
       <div className={s.durum}>
         <Nesne ad="zil" boyut={110} />
-        <h2 className="lb-y">Arama şu an yapılamadı</h2>
-        <p>{arama.hata ?? "Birazdan tekrar dene."}</p>
-        <button type="button" className={s.siyah} onClick={() => router.refresh()}>Tekrar dene</button>
+        <h2 className="lb-y">{t("sonuc.hataBaslik")}</h2>
+        <p>{arama.hata ?? t("sonuc.hataMetin")}</p>
+        <button type="button" className={s.siyah} onClick={() => router.refresh()}>{tk("tekrarDene")}</button>
       </div>
     );
   } else if (liste.length === 0 && !arama.devamEdiyor) {
     govde = (
       <div className={s.durum}>
         <Nesne ad="zil" boyut={110} />
-        <h2 className="lb-y">{arama.hotels.length ? "Bu filtrelerle otel bulamadık" : "Bu tarihlerde uygun otel bulamadık"}</h2>
-        <p>{arama.hotels.length ? "Birkaç filtreyi kaldırmayı ya da fiyat aralığını genişletmeyi dene." : "Tarihleri ya da yeri değiştirip tekrar ara."}</p>
-        {arama.hotels.length > 0 && <button type="button" className={s.siyah} onClick={() => filtreDegis(BOS_FILTRE)}>Filtreleri temizle</button>}
+        <h2 className="lb-y">{arama.hotels.length ? t("sonuc.filtreBos") : t("sonuc.tarihBos")}</h2>
+        <p>{arama.hotels.length ? t("sonuc.filtreBosMetin") : t("sonuc.tarihBosMetin")}</p>
+        {arama.hotels.length > 0 && <button type="button" className={s.siyah} onClick={() => filtreDegis(BOS_FILTRE)}>{t("sonuc.filtreleriTemizle")}</button>}
       </div>
     );
   } else {
@@ -171,9 +187,9 @@ export function AramaSonuclari({ params }: { params: URLSearchParams }) {
                 kod: h.hotelCode, ad: h.hotelName, foto: h.thumbnailImage, yildiz: h.stars, yer: hedef,
                 pansiyon: h.boardTypes[0] ?? null, iptal: !!h.freeCancellation,
                 fiyat: h.minPrice > 0
-                  ? { tutar: toplamYaz(h), aciklama: `${gece} gece için`, onceki: h.oncekiFiyat ? toplamYaz({ ...h, minPrice: h.oncekiFiyat }) : null }
+                  ? { tutar: toplamYaz(h), aciklama: t("sonuc.geceIcin", { sayi: gece }), onceki: h.oncekiFiyat ? toplamYaz({ ...h, minPrice: h.oncekiFiyat }) : null }
                   : null,
-                indirim: h.kampanya ? kampanyaEtiketi(h.kampanya) : null,
+                indirim: h.kampanya ? t(`kampanya.${KAMPANYA_METNI[h.kampanya.tur] ?? "indirim"}`, { yuzde: h.kampanya.yuzde }) : null,
               }}
               href={`/hotel/${h.hotelCode}?${aramaEki}`}
               favori={fav.has(h.hotelCode)}
@@ -183,8 +199,8 @@ export function AramaSonuclari({ params }: { params: URLSearchParams }) {
           ))}
         </ul>
         {sayfaSayisi > 1 && (
-          <nav className={s.sayfalama} aria-label="Sayfalar">
-            <button type="button" onClick={() => sayfaDegis(buSayfa - 1)} disabled={buSayfa === 1} aria-label="Önceki sayfa">
+          <nav className={s.sayfalama} aria-label={t("sonuc.sayfalar")}>
+            <button type="button" onClick={() => sayfaDegis(buSayfa - 1)} disabled={buSayfa === 1} aria-label={t("sonuc.oncekiSayfa")}>
               <Ikon ad="chevron-left" boyut={16} kalinlik={2.2} />
             </button>
             {Array.from({ length: sayfaSayisi }, (_, i) => (
@@ -192,7 +208,7 @@ export function AramaSonuclari({ params }: { params: URLSearchParams }) {
                 {i + 1}
               </button>
             ))}
-            <button type="button" onClick={() => sayfaDegis(buSayfa + 1)} disabled={buSayfa === sayfaSayisi} aria-label="Sonraki sayfa">
+            <button type="button" onClick={() => sayfaDegis(buSayfa + 1)} disabled={buSayfa === sayfaSayisi} aria-label={t("sonuc.sonrakiSayfa")}>
               <Ikon ad="chevron-right" boyut={16} kalinlik={2.2} />
             </button>
           </nav>
@@ -202,16 +218,16 @@ export function AramaSonuclari({ params }: { params: URLSearchParams }) {
   }
 
   const seritAlt = (
-    <div className={s.serit} role="toolbar" aria-label="Filtreler">
+    <div className={s.serit} role="toolbar" aria-label={t("filtre.filtreler")}>
       <button type="button" className={`${s.cip} ${s.filtreCip}`} onClick={() => setFiltreAcik(true)}>
         <Ikon ad="filter" boyut={16} kalinlik={2.2} />
-        Filtreler
+        {t("filtre.filtreler")}
         {filtreSayac > 0 && <span className={s.rozet}>{filtreSayac}</span>}
       </button>
       <span className={s.ayrac} />
       {HIZLI.map((h) => (
         <button key={h.k} type="button" className={s.cip} aria-pressed={filtre[h.k]} onClick={() => filtreDegis({ ...filtre, [h.k]: !filtre[h.k] })}>
-          {h.ad}
+          {t(`filtre.secenek.${h.k}`)}
         </button>
       ))}
     </div>
@@ -225,17 +241,21 @@ export function AramaSonuclari({ params }: { params: URLSearchParams }) {
         <section className={s.liste} aria-labelledby="sonuc-baslik">
           <div ref={listeUst} className={s.listeUst}>
             <h1 id="sonuc-baslik">
-              {hedef ? <>{hedef} bölgesinde {etkin && !arama.ilkYukleme ? <b>{seritSayi}</b> : "…"} otel</> : "Otel ara"}
+              {hedef
+                ? etkin && !arama.ilkYukleme
+                  ? t.rich(arama.devamEdiyor ? "sonuc.baslikDevam" : "sonuc.baslik", { yer: hedef, sayi: liste.length, b: (c) => <b>{c}</b> })
+                  : t("sonuc.baslikBekliyor", { yer: hedef })
+                : t("otelAra")}
             </h1>
             <div className={s.listeSag}>
-              <span className={s.dahil}><Nesne ad="indirim" boyut={26} />Fiyatlara vergiler dahil</span>
+              <span className={s.dahil}><Nesne ad="indirim" boyut={26} />{t("sonuc.vergiDahil")}</span>
               <label className={s.sirala}>
-                <span className={s.gizli}>Sırala</span>
+                <span className={s.gizli}>{t("sonuc.sirala")}</span>
                 <select value={sira} onChange={(e) => { setSira(e.target.value as Siralama); setSayfa(1); }}>
-                  <option value="oneri">Önerilen</option>
-                  <option value="ucuz">Fiyat: düşükten yükseğe</option>
-                  <option value="pahali">Fiyat: yüksekten düşüğe</option>
-                  <option value="yildiz">Yıldız</option>
+                  <option value="oneri">{t("sonuc.siralama.oneri")}</option>
+                  <option value="ucuz">{t("sonuc.siralama.ucuz")}</option>
+                  <option value="pahali">{t("sonuc.siralama.pahali")}</option>
+                  <option value="yildiz">{t("sonuc.siralama.yildiz")}</option>
                 </select>
                 <Ikon ad="chevron-down" boyut={16} />
               </label>
@@ -244,22 +264,22 @@ export function AramaSonuclari({ params }: { params: URLSearchParams }) {
           {arama.devamEdiyor && (
             <div className={s.ilerleme} role="status" aria-live="polite">
               <i />
-              <span>Daha fazla otel aranıyor…</span>
+              <span>{t("sonuc.dahaFazlaAraniyor")}</span>
             </div>
           )}
           {govde}
         </section>
 
-        <aside className={s.haritaKap} aria-label="Harita">
+        <aside className={s.haritaKap} aria-label={t("sonuc.harita")}>
           <div className={s.harita}>
             {etkin && gosterilen.length > 0 ? (
               <HotelMap hotels={gosterilen} searchParams={aramaEki} aktifKod={aktifKod} fiyatYaz={toplamYaz} className={s.haritaIc} />
             ) : (
-              <div className={s.haritaYukleniyor}>{arama.ilkYukleme ? "Oteller geliyor…" : "Haritada gösterilecek otel yok"}</div>
+              <div className={s.haritaYukleniyor}>{arama.ilkYukleme ? t("sonuc.otellerGeliyor") : t("sonuc.haritadaOtelYok")}</div>
             )}
             <button type="button" className={s.genislet} aria-pressed={genisHarita} onClick={() => setGenisHarita((g) => !g)}>
               <Ikon ad={genisHarita ? "list" : "map"} boyut={16} kalinlik={2.2} />
-              {genisHarita ? "Listeyi göster" : "Haritayı büyüt"}
+              {genisHarita ? t("sonuc.listeyiGoster") : t("sonuc.haritayiBuyut")}
             </button>
           </div>
         </aside>
@@ -267,7 +287,7 @@ export function AramaSonuclari({ params }: { params: URLSearchParams }) {
 
       <button type="button" className={s.haritaDugme} onClick={() => { setMobilHarita((m) => !m); scrollTo({ top: 0 }); }}>
         <Ikon ad={mobilHarita ? "list" : "map"} boyut={16} kalinlik={2.2} />
-        {mobilHarita ? "Liste" : "Harita"}
+        {mobilHarita ? t("sonuc.liste") : t("sonuc.harita")}
       </button>
 
       <FiltrePenceresi

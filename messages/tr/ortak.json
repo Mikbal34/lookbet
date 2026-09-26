@@ -20,5 +20,15 @@
   "misafir": "{sayi} misafir",
   "yildizli": "{sayi} yıldızlı",
   "hata": "Bir sorun oldu; birazdan tekrar dene.",
-  "baglantiHatasi": "Bağlantıda bir sorun oldu; tekrar dene."
+  "cokSik": "Çok sık istek gönderildi; biraz bekleyip tekrar dene.",
+  "baglantiHatasi": "Bağlantıda bir sorun oldu; tekrar dene.",
+  "bulunamadi": {
+    "baslik": "Bu sayfa bulunamadı",
+    "metin": "Bağlantı eski ya da hatalı olabilir. Aramaya ana sayfadan devam edebilirsin.",
+    "anaSayfa": "Ana sayfaya dön"
+  },
+  "sayfaHatasi": {
+    "baslik": "Bir şeyler ters gitti",
+    "metin": "Sayfa yüklenirken bir sorun oldu. Tekrar dene ya da ana sayfaya dön."
+  }
 }

@@ -14,9 +14,11 @@
 
 import { kartFotosu } from "@/lib/foto";
 import { kampanyaHedefi, kampanyaNesnesi, type VitrinKampanya } from "@/components/kampanya/ortak";
+import { useKampanyaMetni } from "@/components/kampanya/metin";
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { AramaCubugu, type AramaKontrol } from "@/components/lb/arama/arama-cubugu";
 import { MobilArama } from "@/components/lb/arama/mobil-arama";
 import { aramaAdresi, BOS_ARAMA, iso, type AramaDegeri, type PanelAdi } from "@/components/lb/arama/durum";
@@ -35,6 +37,9 @@ const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 function Satir({ satir, aramaEki, fav, onFav }: {
   satir: AnaSayfaSatiri; aramaEki: string; fav: Set<string>; onFav: (kod: string) => void;
 }) {
+  const t = useTranslations("anaSayfa");
+  const tk = useTranslations("ortak");
+  const baslikMetni = t(`satirlar.${satir.kod}`);
   const serit = React.useRef<HTMLUListElement>(null);
   const [uc, setUc] = React.useState({ bas: true, son: false });
   const gorunur = React.useRef<HTMLElement>(null);
@@ -59,20 +64,20 @@ function Satir({ satir, aramaEki, fav, onFav }: {
   };
   const baslik = satir.arama ? (
     <Link href={`/search?destination=${encodeURIComponent(satir.arama)}${aramaEki}`}>
-      {satir.baslik} <Ikon ad="chevron-right" boyut={16} kalinlik={2.2} />
+      {baslikMetni} <Ikon ad="chevron-right" boyut={16} kalinlik={2.2} />
     </Link>
   ) : (
-    satir.baslik
+    baslikMetni
   );
   return (
     <section ref={gorunur} className={s.bolge} data-goruldu={goruldu || undefined} aria-labelledby={`b-${satir.kod}`}>
       <div className={s.bolgeUst}>
         <h2 id={`b-${satir.kod}`}>{baslik}</h2>
         <div className={s.oklar}>
-          <button type="button" className={s.ok} onClick={() => kaydir(-1)} disabled={uc.bas} aria-label={`${satir.baslik}: önceki`}>
+          <button type="button" className={s.ok} onClick={() => kaydir(-1)} disabled={uc.bas} aria-label={t("satir.onceki", { baslik: baslikMetni })}>
             <Ikon ad="chevron-left" boyut={16} kalinlik={2.4} />
           </button>
-          <button type="button" className={s.ok} onClick={() => kaydir(1)} disabled={uc.son} aria-label={`${satir.baslik}: sonraki`}>
+          <button type="button" className={s.ok} onClick={() => kaydir(1)} disabled={uc.son} aria-label={t("satir.sonraki", { baslik: baslikMetni })}>
             <Ikon ad="chevron-right" boyut={16} kalinlik={2.4} />
           </button>
         </div>
@@ -91,13 +96,13 @@ function Satir({ satir, aramaEki, fav, onFav }: {
                 <img {...kartFotosu(o.foto)} alt="" loading="lazy" onError={(e) => (e.currentTarget.style.visibility = "hidden")} />
               </div>
               <h3>{o.ad}</h3>
-              <p>{[o.yildiz ? `${o.yildiz} yıldızlı` : null, o.yer].filter(Boolean).join(" · ")}</p>
+              <p>{[o.yildiz ? tk("yildizli", { sayi: o.yildiz }) : null, o.yer].filter(Boolean).join(" · ")}</p>
             </a>
             <button
               type="button"
               className={s.kalp}
               aria-pressed={fav.has(o.kod)}
-              aria-label={`${o.ad}: favorilere ${fav.has(o.kod) ? "eklendi" : "ekle"}`}
+              aria-label={t(fav.has(o.kod) ? "satir.favoriEklendi" : "satir.favoriEkle", { ad: o.ad })}
               onClick={() => onFav(o.kod)}
             >
               <Ikon ad="heart" boyut={26} kalinlik={1.8} />
@@ -111,12 +116,14 @@ function Satir({ satir, aramaEki, fav, onFav }: {
 
 /** Vitrindeki kampanyalar (Yönetim › Kampanyalar), bölge satırlarının üstünde yatay şerit. */
 function Kampanyalar({ kampanyalar }: { kampanyalar: VitrinKampanya[] }) {
+  const t = useTranslations("anaSayfa.kampanya");
+  const metin = useKampanyaMetni();
   return (
     <section className={s.kampanyalar} aria-labelledby="kampanya-baslik">
       <div className={s.bolgeUst}>
         <h2 id="kampanya-baslik" className={s.kampanyaBaslik}>
           <Link href="/kampanyalar">
-            Kampanyalar <Ikon ad="chevron-right" boyut={16} kalinlik={2.2} />
+            {t("baslik")} <Ikon ad="chevron-right" boyut={16} kalinlik={2.2} />
           </Link>
         </h2>
       </div>
@@ -128,11 +135,11 @@ function Kampanyalar({ kampanyalar }: { kampanyalar: VitrinKampanya[] }) {
               <Link href={hedef.href} className={s.kampanya}>
                 <span className={s.kampanyaNesne}><Nesne ad={kampanyaNesnesi(k)} boyut={72} /></span>
                 <span className={s.kampanyaIc}>
-                  <small data-yakinda={k.yakinda || undefined}>{k.tarih}</small>
+                  <small data-yakinda={k.yakinda || undefined}>{metin.tarih(k)}</small>
                   <b>{k.ad}</b>
-                  <span>{k.aciklama}</span>
+                  <span>{metin.aciklama(k)}</span>
                 </span>
-                <b className={`lb-y ${s.kampanyaYuzde}`}>%{k.yuzde.toLocaleString("tr-TR")}</b>
+                <b className={`lb-y ${s.kampanyaYuzde}`}>{metin.yuzde(k)}</b>
               </Link>
             </li>
           );
@@ -143,6 +150,7 @@ function Kampanyalar({ kampanyalar }: { kampanyalar: VitrinKampanya[] }) {
 }
 
 export function AnaSayfa({ satirlar, kampanyalar = [] }: { satirlar: AnaSayfaSatiri[]; kampanyalar?: VitrinKampanya[] }) {
+  const t = useTranslations("anaSayfa");
   const router = useRouter();
   const [kategori, setKategori] = React.useState<KategoriKodu>("hepsi");
   const [oynayan, setOynayan] = React.useState<KategoriKodu | null>(null);
@@ -369,11 +377,11 @@ export function AnaSayfa({ satirlar, kampanyalar = [] }: { satirlar: AnaSayfaSat
     <div className={`lb ${s.sayfa}`}>
       <header ref={ust} className={s.ust}>
         <div className={s.ustZemin} />
-        <div className={s.ustSekmeler} role="tablist" aria-label="Tatil türü">
+        <div className={s.ustSekmeler} role="tablist" aria-label={t("tatilTuru")}>
           {KATEGORILER.map((k) => (
             <button key={k.kod} type="button" role="tab" aria-selected={kategori === k.kod} className={s.uSekme} onClick={() => kategoriSec(k.kod)}>
               <Nesne ad={k.nesne} boyut={40} />
-              <span>{k.ad}</span>
+              <span>{t(`kategori.${k.kod}`)}</span>
             </button>
           ))}
         </div>
@@ -387,7 +395,7 @@ export function AnaSayfa({ satirlar, kampanyalar = [] }: { satirlar: AnaSayfaSat
 
       <div ref={perde} className={s.perde} onClick={() => genis.current?.kapat()} />
 
-      <Link ref={logo} href="/" className={`lb-y ${s.logoUcan}`} onClick={(e) => { e.preventDefault(); yukari(); }} aria-label="LookBeds, en üste dön">
+      <Link ref={logo} href="/" className={`lb-y ${s.logoUcan}`} onClick={(e) => { e.preventDefault(); yukari(); }} aria-label={t("logoEtiket")}>
         LookBeds
       </Link>
 
@@ -406,10 +414,10 @@ export function AnaSayfa({ satirlar, kampanyalar = [] }: { satirlar: AnaSayfaSat
         onAcikDegis={acKapat}
       />
 
-      <section className={s.acilis} aria-label="Otel ara">
+      <section className={s.acilis} aria-label={t("otelAra")}>
         <div className={s.acilisIc}>
           <h1 ref={logoYer} className={`lb-y ${s.logoYer}`}>LookBeds</h1>
-          <div ref={sekmelerEl} className={s.sekmeler} role="tablist" aria-label="Tatil türü">
+          <div ref={sekmelerEl} className={s.sekmeler} role="tablist" aria-label={t("tatilTuru")}>
             {KATEGORILER.map((k, i) => (
               <button
                 key={k.kod}
@@ -422,7 +430,7 @@ export function AnaSayfa({ satirlar, kampanyalar = [] }: { satirlar: AnaSayfaSat
                 onClick={() => kategoriSec(k.kod)}
               >
                 <span className={s.nesne}><Nesne ad={k.nesne} boyut={56} /></span>
-                <span className={s.etiket}>{k.ad}</span>
+                <span className={s.etiket}>{t(`kategori.${k.kod}`)}</span>
               </button>
             ))}
             <span ref={gosterge} className={s.gosterge} />
@@ -433,7 +441,7 @@ export function AnaSayfa({ satirlar, kampanyalar = [] }: { satirlar: AnaSayfaSat
           ref={asagi}
           type="button"
           className={s.asagi}
-          aria-label="Otellere in"
+          aria-label={t("otellereIn")}
           onClick={() => {
             const t = (oteller.current?.getBoundingClientRect().top ?? 0) + scrollY - 80;
             scrollTo({ top: t, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
@@ -450,7 +458,7 @@ export function AnaSayfa({ satirlar, kampanyalar = [] }: { satirlar: AnaSayfaSat
         ) : (
           <div className={s.bos}>
             <Nesne ad="zil" boyut={96} />
-            <p>Bu kategoride şu an gösterecek otel yok.</p>
+            <p>{t("bos")}</p>
           </div>
         )}
       </main>

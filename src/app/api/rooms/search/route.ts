@@ -1,3 +1,6 @@
+import { etsDili } from "@/lib/royal-api/client";
+import { aramaHatasi } from "@/lib/dogrulama";
+import { getLocale, getTranslations } from "next-intl/server";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
@@ -18,10 +21,7 @@ export async function POST(request: NextRequest) {
 
     const parsed = roomSearchSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Geçersiz istek verisi", details: parsed.error.flatten().fieldErrors },
-        { status: 400 }
-      );
+      return NextResponse.json(await aramaHatasi(parsed.error), { status: 400 });
     }
 
     const input = parsed.data;
@@ -31,15 +31,19 @@ export async function POST(request: NextRequest) {
     const agencyId = session?.user.role === "AGENCY" ? session.user.agencyId ?? undefined : undefined;
     const feedId = await feedBul(session?.user.role, agencyId);
 
-    const apiResponse = await searchRooms({
-      feedId,
-      currency: input.currency,
-      nationality: input.nationality,
-      checkIn: input.checkIn,
-      checkOut: input.checkOut,
-      hotelCode: input.hotelCode,
-      rooms: input.rooms,
-    });
+    // Oda ve pansiyon adları sitenin dilinde (Etscore Accept-Language).
+    const apiResponse = await searchRooms(
+      {
+        feedId,
+        currency: input.currency,
+        nationality: input.nationality,
+        checkIn: input.checkIn,
+        checkOut: input.checkOut,
+        hotelCode: input.hotelCode,
+        rooms: input.rooms,
+      },
+      etsDili(await getLocale())
+    );
 
     // Fiyat motoru her odaya; kurallar, indirimler ve komisyonlar bir kez.
     const userType = (session?.user.role as "CUSTOMER" | "AGENCY" | "ADMIN") ?? "CUSTOMER";
@@ -88,9 +92,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("[POST /api/rooms/search]", error);
-    return NextResponse.json(
-      { error: "Oda arama sırasında bir hata oluştu" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: (await getTranslations("api.arama"))("odaHatasi") }, { status: 500 });
   }
 }

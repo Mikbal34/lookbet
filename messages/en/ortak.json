@@ -20,5 +20,15 @@
   "misafir": "{sayi, plural, one {# guest} other {# guests}}",
   "yildizli": "{sayi}-star",
   "hata": "Something went wrong; please try again shortly.",
-  "baglantiHatasi": "There was a connection problem; please try again."
+  "cokSik": "Too many requests; please wait a moment and try again.",
+  "baglantiHatasi": "There was a connection problem; please try again.",
+  "bulunamadi": {
+    "baslik": "We couldn't find this page",
+    "metin": "The link may be old or mistyped. You can carry on searching from the home page.",
+    "anaSayfa": "Back to home"
+  },
+  "sayfaHatasi": {
+    "baslik": "Something went wrong",
+    "metin": "There was a problem loading this page. Try again or go back to the home page."
+  }
 }

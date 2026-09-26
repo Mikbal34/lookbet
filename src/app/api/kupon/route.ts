@@ -6,6 +6,7 @@ import { kuponDegerlendir } from "@/lib/pricing/kupon";
 import { fiyatKaydi } from "@/lib/royal-api";
 import { feedBul } from "@/lib/feed";
 import { hizSiniri } from "@/lib/hiz-siniri";
+import { getTranslations } from "next-intl/server";
 
 // POST /api/kupon — ödeme adımında kupon önizlemesi (giriş gerekli).
 // Tutar, fiyat kodunun sunucudaki kaydından (net fiyat, otel, pansiyon,
@@ -13,26 +14,27 @@ import { hizSiniri } from "@/lib/hiz-siniri";
 // Kod denemesine karşı kullanıcı başına 10 dk'da 20 istek.
 
 const semaya = z.object({
-  kod: z.string().trim().min(1, "Kupon kodunu yaz").max(40),
+  kod: z.string().trim().min(1).max(40),
   priceCode: z.string().min(1).max(300),
 });
 
 export async function POST(req: NextRequest) {
+  const t = await getTranslations("api");
   const session = await getServerSession(authOptions);
-  if (!session?.user) return NextResponse.json({ error: "Kupon için giriş yap" }, { status: 401 });
+  if (!session?.user) return NextResponse.json({ error: t("kupon.girisGerekli") }, { status: 401 });
   const sinir = hizSiniri(`kupon:${session.user.id}`, 20, 10 * 60_000);
   if (!sinir.izin) {
-    return NextResponse.json({ error: `Çok fazla deneme. ${Math.ceil(sinir.bekle / 60)} dakika sonra tekrar dene.` }, { status: 429 });
+    return NextResponse.json({ error: t("kupon.cokDeneme", { dk: Math.ceil(sinir.bekle / 60) }) }, { status: 429 });
   }
   const parsed = semaya.safeParse(await req.json().catch(() => ({})));
-  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Geçersiz istek" }, { status: 422 });
+  if (!parsed.success) return NextResponse.json({ error: t("kupon.kodYaz") }, { status: 422 });
   const { kod, priceCode } = parsed.data;
   const role = session.user.role as "CUSTOMER" | "AGENCY" | "ADMIN";
   const agencyId = session.user.agencyId ?? undefined;
 
   const kayit = fiyatKaydi(priceCode);
   if (!kayit || kayit.feedId !== (await feedBul(role, agencyId))) {
-    return NextResponse.json({ error: "Fiyatın geçerlilik süresi doldu, lütfen odaları yeniden ara" }, { status: 409 });
+    return NextResponse.json({ error: t("rezervasyon.fiyatSuresiDoldu") }, { status: 409 });
   }
   const s = await kuponDegerlendir({
     kod,

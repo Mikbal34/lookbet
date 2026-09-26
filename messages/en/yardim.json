@@ -1,1 +1,270 @@
-{}
+{
+  "meta": {
+    "baslik": "Help Centre — LookBeds",
+    "aciklama": "Frequently asked questions about logging in, bookings, cancellations and the agency dashboard",
+    "makale": "{baslik} — LookBeds Help"
+  },
+  "yardimMerkezi": "Help Centre",
+  "yardimAra": "Search help",
+  "kitle": {
+    "misafir": "Guest",
+    "acente": "Agency"
+  },
+  "ana": {
+    "merhaba": "Hi, how can we help?",
+    "merhabaAd": "Hi {ad}, how can we help?",
+    "araYer": "Type a question or topic: cancellation, login code, invoice…",
+    "araEtiket": "Search help articles",
+    "sonucYok": "We couldn't find any articles for \"{q}\". Try another word or write to our support team.",
+    "kimIcin": "Audience",
+    "rezBaslik": "Help with your booking",
+    "iptalEtmek": "I want to cancel",
+    "ayrintilar": "Details",
+    "baslarken": "Getting started",
+    "sss": "Frequently asked questions",
+    "konu": "Topic"
+  },
+  "rehber": {
+    "girisHesap": {
+      "baslik": "Logging in and your account",
+      "aciklama": "Password-free login, codes and account details"
+    },
+    "rezervasyon": {
+      "baslik": "Your booking",
+      "aciklama": "My bookings, confirmation and booking number"
+    },
+    "iptal": {
+      "baslik": "Cancellations and changes",
+      "aciklama": "Free cancellation period and cancellation fee"
+    },
+    "partnerGiris": {
+      "baslik": "Logging in to the Partner dashboard",
+      "aciklama": "Logging in with a code, and your account"
+    },
+    "musteriRezervasyon": {
+      "baslik": "Booking for your client",
+      "aciklama": "Search, booking and documents"
+    },
+    "komisyon": {
+      "baslik": "Commission and earnings",
+      "aciklama": "How commission is calculated"
+    }
+  },
+  "konu": {
+    "hesap": "Account and login",
+    "rezervasyon": "Bookings",
+    "iptal": "Cancellations and changes",
+    "fiyat": "Prices and payment",
+    "konaklama": "Your stay",
+    "giris": "Logging in",
+    "kazanc": "Earnings",
+    "sirket": "Company"
+  },
+  "iletisim": {
+    "etiket": "Contact us",
+    "baslik": "Can't find what you're looking for?",
+    "metin": "Write to or call our support team; have your booking number ready."
+  },
+  "geribildirim": {
+    "soru": "Was this article helpful?",
+    "evet": "Yes",
+    "hayir": "No",
+    "tesekkur": "Thanks!",
+    "uzgunuz": "We're sorry. If you write to our support team, we'll help."
+  },
+  "makaleSayfasi": {
+    "konum": "Breadcrumb",
+    "ilgili": "Related articles",
+    "halaYardim": "Still need help?",
+    "halaYardimMetin": "Write to our support team; if you include your booking number, we can reply faster.",
+    "destegeYaz": "Write to support"
+  },
+  "makale": {
+    "giris": {
+      "baslik": "How do I log in without a password?",
+      "metin": {
+        "p1": "From the menu at the top right, select \"Log in or sign up\". Enter your email address and select \"Continue\".",
+        "p2": "You'll receive a 6-digit code by email. Once you type the code into the boxes, you're logged in; there's no password to remember.",
+        "p3": "If you don't have an account with this email, one is created in the same step. The first time you log in, we ask for your first and last name; this is the name shown on your bookings and at the hotel."
+      }
+    },
+    "kod": {
+      "baslik": "I didn't receive my login code",
+      "metin": {
+        "p1": "First, check your junk (spam) folder. The code arrives within a few seconds.",
+        "p2": "After 60 seconds, \"Resend code\" appears. When a new code is sent, the old one stops working; always use the most recent code.",
+        "p3": "The code is valid for 10 minutes. If it's entered incorrectly five times, you'll need to request a new code.",
+        "p4": "If you mistyped your email address, select \"Change email\" on the code screen."
+      }
+    },
+    "hesapBilgi": {
+      "baslik": "How do I change my name or phone number?",
+      "metin": {
+        "p1": "Go to \"My account\" from the menu. You can change your name and phone number there.",
+        "p2": "Your email address is the key to logging in, so if you'd like to change it, write to our support team."
+      }
+    },
+    "rezervasyonlarim": {
+      "baslik": "Where can I see my bookings?",
+      "metin": {
+        "p1": "Go to \"My bookings\" from the menu. There are Upcoming, Past and Cancelled tabs.",
+        "p2": "Your next stay is shown in a large card at the top: how many days are left, your check-in and check-out dates, and the last day for free cancellation.",
+        "p3": "Select a card to open all the details of the booking: room, guests, location, the hotel's contact details and the cancellation policy."
+      }
+    },
+    "onayBekliyor": {
+      "baslik": "What does \"Awaiting hotel confirmation\" mean?",
+      "metin": {
+        "p1": "Some hotels confirm bookings within a short time rather than instantly. During that time, your booking shows as \"Awaiting hotel confirmation\".",
+        "p2": "Once the hotel confirms, the status changes to \"Confirmed\" and the hotel's confirmation number appears in the booking details.",
+        "p3": "If the hotel doesn't confirm, the booking isn't completed and you aren't charged."
+      }
+    },
+    "rezNo": {
+      "baslik": "Where's my booking number?",
+      "metin": {
+        "p1": "It's shown as \"Booking no.\" on the card in My bookings and in the booking details; you can copy it with the button next to it.",
+        "p2": "Once the hotel confirms, the hotel's own confirmation number is also shown. The hotel may ask for either one."
+      }
+    },
+    "ozelIstek": {
+      "baslik": "Is my special request passed on to the hotel?",
+      "metin": {
+        "p1": "Whatever you write in the \"Special requests\" field at the payment step is passed on to the hotel and appears in the booking details.",
+        "p2": "Requests such as a high floor or early check-in depend on the hotel's availability and aren't guaranteed."
+      }
+    },
+    "iptal": {
+      "baslik": "How do I cancel my booking?",
+      "metin": {
+        "p1": "Open the booking from My bookings and select \"Cancel booking\" in the \"Cancellation policy\" section.",
+        "p2": "The window that opens shows the fee you'd be charged if you cancel now. If you confirm, the cancellation is sent to the hotel and you'll see the result in the same window.",
+        "p3": "The cancelled booking moves to the \"Cancelled\" tab, where the cancellation fee is also shown."
+      }
+    },
+    "ucretsizIptal": {
+      "baslik": "What is the free cancellation period?",
+      "metin": {
+        "p1": "When you choose a room, and in your booking, you'll see \"Free cancellation until …\". If you cancel by then, you won't be charged.",
+        "p2": "Times are in Türkiye time. Once the period has passed, the cancellation fee in the hotel's policy applies.",
+        "p3": "Some rooms are non-refundable; this is clearly stated when you choose a room and in your booking."
+      }
+    },
+    "iptalUcreti": {
+      "baslik": "How is the cancellation fee determined?",
+      "metin": {
+        "p1": "The fee depends on the cancellation policy of the room you chose when booking, and it varies with when you cancel.",
+        "p2": "The amount you see in the cancellation window is calculated from this policy. The final amount is determined by the hotel's response and shown after you cancel."
+      }
+    },
+    "tarih": {
+      "baslik": "Can I change my dates?",
+      "metin": {
+        "p1": "At the moment, the dates of a booking can't be changed directly.",
+        "p2": "If you're within the free cancellation period, you can cancel the booking free of charge and book again for the new dates."
+      }
+    },
+    "vergi": {
+      "baslik": "Are taxes included in the prices?",
+      "metin": {
+        "p1": "Yes. The total shown in search results, on the hotel page and at the payment step includes taxes.",
+        "p2": "Any deposit the hotel may ask for at check-in and any extra spending at the property aren't included in this amount."
+      }
+    },
+    "uyruk": {
+      "baslik": "Why does nationality change the price?",
+      "metin": {
+        "p1": "Hotels may offer different prices to guests from certain countries. That's why searches are based on the guest's nationality.",
+        "p2": "You can change the nationality under \"Filters\" in the search results; the search runs again when you change it."
+      }
+    },
+    "fatura": {
+      "baslik": "How do I get my invoice?",
+      "metin": {
+        "p1": "The invoice for your stay is issued by the hotel.",
+        "p2": "If you need a company invoice, enter your company and tax details in the special requests field when booking, or contact our support team."
+      }
+    },
+    "girisCikis": {
+      "baslik": "Check-in and check-out times",
+      "metin": {
+        "p1": "The hotel's check-in and check-out times are listed in the \"Things to know\" section of the hotel page and in the booking details.",
+        "p2": "You'll be asked for ID at check-in. Some hotels take a deposit at check-in, which is refunded at check-out if there are no charges."
+      }
+    },
+    "otelIletisim": {
+      "baslik": "How do I contact the hotel?",
+      "metin": {
+        "p1": "The \"Location and contact\" section of the booking details has the hotel's phone number and email address, with a link for directions next to them."
+      }
+    },
+    "aGiris": {
+      "baslik": "How do I log in as an agency?",
+      "metin": {
+        "p1": "Go to \"Agency login\" at the bottom of the page and enter your company email.",
+        "p2": "You'll receive a 6-digit code by email; you log in with the code, and there's no password. The code is valid for 10 minutes.",
+        "p3": "You can't log in as an agency with the email you use for your customer account; use a separate email for your agency (ideally a company one)."
+      }
+    },
+    "aBasvuru": {
+      "baslik": "How do I become a LookBeds Partner?",
+      "metin": {
+        "p1": "Log in through Agency login with your company email; the first time you log in, your account is created and an application form appears in your dashboard.",
+        "p2": "The form asks for an authorised contact, your registered company name, tax number and tax office, address and, if you have one, your TÜRSAB certificate number. You submit the application only once.",
+        "p3": "Our team checks your details and sets your agreement rates. Once you're approved, your dashboard opens when you log in with the same email; you don't need to apply again.",
+        "p4": "If you need to change your details or ask about the status of your application, write to our support team."
+      }
+    },
+    "aRezervasyon": {
+      "baslik": "How do I make a booking for my client?",
+      "metin": {
+        "p1": "Use the \"Search hotels for your client\" bar on the \"Today\" page of the Partner dashboard, or \"Search hotels\" at the top right.",
+        "p2": "When you're logged in with your agency account, your agency rates are shown in search. At the payment step, enter your client's details as the contact and guest details.",
+        "p3": "The booking then appears on the Bookings and Today pages of your dashboard."
+      }
+    },
+    "aBugun": {
+      "baslik": "What does \"Cancellation period ending soon\" show?",
+      "metin": {
+        "p1": "This chip on the Today page gathers upcoming bookings whose free cancellation period ends within 2 days.",
+        "p2": "If your client might change their mind, cancelling before this period runs out means no fee has to be paid."
+      }
+    },
+    "aIptal": {
+      "baslik": "How do I cancel a booking?",
+      "metin": {
+        "p1": "Select the booking on the Bookings or Today page, then choose \"Cancel booking\" in the details window.",
+        "p2": "The window shows the fee that would be charged now; once you confirm, the cancellation is sent to the hotel."
+      }
+    },
+    "aBelge": {
+      "baslik": "How do I send the booking document to my client?",
+      "metin": {
+        "p1": "\"Booking document\" in the booking's details window opens the booking page in a new tab: hotel, dates, guests and cancellation policy.",
+        "p2": "You can print this page, or save it as a PDF and send it to your client."
+      }
+    },
+    "aExcel": {
+      "baslik": "How do I export bookings to Excel?",
+      "metin": {
+        "p1": "On the Bookings page, set the status filter and search the way you want, then select \"Export to Excel\".",
+        "p2": "The list on screen downloads as a file that Excel opens directly."
+      }
+    },
+    "aKomisyon": {
+      "baslik": "How is my commission calculated?",
+      "metin": {
+        "p1": "Commission is calculated by multiplying the rate in your agreement by the amount of your confirmed bookings. Each booking is counted in the month of its check-in.",
+        "p2": "Cancelled bookings and bookings that couldn't be completed aren't counted.",
+        "p3": "The amounts on the Earnings page are estimates based on this calculation; payments are made according to your agreement."
+      }
+    },
+    "aSirket": {
+      "baslik": "How do I change my company details?",
+      "metin": {
+        "p1": "Your company details and the rates in your agreement can only be viewed in the dashboard.",
+        "p2": "To change your address, phone number or rates, write to your LookBeds representative."
+      }
+    }
+  }
+}

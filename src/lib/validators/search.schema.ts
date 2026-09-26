@@ -5,6 +5,8 @@ export const roomSchema = z.object({
   childAges: z.array(z.number().min(0).max(17)).optional(),
 });
 
+// Hata mesajları anahtar ("gecmisTarih"): uç, isteğin dilinde metne çevirir
+// (messages/*/api.json › arama; lib/dogrulama). Şema yalnız sunucuda.
 const tarih = (mesaj: string) => z.string().regex(/^\d{4}-\d{2}-\d{2}$/, mesaj);
 
 /** Etscore en fazla 30 gece kabul ediyor (31'de 0904073, ölçüldü). */
@@ -21,13 +23,13 @@ function tarihAraligi(b: { checkIn: string; checkOut: string }, ctx: z.Refinemen
   if (Number.isNaN(giris) || Number.isNaN(cikis)) return; // regex zaten yakaladı
   const gece = Math.round((cikis - giris) / 86_400_000);
   if (gece < 1) {
-    ctx.addIssue({ code: "custom", path: ["checkOut"], message: "Çıkış tarihi girişten sonra olmalı" });
+    ctx.addIssue({ code: "custom", path: ["checkOut"], message: "cikisSonra" });
   } else if (gece > EN_FAZLA_GECE) {
-    ctx.addIssue({ code: "custom", path: ["checkOut"], message: `En fazla ${EN_FAZLA_GECE} gece aranabilir` });
+    ctx.addIssue({ code: "custom", path: ["checkOut"], message: "enFazlaGece" });
   }
   // "Bugün" Türkiye saatine göre (sunucu UTC'de de koşsa).
   if (b.checkIn < new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Istanbul" }).format(new Date())) {
-    ctx.addIssue({ code: "custom", path: ["checkIn"], message: "Giriş tarihi geçmişte olamaz" });
+    ctx.addIssue({ code: "custom", path: ["checkIn"], message: "gecmisTarih" });
   }
 }
 
@@ -43,11 +45,11 @@ const uyruk = z
 
 export const hotelSearchSchema = z
   .object({
-    destination: z.string().trim().min(1, "Destinasyon seçin").max(120),
+    destination: z.string().trim().min(1, "destinasyon").max(120),
     /** Öneriden seçilen konumun kimliği (aynı adlı konumlar karışmasın). */
     locationId: z.string().trim().max(40).optional(),
-    checkIn: tarih("Giriş tarihi seçin"),
-    checkOut: tarih("Çıkış tarihi seçin"),
+    checkIn: tarih("girisTarihi"),
+    checkOut: tarih("cikisTarihi"),
     nationality: uyruk,
     currency: paraBirimi,
     rooms: z.array(roomSchema).min(1).max(4),
@@ -57,8 +59,8 @@ export const hotelSearchSchema = z
 export const roomSearchSchema = z
   .object({
     hotelCode: z.string().min(1).max(50),
-    checkIn: tarih("Giriş tarihi seçin"),
-    checkOut: tarih("Çıkış tarihi seçin"),
+    checkIn: tarih("girisTarihi"),
+    checkOut: tarih("cikisTarihi"),
     nationality: uyruk,
     currency: paraBirimi,
     rooms: z.array(roomSchema).min(1).max(1), // API supports 1 room per booking

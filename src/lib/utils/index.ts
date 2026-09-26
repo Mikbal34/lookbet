@@ -102,10 +102,10 @@ export function getNightCount(checkIn: Date | string, checkOut: Date | string): 
 /**
  * Başarısız API yanıtından kullanıcıya gösterilecek mesaj: doğrulama
  * ayrıntısı ("Giriş tarihi geçmişte olamaz") varsa o, yoksa error; hız
- * sınırında (nginx HTML döner) sabit metin.
+ * sınırında (nginx HTML döner) cokSik (ortak.cokSik, çağıranın dilinde).
  */
-export async function sunucuMesaji(r: Response, yedek: string): Promise<string> {
-  if (r.status === 429) return "Çok sık istek gönderildi; biraz bekleyip tekrar dene.";
+export async function sunucuMesaji(r: Response, yedek: string, cokSik = yedek): Promise<string> {
+  if (r.status === 429) return cokSik;
   try {
     const d = (await r.json()) as { error?: string; details?: Record<string, string[] | undefined> };
     const ayrinti = d.details && Object.values(d.details).flat().find(Boolean);

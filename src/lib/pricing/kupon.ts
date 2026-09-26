@@ -12,7 +12,9 @@
 // transaction içinde ayrılır: sınır ve kişi başı kural DB'de koşullu
 // güncelleme ve tekil anahtarla korunur (aynı anda iki rezervasyon aşamaz).
 
+import { getLocale, getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/prisma";
+import { bicimleyici } from "@/i18n/bicim";
 import { calculatePrice, fiyatBaglami, komisyonHesapla, otelKonumAdlari, tabanFiyat, yuvarla, type FiyatGirdisi, type PriceResult } from "./engine";
 
 type UserType = "CUSTOMER" | "AGENCY" | "ADMIN";
@@ -25,9 +27,6 @@ export type KuponSonucu =
 
 export type KuponOzeti = { id: string; kod: string; perUserOnce: boolean };
 
-const tarihYaz = (d: Date) => d.toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Istanbul" });
-const eur = (n: number) => new Intl.NumberFormat("tr-TR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
-
 export async function kuponDegerlendir(p: {
   kod: string;
   userId: string;
@@ -35,25 +34,29 @@ export async function kuponDegerlendir(p: {
   agencyId?: string;
   girdi: FiyatGirdisi;
 }): Promise<KuponSonucu> {
+  // Mesajlar isteğin dilinde (messages/*/api.json › kupon).
+  const t = await getTranslations("api.kupon");
+  const bi = bicimleyici(await getLocale());
+  const eur = (n: number) => bi.para(n, "EUR");
   const kod = p.kod.trim().toUpperCase();
   const kupon = await prisma.coupon.findUnique({ where: { code: kod } });
-  if (!kupon || !kupon.isActive) return { durum: "gecersiz", mesaj: "Bu kod geçerli değil. Harfleri kontrol et." };
+  if (!kupon || !kupon.isActive) return { durum: "gecersiz", mesaj: t("gecersiz") };
   if (kupon.expiresAt && kupon.expiresAt < new Date()) {
-    return { durum: "gecersiz", mesaj: `Bu kuponun süresi ${tarihYaz(kupon.expiresAt)} tarihinde doldu.` };
+    return { durum: "gecersiz", mesaj: t("suresiDoldu", { tarih: bi.gunAyYil(kupon.expiresAt) }) };
   }
   if (kupon.usageLimit !== null && kupon.usedCount >= kupon.usageLimit) {
-    return { durum: "gecersiz", mesaj: "Bu kuponun kullanım sınırı doldu." };
+    return { durum: "gecersiz", mesaj: t("sinirDoldu") };
   }
   const acente = p.userType === "AGENCY" && !!p.agencyId;
-  if (kupon.audience === "AGENCY" && !acente) return { durum: "gecersiz", mesaj: "Bu kupon yalnız acentelerde geçerli." };
-  if (kupon.audience !== "AGENCY" && acente) return { durum: "gecersiz", mesaj: "Bu kupon acente rezervasyonlarında geçerli değil." };
+  if (kupon.audience === "AGENCY" && !acente) return { durum: "gecersiz", mesaj: t("yalnizAcente") };
+  if (kupon.audience !== "AGENCY" && acente) return { durum: "gecersiz", mesaj: t("acenteGecersiz") };
   if (kupon.audience === "NEW_CUSTOMER") {
     const onceki = await prisma.reservation.count({ where: { userId: p.userId, status: { in: ["CONFIRMED", "PENDING"] } } });
-    if (onceki > 0) return { durum: "gecersiz", mesaj: "Bu kupon yalnız ilk rezervasyonda geçerli." };
+    if (onceki > 0) return { durum: "gecersiz", mesaj: t("ilkRezervasyon") };
   }
   if (kupon.perUserOnce) {
     const kullandi = await prisma.couponUse.count({ where: { couponId: kupon.id, userId: p.userId } });
-    if (kullandi > 0) return { durum: "gecersiz", mesaj: "Bu kuponu daha önce kullandın." };
+    if (kullandi > 0) return { durum: "gecersiz", mesaj: t("dahaOnce") };
   }
 
   const b = await fiyatBaglami(p.userType, p.agencyId);
@@ -67,7 +70,7 @@ export async function kuponDegerlendir(p: {
   const komisyon = (sonFiyat: number) => komisyonHesapla(b, sonFiyat, p.girdi.hotelCode, p.girdi.boardType);
   const enDusukte = (fiyat: PriceResult): KuponSonucu => ({
     durum: "uygulanmadi",
-    mesaj: "Bu odanın fiyatı zaten en düşük seviyede; kupon indirimi uygulanamadı.",
+    mesaj: t("enDusukte"),
     fiyat,
     kupon: ozet,
   });
@@ -76,25 +79,25 @@ export async function kuponDegerlendir(p: {
 
   if (kupon.stacks || !kampanyali.kampanya) {
     if (!minTamam(kampanyali.finalPrice)) {
-      return { durum: "gecersiz", mesaj: `Bu kupon en az ${eur(kupon.minAmount!)} tutarındaki rezervasyonlarda geçerli.` };
+      return { durum: "gecersiz", mesaj: t("enAz", { tutar: eur(kupon.minAmount!) }) };
     }
     const tutar = tutarHesapla(kampanyali.finalPrice);
     if (tutar <= 0) return enDusukte(kampanyali);
     const sonFiyat = yuvarla(kampanyali.finalPrice - tutar);
-    return { durum: "uygulandi", mesaj: `${kupon.code} uygulandı`, fiyat: kampanyali, kupon: ozet, tutar, sonFiyat, komisyon: komisyon(sonFiyat) };
+    return { durum: "uygulandi", mesaj: t("uygulandi", { kod: kupon.code }), fiyat: kampanyali, kupon: ozet, tutar, sonFiyat, komisyon: komisyon(sonFiyat) };
   }
 
   // Birleşmiyor: kampanyalı fiyat mı, kampanyasız fiyat − kupon mu?
   const kampanyasiz = await calculatePrice({ ...girdi, kampanyasiz: true });
   if (!minTamam(kampanyasiz.finalPrice)) {
-    return { durum: "gecersiz", mesaj: `Bu kupon en az ${eur(kupon.minAmount!)} tutarındaki rezervasyonlarda geçerli.` };
+    return { durum: "gecersiz", mesaj: t("enAz", { tutar: eur(kupon.minAmount!) }) };
   }
   const tutar = tutarHesapla(kampanyasiz.finalPrice);
   const kuponlu = yuvarla(kampanyasiz.finalPrice - tutar);
   if (tutar > 0 && kuponlu < kampanyali.finalPrice) {
     return {
       durum: "uygulandi",
-      mesaj: `${kupon.code} uygulandı; otomatik indirimle birleşmediği için ${kampanyali.kampanya.ad} yerine geçti.`,
+      mesaj: t("yerineGecti", { kod: kupon.code, kampanya: kampanyali.kampanya.ad }),
       fiyat: kampanyasiz,
       kupon: ozet,
       tutar,
@@ -104,14 +107,19 @@ export async function kuponDegerlendir(p: {
   }
   return {
     durum: "uygulanmadi",
-    mesaj: `Bu kupon otomatik indirimle birleşmiyor. ${kampanyali.kampanya.ad} (${eur(kampanyali.kampanya.tutar)}) kupondan (${eur(tutar)}) daha avantajlı, o uygulandı.`,
+    mesaj: t("birlesmiyor", { kampanya: kampanyali.kampanya.ad, kampanyaTutari: eur(kampanyali.kampanya.tutar), kuponTutari: eur(tutar) }),
     fiyat: kampanyali,
     kupon: ozet,
   };
 }
 
-/** Kupon kullanımı ayrılamadı: sınır doldu ya da kişi başı hakkı kullanıldı. */
-export class KuponAlinamadi extends Error {}
+/** Kupon kullanımı ayrılamadı: sınır doldu ya da kişi başı hakkı kullanıldı.
+ *  message = api.kupon metin anahtarı ("sinirDoldu" | "dahaOnce"). */
+export class KuponAlinamadi extends Error {
+  constructor(public readonly anahtar: "sinirDoldu" | "dahaOnce") {
+    super(anahtar);
+  }
+}
 
 /**
  * Rezervasyon transaction'ı içinde kupon kullanımını ayırır. Sayaç yalnız
@@ -130,7 +138,7 @@ export async function kuponAyir(
     },
     data: { usedCount: { increment: 1 } },
   });
-  if (artti.count === 0) throw new KuponAlinamadi("Bu kuponun kullanım sınırı doldu.");
+  if (artti.count === 0) throw new KuponAlinamadi("sinirDoldu");
   try {
     await tx.couponUse.create({
       data: {
@@ -142,7 +150,7 @@ export async function kuponAyir(
       },
     });
   } catch (e) {
-    if ((e as { code?: string }).code === "P2002") throw new KuponAlinamadi("Bu kuponu daha önce kullandın.");
+    if ((e as { code?: string }).code === "P2002") throw new KuponAlinamadi("dahaOnce");
     throw e;
   }
 }

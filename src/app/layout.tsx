@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { NextIntlClientProvider } from "next-intl";
-import { getLocale, getTranslations } from "next-intl/server";
+import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { Figtree, Nunito } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
@@ -57,12 +57,15 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const dil = await getLocale();
+  // Sunucu mesajları ve e-posta metinleri (api) tarayıcıya gönderilmez.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { api, ...istemciMetinleri } = await getMessages();
   return (
     <html lang={dil}>
       <body
         className={`${nunito.variable} ${figtree.variable} ${yastik.variable} font-sans antialiased bg-paper text-ink min-h-dvh`}
       >
-        <NextIntlClientProvider>
+        <NextIntlClientProvider messages={istemciMetinleri}>
           <Providers>
             <Suspense>
               <UstCizgi />

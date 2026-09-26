@@ -14,5 +14,71 @@
     "euro": "Euro",
     "sterlin": "British pound",
     "kurNotu": "Prices are in EUR; other currencies are shown approximately at the Central Bank of Türkiye rate. Payment is taken in EUR."
+  },
+  "cubuk": {
+    "aramayiDegistir": "Change search",
+    "nereye": "Where are you going?",
+    "tarihEkle": "Add dates",
+    "misafirCocuklu": "{yetiskin, plural, one {# adult} other {# adults}}, {cocuk, plural, one {# child} other {# children}}"
+  },
+  "menu": {
+    "etiket": "Menu",
+    "hesapMenusu": "Account menu",
+    "merhaba": "Hi, {ad}",
+    "merhabaAdsiz": "Hi, welcome",
+    "partnerPaneli": "Partner dashboard",
+    "rezervasyonlar": "Bookings",
+    "kazanclar": "Earnings",
+    "sirketBilgileri": "Company details",
+    "yonetimPaneli": "Admin panel",
+    "hesabim": "My account",
+    "rezervasyonlarim": "My bookings",
+    "yardimMerkezi": "Help Centre",
+    "cikis": "Log out",
+    "girisYap": "Log in or sign up",
+    "acenteGirisi": "Agency login",
+    "acenteAciklama": "Exclusive rates for your agency, plus commission on bookings",
+    "rezervasyonumuBul": "Find my booking"
+  },
+  "altBilgi": {
+    "fikirler": "Ideas for your next getaway",
+    "tatilTuru": "Trip type",
+    "sekme": {
+      "populer": "Popular",
+      "deniz": "Beach",
+      "termal": "Thermal",
+      "kayak": "Ski",
+      "sehir": "City"
+    },
+    "tur": {
+      "deniz": "Beach hotels",
+      "herSeyDahil": "All-inclusive hotels",
+      "magara": "Cave hotels",
+      "sehir": "City hotels",
+      "butik": "Boutique hotels",
+      "golf": "Golf and holiday resorts",
+      "kayak": "Ski hotels",
+      "termal": "Thermal hotels",
+      "tas": "Stone hotels",
+      "golKenari": "Lakeside hotels"
+    },
+    "destek": "Support",
+    "yardimMerkezi": "Help Centre",
+    "rezervasyonumuBul": "Find my booking",
+    "iptalIade": "Cancellation and refund options",
+    "acenteler": "Agencies",
+    "acenteGirisi": "Agency login",
+    "kampanyalar": "Deals",
+    "girisYap": "Log in or sign up",
+    "gizlilik": "Privacy",
+    "kosullar": "Terms of use",
+    "kvkk": "Data protection",
+    "dil": "English (UK)"
+  },
+  "bekleme": {
+    "zil": "Loading",
+    "bavul": "Searching for hotels",
+    "takvim": "Checking prices",
+    "kart": "Making your booking"
   }
 }

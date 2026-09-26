@@ -13,27 +13,46 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { AltBilgi } from "@/components/lb/alt-bilgi";
 import { Ikon } from "@/components/lb/ikon";
 import { Nesne } from "@/components/lb/nesne";
 import { Pencere } from "@/components/lb/pencere";
 import { Bekleme, DonenMetin } from "@/components/lb/bekleme";
-import { AYLAR, geceSayisi, gunEkle, isoOku } from "@/components/lb/arama/durum";
-import { iptalOzeti } from "@/components/otel-detay/yardimci";
+import { geceSayisi, gunEkle, isoOku } from "@/components/lb/arama/durum";
 import { createBookingSchema, yasHesapla, type CreateBookingInput, type GuestInput } from "@/lib/validators/booking.schema";
 import type { CancellationPolicy, HotelDetailResponse } from "@/lib/royal-api/types";
 import { tarihGoster, useKayitliMisafirler, useProfil } from "@/components/hesap/veri";
+import type { Bicimleyici } from "@/i18n/bicim";
+import { useBicim } from "@/i18n/use-bicim";
 import { KartLogolari } from "./kart-logolari";
 import s from "./odeme.module.css";
 
-const GUNLER = ["Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi"];
 const ULKELER = ["+90", "+49", "+44", "+31", "+33", "+7", "+1", "+32", "+39", "+34", "+43", "+41"];
 
 interface Iletisim { ad: string; soyad: string; eposta: string; ulke: string; telefon: string }
 interface Misafir { ad: string; soyad: string; cins: "" | "Male" | "Female"; dogum: string; tip: "Adult" | "Child"; yas?: number }
 type Hatalar = Record<string, string>;
 
-const tarihYaz = (d: Date) => `${d.getDate()} ${AYLAR[d.getMonth()]} ${d.getFullYear()}`;
+/**
+ * İptal koşullarının özeti (otel-detay/yardimci iptalOzeti ile aynı seçim),
+ * geçerli dilin biçimiyle. Ücretsiz iptalin son günü {gun} {ay} olarak verilir;
+ * Türkçe metin ayın adına göre yönelme eki alır (Eylül'e, Ocak'a). Saatler
+ * Türkiye saatiyle.
+ */
+function iptalBilgisi(politikalar: CancellationPolicy[] | undefined, b: Bicimleyici) {
+  const p = politikalar ?? [];
+  const bedava = p.find((x) => x.penalty === 0);
+  const ceza = p.find((x) => x.penalty > 0);
+  const saat = (d: Date) => d.toLocaleTimeString(b.yerel, { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Istanbul" });
+  const son = bedava ? new Date(bedava.toDate) : null;
+  const bas = ceza ? new Date(ceza.fromDate) : null;
+  return {
+    ucretsiz: son ? { gun: son.getDate(), ay: b.ayAdlari[son.getMonth()], saat: saat(son) } : null,
+    ceza: ceza && bas ? { tarih: b.gunAyUzun(bas), saat: saat(bas), tutar: ceza.penalty } : null,
+  };
+}
+
 /** GG.AA.YYYY → YYYY-AA-GG (biçim tutmuyorsa boş). */
 const isoDogum = (g: string) => {
   const m = g.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
@@ -53,6 +72,9 @@ export function Odeme({ acik = true }: { acik?: boolean }) {
 }
 
 function OdemeFormu({ p, acik }: { p: URLSearchParams; acik: boolean }) {
+  const t = useTranslations("odeme");
+  const tk = useTranslations("ortak");
+  const bicim = useBicim();
   const router = useRouter();
   const oturum = useSession();
   // Ödeme altyapısı gelene kadar rezervasyon kapalı; yönetici test için yapabilir.
@@ -84,7 +106,7 @@ function OdemeFormu({ p, acik }: { p: URLSearchParams; acik: boolean }) {
   const giris = isoOku(checkIn);
   const cikis = isoOku(checkOut);
   const gece = giris && cikis ? Math.max(1, geceSayisi(giris, cikis)) : 1;
-  const ip = iptalOzeti(politikalar);
+  const ip = iptalBilgisi(politikalar, bicim);
   // Seçilen para biriminde gösterim (TCMB kuruyla yaklaşık); ödeme EUR.
   const fiyatGoster = useFiyat();
   const tl = (n: number) => fiyatGoster.yaz(n, paraBirimi);
@@ -129,7 +151,7 @@ function OdemeFormu({ p, acik }: { p: URLSearchParams; acik: boolean }) {
   const kuponUygula = async (e: React.FormEvent) => {
     e.preventDefault();
     const kod = kuponKod.trim().toUpperCase();
-    if (!kod) return setKuponMesaj({ metin: "Kupon kodunu yaz", hata: true });
+    if (!kod) return setKuponMesaj({ metin: t("kupon.kodYaz"), hata: true });
     setKuponYukleniyor(true);
     setKuponMesaj(null);
     try {
@@ -141,7 +163,7 @@ function OdemeFormu({ p, acik }: { p: URLSearchParams; acik: boolean }) {
       const d = await r.json().catch(() => ({}));
       if (!r.ok) {
         setKupon(null);
-        return setKuponMesaj({ metin: d.mesaj ?? d.error ?? "Kupon uygulanamadı", hata: true });
+        return setKuponMesaj({ metin: d.mesaj ?? d.error ?? t("kupon.uygulanamadi"), hata: true });
       }
       if (d.durum === "uygulandi") {
         setKupon({ kod: d.kod, tutar: d.tutar, sonFiyat: d.sonFiyat, oncekiFiyat: d.oncekiFiyat, kampanya: d.kampanya });
@@ -152,7 +174,7 @@ function OdemeFormu({ p, acik }: { p: URLSearchParams; acik: boolean }) {
         setKuponMesaj({ metin: d.mesaj, hata: false });
       }
     } catch {
-      setKuponMesaj({ metin: "Bağlantıda bir sorun oldu; tekrar dene.", hata: true });
+      setKuponMesaj({ metin: tk("baglantiHatasi"), hata: true });
     } finally {
       setKuponYukleniyor(false);
     }
@@ -161,8 +183,11 @@ function OdemeFormu({ p, acik }: { p: URLSearchParams; acik: boolean }) {
   // yerine geçmiş olabilir), değilse oda aramasındaki fiyatlar.
   const onceki = kupon ? Math.max(kupon.oncekiFiyat, kupon.sonFiyat) : ilkFiyat;
   const kampanyaSatiri = kupon
-    ? kupon.kampanya && { ad: `${kupon.kampanya.ad} %${kupon.kampanya.yuzde}`, tutar: kupon.kampanya.tutar }
-    : ilkFiyat - toplam >= 0.01 && { ad: kampanyaAd ? `${kampanyaAd}${kampanyaYuzde ? ` %${kampanyaYuzde}` : ""}` : "İndirim", tutar: Math.round((ilkFiyat - toplam) * 100) / 100 };
+    ? kupon.kampanya && { ad: t("fiyat.kampanya", { ad: kupon.kampanya.ad, yuzde: kupon.kampanya.yuzde }), tutar: kupon.kampanya.tutar }
+    : ilkFiyat - toplam >= 0.01 && {
+        ad: kampanyaAd ? (kampanyaYuzde ? t("fiyat.kampanya", { ad: kampanyaAd, yuzde: kampanyaYuzde }) : kampanyaAd) : t("fiyat.indirim"),
+        tutar: Math.round((ilkFiyat - toplam) * 100) / 100,
+      };
   const odenecek = kupon ? kupon.sonFiyat : toplam;
   const [pencere, setPencere] = React.useState<null | "iptal" | "dokum" | "bilgi">(null);
   const [mobilOzet, setMobilOzet] = React.useState(false);
@@ -259,34 +284,37 @@ function OdemeFormu({ p, acik }: { p: URLSearchParams; acik: boolean }) {
     couponCode: kupon?.kod,
   });
 
-  /** Bir adımın hataları; anahtar alanın id'si. */
+  /** Bir adımın hataları; anahtar alanın id'si. Şemanın (Türkçe) mesajları yerine kendi metinlerimiz. */
   const hatalariBul = (n: number): Hatalar => {
     const h: Hatalar = {};
     const r = createBookingSchema.safeParse(yuk());
     const issues = r.success ? [] : r.error.issues;
     if (n === 1) {
+      const iletisimHatasi: Record<string, string> = { ad: t("hata.ad"), soyad: t("hata.soyad"), eposta: t("hata.eposta"), telefon: t("hata.telefon") };
       for (const i of issues) {
         if (i.path[0] !== "contact") continue;
         const alan = ALAN_ADI[String(i.path[1])];
-        h[`c-${alan}`] ??= { ad: "Adını yaz", soyad: "Soyadını yaz", eposta: "Geçerli bir e-posta yaz", telefon: "Telefon numaranı yaz" }[alan] ?? i.message;
+        h[`c-${alan}`] ??= iletisimHatasi[alan] ?? t("hata.alan");
       }
       const rakam = iletisim.telefon.replace(/\D/g, "").replace(/^0/, "");
       if (!h["c-telefon"] && (iletisim.ulke === "+90" ? rakam.length !== 10 : rakam.length < 7)) {
-        h["c-telefon"] = iletisim.ulke === "+90" ? "10 haneli numara yaz (5XX XXX XX XX)" : "Telefon numarası eksik";
+        h["c-telefon"] = iletisim.ulke === "+90" ? t("hata.telefonTr") : t("hata.telefonEksik");
       }
     }
     if (n === 2) {
+      // Şemanın yaş kuralları (custom): yetişkin girişte 18 altı, çocuk aramadaki yaşta değil.
+      const yasHatasi = (m: Misafir) => (m.tip === "Adult" ? t("hata.yetiskinYasi") : t("hata.cocukYasi", { yas: m.yas ?? 0 }));
       for (const i of issues) {
         if (i.path[0] !== "rooms") continue;
         const j = Number(i.path[3]);
         const alan = ALAN_ADI[String(i.path[4])];
         const m = misafirler[j];
-        let mesaj = i.message;
+        let mesaj = i.code === "custom" && m ? yasHatasi(m) : t("hata.alan");
         if (i.code !== "custom") {
-          if (alan === "ad") mesaj = "Misafirin adını yaz";
-          else if (alan === "soyad") mesaj = "Misafirin soyadını yaz";
-          else if (alan === "cins") mesaj = "Cinsiyet seç";
-          else if (alan === "dogum") mesaj = m?.dogum ? "GG.AA.YYYY biçiminde yaz" : "Doğum tarihini yaz";
+          if (alan === "ad") mesaj = t("hata.misafirAd");
+          else if (alan === "soyad") mesaj = t("hata.misafirSoyad");
+          else if (alan === "cins") mesaj = t("hata.cinsiyet");
+          else if (alan === "dogum") mesaj = m?.dogum ? t("hata.dogumBicim") : t("hata.dogum");
         }
         h[`g${j}-${alan}`] ??= mesaj;
       }
@@ -295,8 +323,8 @@ function OdemeFormu({ p, acik }: { p: URLSearchParams; acik: boolean }) {
         const d = isoDogum(m.dogum);
         if (!d || h[`g${j}-dogum`]) return;
         const yas = yasHesapla(d, checkIn);
-        if (m.tip === "Adult" && yas < 18) h[`g${j}-dogum`] = "Yetişkin misafir girişte en az 18 yaşında olmalı";
-        if (m.tip === "Child" && m.yas !== undefined && yas !== m.yas) h[`g${j}-dogum`] = `Girişte ${m.yas} yaşında olmalı (aramadaki yaş)`;
+        if (m.tip === "Adult" && yas < 18) h[`g${j}-dogum`] = t("hata.yetiskinYasi");
+        if (m.tip === "Child" && m.yas !== undefined && yas !== m.yas) h[`g${j}-dogum`] = t("hata.cocukYasi", { yas: m.yas });
       });
     }
     return h;
@@ -342,12 +370,12 @@ function OdemeFormu({ p, acik }: { p: URLSearchParams; acik: boolean }) {
         // Kupon bu arada geçersizleşti (süre, sınır); kuponsuz devam edilebilir.
         setKupon(null);
         setKuponMesaj({ metin: d.error, hata: true });
-        setSunucuHata({ mesaj: `${d.error} Kupon kaldırıldı; onaylarsan kuponsuz fiyattan devam edilir.`, odaYenile: false });
+        setSunucuHata({ mesaj: t("hata.kuponKaldirildi", { hata: d.error }), odaYenile: false });
         setGonderiliyor(false);
         return;
       }
       if (!r.ok) {
-        setSunucuHata({ mesaj: d.error ?? "Rezervasyon oluşturulamadı", odaYenile: r.status === 409 || r.status === 422 });
+        setSunucuHata({ mesaj: d.error ?? t("hata.olusturulamadi"), odaYenile: r.status === 409 || r.status === 422 });
         setGonderiliyor(false);
         return;
       }
@@ -360,7 +388,7 @@ function OdemeFormu({ p, acik }: { p: URLSearchParams; acik: boolean }) {
       const qs = new URLSearchParams({ hotelName, checkIn, checkOut, durum: onayli ? "onay" : "bekliyor", ...(no ? { bookingNumber: no } : {}) });
       setTimeout(() => router.push(`/booking/confirmation?${qs}`), 1300);
     } catch {
-      setSunucuHata({ mesaj: "Bağlantıda bir sorun oldu; birazdan tekrar dene.", odaYenile: false });
+      setSunucuHata({ mesaj: t("hata.baglanti"), odaYenile: false });
       setGonderiliyor(false);
     }
   };
@@ -368,7 +396,7 @@ function OdemeFormu({ p, acik }: { p: URLSearchParams; acik: boolean }) {
   const ozetler: Record<number, string> = {
     1: `${iletisim.ad} ${iletisim.soyad} · ${iletisim.eposta}`,
     2: misafirler.map((m) => `${m.ad} ${m.soyad}`).join(", "),
-    3: yontem === "kart" ? "Kart ile ödeme" : "Havale / EFT",
+    3: yontem === "kart" ? t("yontem.ozetKart") : t("yontem.ozetHavale"),
   };
   const adimProps = (n: number) => ({
     no: n,
@@ -382,15 +410,15 @@ function OdemeFormu({ p, acik }: { p: URLSearchParams; acik: boolean }) {
   });
 
   const geceler = giris ? Array.from({ length: gece }, (_, i) => gunEkle(giris, i)) : [];
-  const misafirYazi = `${yetiskin} yetişkin${cocuklar.length ? `, ${cocuklar.length} çocuk` : ""} · 1 oda`;
+  const misafirYazi = t("ozet.misafirOzeti", { yetiskin, cocuk: cocuklar.length });
   const iptalKisa = ip.ucretsiz ? (
     <span className={s.yesil}>
-      <Ikon ad="check" boyut={16} kalinlik={2.2} /> {ip.ucretsiz.yonelme} kadar ücretsiz iptal
+      <Ikon ad="check" boyut={16} kalinlik={2.2} /> {t("ozet.iptalUcretsiz", ip.ucretsiz)}
     </span>
   ) : ip.ceza ? (
-    <span>Bu rezervasyon için iade yapılmaz</span>
+    <span>{t("ozet.iadeYapilmaz")}</span>
   ) : (
-    <span>İptal koşulları bilgisi alınamadı</span>
+    <span>{t("ozet.iptalBilgiYok")}</span>
   );
 
   return (
@@ -399,60 +427,60 @@ function OdemeFormu({ p, acik }: { p: URLSearchParams; acik: boolean }) {
         <Link href="/" className={`lb-y ${s.logo}`}>LookBeds</Link>
         <span className={s.guvenli}>
           <Ikon ad="lock" boyut={18} />
-          <span>Güvenli bağlantı</span>
+          <span>{t("ust.guvenliBaglanti")}</span>
         </span>
       </header>
 
       <main className={s.dis}>
         <div className={s.baslik}>
-          <Link href={otelAdresi} className={s.geri} aria-label="Otel sayfasına dön">
+          <Link href={otelAdresi} className={s.geri} aria-label={t("ust.oteleDon")}>
             <Ikon ad="back" boyut={18} />
           </Link>
-          <h1 className="lb-y">Onay ve ödeme</h1>
+          <h1 className="lb-y">{t("ust.baslik")}</h1>
         </div>
         {kapali && (
           <div className={`${s.kapaliNot} ${s.kapaliUst}`} role="status">
             <Ikon ad="lock" boyut={20} />
             <div>
-              <b>Rezervasyonlar şu an kapalı</b>
-              <span>Ödeme altyapımız hazırlanıyor; bilgilerini gözden geçirebilirsin ama rezervasyon henüz tamamlanamıyor.</span>
+              <b>{t("kapali.baslik")}</b>
+              <span>{t("kapali.gozdenGecir")}</span>
             </div>
           </div>
         )}
 
         <div className={s.duzen}>
           <div className={s.adimlar}>
-            <Adim {...adimProps(1)} baslik="İletişim bilgileri">
+            <Adim {...adimProps(1)} baslik={t("adim.iletisim")}>
               {kullanici && (
                 <div className={s.uye}>
                   <Nesne ad="anahtar-karti" boyut={44} />
                   <div>
-                    <b>{kullanici.name ? `${kullanici.name} olarak giriş yaptın` : "Giriş yaptın"}</b>
-                    <span>Rezervasyon hesabına kaydedilir; Rezervasyonlarım sayfasından takip edebilirsin.</span>
+                    <b>{kullanici.name ? t("iletisim.girisYaptinAdli", { ad: kullanici.name }) : t("iletisim.girisYaptin")}</b>
+                    <span>{t("iletisim.hesabaKaydedilir")}</span>
                   </div>
                 </div>
               )}
               <div className={s.alanlar}>
-                <Alan id="c-ad" etiket="Ad" hata={hatalar["c-ad"]} value={iletisim.ad} onChange={(v) => iletisimDegis("ad", v)} autoComplete="given-name" />
-                <Alan id="c-soyad" etiket="Soyad" hata={hatalar["c-soyad"]} value={iletisim.soyad} onChange={(v) => iletisimDegis("soyad", v)} autoComplete="family-name" />
+                <Alan id="c-ad" etiket={t("alan.ad")} hata={hatalar["c-ad"]} value={iletisim.ad} onChange={(v) => iletisimDegis("ad", v)} autoComplete="given-name" />
+                <Alan id="c-soyad" etiket={t("alan.soyad")} hata={hatalar["c-soyad"]} value={iletisim.soyad} onChange={(v) => iletisimDegis("soyad", v)} autoComplete="family-name" />
               </div>
-              <Alan id="c-eposta" etiket="E-posta" type="email" hata={hatalar["c-eposta"]} value={iletisim.eposta} onChange={(v) => iletisimDegis("eposta", v)} autoComplete="email" not="Onay e-postası bu adrese gönderilir" />
+              <Alan id="c-eposta" etiket={t("alan.eposta")} type="email" hata={hatalar["c-eposta"]} value={iletisim.eposta} onChange={(v) => iletisimDegis("eposta", v)} autoComplete="email" not={t("iletisim.epostaNot")} />
               <div className={s.tel}>
                 <div className={s.alan}>
-                  <label htmlFor="c-ulke">Ülke kodu</label>
+                  <label htmlFor="c-ulke">{t("iletisim.ulkeKodu")}</label>
                   <select id="c-ulke" value={iletisim.ulke} onChange={(e) => iletisimDegis("ulke", e.target.value)}>
                     {ULKELER.map((u) => <option key={u}>{u}</option>)}
                   </select>
                   <Ikon ad="chevron-down" boyut={16} className={s.secOk} />
                 </div>
-                <Alan id="c-telefon" etiket="Telefon" type="tel" inputMode="tel" hata={hatalar["c-telefon"]} value={iletisim.telefon} onChange={(v) => iletisimDegis("telefon", v)} autoComplete="tel-national" placeholder={iletisim.ulke === "+90" ? "5XX XXX XX XX" : undefined} />
+                <Alan id="c-telefon" etiket={t("alan.telefon")} type="tel" inputMode="tel" hata={hatalar["c-telefon"]} value={iletisim.telefon} onChange={(v) => iletisimDegis("telefon", v)} autoComplete="tel-national" placeholder={iletisim.ulke === "+90" ? "5XX XXX XX XX" : undefined} />
               </div>
               <div className={s.adimAlt}>
-                <button type="button" className={s.dugme} onClick={() => devam(1)}>Devam et</button>
+                <button type="button" className={s.dugme} onClick={() => devam(1)}>{tk("devam")}</button>
               </div>
             </Adim>
 
-            <Adim {...adimProps(2)} baslik="Konaklayacak misafirler">
+            <Adim {...adimProps(2)} baslik={t("adim.misafirler")}>
               <label className={s.onayKutu}>
                 <input
                   type="checkbox"
@@ -462,11 +490,11 @@ function OdemeFormu({ p, acik }: { p: URLSearchParams; acik: boolean }) {
                     if (e.target.checked) setMisafirler((m) => m.map((x, j) => (j === 0 ? { ...x, ad: iletisim.ad, soyad: iletisim.soyad } : x)));
                   }}
                 />
-                <span>Rezervasyonu yapan kişi de konaklıyor</span>
+                <span>{t("misafir.benDe")}</span>
               </label>
               {kayitli.length > 0 && misafirler.length > (benDe ? 1 : 0) && (
                 <div className={s.kayitli}>
-                  <span>{bosYer < 0 ? "Kayıtlı misafirlerin · tüm yerler dolu" : "Kayıtlı misafirlerin · dokun, boş yere yazalım"}</span>
+                  <span>{bosYer < 0 ? t("misafir.kayitliDolu") : t("misafir.kayitliSec")}</span>
                   <div>
                     {kayitli.map((k) => {
                       const kullanildi = misafirler.some((m) => m.ad === k.name && m.soyad === k.surname);
@@ -483,21 +511,21 @@ function OdemeFormu({ p, acik }: { p: URLSearchParams; acik: boolean }) {
               {misafirler.map((m, j) => (
                 <fieldset key={j} className={s.misafir}>
                   <legend>
-                    {j + 1}. misafir · {m.tip === "Adult" ? "yetişkin" : `çocuk (${m.yas} yaş)`}
+                    {m.tip === "Adult" ? t("misafir.yetiskinBaslik", { sira: j + 1 }) : t("misafir.cocukBaslik", { sira: j + 1, yas: m.yas ?? 0 })}
                   </legend>
                   <div className={s.alanlar}>
-                    <Alan id={`g${j}-ad`} etiket="Ad" hata={hatalar[`g${j}-ad`]} value={m.ad} onChange={(v) => misafirDegis(j, "ad", v)} />
-                    <Alan id={`g${j}-soyad`} etiket="Soyad" hata={hatalar[`g${j}-soyad`]} value={m.soyad} onChange={(v) => misafirDegis(j, "soyad", v)} />
+                    <Alan id={`g${j}-ad`} etiket={t("alan.ad")} hata={hatalar[`g${j}-ad`]} value={m.ad} onChange={(v) => misafirDegis(j, "ad", v)} />
+                    <Alan id={`g${j}-soyad`} etiket={t("alan.soyad")} hata={hatalar[`g${j}-soyad`]} value={m.soyad} onChange={(v) => misafirDegis(j, "soyad", v)} />
                   </div>
                   <div className={s.alanlar}>
                     <div>
                       <div className={s.secimAlan} data-hatali={!!hatalar[`g${j}-cins`] || undefined}>
-                        <span className={s.etiket} id={`g${j}-cins-e`}>Cinsiyet</span>
+                        <span className={s.etiket} id={`g${j}-cins-e`}>{t("alan.cinsiyet")}</span>
                         <div className={s.parca} role="radiogroup" aria-labelledby={`g${j}-cins-e`} id={`g${j}-cins`} tabIndex={-1}>
                           {(["Female", "Male"] as const).map((c) => (
                             <label key={c}>
                               <input type="radio" name={`g${j}-cins`} value={c} checked={m.cins === c} onChange={() => misafirDegis(j, "cins", c)} />
-                              <span>{c === "Female" ? "Kadın" : "Erkek"}</span>
+                              <span>{c === "Female" ? t("alan.kadin") : t("alan.erkek")}</span>
                             </label>
                           ))}
                         </div>
@@ -506,8 +534,8 @@ function OdemeFormu({ p, acik }: { p: URLSearchParams; acik: boolean }) {
                     </div>
                     <Alan
                       id={`g${j}-dogum`}
-                      etiket="Doğum tarihi"
-                      placeholder="GG.AA.YYYY"
+                      etiket={t("alan.dogum")}
+                      placeholder={t("alan.dogumOrnek")}
                       inputMode="numeric"
                       maxLength={10}
                       hata={hatalar[`g${j}-dogum`]}
@@ -519,24 +547,24 @@ function OdemeFormu({ p, acik }: { p: URLSearchParams; acik: boolean }) {
                 </fieldset>
               ))}
               <div className={`${s.alan} ${s.genis}`}>
-                <label htmlFor="istek">Özel istek (isteğe bağlı)</label>
-                <textarea id="istek" maxLength={500} value={istek} onChange={(e) => setIstek(e.target.value)} placeholder="Örneğin yüksek kat, erken giriş, bebek yatağı" />
-                <small className={s.not}>{istek.length} / 500 · Otele iletilir, garanti edilmez</small>
+                <label htmlFor="istek">{t("misafir.istek")}</label>
+                <textarea id="istek" maxLength={500} value={istek} onChange={(e) => setIstek(e.target.value)} placeholder={t("misafir.istekOrnek")} />
+                <small className={s.not}>{t("misafir.istekNot", { sayi: istek.length })}</small>
               </div>
               <div className={s.adimAlt}>
-                <button type="button" className={s.dugme} onClick={() => devam(2)}>Devam et</button>
+                <button type="button" className={s.dugme} onClick={() => devam(2)}>{tk("devam")}</button>
               </div>
             </Adim>
 
-            <Adim {...adimProps(3)} baslik="Ödeme yöntemi">
-              <div className={s.yontem} role="radiogroup" aria-label="Ödeme yöntemi">
+            <Adim {...adimProps(3)} baslik={t("adim.yontem")}>
+              <div className={s.yontem} role="radiogroup" aria-label={t("adim.yontem")}>
                 <label>
                   <input type="radio" name="yontem" checked={yontem === "kart"} onChange={() => setYontem("kart")} />
                   <span className={s.kutu}>
                     <Nesne ad="odeme-karti" boyut={40} />
                     <span>
-                      <b>Kart ile öde</b>
-                      <small>Kredi ya da banka kartı</small>
+                      <b>{t("yontem.kart")}</b>
+                      <small>{t("yontem.kartAlt")}</small>
                     </span>
                   </span>
                 </label>
@@ -545,8 +573,8 @@ function OdemeFormu({ p, acik }: { p: URLSearchParams; acik: boolean }) {
                   <span className={s.kutu}>
                     <Nesne ad="havale" boyut={40} />
                     <span>
-                      <b>Havale / EFT</b>
-                      <small>Banka hesabına</small>
+                      <b>{t("yontem.havale")}</b>
+                      <small>{t("yontem.havaleAlt")}</small>
                     </span>
                   </span>
                 </label>
@@ -554,38 +582,42 @@ function OdemeFormu({ p, acik }: { p: URLSearchParams; acik: boolean }) {
               {yontem === "kart" ? (
                 <div className={s.yontemBilgi}>
                   <KartLogolari />
-                  <span>Kart bilgilerini onaydan sonra bankanın güvenli ödeme ekranında gireceksin. LookBeds kart bilgisi saklamaz.</span>
+                  <span>{t("yontem.kartBilgi")}</span>
                 </div>
               ) : (
                 <div className={s.yontemBilgi}>
-                  <b>Banka bilgileri onay e-postasıyla gelir</b>
-                  <span>Açıklamaya rezervasyon numaranı yazman yeterli.</span>
+                  <b>{t("yontem.havaleBaslik")}</b>
+                  <span>{t("yontem.havaleBilgi")}</span>
                 </div>
               )}
               <div className={s.adimAlt}>
-                <button type="button" className={s.dugme} onClick={() => devam(3)}>Devam et</button>
+                <button type="button" className={s.dugme} onClick={() => devam(3)}>{tk("devam")}</button>
               </div>
             </Adim>
 
-            <Adim {...adimProps(4)} baslik="Rezervasyonunu gözden geçir">
+            <Adim {...adimProps(4)} baslik={t("adim.gozden")}>
               <ul className={s.gozden}>
                 <li>
                   <Ikon ad="calendar" boyut={22} />
                   <span>
-                    <b>İptal koşulları</b>
+                    <b>{t("iptal.baslik")}</b>
                     {ip.ucretsiz
-                      ? `${ip.ucretsiz.yonelme} kadar (saat ${ip.ucretsiz.saat}) ücretsiz iptal${ip.ceza ? `; sonrasında ${tl(ip.ceza.tutar)} kesilir` : ""}.`
+                      ? ip.ceza
+                        ? t("gozden.iptalUcretsizCezali", { ...ip.ucretsiz, ceza: tl(ip.ceza.tutar) })
+                        : t("gozden.iptalUcretsiz", ip.ucretsiz)
                       : ip.ceza
-                        ? "Bu rezervasyon iade edilmez."
-                        : "İptal koşulları bilgisi alınamadı; odayı otel sayfasından yeniden seçebilirsin."}
+                        ? t("gozden.iadeEdilmez")
+                        : t("gozden.iptalBilgiYok")}
                   </span>
                 </li>
                 {otel?.policies?.checkInFrom && (
                   <li>
                     <Ikon ad="clock" boyut={22} />
                     <span>
-                      <b>Giriş ve çıkış</b>
-                      Giriş {otel.policies.checkInFrom} ve sonrası{otel.policies.checkOutUntil ? `, çıkış en geç ${otel.policies.checkOutUntil}` : ""}. Girişte kimlik istenir.
+                      <b>{t("gozden.girisCikisBaslik")}</b>
+                      {otel.policies.checkOutUntil
+                        ? t("gozden.girisCikis", { giris: otel.policies.checkInFrom, cikis: otel.policies.checkOutUntil })
+                        : t("gozden.girisSaati", { giris: otel.policies.checkInFrom })}
                     </span>
                   </li>
                 )}
@@ -593,8 +625,8 @@ function OdemeFormu({ p, acik }: { p: URLSearchParams; acik: boolean }) {
                   <li>
                     <Ikon ad="secure" boyut={22} />
                     <span>
-                      <b>Otelin önemli notları</b>
-                      <button type="button" className={s.metinDugme} onClick={() => setPencere("bilgi")}>Notları oku</button>
+                      <b>{t("gozden.notlarBaslik")}</b>
+                      <button type="button" className={s.metinDugme} onClick={() => setPencere("bilgi")}>{t("gozden.notlariOku")}</button>
                     </span>
                   </li>
                 )}
@@ -602,16 +634,20 @@ function OdemeFormu({ p, acik }: { p: URLSearchParams; acik: boolean }) {
               <label className={s.onayKutu}>
                 <input type="checkbox" checked={sozlesme} onChange={(e) => setSozlesme(e.target.checked)} />
                 <span>
-                  <button type="button" className={s.metinDugme} onClick={(e) => { e.preventDefault(); setPencere("dokum"); }}>Ön bilgilendirmeyi</button> okudum; otel kurallarını ve iptal koşullarını kabul ediyorum.
+                  {t.rich("gozden.sozlesme", {
+                    dugme: (c) => (
+                      <button type="button" className={s.metinDugme} onClick={(e) => { e.preventDefault(); setPencere("dokum"); }}>{c}</button>
+                    ),
+                  })}
                 </span>
               </label>
               {sunucuHata && (
                 <div className={s.sunucuHata} role="alert">
                   <Ikon ad="warning" boyut={20} />
                   <div>
-                    <b>Rezervasyon tamamlanamadı</b>
+                    <b>{t("gozden.tamamlanamadi")}</b>
                     <span>{sunucuHata.mesaj}</span>
-                    {sunucuHata.odaYenile && <Link href={otelAdresi} className={s.metinDugme}>Otel sayfasına dön, odayı yeniden seç</Link>}
+                    {sunucuHata.odaYenile && <Link href={otelAdresi} className={s.metinDugme}>{t("gozden.odayiYenidenSec")}</Link>}
                   </div>
                 </div>
               )}
@@ -619,25 +655,25 @@ function OdemeFormu({ p, acik }: { p: URLSearchParams; acik: boolean }) {
                 <div className={s.kapaliNot} role="status">
                   <Ikon ad="lock" boyut={20} />
                   <div>
-                    <b>Rezervasyonlar şu an kapalı</b>
-                    <span>Ödeme altyapımız hazırlanıyor. Çok yakında buradan rezervasyon yapabileceksin.</span>
+                    <b>{t("kapali.baslik")}</b>
+                    <span>{t("kapali.yakinda")}</span>
                   </div>
                 </div>
               )}
               <div className={`${s.adimAlt} ${s.solda}`}>
                 <button type="button" className={`${s.dugme} ${s.onayla}`} onClick={onayla} disabled={kapali || !sozlesme || gonderiliyor}>
                   <Ikon ad={gonderiliyor ? "loading" : "lock"} boyut={18} className={gonderiliyor ? s.don : undefined} />
-                  {gonderiliyor ? "Rezervasyon yapılıyor…" : `Rezervasyonu onayla · ${tl(odenecek)}`}
+                  {gonderiliyor ? t("gozden.yapiliyor") : t("gozden.onayla", { tutar: tl(odenecek) })}
                 </button>
               </div>
             </Adim>
           </div>
 
-          <aside className={s.ozet} data-acik={mobilOzet || undefined} aria-label="Rezervasyon özeti">
+          <aside className={s.ozet} data-acik={mobilOzet || undefined} aria-label={t("ozet.etiket")}>
             <button type="button" className={s.mobilOzet} aria-expanded={mobilOzet} onClick={() => setMobilOzet((a) => !a)}>
               <span>
-                <b>Rezervasyon özeti</b>
-                <span>{tl(odenecek)} · {giris && cikis ? `${giris.getDate()}–${tarihYaz(cikis)}` : ""}</span>
+                <b>{t("ozet.etiket")}</b>
+                <span>{tl(odenecek)} · {giris && cikis ? `${giris.getDate()}–${bicim.gunAyYil(cikis)}` : ""}</span>
               </span>
               <Ikon ad="chevron-down" boyut={20} />
             </button>
@@ -647,31 +683,31 @@ function OdemeFormu({ p, acik }: { p: URLSearchParams; acik: boolean }) {
                 <div>
                   <b>{hotelName}</b>
                   <span>{[roomName, boardTypeName].filter(Boolean).join(" · ")}</span>
-                  {(otel?.stars || yer) && <span>{[otel?.stars ? `${otel.stars} yıldızlı` : null, yer || null].filter(Boolean).join(" · ")}</span>}
+                  {(otel?.stars || yer) && <span>{[otel?.stars ? tk("yildizli", { sayi: otel.stars }) : null, yer || null].filter(Boolean).join(" · ")}</span>}
                 </div>
               </div>
               <div className={`${s.satir} ${s.iptalSatir}`}>
                 {iptalKisa}
-                {(ip.ucretsiz || ip.ceza) && <button type="button" className={s.gri} onClick={() => setPencere("iptal")}>Ayrıntılar</button>}
+                {(ip.ucretsiz || ip.ceza) && <button type="button" className={s.gri} onClick={() => setPencere("iptal")}>{t("ozet.ayrintilar")}</button>}
               </div>
               <div className={s.satir}>
                 <div>
-                  <b>Tarihler</b>
-                  <span>{giris && cikis ? `${tarihYaz(giris)} – ${tarihYaz(cikis)} · ${gece} gece` : "—"}</span>
+                  <b>{t("ozet.tarihler")}</b>
+                  <span>{giris && cikis ? t("ozet.tarihAraligi", { giris: bicim.gunAyYil(giris), cikis: bicim.gunAyYil(cikis), gece }) : "—"}</span>
                 </div>
-                <Link href={otelAdresi} className={s.gri}>Değiştir</Link>
+                <Link href={otelAdresi} className={s.gri}>{t("ozet.degistir")}</Link>
               </div>
               <div className={s.satir}>
                 <div>
-                  <b>Misafirler</b>
+                  <b>{t("ozet.misafirler")}</b>
                   <span>{misafirYazi}</span>
                 </div>
-                <Link href={otelAdresi} className={s.gri}>Değiştir</Link>
+                <Link href={otelAdresi} className={s.gri}>{t("ozet.degistir")}</Link>
               </div>
               <div className={s.fiyat}>
-                <h3>Fiyat ayrıntıları</h3>
+                <h3>{t("fiyat.baslik")}</h3>
                 <div>
-                  <span>{tl(onceki / gece)} × {gece} gece</span>
+                  <span>{t("fiyat.geceBasi", { fiyat: tl(onceki / gece), gece })}</span>
                   <span>{tl(onceki)}</span>
                 </div>
                 {kampanyaSatiri && (
@@ -683,27 +719,32 @@ function OdemeFormu({ p, acik }: { p: URLSearchParams; acik: boolean }) {
                 {kupon && (
                   <div className={s.indirim}>
                     <span>
-                      Kupon {kupon.kod}{" "}
-                      <button type="button" className={s.metinDugme} onClick={() => { setKupon(null); setKuponMesaj(null); }}>Kaldır</button>
+                      {t("fiyat.kupon", { kod: kupon.kod })}{" "}
+                      <button type="button" className={s.metinDugme} onClick={() => { setKupon(null); setKuponMesaj(null); }}>{t("fiyat.kaldir")}</button>
                     </span>
                     <span>−{tl(kupon.tutar)}</span>
                   </div>
                 )}
                 <div>
-                  <span>Vergiler ve ücretler</span>
-                  <span>Dahil</span>
+                  <span>{t("fiyat.vergiler")}</span>
+                  <span>{t("fiyat.dahil")}</span>
                 </div>
               </div>
               <div className={s.toplam}>
                 <b>
-                  Toplam <small>{fiyatGoster.birim}</small>
+                  {t.rich("fiyat.toplam", { birim: fiyatGoster.birim, kucuk: (c) => <small>{c}</small> })}
                 </b>
                 <span className="lb-y">{tl(odenecek)}</span>
               </div>
               {fiyatGoster.cevrildi && (
                 <p className={s.kurNotu}>
-                  Ödeme {paraBirimi} ile alınır: <b>{fiyatGoster.asil(odenecek, paraBirimi)}</b>. {fiyatGoster.birim === "TRY" ? "TL" : fiyatGoster.birim} tutarı TCMB kuruyla
-                  {fiyatGoster.kurTarihi ? ` (${fiyatGoster.kurTarihi})` : ""} yaklaşıktır.
+                  {t.rich(fiyatGoster.kurTarihi ? "fiyat.kurNotuTarihli" : "fiyat.kurNotu", {
+                    para: paraBirimi,
+                    tutar: fiyatGoster.asil(odenecek, paraBirimi),
+                    birim: fiyatGoster.birim,
+                    tarih: fiyatGoster.kurTarihi ?? "",
+                    b: (c) => <b>{c}</b>,
+                  })}
                 </p>
               )}
               {!kupon && (
@@ -711,7 +752,7 @@ function OdemeFormu({ p, acik }: { p: URLSearchParams; acik: boolean }) {
                   {kuponAcik ? (
                     <form className={s.kuponForm} onSubmit={kuponUygula} noValidate>
                       <div className={s.alan}>
-                        <label htmlFor="kupon">Kupon kodu</label>
+                        <label htmlFor="kupon">{t("kupon.kod")}</label>
                         <input
                           id="kupon"
                           value={kuponKod}
@@ -722,23 +763,23 @@ function OdemeFormu({ p, acik }: { p: URLSearchParams; acik: boolean }) {
                           autoFocus
                         />
                       </div>
-                      <button type="submit" className={s.kuponDugme} disabled={kuponYukleniyor}>{kuponYukleniyor ? "…" : "Uygula"}</button>
+                      <button type="submit" className={s.kuponDugme} disabled={kuponYukleniyor}>{kuponYukleniyor ? "…" : t("kupon.uygula")}</button>
                     </form>
                   ) : (
-                    <button type="button" className={s.metinDugme} onClick={() => setKuponAcik(true)}>Kupon ekle</button>
+                    <button type="button" className={s.metinDugme} onClick={() => setKuponAcik(true)}>{t("kupon.ekle")}</button>
                   )}
                 </div>
               )}
               {kuponMesaj && (
                 <p className={s.kuponMesaj} data-hata={kuponMesaj.hata || undefined} role={kuponMesaj.hata ? "alert" : "status"}>{kuponMesaj.metin}</p>
               )}
-              <button type="button" className={s.metinDugme} onClick={() => setPencere("dokum")}>Fiyat dökümü</button>
+              <button type="button" className={s.metinDugme} onClick={() => setPencere("dokum")}>{t("fiyat.dokum")}</button>
             </div>
             <div className={s.guven}>
               <Nesne ad="kilit" boyut={48} />
               <div>
-                <b>Bilgilerin güvende</b>
-                <span>Bağlantın şifreli. Bilgilerin yalnızca rezervasyon için otelle paylaşılır.</span>
+                <b>{t("ozet.guvendeBaslik")}</b>
+                <span>{t("ozet.guvendeMetin")}</span>
               </div>
             </div>
           </aside>
@@ -747,42 +788,50 @@ function OdemeFormu({ p, acik }: { p: URLSearchParams; acik: boolean }) {
 
       <AltBilgi />
 
-      <Pencere acik={pencere === "iptal"} onKapat={() => setPencere(null)} baslik="İptal koşulları" genislik={560}>
+      <Pencere acik={pencere === "iptal"} onKapat={() => setPencere(null)} baslik={t("iptal.baslik")} genislik={560}>
         <div className={s.zaman}>
           {ip.ucretsiz && (
             <div>
-              <b>{ip.ucretsiz.yonelme} kadar</b>
-              <span>Saat {ip.ucretsiz.saat} öncesi ücretsiz iptal, tam iade</span>
+              <b>{t("iptal.kadar", ip.ucretsiz)}</b>
+              <span>{t("iptal.ucretsizTamIade", { saat: ip.ucretsiz.saat })}</span>
             </div>
           )}
           {ip.ceza && (
             <div className={s.ceza}>
-              <b>{ip.ucretsiz ? `${ip.ceza.gun}, saat ${ip.ceza.saat} ve sonrası` : "Rezervasyondan itibaren"}</b>
-              <span>İptal ücreti {tl(ip.ceza.tutar)}{ip.ceza.tutar >= toplam ? " (toplam tutar)" : ""}</span>
+              <b>{ip.ucretsiz ? t("iptal.cezaBaslangic", { tarih: ip.ceza.tarih, saat: ip.ceza.saat }) : t("iptal.rezervasyondan")}</b>
+              <span>{t(ip.ceza.tutar >= toplam ? "iptal.ucretToplam" : "iptal.ucret", { tutar: tl(ip.ceza.tutar) })}</span>
             </div>
           )}
         </div>
-        <p className={s.pencereNot}>Saatler Türkiye saatine göredir. İptal, Rezervasyonlarım sayfasından yapılır.</p>
+        <p className={s.pencereNot}>{t("iptal.not")}</p>
       </Pencere>
-      <Pencere acik={pencere === "dokum"} onKapat={() => setPencere(null)} baslik="Ön bilgilendirme ve fiyat dökümü" genislik={560}>
+      <Pencere acik={pencere === "dokum"} onKapat={() => setPencere(null)} baslik={t("dokum.baslik")} genislik={560}>
         <div className={s.dokum}>
-          <div><span>Hizmet</span><span>Otel konaklaması</span></div>
-          <div><span>Otel</span><span>{hotelName}</span></div>
-          <div><span>Oda</span><span>{[roomName, boardTypeName].filter(Boolean).join(" · ")}</span></div>
-          <div><span>Misafirler</span><span>{misafirYazi}</span></div>
+          <div><span>{t("dokum.hizmet")}</span><span>{t("dokum.otelKonaklamasi")}</span></div>
+          <div><span>{t("dokum.otel")}</span><span>{hotelName}</span></div>
+          <div><span>{t("dokum.oda")}</span><span>{[roomName, boardTypeName].filter(Boolean).join(" · ")}</span></div>
+          <div><span>{t("dokum.misafirler")}</span><span>{misafirYazi}</span></div>
           {geceler.map((d) => (
             <div key={d.getTime()}>
-              <span>{d.getDate()} {AYLAR[d.getMonth()]} {GUNLER[d.getDay()]}</span>
+              <span>{bicim.haftaGunuUzun(d)}</span>
               <span>{tl(onceki / gece)}</span>
             </div>
           ))}
           {kampanyaSatiri && <div><span>{kampanyaSatiri.ad}</span><span>−{tl(kampanyaSatiri.tutar)}</span></div>}
-          {kupon && <div><span>Kupon {kupon.kod}</span><span>−{tl(kupon.tutar)}</span></div>}
-          <div><b>Toplam ({fiyatGoster.birim}, vergiler dahil)</b><b>{tl(odenecek)}</b></div>
-          {fiyatGoster.cevrildi && <div><span>Ödenecek ({paraBirimi})</span><span>{fiyatGoster.asil(odenecek, paraBirimi)}</span></div>}
+          {kupon && <div><span>{t("fiyat.kupon", { kod: kupon.kod })}</span><span>−{tl(kupon.tutar)}</span></div>}
+          <div><b>{t("dokum.toplam", { birim: fiyatGoster.birim })}</b><b>{tl(odenecek)}</b></div>
+          {fiyatGoster.cevrildi && <div><span>{t("dokum.odenecek", { para: paraBirimi })}</span><span>{fiyatGoster.asil(odenecek, paraBirimi)}</span></div>}
           <div>
-            <span>İptal</span>
-            <span>{ip.ucretsiz ? `${ip.ucretsiz.yonelme} kadar ücretsiz, sonrasında ${ip.ceza ? tl(ip.ceza.tutar) : "ücretli"}` : ip.ceza ? "İade edilmez" : "Bilgi yok"}</span>
+            <span>{t("dokum.iptal")}</span>
+            <span>
+              {ip.ucretsiz
+                ? ip.ceza
+                  ? t("dokum.ucretsizCezali", { ...ip.ucretsiz, tutar: tl(ip.ceza.tutar) })
+                  : t("dokum.ucretsizUcretli", ip.ucretsiz)
+                : ip.ceza
+                  ? t("dokum.iadeEdilmez")
+                  : t("dokum.bilgiYok")}
+            </span>
           </div>
         </div>
       </Pencere>
@@ -791,20 +840,20 @@ function OdemeFormu({ p, acik }: { p: URLSearchParams; acik: boolean }) {
           <div>
             <Bekleme tur="kart" boyut={150} bitti={!!onaylandi} etiket={null} />
             <h2 id="onay-baslik" className="lb-y">
-              {onaylandi === "onay" ? "Rezervasyonun onaylandı" : onaylandi === "alindi" ? "Rezervasyonun alındı" : "Rezervasyonun yapılıyor"}
+              {onaylandi === "onay" ? t("katman.onaylandi") : onaylandi === "alindi" ? t("katman.alindi") : t("katman.yapiliyor")}
             </h2>
             {onaylandi ? (
-              <p>Onay sayfasına geçiliyor</p>
+              <p>{t("katman.yonlendiriliyor")}</p>
             ) : (
               <>
-                <DonenMetin metinler={["Bilgilerin otele iletiliyor", "Oda ayırtılıyor", "Otelden onay bekleniyor"]} aralik={3500} className={s.onayMetin} />
-                <small>Bu birkaç saniye sürebilir; sayfayı kapatma.</small>
+                <DonenMetin metinler={[t("katman.iletiliyor"), t("katman.ayirtiliyor"), t("katman.bekleniyor")]} aralik={3500} className={s.onayMetin} />
+                <small>{t("katman.sayfayiKapatma")}</small>
               </>
             )}
           </div>
         </div>
       )}
-      <Pencere acik={pencere === "bilgi"} onKapat={() => setPencere(null)} baslik="Otelin önemli notları">
+      <Pencere acik={pencere === "bilgi"} onKapat={() => setPencere(null)} baslik={t("gozden.notlarBaslik")}>
         <div className={s.pencereMetin}>
           {(otel?.policies?.importantInfo ?? []).flatMap((m) => m.split(/(?<=\.)\s+(?=[A-ZÇĞİÖŞÜ])/)).map((x, i) => <p key={i}>{x}</p>)}
         </div>
@@ -823,6 +872,7 @@ function Adim({ no, baslik, aktif, tamam, ozet, onDuzenle, kokRef, children }: {
   kokRef: (e: HTMLElement | null) => void;
   children: React.ReactNode;
 }) {
+  const t = useTranslations("odeme");
   const kapali = tamam && !aktif;
   return (
     <section ref={kokRef} className={s.adim} data-aktif={aktif || undefined} data-tamam={tamam || undefined} aria-labelledby={`adim-${no}`}>
@@ -834,7 +884,7 @@ function Adim({ no, baslik, aktif, tamam, ozet, onDuzenle, kokRef, children }: {
         {kapali && (
           <>
             {ozet && <span className={s.ozetMetin}>{ozet}</span>}
-            <button type="button" className={s.gri} onClick={(e) => { e.stopPropagation(); onDuzenle(); }}>Düzenle</button>
+            <button type="button" className={s.gri} onClick={(e) => { e.stopPropagation(); onDuzenle(); }}>{t("adim.duzenle")}</button>
           </>
         )}
       </header>
@@ -875,6 +925,7 @@ function Alan({ id, etiket, hata, not, onChange, ...girdi }: {
 }
 
 function Bos() {
+  const t = useTranslations("odeme");
   return (
     <div className={`lb ${s.sayfa}`}>
       <header className={s.ust}>
@@ -882,9 +933,9 @@ function Bos() {
       </header>
       <div className={s.bos}>
         <Nesne ad="bavul" boyut={110} />
-        <h1 className="lb-y">Rezervasyon bilgisi bulunamadı</h1>
-        <p>Bu sayfaya bir oda seçtikten sonra ulaşabilirsin. Bekleyen bir seçimin süresi de dolmuş olabilir.</p>
-        <Link href="/" className={s.siyah}>Otel aramaya dön</Link>
+        <h1 className="lb-y">{t("bos.baslik")}</h1>
+        <p>{t("bos.metin")}</p>
+        <Link href="/" className={s.siyah}>{t("bos.aramayaDon")}</Link>
       </div>
       <AltBilgi />
     </div>

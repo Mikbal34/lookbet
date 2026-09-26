@@ -11,6 +11,7 @@ import type hesap from "../../messages/tr/hesap.json";
 import type giris from "../../messages/tr/giris.json";
 import type rezervasyon from "../../messages/tr/rezervasyon.json";
 import type yardim from "../../messages/tr/yardim.json";
+import type api from "../../messages/tr/api.json";
 
 declare module "next-intl" {
   interface AppConfig {
@@ -26,6 +27,8 @@ declare module "next-intl" {
       giris: typeof giris;
       rezervasyon: typeof rezervasyon;
       yardim: typeof yardim;
+      /** Sunucunun kullanıcıya dönen mesajları ve e-postalar (yalnız sunucuda). */
+      api: typeof api;
     };
   }
 }

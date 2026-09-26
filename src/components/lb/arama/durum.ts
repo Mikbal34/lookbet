@@ -1,6 +1,16 @@
 // Arama çubuğunun ortak durumu ve yardımcıları.
 // URL biçimi arama sayfasıyla aynı: destination, konum (öneriden seçildiyse
 // konum kimliği), checkIn, checkOut (YYYY-MM-DD), adults, childAges (virgülle).
+//
+// Metin yardımcılarının iki hali var: AYLAR, kisaTarih, tarihMetni,
+// misafirMetni, aralikMetni ve hizliTarihler Türkçe yazar (başka ekranlar
+// hâlâ kullanıyor); tarihOzeti, aralikOzeti, misafirOzeti ve hizliAraliklar
+// geçerli dilde yazar (b = useBicim() ya da bicimleyici(dil),
+// t = useTranslations("arama") ya da getTranslations("arama")). Dosya sunucu
+// bileşenlerinden de içe aktarılıyor; burada yalnız saf fonksiyonlar var.
+
+import type { useTranslations } from "next-intl";
+import type { Bicimleyici } from "@/i18n/bicim";
 
 export interface AramaDegeri {
   /** Aramaya giden metin (konum adı ya da otel adı). */
@@ -58,20 +68,56 @@ export function aramaAdresi(d: AramaDegeri): string {
   return `/search?${p.toString()}`;
 }
 
+/** Hızlı tarih seçeneği; adı arama.takvim.hizli.<anahtar> metninde. */
+export type HizliTarih = "buHaftaSonu" | "gelecekHaftaSonu" | "birHafta";
+
 /** Hızlı tarih seçenekleri: bu hafta sonu, gelecek hafta sonu, gelecek hafta. */
-export function hizliTarihler(bugun = gunBasi(new Date())) {
-  const cuma = gunEkle(bugun, (5 - bugun.getDay() + 7) % 7);
-  // Cumartesi ya da pazar günündeysek "bu hafta sonu" bu günden başlasın.
-  const buBas = bugun.getDay() === 6 || bugun.getDay() === 0 ? bugun : cuma;
+export function hizliAraliklar(bugun = gunBasi(new Date())): { anahtar: HizliTarih; bas: Date; son: Date }[] {
+  const gun = bugun.getDay(); // 0 pazar … 6 cumartesi
+  // Bu hafta sonunun cuması: cumartesi günü dünkü cuma (giriş bugün, çıkış
+  // yarın pazar); pazar günü hafta sonu bitiyor, gelecek cuma; diğer günler bu
+  // cuma. Önceden cumartesi günü cuma gelecek haftaya kayıyor, "bu hafta sonu"
+  // 8 gece oluyordu (26 Eyl – 4 Eki).
+  const cuma = gun === 6 ? gunEkle(bugun, -1) : gun === 0 ? gunEkle(bugun, 5) : gunEkle(bugun, 5 - gun);
+  const buBas = cuma.getTime() < bugun.getTime() ? bugun : cuma;
   const buSon = gunEkle(cuma, 2);
-  const pazartesi = gunEkle(bugun, ((8 - bugun.getDay()) % 7) || 7);
+  const pazartesi = gunEkle(bugun, ((8 - gun) % 7) || 7);
   return [
-    { ad: "Bu hafta sonu", bas: buBas, son: buSon.getTime() > buBas.getTime() ? buSon : gunEkle(buBas, 1) },
-    { ad: "Gelecek hafta sonu", bas: gunEkle(cuma, 7), son: gunEkle(cuma, 9) },
-    { ad: "Bir hafta", bas: pazartesi, son: gunEkle(pazartesi, 7) },
+    { anahtar: "buHaftaSonu", bas: buBas, son: buSon },
+    { anahtar: "gelecekHaftaSonu", bas: gunEkle(cuma, 7), son: gunEkle(cuma, 9) },
+    { anahtar: "birHafta", bas: pazartesi, son: gunEkle(pazartesi, 7) },
   ];
+}
+
+const HIZLI_AD: Record<HizliTarih, string> = { buHaftaSonu: "Bu hafta sonu", gelecekHaftaSonu: "Gelecek hafta sonu", birHafta: "Bir hafta" };
+
+/** hizliAraliklar, Türkçe adıyla. */
+export function hizliTarihler(bugun = gunBasi(new Date())) {
+  return hizliAraliklar(bugun).map(({ anahtar, bas, son }) => ({ ad: HIZLI_AD[anahtar], bas, son }));
 }
 
 export function aralikMetni(bas: Date, son: Date): string {
   return bas.getMonth() === son.getMonth() ? `${bas.getDate()} – ${kisaTarih(son)}` : `${kisaTarih(bas)} – ${kisaTarih(son)}`;
+}
+
+/* ── Geçerli dilde ─────────────────────────────────────────────────── */
+
+type AramaMetinleri = ReturnType<typeof useTranslations<"arama">>;
+
+/** tarihMetni gibi, geçerli dilde: "3–5 Eki" · "3–5 Oct"; çıkış yoksa "3 Eki – ?". */
+export function tarihOzeti(d: AramaDegeri, b: Bicimleyici): string | null {
+  if (!d.giris) return null;
+  if (!d.cikis) return `${b.gunAy(d.giris)} – ?`;
+  if (d.giris.getMonth() === d.cikis.getMonth()) return `${d.giris.getDate()}–${b.gunAy(d.cikis)}`;
+  return `${b.gunAy(d.giris)} – ${b.gunAy(d.cikis)}`;
+}
+
+/** aralikMetni gibi, geçerli dilde: "3 – 5 Eki" · "3 – 5 Oct". */
+export function aralikOzeti(bas: Date, son: Date, b: Bicimleyici): string {
+  return bas.getMonth() === son.getMonth() ? `${bas.getDate()} – ${b.gunAy(son)}` : `${b.gunAy(bas)} – ${b.gunAy(son)}`;
+}
+
+/** misafirMetni gibi, geçerli dilde: "2 yetişkin, 1 çocuk" · "2 adults, 1 child". */
+export function misafirOzeti(d: AramaDegeri, t: AramaMetinleri): string {
+  return t("misafir.ozet", { yetiskin: d.yetiskin, cocuk: d.cocuklar.length });
 }

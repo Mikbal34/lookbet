@@ -4,9 +4,11 @@
 // bir bölüm açıkken ötekiler tek satır özet; altta "Tümünü temizle" ve "Ara".
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
+import { useBicim } from "@/i18n/use-bicim";
 import { Ikon } from "../ikon";
 import { MisafirPaneli, Takvim, YerPaneli } from "./paneller";
-import { BOS_ARAMA, misafirMetni, tarihMetni, type AramaDegeri, type PanelAdi } from "./durum";
+import { BOS_ARAMA, misafirOzeti, tarihOzeti, type AramaDegeri, type PanelAdi } from "./durum";
 import s from "./mobil-arama.module.css";
 
 export function MobilArama({ acik, deger, onDegis, onAra, onKapat }: {
@@ -16,6 +18,9 @@ export function MobilArama({ acik, deger, onDegis, onAra, onKapat }: {
   onAra: () => void;
   onKapat: () => void;
 }) {
+  const t = useTranslations("arama");
+  const tk = useTranslations("ortak");
+  const b = useBicim();
   const [blok, setBlok] = React.useState<PanelAdi>("yer");
   const kapatDugme = React.useRef<HTMLButtonElement>(null);
 
@@ -32,8 +37,8 @@ export function MobilArama({ acik, deger, onDegis, onAra, onKapat }: {
     };
   }, [acik, onKapat]);
 
-  const tarih = tarihMetni(deger);
-  const Blok = ({ ad, etiket, ozet, baslik, children }: {
+  const tarih = tarihOzeti(deger, b);
+  const Blok =({ ad, etiket, ozet, baslik, children }: {
     ad: PanelAdi; etiket: string; ozet: string; baslik: string; children: React.ReactNode;
   }) =>
     blok === ad ? (
@@ -49,25 +54,25 @@ export function MobilArama({ acik, deger, onDegis, onAra, onKapat }: {
     );
 
   return (
-    <div className={s.sayfa} data-acik={acik || undefined} role="dialog" aria-modal="true" aria-label="Otel ara" aria-hidden={!acik}>
-      <button ref={kapatDugme} type="button" className={s.kapat} onClick={onKapat} aria-label="Kapat">
+    <div className={s.sayfa} data-acik={acik || undefined} role="dialog" aria-modal="true" aria-label={t("otelAra")} aria-hidden={!acik}>
+      <button ref={kapatDugme} type="button" className={s.kapat} onClick={onKapat} aria-label={tk("kapat")}>
         <Ikon ad="close" boyut={18} />
       </button>
       {Blok({
         ad: "yer",
-        etiket: "Nereye",
-        ozet: deger.yer || "Esnek",
-        baslik: "Nereye gidiyorsun?",
+        etiket: t("nereye"),
+        ozet: deger.yer || t("mobil.esnek"),
+        baslik: t("nereyeGidiyorsun"),
         children: (
           <>
             <label className={s.girdi}>
               <Ikon ad="search" boyut={18} />
               <input
                 value={deger.yer}
-                placeholder="Şehir, bölge ya da otel ara"
+                placeholder={t("yerAra")}
                 autoComplete="off"
                 onChange={(e) => onDegis({ ...deger, yer: e.target.value, yerUst: null, yerId: null })}
-                aria-label="Nereye"
+                aria-label={t("nereye")}
               />
             </label>
             <YerPaneli
@@ -82,9 +87,9 @@ export function MobilArama({ acik, deger, onDegis, onAra, onKapat }: {
       })}
       {Blok({
         ad: "tarih",
-        etiket: "Ne zaman",
-        ozet: tarih ?? "Tarih ekle",
-        baslik: "Ne zaman?",
+        etiket: t("mobil.neZaman"),
+        ozet: tarih ?? t("tarihEkle"),
+        baslik: t("mobil.neZamanBaslik"),
         children: (
           <Takvim
             giris={deger.giris}
@@ -99,20 +104,20 @@ export function MobilArama({ acik, deger, onDegis, onAra, onKapat }: {
       })}
       {Blok({
         ad: "misafir",
-        etiket: "Kim",
-        ozet: misafirMetni(deger),
-        baslik: "Kimler geliyor?",
+        etiket: t("mobil.kim"),
+        ozet: misafirOzeti(deger, t),
+        baslik: t("mobil.kimBaslik"),
         children: (
           <MisafirPaneli yetiskin={deger.yetiskin} cocuklar={deger.cocuklar} onDegis={(yetiskin, cocuklar) => onDegis({ ...deger, yetiskin, cocuklar })} />
         ),
       })}
       <div className={s.alt}>
         <button type="button" className={s.metinDugme} onClick={() => { onDegis(BOS_ARAMA); setBlok("yer"); }}>
-          Tümünü temizle
+          {t("tumunuTemizle")}
         </button>
         <button type="button" className={s.ara} onClick={onAra}>
           <Ikon ad="search" boyut={18} kalinlik={2.4} />
-          Ara
+          {tk("ara")}
         </button>
       </div>
     </div>

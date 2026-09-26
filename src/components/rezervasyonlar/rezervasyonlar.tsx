@@ -10,26 +10,23 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { UstCubuk } from "@/components/lb/ust-cubuk";
 import { AltBilgi } from "@/components/lb/alt-bilgi";
 import { Ikon } from "@/components/lb/ikon";
 import { Nesne, type NesneAdi } from "@/components/lb/nesne";
 import { BOS_ARAMA, aramaAdresi } from "@/components/lb/arama/durum";
-import { para } from "@/components/otel-detay/yardimci";
-import { aralik, durumBilgisi, geceler, gunUzun, gunOku, gunYonelme, iptalDurumu, kalanGun, misafirYazi, tutar, type Rezervasyon } from "./ortak";
+import { useBicim } from "@/i18n/use-bicim";
+import {
+  aralikYerel, durumBilgisi, geceler, gunOku, gunUzunYerel, gunYonelmeYerel, iptalDurumu, kalanGun, misafirYerel, tutar, type Rezervasyon,
+} from "./ortak";
 import s from "./rezervasyonlar.module.css";
 
 type Sekme = "gelecek" | "gecmis" | "iptal";
-const SEKMELER: { k: Sekme; ad: string }[] = [
-  { k: "gelecek", ad: "Yaklaşan" },
-  { k: "gecmis", ad: "Geçmiş" },
-  { k: "iptal", ad: "İptal edilen" },
-];
-const BOS: Record<Sekme, { nesne: NesneAdi; baslik: string; metin: string }> = {
-  gelecek: { nesne: "bavul", baslik: "Henüz bir seyahat planlamadın", metin: "Bir otel seçtiğinde rezervasyonun burada görünür." },
-  gecmis: { nesne: "kartpostal", baslik: "Tamamlanan konaklaman yok", metin: "Konakladığın oteller burada birikir; beğendiğine tek dokunuşla yeniden gidebilirsin." },
-  iptal: { nesne: "iptal", baslik: "İptal edilen rezervasyon yok", metin: "İptal ettiğin rezervasyonlar ve iptal ücretleri burada görünür." },
-};
+/** Sekme adları: rezervasyon.liste.sekme.<k>. */
+const SEKMELER: { k: Sekme }[] = [{ k: "gelecek" }, { k: "gecmis" }, { k: "iptal" }];
+/** Boş sekme görseli; metinler rezervasyon.liste.bos.<sekme>. */
+const BOS_NESNE: Record<Sekme, NesneAdi> = { gelecek: "bavul", gecmis: "kartpostal", iptal: "iptal" };
 
 interface Yanit {
   data: Rezervasyon[];
@@ -52,6 +49,8 @@ function tekil(liste: Rezervasyon[]) {
 }
 
 export function Rezervasyonlar() {
+  const t = useTranslations("rezervasyon");
+  const tk = useTranslations("ortak");
   const router = useRouter();
   const params = useSearchParams();
   const sekme = (SEKMELER.find((x) => x.k === params.get("sekme"))?.k ?? "gelecek") as Sekme;
@@ -95,7 +94,7 @@ export function Rezervasyonlar() {
   let govde: React.ReactNode;
   if (q.isPending) {
     govde = (
-      <div className={s.satirlar} aria-busy="true" aria-label="Rezervasyonlar yükleniyor">
+      <div className={s.satirlar} aria-busy="true" aria-label={t("liste.yukleniyor")}>
         {sekme === "gelecek" && <div className={`${s.iskelet} ${s.iskeletBuyuk}`} />}
         {[0, 1].map((i) => <div key={i} className={s.iskelet} />)}
       </div>
@@ -105,19 +104,18 @@ export function Rezervasyonlar() {
     govde = (
       <div className={s.bos}>
         <Nesne ad="zil" boyut={96} />
-        <h2 className="lb-y">Rezervasyonlar şu an alınamadı</h2>
-        <p>Bağlantıda bir sorun oldu; birazdan tekrar dene.</p>
-        <button type="button" className={`${s.dugme} ${s.siyah}`} onClick={() => q.refetch()}>Tekrar dene</button>
+        <h2 className="lb-y">{t("liste.hata")}</h2>
+        <p>{t("baglantiHatasi")}</p>
+        <button type="button" className={`${s.dugme} ${s.siyah}`} onClick={() => q.refetch()}>{tk("tekrarDene")}</button>
       </div>
     );
   } else if (!liste.length) {
-    const b = BOS[sekme];
     govde = (
       <div className={s.bos}>
-        <Nesne ad={b.nesne} boyut={110} />
-        <h2 className="lb-y">{b.baslik}</h2>
-        <p>{b.metin}</p>
-        {sekme !== "iptal" && <Link href="/" className={`${s.dugme} ${s.turuncu}`}>Otel ara</Link>}
+        <Nesne ad={BOS_NESNE[sekme]} boyut={110} />
+        <h2 className="lb-y">{t(`liste.bos.${sekme}.baslik`)}</h2>
+        <p>{t(`liste.bos.${sekme}.metin`)}</p>
+        {sekme !== "iptal" && <Link href="/" className={`${s.dugme} ${s.turuncu}`}>{t("liste.otelAra")}</Link>}
       </div>
     );
   } else if (sekme === "gelecek") {
@@ -127,7 +125,7 @@ export function Rezervasyonlar() {
         <SahneKart r={ilk} simdi={simdi} />
         {diger.length > 0 && (
           <>
-            <h2 className={s.altBaslik}>Sonraki konaklamalar</h2>
+            <h2 className={s.altBaslik}>{t("liste.sonrakiler")}</h2>
             <div className={s.satirlar}>{diger.map((r) => <SatirKart key={r.id} r={r} simdi={simdi} />)}</div>
           </>
         )}
@@ -144,8 +142,8 @@ export function Rezervasyonlar() {
       <UstCubuk deger={arama} onDegis={setArama} onAra={() => router.push(aramaAdresi(arama))} />
       <main className={s.dis}>
         <div className={s.listeBas}>
-          <h1 className="lb-y">Rezervasyonlarım</h1>
-          <div ref={sekmeKok} className={s.sekmeler} role="tablist" aria-label="Rezervasyonlar">
+          <h1 className="lb-y">{t("baslik")}</h1>
+          <div ref={sekmeKok} className={s.sekmeler} role="tablist" aria-label={t("liste.sekmeler")}>
             {gosterge && <span className={s.gosterge} style={{ width: gosterge.w, transform: `translateX(${gosterge.x - 4}px)` }} aria-hidden="true" />}
             {SEKMELER.map((x, i) => (
               <button
@@ -164,7 +162,7 @@ export function Rezervasyonlar() {
                   sekmeKok.current?.querySelector<HTMLElement>(`#sekme-${y.k}`)?.focus();
                 }}
               >
-                {x.ad}
+                {t(`liste.sekme.${x.k}`)}
                 {sayilar && <span>{sayilar[x.k]}</span>}
               </button>
             ))}
@@ -181,19 +179,19 @@ export function Rezervasyonlar() {
                 aria-busy={q.isFetchingNextPage || undefined}
                 onClick={() => q.fetchNextPage()}
               >
-                {q.isFetchingNextPage ? "Yükleniyor…" : "Daha fazla göster"}
+                {q.isFetchingNextPage ? tk("yukleniyor") : tk("dahaFazla")}
               </button>
-              {q.isFetchNextPageError && <small role="alert">Devamı yüklenemedi, tekrar dene.</small>}
+              {q.isFetchNextPageError && <small role="alert">{t("liste.devamHata")}</small>}
             </div>
           )}
           {sekme === "gelecek" && !q.isPending && (
             <div className={s.yardim}>
               <Nesne ad="zil" boyut={52} />
               <div>
-                <b>Bir sorun mu var?</b>
-                <span>Tarih değişikliği, özel istek ya da iptal için yardım merkezine bakabilirsin.</span>
+                <b>{t("liste.yardimBaslik")}</b>
+                <span>{t("liste.yardimMetin")}</span>
               </div>
-              <Link href="/yardim" className={`${s.dugme} ${s.cerceve}`}>Yardım merkezi</Link>
+              <Link href="/yardim" className={`${s.dugme} ${s.cerceve}`}>{t("yardimMerkezi")}</Link>
             </div>
           )}
         </div>
@@ -204,8 +202,9 @@ export function Rezervasyonlar() {
 }
 
 function Rozet({ r, simdi }: { r: Rezervasyon; simdi: number }) {
+  const t = useTranslations("rezervasyon");
   const d = durumBilgisi(r, simdi);
-  return <span className={s.rozet} data-renk={d.renk}>{d.ad}</span>;
+  return <span className={s.rozet} data-renk={d.renk}>{t(`durum.${d.kod}`)}</span>;
 }
 
 function Foto({ r }: { r: Rezervasyon }) {
@@ -213,33 +212,36 @@ function Foto({ r }: { r: Rezervasyon }) {
 }
 
 function SahneKart({ r, simdi }: { r: Rezervasyon; simdi: number }) {
+  const t = useTranslations("rezervasyon");
+  const tk = useTranslations("ortak");
+  const b = useBicim();
   const kalan = kalanGun(r, simdi);
   const ip = iptalDurumu(r, simdi);
-  const misafir = misafirYazi(r);
+  const misafir = misafirYerel(t, r);
   return (
     <article className={s.sahne}>
-      <Link href={`/reservations/${r.id}`} className={s.sahneFoto} aria-label={`${r.hotelName ?? "Otel"} rezervasyon ayrıntıları`}>
+      <Link href={`/reservations/${r.id}`} className={s.sahneFoto} aria-label={t("liste.ayrintiEtiket", { otel: r.hotelName ?? t("otel") })}>
         <Foto r={r} />
         <Rozet r={r} simdi={simdi} />
       </Link>
       <div className={s.sahneIc}>
         <p className={s.kalan}>
           <Nesne ad="anahtar-karti" boyut={40} />
-          <span>{kalan > 0 ? <><b className="lb-y">{kalan} gün</b> kaldı</> : kalan === 0 ? <b className="lb-y">Giriş bugün</b> : <b className="lb-y">Konaklaman sürüyor</b>}</span>
+          <span>{kalan > 0 ? t.rich("kalan.gun", { sayi: kalan, b: (c) => <b className="lb-y">{c}</b> }) : kalan === 0 ? <b className="lb-y">{t("kalan.bugun")}</b> : <b className="lb-y">{t("kalan.suruyor")}</b>}</span>
         </p>
         <h2 className="lb-y"><Link href={`/reservations/${r.id}`}>{r.hotelName ?? r.hotelCode}</Link></h2>
         {(r.hotel?.stars || r.hotel?.place) && (
-          <p className={s.soluk}>{[r.hotel?.stars ? `${r.hotel.stars} yıldızlı` : null, r.hotel?.place].filter(Boolean).join(" · ")}</p>
+          <p className={s.soluk}>{[r.hotel?.stars ? tk("yildizli", { sayi: r.hotel.stars }) : null, r.hotel?.place].filter(Boolean).join(" · ")}</p>
         )}
         <div className={s.girisCikis}>
           <div>
-            <small>Giriş</small>
-            <b>{gunUzun(gunOku(r.checkIn))}</b>
+            <small>{t("giris")}</small>
+            <b>{gunUzunYerel(b, gunOku(r.checkIn))}</b>
           </div>
           <Ikon ad="arrow-right" boyut={20} className={s.ok} />
           <div>
-            <small>Çıkış</small>
-            <b>{gunUzun(gunOku(r.checkOut))}</b>
+            <small>{t("cikis")}</small>
+            <b>{gunUzunYerel(b, gunOku(r.checkOut))}</b>
           </div>
         </div>
         <p className={s.odaSatir}>
@@ -249,12 +251,12 @@ function SahneKart({ r, simdi }: { r: Rezervasyon; simdi: number }) {
         {ip.ucretsizSon && (
           <p className={s.yesilSatir}>
             <Ikon ad="check" boyut={16} kalinlik={2.1} />
-            {gunYonelme(ip.ucretsizSon)} kadar ücretsiz iptal
+            {t("ucretsizIptal", { tarih: gunYonelmeYerel(b, ip.ucretsizSon) })}
           </p>
         )}
         <div className={s.sahneAlt}>
-          <Link href={`/reservations/${r.id}`} className={`${s.dugme} ${s.siyah}`}>Ayrıntılar</Link>
-          {r.bookingNumber && <Kopyala etiket="Rezervasyon no" deger={r.bookingNumber} />}
+          <Link href={`/reservations/${r.id}`} className={`${s.dugme} ${s.siyah}`}>{t("liste.ayrintilar")}</Link>
+          {r.bookingNumber && <Kopyala etiket={t("rezervasyonNo")} deger={r.bookingNumber} />}
         </div>
       </div>
     </article>
@@ -262,23 +264,29 @@ function SahneKart({ r, simdi }: { r: Rezervasyon; simdi: number }) {
 }
 
 function SatirKart({ r, simdi, soluk }: { r: Rezervasyon; simdi: number; soluk?: boolean }) {
+  const t = useTranslations("rezervasyon");
+  const tk = useTranslations("ortak");
+  const b = useBicim();
   const kalan = kalanGun(r, simdi);
   const alt = soluk
-    ? [r.status === "CANCELLED" ? `${gunKisaTarih(r.updatedAt)} tarihinde iptal edildi` : "Rezervasyon tamamlanamadı", r.cancellationFee != null ? `iptal ücreti ${para(r.cancellationFee, r.cancellationFeeCurrency || r.currency)}` : null]
+    ? [
+        r.status === "CANCELLED" ? t("liste.iptalTarihi", { tarih: b.gunAyYil(new Date(r.updatedAt)) }) : t("liste.tamamlanamadi"),
+        r.cancellationFee != null ? t("liste.iptalUcreti", { tutar: b.para(r.cancellationFee, r.cancellationFeeCurrency || r.currency) }) : null,
+      ]
         .filter(Boolean)
         .join(" · ")
-    : [r.roomType, misafirYazi(r)].filter(Boolean).join(" · ");
+    : [r.roomType, misafirYerel(t, r)].filter(Boolean).join(" · ");
   return (
     <Link href={`/reservations/${r.id}`} className={s.satir} data-soluk={soluk || undefined}>
       <span className={s.satirFoto}><Foto r={r} /></span>
       <span className={s.satirIc}>
         <b>{r.hotelName ?? r.hotelCode}</b>
-        <span>{aralik(r)} · {geceler(r)} gece</span>
+        <span>{aralikYerel(b, r)} · {tk("gece", { sayi: geceler(r) })}</span>
         {alt && <span>{alt}</span>}
       </span>
       <span className={s.satirSag}>
         <Rozet r={r} simdi={simdi} />
-        {!soluk && kalan > 0 && <span>{kalan} gün sonra</span>}
+        {!soluk && kalan > 0 && <span>{t("liste.gunSonra", { sayi: kalan })}</span>}
       </span>
       <Ikon ad="chevron-right" boyut={20} className={s.okIkon} />
     </Link>
@@ -286,28 +294,27 @@ function SatirKart({ r, simdi, soluk }: { r: Rezervasyon; simdi: number; soluk?:
 }
 
 function GecmisKart({ r }: { r: Rezervasyon }) {
+  const t = useTranslations("rezervasyon");
+  const tk = useTranslations("ortak");
+  const b = useBicim();
   return (
     <article className={s.gecmis}>
       <Link href={`/reservations/${r.id}`} className={s.gecmisFoto}><Foto r={r} /></Link>
       <div>
         <h3><Link href={`/reservations/${r.id}`}>{r.hotelName ?? r.hotelCode}</Link></h3>
         {r.hotel?.place && <p>{r.hotel.place}</p>}
-        <p>{aralik(r)} · {geceler(r)} gece</p>
+        <p>{aralikYerel(b, r)} · {tk("gece", { sayi: geceler(r) })}</p>
       </div>
       <div className={s.gecmisAlt}>
-        <Link href={`/hotel/${r.hotelCode}`} className={s.metinDugme}>Tekrar rezervasyon yap</Link>
-        <span>{para(tutar(r), r.currency)}</span>
+        <Link href={`/hotel/${r.hotelCode}`} className={s.metinDugme}>{t("tekrarRezervasyon")}</Link>
+        <span>{b.para(tutar(r), r.currency)}</span>
       </div>
     </article>
   );
 }
 
-const gunKisaTarih = (iso: string) => {
-  const d = new Date(iso);
-  return d.toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" });
-};
-
 export function Kopyala({ etiket, deger }: { etiket: string; deger: string }) {
+  const t = useTranslations("rezervasyon");
   const [tamam, setTamam] = React.useState(false);
   return (
     <span className={s.kopya}>
@@ -315,7 +322,7 @@ export function Kopyala({ etiket, deger }: { etiket: string; deger: string }) {
       <b>{deger}</b>
       <button
         type="button"
-        aria-label={`${etiket || "Numarayı"} kopyala`}
+        aria-label={etiket ? t("kopyala", { etiket }) : t("numarayiKopyala")}
         onClick={async (e) => {
           e.preventDefault();
           try {
