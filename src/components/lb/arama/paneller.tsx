@@ -24,7 +24,7 @@ const POPULER: { ad: string; ust: string; alt: string; nesne: NesneAdi }[] = [
 
 interface KonumOnerisi { id: string; ad: string; ust: string | null; tur: string; otel: number }
 
-export function YerPaneli({ yazilan, onSec }: { yazilan: string; onSec: (ad: string, ust: string | null) => void }) {
+export function YerPaneli({ yazilan, onSec }: { yazilan: string; onSec: (ad: string, ust: string | null, id?: string | null) => void }) {
   const [oneriler, setOneriler] = React.useState<KonumOnerisi[] | null>(null);
   const q = yazilan.trim();
   React.useEffect(() => {
@@ -70,7 +70,7 @@ export function YerPaneli({ yazilan, onSec }: { yazilan: string; onSec: (ad: str
   return (
     <div>
       {oneriler.map((o) => (
-        <button key={o.id} type="button" className={s.yer} onClick={() => onSec(o.ad, o.ust)}>
+        <button key={o.id} type="button" className={s.yer} onClick={() => onSec(o.ad, o.ust, o.id)}>
           <span className={s.kutu}><Ikon ad="pin" boyut={20} /></span>
           <span>
             <b>{o.ad}</b>

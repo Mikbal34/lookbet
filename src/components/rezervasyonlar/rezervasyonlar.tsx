@@ -3,12 +3,13 @@
 
 // Rezervasyonlarım: Yaklaşan / Geçmiş / İptal edilen sekmeleri. Sıradaki
 // konaklama büyük kartta (kalan gün, giriş-çıkış, ücretsiz iptal), diğerleri
-// satır kartlarında; geçmiş konaklamalar fotoğraflı ızgarada.
+// satır kartlarında; geçmiş konaklamalar fotoğraflı ızgarada. Her sekme
+// sayfa sayfa gelir ("Daha fazla göster").
 
 import * as React from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { UstCubuk } from "@/components/lb/ust-cubuk";
 import { AltBilgi } from "@/components/lb/alt-bilgi";
 import { Ikon } from "@/components/lb/ikon";
@@ -33,9 +34,22 @@ const BOS: Record<Sekme, { nesne: NesneAdi; baslik: string; metin: string }> = {
 interface Yanit {
   data: Rezervasyon[];
   sayilar?: Record<Sekme, number>;
+  pagination: { total: number; page: number; limit: number; totalPages: number };
 }
 
+/** Sekme başına sayfa (ızgaranın 2 ve 3 sütununa bölünür). */
+const SAYFA = 24;
 const simdiAl = () => Date.now();
+
+/** Sayfa sınırında aynı kayıt iki kez gelebilir (sıra anahtarı eşitse): yinelenenleri at. */
+function tekil(liste: Rezervasyon[]) {
+  const gorulen = new Set<string>();
+  return liste.filter((r) => {
+    if (gorulen.has(r.id)) return false;
+    gorulen.add(r.id);
+    return true;
+  });
+}
 
 export function Rezervasyonlar() {
   const router = useRouter();
@@ -44,17 +58,23 @@ export function Rezervasyonlar() {
   const [simdi] = React.useState(simdiAl);
   const [arama, setArama] = React.useState(BOS_ARAMA);
 
-  const q = useQuery<Yanit>({
-    queryKey: ["rezervasyonlar", sekme],
-    queryFn: async () => {
-      const r = await fetch(`/api/reservations?zaman=${sekme}&limit=50`);
+  const q = useInfiniteQuery({
+    // "liste": yardım sayfasının ["rezervasyonlar", "gelecek"] sorgusu (5 kayıt, sayfasız) ayrı kalsın;
+    // iptal sonrası ["rezervasyonlar"] ikisini de tazeler.
+    queryKey: ["rezervasyonlar", "liste", sekme],
+    queryFn: async ({ pageParam }): Promise<Yanit> => {
+      const r = await fetch(`/api/reservations?zaman=${sekme}&limit=${SAYFA}&page=${pageParam}`);
       if (!r.ok) throw new Error("Rezervasyonlar alınamadı");
       return r.json();
     },
+    initialPageParam: 1,
+    getNextPageParam: (son) => (son.pagination.page < son.pagination.totalPages ? son.pagination.page + 1 : undefined),
     staleTime: 60_000,
   });
+  // Sekme sayıları her sayfada gelir; sekme değişirken eskisi görünsün.
   const [sayilar, setSayilar] = React.useState<Record<Sekme, number> | null>(null);
-  if (q.data?.sayilar && q.data.sayilar !== sayilar) setSayilar(q.data.sayilar);
+  const sonSayilar = q.data?.pages.at(-1)?.sayilar;
+  if (sonSayilar && sonSayilar !== sayilar) setSayilar(sonSayilar);
 
   const sekmeSec = (k: Sekme) => router.replace(k === "gelecek" ? "/reservations" : `/reservations?sekme=${k}`, { scroll: false });
 
@@ -71,7 +91,7 @@ export function Rezervasyonlar() {
     return () => removeEventListener("resize", olc);
   }, [sekme, sayilar]);
 
-  const liste = q.data?.data ?? [];
+  const liste = React.useMemo(() => tekil(q.data?.pages.flatMap((p) => p.data) ?? []), [q.data]);
   let govde: React.ReactNode;
   if (q.isPending) {
     govde = (
@@ -80,7 +100,8 @@ export function Rezervasyonlar() {
         {[0, 1].map((i) => <div key={i} className={s.iskelet} />)}
       </div>
     );
-  } else if (q.isError) {
+  } else if (!q.data) {
+    // İlk yükleme hatası; devam sayfası hatasında liste yerinde kalır.
     govde = (
       <div className={s.bos}>
         <Nesne ad="zil" boyut={96} />
@@ -151,6 +172,20 @@ export function Rezervasyonlar() {
         </div>
         <div className={s.panel} id="rez-panel" role="tabpanel" aria-labelledby={`sekme-${sekme}`}>
           {govde}
+          {q.data && q.hasNextPage && (
+            <div className={s.dahaFazla}>
+              <button
+                type="button"
+                className={`${s.dugme} ${s.cerceve}`}
+                disabled={q.isFetchingNextPage}
+                aria-busy={q.isFetchingNextPage || undefined}
+                onClick={() => q.fetchNextPage()}
+              >
+                {q.isFetchingNextPage ? "Yükleniyor…" : "Daha fazla göster"}
+              </button>
+              {q.isFetchNextPageError && <small role="alert">Devamı yüklenemedi, tekrar dene.</small>}
+            </div>
+          )}
           {sekme === "gelecek" && !q.isPending && (
             <div className={s.yardim}>
               <Nesne ad="zil" boyut={52} />

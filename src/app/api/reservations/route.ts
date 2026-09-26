@@ -108,12 +108,16 @@ export async function GET(request: NextRequest) {
         skip,
         take: limit,
         // Gelecek: girişe en yakın önce. Geçmiş ve varsayılan: en yeni önce.
-        orderBy:
+        // İkinci anahtar id: aynı tarihli kayıtlar sayfalar arasında atlanmasın
+        // ya da tekrarlanmasın.
+        orderBy: [
           upcoming || zaman === "gelecek"
-            ? { checkIn: "asc" }
+            ? { checkIn: "asc" as const }
             : zaman === "gecmis"
-              ? { checkIn: "desc" }
-              : { createdAt: "desc" },
+              ? { checkIn: "desc" as const }
+              : { createdAt: "desc" as const },
+          { id: "asc" as const },
+        ],
         include: {
           user: { select: { id: true, name: true, email: true } },
           agency: { select: { id: true, companyName: true } },

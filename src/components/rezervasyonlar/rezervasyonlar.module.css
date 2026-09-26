@@ -129,6 +129,9 @@
 .gecmisAlt { display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
 .gecmisAlt span { color: var(--lb-soluk); }
 
+.dahaFazla { display: grid; justify-items: center; gap: 8px; }
+.dahaFazla small { color: var(--lb-kirmizi); font-size: 13.5px; }
+
 .yardim { display: grid; grid-template-columns: 52px 1fr auto; align-items: center; gap: 18px; padding: 18px 22px; border-radius: 20px; background: var(--lb-kart); }
 .yardim b { display: block; }
 .yardim span { color: var(--lb-soluk); font-size: 14px; }

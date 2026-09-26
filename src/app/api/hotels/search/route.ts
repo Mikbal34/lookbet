@@ -172,7 +172,7 @@ async function aramayiYurut(
   // Yazılanı otel kodlarına çevir — konum adında, bulunamazsa otel adında.
   // Etscore şehre göre arama sunmuyor, eşleşme bizim veritabanımızda
   // (bkz. lib/otel-arama.ts).
-  const hedef = await hedefOtelKodlari(input.destination);
+  const hedef = await hedefOtelKodlari(input.destination, input.locationId);
   if (hedef.kodlar.length === 0) {
     dinle.onBas?.("", hedef.eslesme);
     return { searchId: "", hotels: [], eslesme: hedef.eslesme };

@@ -6,12 +6,13 @@
 // rayda diğer odalar küçük fotoğraf + fiyatla durur; tıklayınca (ya da ↑ ↓)
 // içerik yumuşakça değişir.
 
+import { useFiyat } from "@/components/lb/fiyat";
 import * as React from "react";
 import { Ikon } from "@/components/lb/ikon";
 import { Nesne } from "@/components/lb/nesne";
 import { Govdeye, useKatman } from "@/components/lb/pencere";
 import type { RoomResult } from "@/lib/royal-api/types";
-import { iptalOzeti, odaOzellikleri, para } from "./yardimci";
+import { iptalOzeti, odaOzellikleri } from "./yardimci";
 import s from "./oda-penceresi.module.css";
 
 export type Oda = RoomResult & {
@@ -42,6 +43,7 @@ export function OdaPenceresi({ baslangic, odalar, gece, misafir, seciliKod, onSe
   onKapat: () => void;
   onFoto: (o: Oda, j: number) => void;
 }) {
+  const { yaz } = useFiyat();
   const [kod, setKod] = React.useState(baslangic);
   const [onceki, setOnceki] = React.useState(baslangic);
   const [degisiyor, setDegisiyor] = React.useState(false);
@@ -103,12 +105,12 @@ export function OdaPenceresi({ baslangic, odalar, gece, misafir, seciliKod, onSe
                 key={o.priceCode}
                 type="button"
                 aria-current={o.priceCode === kod}
-                aria-label={`${o.roomName}, ${o.boardTypeName}, ${para(odaToplami(o), o.currency)}`}
+                aria-label={`${o.roomName}, ${o.boardTypeName}, ${yaz(odaToplami(o), o.currency)}`}
                 onClick={() => degistir(o.priceCode)}
                 tabIndex={acik ? 0 : -1}
               >
                 <span>{o.images[0] ? <img src={o.images[0]} alt="" loading="lazy" /> : <Nesne ad="zil" boyut={34} />}</span>
-                <small>{para(odaToplami(o), o.currency)}</small>
+                <small>{yaz(odaToplami(o), o.currency)}</small>
               </button>
             ))}
           </nav>
@@ -135,6 +137,7 @@ function OdaIcerik({ oda, gece, misafir, secili, onSec, onDevam, onFoto, sagRef 
   onFoto: (o: Oda, j: number) => void;
   sagRef: React.RefObject<HTMLDivElement | null>;
 }) {
+  const { yaz } = useFiyat();
   const g = oda.images;
   const fazla = g.length - 3;
   const toplam = odaToplami(oda);
@@ -191,7 +194,7 @@ function OdaIcerik({ oda, gece, misafir, secili, onSec, onDevam, onFoto, sagRef 
               {ip.ceza && (
                 <div className={s.ceza}>
                   <b>{ip.ucretsiz ? `${ip.ceza.gun}, saat ${ip.ceza.saat} ve sonrası` : "İade edilmez"}</b>
-                  <span>İptal ücreti {para(ip.ceza.tutar, ip.ceza.para)}{ip.ceza.tutar >= toplam ? " (toplam tutar)" : ""}</span>
+                  <span>İptal ücreti {yaz(ip.ceza.tutar, ip.ceza.para)}{ip.ceza.tutar >= toplam ? " (toplam tutar)" : ""}</span>
                 </div>
               )}
               {!ip.ucretsiz && !ip.ceza && <p className={s.soluk}>İptal koşulları rezervasyon adımında gösterilir.</p>}
@@ -201,31 +204,31 @@ function OdaIcerik({ oda, gece, misafir, secili, onSec, onDevam, onFoto, sagRef 
             <h3>Fiyat</h3>
             <div className={s.dokum}>
               <div>
-                <span>{para(onceki / gece, oda.currency)} × {gece} gece</span>
-                <span>{para(onceki, oda.currency)}</span>
+                <span>{yaz(onceki / gece, oda.currency)} × {gece} gece</span>
+                <span>{yaz(onceki, oda.currency)}</span>
               </div>
               {kampanya && (
                 <div className={s.indirim}>
                   <span>{kampanya.ad} %{kampanya.yuzde}</span>
-                  <span>−{para(kampanya.tutar, oda.currency)}</span>
+                  <span>−{yaz(kampanya.tutar, oda.currency)}</span>
                 </div>
               )}
               {acenteIndirimi >= 0.5 && (
                 <div className={s.indirim}>
                   <span>Acente indirimi</span>
-                  <span>−{para(acenteIndirimi, oda.currency)}</span>
+                  <span>−{yaz(acenteIndirimi, oda.currency)}</span>
                 </div>
               )}
               <div className={s.toplam}>
                 <span>Toplam</span>
-                <span>{para(toplam, oda.currency)}</span>
+                <span>{yaz(toplam, oda.currency)}</span>
               </div>
             </div>
           </section>
         </div>
         <div className={s.altCubuk}>
           <div>
-            <b className="lb-y">{para(toplam, oda.currency)}</b>
+            <b className="lb-y">{yaz(toplam, oda.currency)}</b>
             <span>{gece} gece, vergiler dahil</span>
           </div>
           <button type="button" className={s.dugme} onClick={() => (secili ? onDevam() : onSec(oda))}>

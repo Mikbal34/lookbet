@@ -3,6 +3,7 @@
 // Filtreler penceresi (Airbnb gibi): taslak üzerinde çalışır, alttaki düğme
 // canlı sonuç sayısını gösterir ve "göster" ile uygulanır.
 
+import { useFiyat } from "@/components/lb/fiyat";
 import * as React from "react";
 import { Govdeye } from "@/components/lb/pencere";
 import { Ikon } from "@/components/lb/ikon";
@@ -30,6 +31,8 @@ export function FiltrePenceresi({ acik, filtre, oteller, pansiyonlar, uyruk, par
   onUygula: (f: Filtre, uyruk: string) => void;
   onKapat: () => void;
 }) {
+  // Fiyat etiketleri seçilen para biriminde (filtre değerleri EUR kalır).
+  const { yaz } = useFiyat();
   const [t, setT] = React.useState(filtre);
   const [u, setU] = React.useState(uyruk);
   const kapatDugme = React.useRef<HTMLButtonElement>(null);
@@ -67,7 +70,7 @@ export function FiltrePenceresi({ acik, filtre, oteller, pansiyonlar, uyruk, par
   const tMin = t.min ?? enAz, tMax = t.max ?? enCok;
   const oran = (v: number) => (enCok > enAz ? (v - enAz) / (enCok - enAz) : 0);
   const sayi = oteller.filter((h) => uyar(h, t)).length;
-  const para = (n: number) => new Intl.NumberFormat("tr-TR", { style: "currency", currency: paraBirimi, maximumFractionDigits: 0 }).format(n);
+  const para = (n: number) => yaz(n, paraBirimi);
 
   const degis = (p: Partial<Filtre>) => setT((x) => ({ ...x, ...p }));
 

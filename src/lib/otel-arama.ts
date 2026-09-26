@@ -47,17 +47,21 @@ export interface HedefSonucu {
  *     veya otel" diyor.
  *  3. İkisi de yoksa BOŞ döner. Eski rota bu durumda tüm otelleri arıyordu:
  *     mock'ta zararsızdı, gerçek API'de 15.679 otel ≈ 80 çağrı demek.
+ *
+ * `konumId` (öneriden seçilen konum) verildiyse ad yerine o konumun alt
+ * ağacı aranır: aynı adlı konumlar (üç ayrı "Bodrum") karışmaz. Konum
+ * bulunamazsa ada göre aramaya düşer.
  */
-export async function hedefOtelKodlari(yazilan: string): Promise<HedefSonucu> {
+export async function hedefOtelKodlari(yazilan: string, konumId?: string | null): Promise<HedefSonucu> {
   const q = katla(yazilan);
-  if (q.length < 2) return { kodlar: [], eslesme: "yok", kesilen: 0 };
+  if (q.length < 2 && !konumId) return { kodlar: [], eslesme: "yok", kesilen: 0 };
   const desen = `%${likeKacir(q)}%`;
 
-  // 1) Konumlar
-  const konumlar = await prisma.$queryRawUnsafe<{ id: string }[]>(
-    `SELECT id FROM locations WHERE ${TR_KATLA("name")} LIKE $1`,
-    desen
-  );
+  // 1) Konumlar: öneriden seçildiyse yalnız o konum, yoksa adla eşleşenler.
+  const secilen = konumId ? await prisma.location.findUnique({ where: { id: konumId }, select: { id: true } }) : null;
+  const konumlar = secilen
+    ? [secilen]
+    : await prisma.$queryRawUnsafe<{ id: string }[]>(`SELECT id FROM locations WHERE ${TR_KATLA("name")} LIKE $1`, desen);
 
   const tumKonumlar = new Set(konumlar.map((k) => k.id));
   let sinir = [...tumKonumlar];

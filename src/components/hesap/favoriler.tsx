@@ -1,11 +1,13 @@
 "use client";
 
-// Favoriler: kalbe basılan oteller (şimdilik bu cihazda). Her otelin kartı
-// /api/hotels/{kod} ile doldurulur; kalbe tekrar basınca listeden çıkar.
+// Favoriler: kalbe basılan oteller (girişliyken hesapta, girişsiz bu cihazda).
+// Her otelin kartı /api/hotels/{kod} ile doldurulur; kalbe tekrar basınca
+// listeden çıkar.
 
 import * as React from "react";
 import Link from "next/link";
 import { useQueries } from "@tanstack/react-query";
+import { useSession } from "next-auth/react";
 import { useFavoriler } from "@/components/lb/favoriler";
 import { OtelKarti, OtelKartiIskelet } from "@/components/lb/otel-karti";
 import { Nesne } from "@/components/lb/nesne";
@@ -24,6 +26,7 @@ interface FavOtel {
 
 export function Favoriler() {
   const { fav, degistir, hazir } = useFavoriler();
+  const girisli = useSession().status === "authenticated";
   // Kalpten çıkarılan kart hemen kaybolmasın: sayfa açıkken sırayı koru, geri eklenebilsin.
   const [kodlar, setKodlar] = React.useState<string[] | null>(null);
   if (hazir && kodlar === null) setKodlar([...fav].reverse());
@@ -85,7 +88,11 @@ export function Favoriler() {
       <div className={s.favBas}>
         <div>
           <h1 className="lb-y">Favoriler</h1>
-          <p>{sayi ? `${sayi} otel · bu cihazda kayıtlı` : "Bu cihazda kalbe bastığın oteller"}</p>
+          <p>
+            {girisli
+              ? sayi ? `${sayi} otel · hesabına kayıtlı` : "Kalbe bastığın oteller hesabına kaydedilir"
+              : sayi ? `${sayi} otel · giriş yaptığında hesabına kaydedilir` : "Giriş yaptığında favorilerin hesabına kaydedilir"}
+          </p>
         </div>
       </div>
       {govde}

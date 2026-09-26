@@ -27,6 +27,7 @@ const kayitlar = new Map<string, AramaKaydi & { zaman: number }>();
 
 export function aramaAnahtari(a: {
   destination: string;
+  locationId?: string;
   checkIn: string;
   checkOut: string;
   rooms: { adult: number; childAges?: number[] }[];
@@ -36,6 +37,7 @@ export function aramaAnahtari(a: {
 }): string {
   return JSON.stringify([
     katla(a.destination),
+    a.locationId ?? null,
     a.checkIn,
     a.checkOut,
     a.rooms.map((r) => [r.adult, r.childAges ?? []]),

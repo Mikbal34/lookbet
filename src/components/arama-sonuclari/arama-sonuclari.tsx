@@ -5,6 +5,8 @@
 // ve sayfalama istemcide. Harita o anki sayfanın otellerini gösterir; karta
 // gelince iğnesi öne çıkar.
 
+import { useFiyat } from "@/components/lb/fiyat";
+import { useUyruk } from "@/components/lb/uyruk";
 import { kampanyaEtiketi } from "@/lib/kampanya-etiket";
 import { Bekleme, DonenMetin } from "@/components/lb/bekleme";
 import * as React from "react";
@@ -43,23 +45,33 @@ export function AramaSonuclari({ params }: { params: URLSearchParams }) {
   const { fav, degistir: favDegistir } = useFavoriler();
 
   const hedef = params.get("destination") ?? "";
+  const konum = params.get("konum");
   const giris = params.get("checkIn") ?? "";
   const cikis = params.get("checkOut") ?? "";
   const yetiskin = parseInt(params.get("adults") ?? "2", 10) || 2;
   const cocukMetni = params.get("childAges") ?? "";
   const cocuklar = cocukMetni.split(",").filter(Boolean).map(Number);
-  const uyruk = params.get("nationality") ?? "TR";
+  const { uyruk, hazir: uyrukHazir } = useUyruk(params.get("nationality"));
   const paraBirimi = params.get("currency") ?? "EUR";
+  const { yaz } = useFiyat();
 
   const payload = React.useMemo(() => {
     const yaslar = cocukMetni.split(",").filter(Boolean).map(Number);
-    return { destination: hedef, checkIn: giris, checkOut: cikis, nationality: uyruk, currency: paraBirimi, rooms: [{ adult: yetiskin, childAges: yaslar.length ? yaslar : undefined }] };
-  }, [hedef, giris, cikis, uyruk, paraBirimi, yetiskin, cocukMetni]);
-  const etkin = !!(hedef && giris && cikis);
+    return {
+      destination: hedef,
+      ...(konum ? { locationId: konum } : {}),
+      checkIn: giris,
+      checkOut: cikis,
+      nationality: uyruk,
+      currency: paraBirimi,
+      rooms: [{ adult: yetiskin, childAges: yaslar.length ? yaslar : undefined }],
+    };
+  }, [hedef, konum, giris, cikis, uyruk, paraBirimi, yetiskin, cocukMetni]);
+  const etkin = !!(hedef && giris && cikis) && uyrukHazir;
   const arama = useOtelAramasi(payload, etkin);
 
   const [deger, setDeger] = React.useState<AramaDegeri>(() => ({
-    yer: hedef, yerUst: null, giris: isoOku(giris), cikis: isoOku(cikis), yetiskin, cocuklar,
+    yer: hedef, yerUst: null, yerId: konum, giris: isoOku(giris), cikis: isoOku(cikis), yetiskin, cocuklar,
   }));
   const [filtre, setFiltre] = React.useState<Filtre>(BOS_FILTRE);
   const [sira, setSira] = React.useState<Siralama>("oneri");
@@ -78,10 +90,8 @@ export function AramaSonuclari({ params }: { params: URLSearchParams }) {
   const pansiyonlar = React.useMemo(() => [...new Set(arama.hotels.flatMap((h) => h.boardTypes))].sort((a, b) => a.localeCompare(b, "tr")), [arama.hotels]);
   const aramaEki = params.toString();
 
-  const toplamYaz = React.useCallback(
-    (h: HotelSearchResult) => new Intl.NumberFormat("tr-TR", { style: "currency", currency: h.currency || "EUR", maximumFractionDigits: 0 }).format(h.minPrice * gece),
-    [gece]
-  );
+  // Seçilen para biriminde (TCMB kuruyla yaklaşık; bkz. lb/fiyat).
+  const toplamYaz = React.useCallback((h: HotelSearchResult) => yaz(h.minPrice * gece, h.currency || "EUR"), [yaz, gece]);
 
   const git = (yeni: Record<string, string | null>) => {
     const p = new URLSearchParams(params.toString());

@@ -1,12 +1,15 @@
 // Arama çubuğunun ortak durumu ve yardımcıları.
-// URL biçimi arama sayfasıyla aynı: destination, checkIn, checkOut (YYYY-MM-DD),
-// adults, childAges (virgülle).
+// URL biçimi arama sayfasıyla aynı: destination, konum (öneriden seçildiyse
+// konum kimliği), checkIn, checkOut (YYYY-MM-DD), adults, childAges (virgülle).
 
 export interface AramaDegeri {
   /** Aramaya giden metin (konum adı ya da otel adı). */
   yer: string;
   /** Öneriden seçildiyse üst konum ("Muğla"); kutuda ikinci satır. */
   yerUst?: string | null;
+  /** Öneriden seçilen konumun kimliği: aynı adlı konumlar (üç ayrı "Bodrum")
+   *  karışmasın, arama o konumun altındaki otellerle yapılsın. */
+  yerId?: string | null;
   giris: Date | null;
   cikis: Date | null;
   yetiskin: number;
@@ -16,7 +19,7 @@ export interface AramaDegeri {
 
 export type PanelAdi = "yer" | "tarih" | "misafir";
 
-export const BOS_ARAMA: AramaDegeri = { yer: "", yerUst: null, giris: null, cikis: null, yetiskin: 2, cocuklar: [] };
+export const BOS_ARAMA: AramaDegeri = { yer: "", yerUst: null, yerId: null, giris: null, cikis: null, yetiskin: 2, cocuklar: [] };
 
 export const AYLAR = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
 export const GUNLER = ["Pt", "Sa", "Ça", "Pe", "Cu", "Ct", "Pz"];
@@ -47,6 +50,7 @@ export function misafirMetni(d: AramaDegeri): string {
 
 export function aramaAdresi(d: AramaDegeri): string {
   const p = new URLSearchParams({ destination: d.yer.trim() });
+  if (d.yerId) p.set("konum", d.yerId);
   if (d.giris) p.set("checkIn", iso(d.giris));
   if (d.cikis) p.set("checkOut", iso(d.cikis));
   p.set("adults", String(d.yetiskin));

@@ -7,6 +7,7 @@
 // şemadan (createBookingSchema) gelir. Onaylanınca /api/booking'e gider,
 // başarıda onay sayfasına geçilir.
 
+import { useFiyat } from "@/components/lb/fiyat";
 import * as React from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -18,7 +19,7 @@ import { Nesne } from "@/components/lb/nesne";
 import { Pencere } from "@/components/lb/pencere";
 import { Bekleme, DonenMetin } from "@/components/lb/bekleme";
 import { AYLAR, geceSayisi, gunEkle, isoOku } from "@/components/lb/arama/durum";
-import { iptalOzeti, para } from "@/components/otel-detay/yardimci";
+import { iptalOzeti } from "@/components/otel-detay/yardimci";
 import { createBookingSchema, yasHesapla, type CreateBookingInput, type GuestInput } from "@/lib/validators/booking.schema";
 import type { CancellationPolicy, HotelDetailResponse } from "@/lib/royal-api/types";
 import { tarihGoster, useKayitliMisafirler, useProfil } from "@/components/hesap/veri";
@@ -84,7 +85,9 @@ function OdemeFormu({ p, acik }: { p: URLSearchParams; acik: boolean }) {
   const cikis = isoOku(checkOut);
   const gece = giris && cikis ? Math.max(1, geceSayisi(giris, cikis)) : 1;
   const ip = iptalOzeti(politikalar);
-  const tl = (n: number) => para(n, paraBirimi);
+  // Seçilen para biriminde gösterim (TCMB kuruyla yaklaşık); ödeme EUR.
+  const fiyatGoster = useFiyat();
+  const tl = (n: number) => fiyatGoster.yaz(n, paraBirimi);
   const otelAdresi = `/hotel/${hotelCode}?${new URLSearchParams({ checkIn, checkOut, adults: String(yetiskin), ...(cocukMetni ? { childAges: cocukMetni } : {}) })}`;
 
   const otelQ = useQuery({
@@ -693,10 +696,16 @@ function OdemeFormu({ p, acik }: { p: URLSearchParams; acik: boolean }) {
               </div>
               <div className={s.toplam}>
                 <b>
-                  Toplam <small>{paraBirimi}</small>
+                  Toplam <small>{fiyatGoster.birim}</small>
                 </b>
                 <span className="lb-y">{tl(odenecek)}</span>
               </div>
+              {fiyatGoster.cevrildi && (
+                <p className={s.kurNotu}>
+                  Ödeme {paraBirimi} ile alınır: <b>{fiyatGoster.asil(odenecek, paraBirimi)}</b>. {fiyatGoster.birim === "TRY" ? "TL" : fiyatGoster.birim} tutarı TCMB kuruyla
+                  {fiyatGoster.kurTarihi ? ` (${fiyatGoster.kurTarihi})` : ""} yaklaşıktır.
+                </p>
+              )}
               {!kupon && (
                 <div className={s.kupon}>
                   {kuponAcik ? (
@@ -769,7 +778,8 @@ function OdemeFormu({ p, acik }: { p: URLSearchParams; acik: boolean }) {
           ))}
           {kampanyaSatiri && <div><span>{kampanyaSatiri.ad}</span><span>−{tl(kampanyaSatiri.tutar)}</span></div>}
           {kupon && <div><span>Kupon {kupon.kod}</span><span>−{tl(kupon.tutar)}</span></div>}
-          <div><b>Toplam ({paraBirimi}, vergiler dahil)</b><b>{tl(odenecek)}</b></div>
+          <div><b>Toplam ({fiyatGoster.birim}, vergiler dahil)</b><b>{tl(odenecek)}</b></div>
+          {fiyatGoster.cevrildi && <div><span>Ödenecek ({paraBirimi})</span><span>{fiyatGoster.asil(odenecek, paraBirimi)}</span></div>}
           <div>
             <span>İptal</span>
             <span>{ip.ucretsiz ? `${ip.ucretsiz.yonelme} kadar ücretsiz, sonrasında ${ip.ceza ? tl(ip.ceza.tutar) : "ücretli"}` : ip.ceza ? "İade edilmez" : "Bilgi yok"}</span>

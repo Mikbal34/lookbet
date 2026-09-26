@@ -7,6 +7,8 @@
 // fiyat ve düğme menüye taşınır. Odalar pencerede açılır (solda oda rayı);
 // seçilen oda ödeme sayfasına aynı parametrelerle gider.
 
+import { useFiyat } from "@/components/lb/fiyat";
+import { useUyruk } from "@/components/lb/uyruk";
 import { sunucuMesaji } from "@/lib/utils";
 import * as React from "react";
 import dynamic from "next/dynamic";
@@ -27,7 +29,7 @@ import type { HotelDetailResponse } from "@/lib/royal-api/types";
 import { FotoTuru, Galeri, IsikKutusu, type TurBolumu } from "./galeri";
 import { OdaPenceresi, odaOncekiFiyati, odaToplami, type Oda } from "./oda-penceresi";
 import { TarihAlani, TarihPenceresi, type TarihPaneli } from "./tarih-alani";
-import { iptalOzeti, olanakGruplari, olanakIkonu, oneCikanlar, oneCikanOlanaklar, para } from "./yardimci";
+import { iptalOzeti, olanakGruplari, olanakIkonu, oneCikanlar, oneCikanOlanaklar } from "./yardimci";
 import s from "./otel-detay.module.css";
 
 const KonumHaritasi = dynamic(() => import("./konum-haritasi").then((m) => m.KonumHaritasi), {
@@ -92,6 +94,8 @@ const git = (id: string) => {
 };
 
 export function OtelDetay({ kod }: { kod: string }) {
+  // Fiyatlar seçilen para biriminde (TCMB kuruyla yaklaşık; bkz. lb/fiyat).
+  const { yaz } = useFiyat();
   const params = useSearchParams();
   const router = useRouter();
   const { status: oturum } = useSession();
@@ -102,16 +106,17 @@ export function OtelDetay({ kod }: { kod: string }) {
   const cikis = params.get("checkOut") ?? "";
   const yetiskin = parseInt(params.get("adults") ?? "2", 10) || 2;
   const cocukMetni = params.get("childAges") ?? "";
-  const uyruk = params.get("nationality") ?? "TR";
+  const { uyruk, hazir: uyrukHazir } = useUyruk(params.get("nationality"));
   const paraBirimi = params.get("currency") ?? "EUR";
   const hedef = params.get("destination") ?? "";
+  const konumId = params.get("konum");
   const girisT = isoOku(giris);
   const cikisT = isoOku(cikis);
   const tarihVar = !!(girisT && cikisT && cikisT > girisT);
   const gece = tarihVar ? Math.max(1, geceSayisi(girisT!, cikisT!)) : 1;
   const urlDeger = React.useMemo<AramaDegeri>(
-    () => ({ yer: hedef, yerUst: null, giris: isoOku(giris), cikis: isoOku(cikis), yetiskin, cocuklar: cocukMetni.split(",").filter(Boolean).map(Number) }),
-    [hedef, giris, cikis, yetiskin, cocukMetni]
+    () => ({ yer: hedef, yerUst: null, yerId: konumId, giris: isoOku(giris), cikis: isoOku(cikis), yetiskin, cocuklar: cocukMetni.split(",").filter(Boolean).map(Number) }),
+    [hedef, konumId, giris, cikis, yetiskin, cocukMetni]
   );
   const misafir = misafirMetni(urlDeger);
 
@@ -133,7 +138,7 @@ export function OtelDetay({ kod }: { kod: string }) {
   const odaQ = useQuery({
     queryKey: ["odalar", kod, giris, cikis, yetiskin, cocukMetni, uyruk, paraBirimi],
     queryFn: () => odalariGetir(kod, { giris, cikis, yetiskin, cocuklar: urlDeger.cocuklar, uyruk, para: paraBirimi }),
-    enabled: tarihVar,
+    enabled: tarihVar && uyrukHazir,
     staleTime: 5 * 60_000,
     retry: 1,
   });
@@ -338,8 +343,8 @@ export function OtelDetay({ kod }: { kod: string }) {
 
   // Rezervasyon kutusu, bölüm menüsü ve mobil çubuğun ortak fiyat/düğme durumu.
   const fiyatOdasi = secili ?? enUcuz;
-  const fiyat = fiyatOdasi ? para(odaToplami(fiyatOdasi), fiyatOdasi.currency) : null;
-  const oncekiFiyat = fiyatOdasi && odaOncekiFiyati(fiyatOdasi) ? para(odaOncekiFiyati(fiyatOdasi)!, fiyatOdasi.currency) : null;
+  const fiyat = fiyatOdasi ? yaz(odaToplami(fiyatOdasi), fiyatOdasi.currency) : null;
+  const oncekiFiyat = fiyatOdasi && odaOncekiFiyati(fiyatOdasi) ? yaz(odaOncekiFiyati(fiyatOdasi)!, fiyatOdasi.currency) : null;
   const kampanya = fiyatOdasi?.pricing?.kampanya ?? null;
   const anaMetin = !tarihVar ? "Tarih seç" : secili ? "Rezervasyona devam et" : "Oda seç";
   const anaEylem = () => (!tarihVar ? tarihSec() : secili ? devam() : git("odalar"));
@@ -635,18 +640,18 @@ export function OtelDetay({ kod }: { kod: string }) {
               {secili && (
                 <div className={s.dokum}>
                   <div>
-                    <span>{para((odaOncekiFiyati(secili) ?? odaToplami(secili)) / gece, secili.currency)} × {gece} gece</span>
-                    <span>{para(odaOncekiFiyati(secili) ?? odaToplami(secili), secili.currency)}</span>
+                    <span>{yaz((odaOncekiFiyati(secili) ?? odaToplami(secili)) / gece, secili.currency)} × {gece} gece</span>
+                    <span>{yaz(odaOncekiFiyati(secili) ?? odaToplami(secili), secili.currency)}</span>
                   </div>
                   {secili.pricing?.kampanya && (
                     <div className={s.dokumIndirim}>
                       <span>{secili.pricing.kampanya.ad}</span>
-                      <span>−{para(secili.pricing.kampanya.tutar, secili.currency)}</span>
+                      <span>−{yaz(secili.pricing.kampanya.tutar, secili.currency)}</span>
                     </div>
                   )}
                   <div className={s.toplam}>
                     <span>Toplam</span>
-                    <span>{para(odaToplami(secili), secili.currency)}</span>
+                    <span>{yaz(odaToplami(secili), secili.currency)}</span>
                   </div>
                 </div>
               )}
@@ -701,7 +706,7 @@ export function OtelDetay({ kod }: { kod: string }) {
                   <li><Ikon ad="free-cancel" boyut={20} /><span>İptal koşulları odaya göre değişir; oda seçince gösterilir</span></li>
                 )}
                 {bilgiIptal?.ucretsiz && bilgiIptal.ceza && (
-                  <li><Ikon ad="info" boyut={20} /><span>Sonrasında iptal ücreti {para(bilgiIptal.ceza.tutar, bilgiIptal.ceza.para)}</span></li>
+                  <li><Ikon ad="info" boyut={20} /><span>Sonrasında iptal ücreti {yaz(bilgiIptal.ceza.tutar, bilgiIptal.ceza.para)}</span></li>
                 )}
               </ul>
             </div>
@@ -802,6 +807,7 @@ function OdaKarti({ oda, gece, misafir, secili, liste, onAc }: {
   liste?: boolean;
   onAc: () => void;
 }) {
+  const { yaz } = useFiyat();
   const ip = iptalOzeti(oda.cancellationPolicies);
   const yatak = oda.attributes?.find((a) => a.categoryName === "Yatak")?.name;
   return (
@@ -826,8 +832,8 @@ function OdaKarti({ oda, gece, misafir, secili, liste, onAc }: {
         )}
       </span>
       <span className={s.odaFiyat}>
-        {odaOncekiFiyati(oda) && <s>{para(odaOncekiFiyati(oda)!, oda.currency)}</s>}
-        <b className="lb-y">{para(odaToplami(oda), oda.currency)}</b>
+        {odaOncekiFiyati(oda) && <s>{yaz(odaOncekiFiyati(oda)!, oda.currency)}</s>}
+        <b className="lb-y">{yaz(odaToplami(oda), oda.currency)}</b>
         <small>{gece} gece, toplam</small>
       </span>
     </button>

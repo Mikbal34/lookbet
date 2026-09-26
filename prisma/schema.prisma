@@ -109,6 +109,7 @@ model User {
   reviewedApplications AgencyApplication[] @relation("ReviewedApplications")
   applications         AgencyApplication[] @relation("ApplicantApplications")
   savedGuests          SavedGuest[]
+  favorites            Favorite[]
   couponUses           CouponUse[]
   createdDiscounts     Discount[]          @relation("DiscountCreatedBy")
   createdCoupons       Coupon[]            @relation("CouponCreatedBy")
@@ -132,6 +133,21 @@ model SavedGuest {
 
   @@index([userId])
   @@map("saved_guests")
+}
+
+// Hesaba bağlı favori oteller (kalp). Girişsiz kullanıcıda favoriler
+// cihazda (localStorage) kalır; giriş yapınca hesaba birleştirilir.
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  hotelCode String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, hotelCode])
+  @@index([userId, createdAt])
+  @@map("favorites")
 }
 
 // Müşteri girişi için tek kullanımlık email kodu (passwordless login).

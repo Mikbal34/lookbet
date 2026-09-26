@@ -44,6 +44,8 @@ const uyruk = z
 export const hotelSearchSchema = z
   .object({
     destination: z.string().trim().min(1, "Destinasyon seçin").max(120),
+    /** Öneriden seçilen konumun kimliği (aynı adlı konumlar karışmasın). */
+    locationId: z.string().trim().max(40).optional(),
     checkIn: tarih("Giriş tarihi seçin"),
     checkOut: tarih("Çıkış tarihi seçin"),
     nationality: uyruk,

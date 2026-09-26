@@ -144,7 +144,7 @@ export function AramaCubugu({
             placeholder="Şehir, bölge ya da otel ara"
             autoComplete="off"
             onFocus={() => aktif !== "yer" && ac("yer")}
-            onChange={(e) => onDegis({ ...deger, yer: e.target.value, yerUst: null })}
+            onChange={(e) => onDegis({ ...deger, yer: e.target.value, yerUst: null, yerId: null })}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 e.preventDefault();
@@ -204,8 +204,8 @@ export function AramaCubugu({
         <div ref={(el) => { icerikler.current.yer = el; }} className={`${s.icerik} ${s.iYer}`} data-aktif={aktif === "yer" || undefined}>
           <YerPaneli
             yazilan={deger.yer}
-            onSec={(ad, ust) => {
-              onDegis({ ...deger, yer: ad, yerUst: ust });
+            onSec={(ad, ust, id) => {
+              onDegis({ ...deger, yer: ad, yerUst: ust, yerId: id ?? null });
               ac("tarih");
             }}
           />

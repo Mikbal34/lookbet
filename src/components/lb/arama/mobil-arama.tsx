@@ -66,14 +66,14 @@ export function MobilArama({ acik, deger, onDegis, onAra, onKapat }: {
                 value={deger.yer}
                 placeholder="Şehir, bölge ya da otel ara"
                 autoComplete="off"
-                onChange={(e) => onDegis({ ...deger, yer: e.target.value, yerUst: null })}
+                onChange={(e) => onDegis({ ...deger, yer: e.target.value, yerUst: null, yerId: null })}
                 aria-label="Nereye"
               />
             </label>
             <YerPaneli
               yazilan={deger.yer}
-              onSec={(ad, ust) => {
-                onDegis({ ...deger, yer: ad, yerUst: ust });
+              onSec={(ad, ust, id) => {
+                onDegis({ ...deger, yer: ad, yerUst: ust, yerId: id ?? null });
                 setBlok("tarih");
               }}
             />

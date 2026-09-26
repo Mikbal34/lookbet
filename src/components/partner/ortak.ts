@@ -31,3 +31,18 @@ export function iptalKalan(r: Rezervasyon, simdi: number): number | null {
 
 export const misafirAdi = (r: Rezervasyon) =>
   r.contactName || (r.guests?.[0] ? `${r.guests[0].name} ${r.guests[0].surname}` : "Misafir");
+
+/** Bildirim zamanı: "az önce", "5 dakika önce", "3 saat önce", "dün", "4 gün önce"; bir haftadan eskiyse tarih. */
+export function gecenSure(iso: string, simdi: number) {
+  const t = new Date(iso).getTime();
+  const dk = Math.floor((simdi - t) / 60_000);
+  if (dk < 1) return "az önce";
+  if (dk < 60) return `${dk} dakika önce`;
+  if (dk < 24 * 60) return `${Math.floor(dk / 60)} saat önce`;
+  const gun = Math.round((gunBasi(simdi) - gunBasi(t)) / 864e5);
+  if (gun <= 1) return "dün";
+  if (gun < 7) return `${gun} gün önce`;
+  const d = new Date(t);
+  const buYil = d.getFullYear() === new Date(simdi).getFullYear();
+  return d.toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: buYil ? undefined : "numeric" });
+}
