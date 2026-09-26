@@ -1,0 +1,24 @@
+{
+  "site": {
+    "baslik": "LookBeds — Hotel Booking",
+    "aciklama": "2,400+ hotels across Türkiye. Best price guarantee, free cancellation."
+  },
+  "ara": "Search",
+  "kapat": "Close",
+  "geri": "Back",
+  "iptal": "Cancel",
+  "kaydet": "Save",
+  "devam": "Continue",
+  "tekrarDene": "Try again",
+  "yukleniyor": "Loading…",
+  "dahaFazla": "Show more",
+  "gece": "{sayi, plural, one {# night} other {# nights}}",
+  "yetiskin": "{sayi, plural, one {# adult} other {# adults}}",
+  "cocuk": "{sayi, plural, one {# child} other {# children}}",
+  "oda": "{sayi, plural, one {# room} other {# rooms}}",
+  "otel": "{sayi, plural, one {# hotel} other {# hotels}}",
+  "misafir": "{sayi, plural, one {# guest} other {# guests}}",
+  "yildizli": "{sayi}-star",
+  "hata": "Something went wrong; please try again shortly.",
+  "baglantiHatasi": "There was a connection problem; please try again."
+}

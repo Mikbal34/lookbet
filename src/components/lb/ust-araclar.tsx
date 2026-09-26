@@ -2,29 +2,32 @@
 
 // Üst çubuğun sağı: dil ve para birimi penceresi (dünya) + hesap menüsü.
 //
-// Dil ve para birimi tercih olarak saklanıyor (LocaleProvider). Tam çeviri ve
-// kurla fiyat gösterimi ayrı iş; Etscore aramaları EUR ile yapılıyor (TRY
-// hesabımızda tanımlı değil), TL gösterimi bizim tarafta kurla olacak.
+// Dil seçimi çereze yazılır, sayfa yeni dille yeniden çizilir (LocaleProvider,
+// i18n/request). Para birimi: fiyatlar EUR; seçilen birimde TCMB kuruyla
+// yaklaşık gösterilir (lb/fiyat), ödeme EUR.
 
 import * as React from "react";
 import { Govdeye } from "./pencere";
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { useLocale } from "@/components/providers/locale-provider";
 import { Ikon } from "./ikon";
 import { Nesne } from "./nesne";
 import { useGiris } from "./giris/giris-saglayici";
 import s from "./ust-araclar.module.css";
 
+// Ad ve alt satır metin anahtarları (ust.bolge.*).
 const DILLER = [
-  { kod: "tr", ad: "Türkçe", alt: "Türkiye" },
-  { kod: "en", ad: "English", alt: "United States" },
-];
+  { kod: "tr", ad: "turkce", alt: "turkiye" },
+  { kod: "en", ad: "ingilizce", alt: "birlesikKrallik" },
+] as const;
 const PARALAR = [
-  { kod: "TRY", ad: "Türk lirası", alt: "TRY – ₺" },
-  { kod: "USD", ad: "ABD doları", alt: "USD – $" },
-  { kod: "EUR", ad: "Euro", alt: "EUR – €" },
-];
+  { kod: "TRY", ad: "tl", alt: "TRY – ₺" },
+  { kod: "EUR", ad: "euro", alt: "EUR – €" },
+  { kod: "USD", ad: "dolar", alt: "USD – $" },
+  { kod: "GBP", ad: "sterlin", alt: "GBP – £" },
+] as const;
 
 /** Dışarı tıklayınca ve Esc'de kapanan açılır öğe durumu. */
 function useAcilir<T extends HTMLElement>() {
@@ -55,6 +58,8 @@ export function BolgePenceresi({ acik, sekme, onSekme, onKapat }: {
   onKapat: () => void;
 }) {
   const { lang, currency, setLang, setCurrency } = useLocale();
+  const t = useTranslations("ust.bolge");
+  const tk = useTranslations("ortak");
   const kapat = React.useRef<HTMLButtonElement>(null);
   React.useEffect(() => {
     if (!acik) return;
@@ -80,36 +85,35 @@ export function BolgePenceresi({ acik, sekme, onSekme, onKapat }: {
     <Govdeye>
     <div className={`lb ${s.kap}`} data-acik={acik || undefined} onClick={(e) => e.target === e.currentTarget && onKapat()} aria-hidden={!acik}>
       <div className={s.pencere} role="dialog" aria-modal="true" aria-labelledby="bolge-baslik">
-        <button ref={kapat} type="button" className={s.kapat} onClick={onKapat} aria-label="Kapat">
+        <button ref={kapat} type="button" className={s.kapat} onClick={onKapat} aria-label={tk("kapat")}>
           <Ikon ad="close" boyut={18} />
         </button>
         <div className={s.sekmeler} role="tablist">
           {(["dil", "para"] as const).map((k) => (
             <button key={k} type="button" role="tab" aria-selected={sekme === k} className={s.sekme} onClick={() => onSekme(k)}>
-              {k === "dil" ? "Dil ve bölge" : "Para birimi"}
+              {k === "dil" ? t("sekmeDil") : t("sekmePara")}
             </button>
           ))}
         </div>
         <h2 id="bolge-baslik" className={`lb-y ${s.baslik}`}>
-          {sekme === "dil" ? "Bir dil ve bölge seçin" : "Bir para birimi seçin"}
+          {sekme === "dil" ? t("baslikDil") : t("baslikPara")}
         </h2>
         <div className={s.secenekler} key={sekme}>
-          {(sekme === "dil" ? DILLER : PARALAR).map((o) => {
-            const secili = sekme === "dil" ? lang === o.kod : currency === o.kod;
-            return (
-              <button
-                key={o.kod}
-                type="button"
-                className={s.secenek}
-                aria-pressed={secili}
-                onClick={() => sec(() => (sekme === "dil" ? setLang(o.kod) : setCurrency(o.kod)))}
-              >
-                <b>{o.ad}</b>
-                <span>{o.alt}</span>
-              </button>
-            );
-          })}
+          {sekme === "dil"
+            ? DILLER.map((o) => (
+                <button key={o.kod} type="button" className={s.secenek} aria-pressed={lang === o.kod} onClick={() => sec(() => setLang(o.kod))}>
+                  <b>{t(o.ad)}</b>
+                  <span>{t(o.alt)}</span>
+                </button>
+              ))
+            : PARALAR.map((o) => (
+                <button key={o.kod} type="button" className={s.secenek} aria-pressed={currency === o.kod} onClick={() => sec(() => setCurrency(o.kod))}>
+                  <b>{t(o.ad)}</b>
+                  <span>{o.alt}</span>
+                </button>
+              ))}
         </div>
+        {sekme === "para" && <p className={s.not}>{t("kurNotu")}</p>}
       </div>
     </div>
     </Govdeye>
@@ -117,12 +121,13 @@ export function BolgePenceresi({ acik, sekme, onSekme, onKapat }: {
 }
 
 export function DunyaDugmesi({ className }: { className?: string }) {
+  const t = useTranslations("ust.bolge");
   const [acik, setAcik] = React.useState(false);
   const [sekme, setSekme] = React.useState<"dil" | "para">("dil");
   const kapat = React.useCallback(() => setAcik(false), []);
   return (
     <>
-      <button type="button" className={`${s.yuvarlak} ${className ?? ""}`} onClick={() => setAcik(true)} aria-haspopup="dialog" aria-label="Dil ve para birimi">
+      <button type="button" className={`${s.yuvarlak} ${className ?? ""}`} onClick={() => setAcik(true)} aria-haspopup="dialog" aria-label={t("dunyaEtiket")}>
         <Ikon ad="globe" boyut={18} />
       </button>
       <BolgePenceresi acik={acik} sekme={sekme} onSekme={setSekme} onKapat={kapat} />

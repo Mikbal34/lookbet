@@ -180,3 +180,5 @@
 @media (prefers-reduced-motion: reduce) {
   .acilir, .kap, .pencere, .secenekler, .sekme::after { transition: none; animation: none; }
 }
+
+.not { margin: 20px 0 0; color: var(--lb-soluk); font-size: 13px; line-height: 1.45; }

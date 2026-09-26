@@ -1,0 +1,24 @@
+{
+  "site": {
+    "baslik": "LookBeds — Otel Rezervasyon",
+    "aciklama": "Türkiye'nin dört bir yanında 2.400+ otel. En iyi fiyat garantisi, ücretsiz iptal."
+  },
+  "ara": "Ara",
+  "kapat": "Kapat",
+  "geri": "Geri",
+  "iptal": "Vazgeç",
+  "kaydet": "Kaydet",
+  "devam": "Devam et",
+  "tekrarDene": "Tekrar dene",
+  "yukleniyor": "Yükleniyor…",
+  "dahaFazla": "Daha fazla göster",
+  "gece": "{sayi} gece",
+  "yetiskin": "{sayi} yetişkin",
+  "cocuk": "{sayi} çocuk",
+  "oda": "{sayi} oda",
+  "otel": "{sayi} otel",
+  "misafir": "{sayi} misafir",
+  "yildizli": "{sayi} yıldızlı",
+  "hata": "Bir sorun oldu; birazdan tekrar dene.",
+  "baglantiHatasi": "Bağlantıda bir sorun oldu; tekrar dene."
+}

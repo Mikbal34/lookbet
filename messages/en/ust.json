@@ -1,0 +1,18 @@
+{
+  "bolge": {
+    "dunyaEtiket": "Language and currency",
+    "sekmeDil": "Language and region",
+    "sekmePara": "Currency",
+    "baslikDil": "Choose a language and region",
+    "baslikPara": "Choose a currency",
+    "turkce": "Türkçe",
+    "turkiye": "Türkiye",
+    "ingilizce": "English",
+    "birlesikKrallik": "United Kingdom",
+    "tl": "Turkish lira",
+    "dolar": "US dollar",
+    "euro": "Euro",
+    "sterlin": "British pound",
+    "kurNotu": "Prices are in EUR; other currencies are shown approximately at the Central Bank of Türkiye rate. Payment is taken in EUR."
+  }
+}

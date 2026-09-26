@@ -1,0 +1,18 @@
+{
+  "bolge": {
+    "dunyaEtiket": "Dil ve para birimi",
+    "sekmeDil": "Dil ve bölge",
+    "sekmePara": "Para birimi",
+    "baslikDil": "Bir dil ve bölge seçin",
+    "baslikPara": "Bir para birimi seçin",
+    "turkce": "Türkçe",
+    "turkiye": "Türkiye",
+    "ingilizce": "English",
+    "birlesikKrallik": "United Kingdom",
+    "tl": "Türk lirası",
+    "dolar": "ABD doları",
+    "euro": "Euro",
+    "sterlin": "İngiliz sterlini",
+    "kurNotu": "Fiyatlar EUR; seçtiğin birimde TCMB kuruyla yaklaşık gösterilir. Ödeme EUR ile alınır."
+  }
+}

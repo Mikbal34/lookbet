@@ -9,6 +9,7 @@
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocale } from "@/components/providers/locale-provider";
+import { useBicim } from "@/i18n/use-bicim";
 
 interface Kurlar {
   kaynak: string;
@@ -16,11 +17,10 @@ interface Kurlar {
   eur: Record<string, number>;
 }
 
-const bicim = (n: number, birim: string) =>
-  new Intl.NumberFormat("tr-TR", { style: "currency", currency: birim || "EUR", maximumFractionDigits: 0 }).format(n);
-
 export function useFiyat() {
   const { currency } = useLocale();
+  // Sayı biçimi dile göre (€1.234 · €1,234).
+  const bicim = useBicim().para;
   const hedef = currency || "EUR";
   const kur = useQuery({
     queryKey: ["kur"],
@@ -35,7 +35,7 @@ export function useFiyat() {
   /** EUR tutarı seçilen birimde (kur yoksa ya da tutar başka birimdeyse olduğu gibi). */
   const yaz = React.useCallback(
     (tutar: number, kaynak = "EUR") => (oran && (kaynak || "EUR") === "EUR" ? bicim(tutar * oran, hedef) : bicim(tutar, kaynak)),
-    [oran, hedef]
+    [oran, hedef, bicim]
   );
   return {
     yaz,

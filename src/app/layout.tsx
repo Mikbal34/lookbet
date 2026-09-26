@@ -1,4 +1,6 @@
 import type { Metadata, Viewport } from "next";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Figtree, Nunito } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
@@ -33,11 +35,10 @@ const yastik = localFont({
   display: "block",
 });
 
-export const metadata: Metadata = {
-  title: "LookBeds — Otel Rezervasyon",
-  description:
-    "Türkiye'nin dört bir yanında 2.400+ otel. En iyi fiyat garantisi, ücretsiz iptal.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("ortak.site");
+  return { title: t("baslik"), description: t("aciklama") };
+}
 
 // Cihaz genişliği, çentik altına taşan tam ekran (viewport-fit=cover) ve
 // tarayıcı çubuğu rengi.
@@ -50,22 +51,25 @@ export const viewport: Viewport = {
   themeColor: "#ffffff",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const dil = await getLocale();
   return (
-    <html lang="tr">
+    <html lang={dil}>
       <body
         className={`${nunito.variable} ${figtree.variable} ${yastik.variable} font-sans antialiased bg-paper text-ink min-h-dvh`}
       >
-        <Providers>
-          <Suspense>
-            <UstCizgi />
-          </Suspense>
-          <SayfaGecisi>{children}</SayfaGecisi>
-        </Providers>
+        <NextIntlClientProvider>
+          <Providers>
+            <Suspense>
+              <UstCizgi />
+            </Suspense>
+            <SayfaGecisi>{children}</SayfaGecisi>
+          </Providers>
+        </NextIntlClientProvider>
       </body>
     </html>
   );
