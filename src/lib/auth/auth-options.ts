@@ -85,6 +85,8 @@ const providers: NextAuthOptions["providers"] = [
       if (!user.isActive) {
         throw new Error(t("hesapKapali"));
       }
+      // Yönetici hesabı yalnız gizli yönetim girişinden girer; burada o sayfa anılmaz.
+      if (user.role === "ADMIN") throw new Error(t("buGiristenOlmaz"));
       if (user.role !== "CUSTOMER") {
         throw new Error(t("acenteGirisiKullan"));
       }
@@ -99,9 +101,9 @@ const providers: NextAuthOptions["providers"] = [
     },
   }),
 
-  // Acente ve yönetici girişi: e-posta + tek kullanımlık kod (şifresiz).
-  // Yeni e-postada acente hesabı açılır; panel, başvuru onaylanana kadar
-  // kilitlidir (bkz. lib/acente-durumu). Müşteri hesabı bu yoldan girmez.
+  // Acente girişi: e-posta + tek kullanımlık kod (şifresiz). Yeni e-postada
+  // acente hesabı açılır; panel, başvuru onaylanana kadar kilitlidir (bkz.
+  // lib/acente-durumu). Müşteri ve yönetici hesabı bu yoldan girmez.
   CredentialsProvider({
     id: "acente-otp",
     name: "Acente Kod",
@@ -131,6 +133,7 @@ const providers: NextAuthOptions["providers"] = [
       if (user.role === "CUSTOMER") {
         throw new Error(t("musteriHesabi"));
       }
+      if (user.role === "ADMIN") throw new Error(t("buGiristenOlmaz"));
       if (!user.isActive) {
         throw new Error(t("hesapKapali"));
       }
@@ -141,6 +144,30 @@ const providers: NextAuthOptions["providers"] = [
         role: user.role,
         agencyId: user.agency?.isApproved ? user.agency.id : null,
       };
+    },
+  }),
+
+  // Yönetim paneli girişi (/admin/giris, siteden bağlantı yok): yalnız var olan,
+  // etkin yönetici hesabı. Hesap açılmaz; ilk yönetici veritabanından atanır.
+  CredentialsProvider({
+    id: "yonetici-otp",
+    name: "Yönetici Kod",
+    credentials: {
+      email: { label: "Email", type: "email" },
+      code: { label: "Kod", type: "text" },
+    },
+    async authorize(credentials, req) {
+      const t = await getTranslations("api.giris");
+      if (!credentials?.email || !credentials?.code) {
+        throw new Error(t("epostaVeKodGerekli"));
+      }
+      const email = credentials.email.toLowerCase().trim();
+      const sonuc = await verifyLoginCode(email, credentials.code.trim(), istemciIp(req?.headers));
+      if (!sonuc.gecerli) throw await kodHatasi(sonuc);
+      const user = await prisma.user.findUnique({ where: { email } });
+      if (!user || user.role !== "ADMIN") throw new Error(t("yoneticiDegil"));
+      if (!user.isActive) throw new Error(t("hesapKapali"));
+      return { id: user.id, email: user.email, name: user.name, role: user.role, agencyId: null };
     },
   }),
 ];

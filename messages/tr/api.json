@@ -13,8 +13,10 @@
     "kodHatali": "Kod hatalı veya süresi dolmuş",
     "kilit": "Çok fazla hatalı deneme. {dk} dakika sonra tekrar dene.",
     "hesapKapali": "Hesabınız devre dışı bırakılmış",
-    "acenteGirisiKullan": "Bu hesap için acente/yönetici girişini kullanın",
-    "musteriHesabi": "Bu e-posta bir müşteri hesabına ait. Acente için şirket e-postanı kullan."
+    "acenteGirisiKullan": "Bu hesap için acente girişini kullan",
+    "musteriHesabi": "Bu e-posta bir müşteri hesabına ait. Acente için şirket e-postanı kullan.",
+    "buGiristenOlmaz": "Bu hesapla buradan giriş yapılamaz",
+    "yoneticiDegil": "Bu e-posta bir yönetici hesabına ait değil"
   },
   "arama": {
     "destinasyon": "Destinasyon seçin",

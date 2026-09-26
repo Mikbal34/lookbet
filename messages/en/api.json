@@ -13,8 +13,10 @@
     "kodHatali": "The code is incorrect or has expired",
     "kilit": "Too many incorrect attempts. Try again in {dk, plural, one {# minute} other {# minutes}}.",
     "hesapKapali": "Your account has been deactivated",
-    "acenteGirisiKullan": "Please use the agency/admin login for this account",
-    "musteriHesabi": "This email belongs to a customer account. Use your company email for the agency account."
+    "acenteGirisiKullan": "Please use the agency login for this account",
+    "musteriHesabi": "This email belongs to a customer account. Use your company email for the agency account.",
+    "buGiristenOlmaz": "This account can't sign in here",
+    "yoneticiDegil": "This email doesn't belong to an administrator account"
   },
   "arama": {
     "destinasyon": "Choose a destination",

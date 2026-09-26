@@ -3,7 +3,7 @@
 // Müşteri girişi (Airbnb gibi): bulunduğun sayfanın üstünde açılan pencere.
 // Şifresiz: e-posta → 6 haneli kod (hesap yoksa aynı adımda açılır) ya da
 // Google / Apple. Yeni hesapta "Hesabını tamamla" adımı adı ister.
-// Acente ve yönetici girişi ayrı sayfada (/agency/login).
+// Acente girişi ayrı sayfada (/agency/login).
 
 import * as React from "react";
 import Link from "next/link";

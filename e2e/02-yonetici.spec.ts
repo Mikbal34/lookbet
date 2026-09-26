@@ -20,17 +20,39 @@ export function hataToplayici(page: Page) {
   return hatalar;
 }
 
-test("yönetici acente girişinden girer, panele düşer", async ({ page }) => {
-  await girisYap(page, { eposta: EPOSTA.yonetici, yol: "/agency/login" });
-  await expect(page).toHaveURL(/\/admin/);
+test("yönetici gizli yönetim girişinden girer, panele düşer", async ({ page }) => {
+  await girisYap(page, { eposta: EPOSTA.yonetici, yol: "/admin/giris" });
+  await expect(page).toHaveURL(/\/admin$/);
   await page.context().storageState({ path: YONETICI });
 });
 
-test("derin bağlantı girişten sonra korunur", async ({ page }) => {
-  await page.goto("/admin/price-rules?x=1");
-  await expect(page).toHaveURL(/\/agency\/login\?callbackUrl=%2Fadmin%2Fprice-rules%3Fx%3D1/);
-  await girisYap(page, { eposta: EPOSTA.yonetici, yol: page.url().replace(/^https?:\/\/[^/]+/, "") });
-  await expect(page).toHaveURL(/\/admin\/price-rules\?x=1$/);
+test("yönetim paneli girişsiz 'bulunamadı' döner, siteden bağlantı yok", async ({ page, request }) => {
+  const r = await page.goto("/admin/price-rules");
+  expect(r?.status()).toBe(404);
+  await expect(page.getByRole("heading", { name: "Bu sayfa bulunamadı" })).toBeVisible();
+  expect((await request.get("/api/admin/users")).status()).toBe(404);
+  const anaSayfa = await (await request.get("/")).text();
+  expect(anaSayfa).not.toContain("/admin/giris");
+});
+
+test("acente girişi yönetici hesabını kabul etmez", async ({ page }) => {
+  await page.goto("/agency/login");
+  const eposta = page.getByLabel("E-posta", { exact: true }).first();
+  await eposta.fill(EPOSTA.yonetici);
+  await eposta.press("Enter");
+  const kodYazisi = page.getByText(/Geliştirme modu, kod: \d{6}/).first();
+  const bekle = page.getByText(/Yeni kod için (\d+) saniye bekle/).first();
+  await expect(kodYazisi.or(bekle)).toBeVisible();
+  if (await bekle.isVisible()) {
+    await page.waitForTimeout((Number((await bekle.textContent())?.match(/(\d+)/)?.[1] ?? 30) + 1) * 1000);
+    await eposta.press("Enter");
+    await expect(kodYazisi).toBeVisible();
+  }
+  const kod = (await kodYazisi.textContent())!.match(/(\d{6})/)![1];
+  await page.getByLabel("1. hane").first().click();
+  await page.keyboard.type(kod, { delay: 30 });
+  await expect(page.getByText("Bu hesapla buradan giriş yapılamaz")).toBeVisible();
+  await expect(page).toHaveURL(/\/agency\/login/);
 });
 
 test.describe("oturumlu", () => {

@@ -1,6 +1,6 @@
 // POST /api/auth/otp/request (public)
 // Şifresiz giriş: e-postaya 6 haneli kod gönderir.
-//   Body: { email, tur?: "musteri" | "acente" }
+//   Body: { email, tur?: "musteri" | "acente" | "yonetici" }
 // Hesabın var olup olmadığı, rolü ya da kapalı olduğu burada SÖYLENMEZ (e-posta
 // listesi çıkarılmasın): kod her geçerli e-postaya gider. Rol uyuşmazlığı ve
 // kapalı hesap, kod doğrulandıktan sonra (e-postanın sahibi olduğu kanıtlanınca)
@@ -15,7 +15,7 @@ import { getTranslations } from "next-intl/server";
 
 const schema = z.object({
   email: z.string().trim().toLowerCase().email().max(254),
-  tur: z.enum(["musteri", "acente"]).default("musteri"),
+  tur: z.enum(["musteri", "acente", "yonetici"]).default("musteri"),
 });
 
 export async function POST(request: Request): Promise<NextResponse> {

@@ -1,9 +1,12 @@
 "use client";
 
-// Acente (ve yönetici) girişi — Airbnb'nin giriş sayfası gibi: arka planda
-// nesne posterlerinden yatık bir ızgara, ortada tek kart. Şifresiz: e-postaya
-// 6 haneli kod gider, kodla girilir. Yeni e-postada acente hesabı açılır ve
+// Acente girişi — Airbnb'nin giriş sayfası gibi: arka planda nesne
+// posterlerinden yatık bir ızgara, ortada tek kart. Şifresiz: e-postaya 6
+// haneli kod gider, kodla girilir. Yeni e-postada acente hesabı açılır ve
 // panelde bir kez başvuru formu doldurulur; panel onaydan sonra açılır.
+//
+// `yonetim`: yönetim paneli girişi (/admin/giris). Siteden bağlantı verilmez;
+// yalnız var olan yönetici hesabı girer (hesap açılmaz), sade kart.
 
 import * as React from "react";
 import Link from "next/link";
@@ -25,7 +28,7 @@ const POSTER: [NesneAdi, string][] = [
 const IZGARA = [...POSTER, ...POSTER.slice(5), ...POSTER.slice(0, 5)];
 const BOLGE = new Set<NesneAdi>(["bodrum", "kapadokya", "antalya"]);
 
-export function AcenteGirisi() {
+export function AcenteGirisi({ yonetim = false }: { yonetim?: boolean }) {
   const router = useRouter();
   const p = useSearchParams();
   const ham = p.get("callbackUrl");
@@ -56,7 +59,7 @@ export function AcenteGirisi() {
       const r = await fetch("/api/auth/otp/request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: v, tur: "acente" }),
+        body: JSON.stringify({ email: v, tur: yonetim ? "yonetici" : "acente" }),
       });
       const d = await r.json().catch(() => ({}));
       if (!r.ok) return setHata(d.error ?? t("hata.gonderilemedi"));
@@ -83,7 +86,7 @@ export function AcenteGirisi() {
     setYukleniyor(true);
     setHata(null);
     try {
-      const r = await signIn("acente-otp", { redirect: false, email: eposta.trim().toLowerCase(), code: tam });
+      const r = await signIn(yonetim ? "yonetici-otp" : "acente-otp", { redirect: false, email: eposta.trim().toLowerCase(), code: tam });
       if (!r || r.error) {
         // authorize() mesajı (kilit, rol uyuşmazlığı, kapalı hesap) varsa onu göster.
         setHata(r?.error && r.error !== "CredentialsSignin" ? r.error : t("hata.kodHatali"));
@@ -93,7 +96,7 @@ export function AcenteGirisi() {
       }
       tamam = true;
       const rol = (await getSession())?.user?.role;
-      const panel = rol === "ADMIN" ? "/admin" : "/agency/dashboard";
+      const panel = rol === "ADMIN" || yonetim ? "/admin" : "/agency/dashboard";
       // Hedef başka rolün alanındaysa (yönetici acente sayfasından geldi) kendi paneline.
       const hedef = guvenliHedef(ham);
       const uygun = hedef && !(rol === "ADMIN" && hedef.startsWith("/agency")) && !(rol !== "ADMIN" && hedef.startsWith("/admin"));
@@ -108,18 +111,20 @@ export function AcenteGirisi() {
   return (
     <div className={`lb ${s.sayfa}`}>
       <header className={s.ust}>
-        <Link href="/" className={s.marka}>
+        <Link href={yonetim ? "/admin/giris" : "/"} className={s.marka}>
           <span className="lb-y">LookBeds</span>
-          <small>Partner</small>
+          <small>{yonetim ? "Yönetim" : "Partner"}</small>
         </Link>
-        <div className={s.ustSag}>
-          <span>{t("acente.musteriMisin")}</span>
-          <Link href="/">{t("acente.siteyeDon")}</Link>
-        </div>
+        {!yonetim && (
+          <div className={s.ustSag}>
+            <span>{t("acente.musteriMisin")}</span>
+            <Link href="/">{t("acente.siteyeDon")}</Link>
+          </div>
+        )}
       </header>
 
       <main className={s.sahne}>
-        <div className={s.izgara} aria-hidden="true">
+        <div className={s.izgara} aria-hidden="true" hidden={yonetim}>
           {IZGARA.map(([ad, zemin], i) => (
             <div key={i} className={s.poster} style={{ background: zemin, "--g": i } as React.CSSProperties}>
               <Nesne ad={ad} boyut={BOLGE.has(ad) ? 132 : 104} />
@@ -129,9 +134,9 @@ export function AcenteGirisi() {
 
         <div className={s.kart}>
           <div className={s.kartBas}>
-            <Nesne ad="anahtar-karti" boyut={72} className={s.nesne} />
-            <h1 className="lb-y">{t("acente.baslik")}</h1>
-            <p>{adim === "eposta" ? t("acente.altBaslikEposta") : t("acente.altBaslikKod")}</p>
+            <Nesne ad={yonetim ? "kilit" : "anahtar-karti"} boyut={72} className={s.nesne} />
+            <h1 className="lb-y">{yonetim ? "Yönetim girişi" : t("acente.baslik")}</h1>
+            <p>{adim === "eposta" ? (yonetim ? "Yetkili hesabının e-postasını yaz" : t("acente.altBaslikEposta")) : t("acente.altBaslikKod")}</p>
           </div>
 
           {adim === "eposta" ? (
@@ -153,7 +158,7 @@ export function AcenteGirisi() {
               </div>
               {hata && <Hata>{hata}</Hata>}
               <button type="submit" className={s.devam} disabled={yukleniyor}>{yukleniyor ? t("kod.gonderiliyor") : tk("devam")}</button>
-              <p className={s.not}>{t("acente.sirketEpostasi")}</p>
+              {!yonetim && <p className={s.not}>{t("acente.sirketEpostasi")}</p>}
             </form>
           ) : (
             <form className={s.adim} onSubmit={(e) => { e.preventDefault(); kodDogrula(); }} noValidate>
@@ -174,7 +179,7 @@ export function AcenteGirisi() {
               <button type="submit" className={s.devam} disabled={kod.join("").length !== 6 || yukleniyor}>{yukleniyor ? t("kod.girisYapiliyor") : t("kod.girisYap")}</button>
             </form>
           )}
-          <p className={s.not}>{t("acente.ilkKez")}</p>
+          {!yonetim && <p className={s.not}>{t("acente.ilkKez")}</p>}
         </div>
       </main>
     </div>

@@ -7,13 +7,19 @@ const YONETIM_API = ["/api/admin/users", "/api/admin/reservations", "/api/admin/
 const ACENTE_API = ["/api/agency/dashboard", "/api/agency/kazanc"];
 
 test.describe("oturumsuz", () => {
+  // Yönetim API'si yönetici olmayana "bulunamadı" (404) döner: varlığı gizli.
   for (const yol of [...YONETIM_API, ...ACENTE_API, "/api/reservations", "/api/profile", "/api/favoriler"]) {
     test(`API reddeder: ${yol}`, async ({ request }) => {
       const r = await request.get(yol);
-      expect([401, 403], `${yol} → ${r.status()}`).toContain(r.status());
+      expect([401, 403, 404], `${yol} → ${r.status()}`).toContain(r.status());
     });
   }
-  for (const yol of ["/admin", "/admin/users", "/agency/dashboard", "/reservations"]) {
+  for (const yol of ["/admin", "/admin/users"]) {
+    test(`yönetim sayfası bulunamadı döner: ${yol}`, async ({ page }) => {
+      expect((await page.goto(yol))?.status()).toBe(404);
+    });
+  }
+  for (const yol of ["/agency/dashboard", "/reservations"]) {
     test(`sayfa içeriği göstermez: ${yol}`, async ({ page }) => {
       await page.goto(yol);
       await page.waitForLoadState("networkidle");
@@ -31,10 +37,15 @@ test.describe("müşteri", () => {
   for (const yol of [...YONETIM_API, ...ACENTE_API]) {
     test(`API reddeder: ${yol}`, async ({ request }) => {
       const r = await request.get(yol);
-      expect([401, 403], `${yol} → ${r.status()}`).toContain(r.status());
+      expect([401, 403, 404], `${yol} → ${r.status()}`).toContain(r.status());
     });
   }
-  for (const yol of ["/admin", "/admin/reservations", "/agency/dashboard", "/agency/kazanclar"]) {
+  for (const yol of ["/admin", "/admin/reservations"]) {
+    test(`yönetim sayfası bulunamadı döner: ${yol}`, async ({ page }) => {
+      expect((await page.goto(yol))?.status()).toBe(404);
+    });
+  }
+  for (const yol of ["/agency/dashboard", "/agency/kazanclar"]) {
     test(`sayfa içeriği göstermez: ${yol}`, async ({ page }) => {
       await page.goto(yol);
       await page.waitForLoadState("networkidle");

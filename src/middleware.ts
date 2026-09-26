@@ -6,15 +6,17 @@ export default withAuth(
     const token = req.nextauth.token;
     const path = req.nextUrl.pathname;
 
-    // Admin routes
+    // Yönetim: giriş sayfası (/admin/giris) açık, yönetici zaten girdiyse panele.
+    // Panel ve API'si yönetici olmayana "bulunamadı": varlığı dışarıdan belli
+    // olmasın (siteden bağlantı da yok).
+    if (path === "/admin/giris") {
+      if (token?.role === "ADMIN") return NextResponse.redirect(new URL("/admin", req.url));
+      return NextResponse.next();
+    }
     if (path.startsWith("/admin") || path.startsWith("/api/admin")) {
       if (token?.role !== "ADMIN") {
-        if (path.startsWith("/api/")) {
-          return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 403 });
-        }
-        // Yönetici girişi acente girişiyle aynı sayfada (e-posta kodu);
-        // girişten sonra istenen sayfaya dönülür.
-        return NextResponse.redirect(new URL(`/agency/login?callbackUrl=${encodeURIComponent(path + req.nextUrl.search)}`, req.url));
+        if (path.startsWith("/api/")) return NextResponse.json({ error: "Bulunamadı" }, { status: 404 });
+        return NextResponse.rewrite(new URL("/_bulunamadi", req.url));
       }
     }
 
@@ -44,8 +46,8 @@ export default withAuth(
         }
 
         // /agency ve /admin rotalarının auth kontrolü yukarıdaki middleware
-        // fonksiyonunda: girişsiz veya rolü uymayan kullanıcı /agency/login'e
-        // yönlendirilir (genel /login'e değil), API'ye 403 döner.
+        // fonksiyonunda: acente sayfaları /agency/login'e yönlendirir; yönetim
+        // yönetici olmayana "bulunamadı" döner (giriş: /admin/giris).
         if (path.startsWith("/agency") || path.startsWith("/admin") || path.startsWith("/api/admin")) {
           return true;
         }

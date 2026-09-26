@@ -124,7 +124,7 @@ export async function girisYap(
   await page.keyboard.type(kod, { delay: 30 });
   // Yeni hesap: ad/soyad adımı; var olan hesap: doğrudan giriş (sayfa değişir).
   const tamamla = page.getByText("Hesabını tamamla").first();
-  const girisSayfasi = () => /\/(agency\/)?login$/.test(new URL(page.url()).pathname);
+  const girisSayfasi = () => /\/((agency\/)?login|admin\/giris)$/.test(new URL(page.url()).pathname);
   const bitis = Date.now() + 25_000;
   while (Date.now() < bitis) {
     if (!girisSayfasi()) return;

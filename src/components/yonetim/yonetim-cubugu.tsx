@@ -110,7 +110,7 @@ export function YonetimCubugu() {
               ))}
               <hr />
               <Link href="/" onClick={kapat}><Ikon ad="external" boyut={18} />Siteye dön</Link>
-              <button type="button" onClick={() => signOut({ callbackUrl: "/agency/login" })}><Ikon ad="logout" boyut={18} />Çıkış yap</button>
+              <button type="button" onClick={() => signOut({ callbackUrl: "/admin/giris" })}><Ikon ad="logout" boyut={18} />Çıkış yap</button>
             </nav>
           </div>
         </div>
