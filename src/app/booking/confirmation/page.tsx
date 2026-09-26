@@ -3,7 +3,9 @@
 
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getServerSession } from "next-auth";
 import { getLocale, getTranslations } from "next-intl/server";
+import { authOptions } from "@/lib/auth/auth-options";
 import { AltBilgi } from "@/components/lb/alt-bilgi";
 import { Nesne } from "@/components/lb/nesne";
 import { isoOku } from "@/components/lb/arama/durum";
@@ -21,6 +23,8 @@ export default async function OnaySayfasi({ searchParams }: {
   const { bookingNumber, hotelName, checkIn, checkOut, durum } = await searchParams;
   const t = await getTranslations("odeme");
   const b = bicimleyici(await getLocale());
+  // Acentenin rezervasyonları kendi panelinde.
+  const acente = (await getServerSession(authOptions))?.user?.role === "AGENCY";
   // "bekliyor": talep alındı ama otelden onay henüz gelmedi (ya da tedarikçi
   // yanıtı gecikti); "onaylandı" denmez, numara yoksa gösterilmez.
   const onayli = durum !== "bekliyor";
@@ -47,7 +51,7 @@ export default async function OnaySayfasi({ searchParams }: {
             </div>
           )}
           <div className={s.yollar}>
-            <Link href="/reservations" className={s.dugme}>{t("onay.rezervasyonlarim")}</Link>
+            <Link href={acente ? "/agency/reservations" : "/reservations"} className={s.dugme}>{t("onay.rezervasyonlarim")}</Link>
             <Link href="/" className={s.ikincil}>{t("onay.yeniArama")}</Link>
           </div>
         </div>

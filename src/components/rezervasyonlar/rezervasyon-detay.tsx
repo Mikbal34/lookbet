@@ -166,9 +166,11 @@ export function RezervasyonDetay({ id }: { id: string }) {
                     <b>{r.status === "CANCELLED" ? t("detay.iptalEdildi") : t("detay.tamamlanamadi")}</b>
                     <span>
                       {r.status === "CANCELLED"
-                        ? r.cancellationFee != null
-                          ? t("detay.iptalUcreti", { tutar: b.para(r.cancellationFee, r.cancellationFeeCurrency || r.currency) })
-                          : t("detay.iptalUcretiYok")
+                        ? r.cancellationFee == null
+                          ? t("detay.iptalUcretiYok")
+                          : r.cancellationFee > 0
+                            ? t("detay.iptalUcreti", { tutar: b.para(r.cancellationFee, r.cancellationFeeCurrency || r.currency) })
+                            : t("detay.iptalUcretsiz")
                         : t("detay.onaylanmadi")}
                     </span>
                   </div>

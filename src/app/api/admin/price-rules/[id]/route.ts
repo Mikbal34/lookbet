@@ -13,7 +13,7 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
     const session = await getServerSession(authOptions);
 
     if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return NextResponse.json({ error: "Bu işlem için yönetici yetkisi gerekiyor" }, { status: 403 });
     }
 
     const { id } = await params;
@@ -27,13 +27,13 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
     });
 
     if (!priceRule) {
-      return NextResponse.json({ error: "Price rule not found" }, { status: 404 });
+      return NextResponse.json({ error: "Fiyat kuralı bulunamadı" }, { status: 404 });
     }
 
     return NextResponse.json({ priceRule });
   } catch (error) {
     console.error("[ADMIN_PRICE_RULES_ID_GET]", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Sunucu hatası, biraz sonra tekrar dene" }, { status: 500 });
   }
 }
 
@@ -42,7 +42,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     const session = await getServerSession(authOptions);
 
     if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return NextResponse.json({ error: "Bu işlem için yönetici yetkisi gerekiyor" }, { status: 403 });
     }
 
     const { id } = await params;
@@ -50,10 +50,10 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     const existing = await prisma.priceRule.findUnique({ where: { id } });
 
     if (!existing) {
-      return NextResponse.json({ error: "Price rule not found" }, { status: 404 });
+      return NextResponse.json({ error: "Fiyat kuralı bulunamadı" }, { status: 404 });
     }
 
-    const body = await req.json();
+    const body = await req.json().catch(() => null);
     const parsed = priceRuleUpdateSchema.safeParse(body);
 
     if (!parsed.success) {
@@ -64,6 +64,20 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     }
 
     const { startDate, endDate, ...rest } = parsed.data;
+    // Güncelleme sonrası hâl: tek acente kuralı acentesiz kalmasın, acente var olsun,
+    // tarih sırası bozulmasın (gönderilmeyen alan eskisinden).
+    const sonAcente = rest.agencyId !== undefined ? rest.agencyId : existing.agencyId;
+    if ((rest.appliesTo ?? existing.appliesTo) === "SPECIFIC_AGENCY" && !sonAcente) {
+      return NextResponse.json({ error: "Acente seçin" }, { status: 400 });
+    }
+    if (rest.agencyId && rest.agencyId !== existing.agencyId && !(await prisma.agency.findUnique({ where: { id: rest.agencyId }, select: { id: true } }))) {
+      return NextResponse.json({ error: "Seçilen acente bulunamadı" }, { status: 400 });
+    }
+    const sonBas = startDate !== undefined ? (startDate ? baslangicTarihi(startDate) : null) : existing.startDate;
+    const sonBit = endDate !== undefined ? (endDate ? bitisTarihi(endDate) : null) : existing.endDate;
+    if (sonBas && sonBit && sonBas > sonBit) {
+      return NextResponse.json({ error: "Bitiş başlangıçtan önce olamaz" }, { status: 400 });
+    }
 
     const updatedPriceRule = await prisma.priceRule.update({
       where: { id },
@@ -98,7 +112,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ priceRule: updatedPriceRule });
   } catch (error) {
     console.error("[ADMIN_PRICE_RULES_ID_PATCH]", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Sunucu hatası, biraz sonra tekrar dene" }, { status: 500 });
   }
 }
 
@@ -107,7 +121,7 @@ export async function DELETE(_req: NextRequest, { params }: RouteParams) {
     const session = await getServerSession(authOptions);
 
     if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return NextResponse.json({ error: "Bu işlem için yönetici yetkisi gerekiyor" }, { status: 403 });
     }
 
     const { id } = await params;
@@ -118,7 +132,7 @@ export async function DELETE(_req: NextRequest, { params }: RouteParams) {
     });
 
     if (!existing) {
-      return NextResponse.json({ error: "Price rule not found" }, { status: 404 });
+      return NextResponse.json({ error: "Fiyat kuralı bulunamadı" }, { status: 404 });
     }
 
     await prisma.priceRule.delete({ where: { id } });
@@ -136,6 +150,6 @@ export async function DELETE(_req: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ message: "Price rule deleted successfully" });
   } catch (error) {
     console.error("[ADMIN_PRICE_RULES_ID_DELETE]", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Sunucu hatası, biraz sonra tekrar dene" }, { status: 500 });
   }
 }

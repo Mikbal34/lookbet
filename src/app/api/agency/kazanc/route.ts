@@ -3,12 +3,14 @@
 // Komisyon, rezervasyon anında kaydedilen tutar (özel komisyon ya da
 // anlaşma oranı; bkz. lib/pricing/engine). Bu alandan önceki eski
 // rezervasyonlarda anlaşmadaki oranla hesaplanır. İptal ve başarısız
-// rezervasyonlar sayılmaz; ödeme kaydı henüz yok.
+// rezervasyonlar sayılmaz; ödeme kaydı henüz yok. Tutarlar EUR: başka
+// birimdeki (eski) rezervasyon TCMB kuruyla çevrilir.
 
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
+import { kurlar, type ParaBirimi } from "@/lib/kur";
 
 export async function GET() {
   try {
@@ -31,6 +33,12 @@ export async function GET() {
     if (!agency) return NextResponse.json({ error: "Acente bulunamadı" }, { status: 404 });
 
     const oran = agency.commission / 100;
+    const kur = rezervasyonlar.some((r) => (r.currency || "EUR") !== "EUR") ? await kurlar() : null;
+    const eur = (n: number, para: string | null) => {
+      const p = (para || "EUR") as ParaBirimi;
+      const o = p === "EUR" ? 1 : kur?.eur[p];
+      return o ? n / o : n;
+    };
     const aylar = Array.from({ length: 12 }, (_, i) => {
       const d = new Date(bas.getFullYear(), bas.getMonth() + i, 1);
       return { ay: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`, satis: 0, komisyon: 0, adet: 0 };
@@ -39,9 +47,9 @@ export async function GET() {
       const d = new Date(r.checkIn);
       const k = aylar.find((a) => a.ay === `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`);
       if (!k) continue;
-      const tutar = r.discountedPrice ?? r.totalPrice;
+      const tutar = eur(r.discountedPrice ?? r.totalPrice, r.currency);
       k.satis += tutar;
-      k.komisyon += r.commissionAmount ?? tutar * oran;
+      k.komisyon += r.commissionAmount != null ? eur(r.commissionAmount, r.currency) : tutar * oran;
       k.adet += 1;
     }
     for (const a of aylar) {
@@ -52,7 +60,7 @@ export async function GET() {
     return NextResponse.json({
       komisyonOrani: agency.commission,
       indirimOrani: agency.discountRate,
-      paraBirimi: rezervasyonlar[0]?.currency ?? "EUR",
+      paraBirimi: "EUR",
       aylar,
     });
   } catch (error) {

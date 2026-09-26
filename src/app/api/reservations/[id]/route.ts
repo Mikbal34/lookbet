@@ -1,4 +1,4 @@
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
@@ -38,12 +38,13 @@ function tazelenebilir(id: string): boolean {
 //   AGENCY  – can view reservations belonging to their agency
 //   CUSTOMER – can view only their own reservations
 export async function GET(_request: NextRequest, { params }: RouteParams) {
+  const t = await getTranslations("api");
   try {
     const session = await getServerSession(authOptions);
 
     if (!session?.user) {
       return NextResponse.json(
-        { error: "Bu işlem için giriş yapmanız gerekiyor" },
+        { error: t("genel.girisGerekli") },
         { status: 401 }
       );
     }
@@ -51,7 +52,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
     const { id } = await params;
 
     if (!id) {
-      return NextResponse.json({ error: "Rezervasyon ID gerekli" }, { status: 400 });
+      return NextResponse.json({ error: t("genel.gecersizIstek") }, { status: 400 });
     }
 
     let reservation = await prisma.reservation.findUnique({
@@ -63,16 +64,16 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
     });
 
     if (!reservation) {
-      return NextResponse.json({ error: "Rezervasyon bulunamadı" }, { status: 404 });
+      return NextResponse.json({ error: t("rezervasyon.bulunamadi") }, { status: 404 });
     }
 
     // Yetki: tedarikçiye gitmeden ve kaydı güncellemeden önce.
     const role = session.user.role;
     if (role === "CUSTOMER" && reservation.userId !== session.user.id) {
-      return NextResponse.json({ error: "Bu rezervasyona erişim izniniz yok" }, { status: 403 });
+      return NextResponse.json({ error: t("rezervasyon.erisimYok") }, { status: 403 });
     }
     if (role === "AGENCY" && (!session.user.agencyId || reservation.agencyId !== session.user.agencyId)) {
-      return NextResponse.json({ error: "Bu rezervasyona erişim izniniz yok" }, { status: 403 });
+      return NextResponse.json({ error: t("rezervasyon.erisimYok") }, { status: 403 });
     }
 
     // Sonuçlanmamış rezervasyonu tedarikçiden tazele (otel tarafında iptal ya
@@ -167,7 +168,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
   } catch (error) {
     console.error("[GET /api/reservations/[id]]", error);
     return NextResponse.json(
-      { error: "Rezervasyon alınırken bir hata oluştu" },
+      { error: t("rezervasyon.getirmeHatasi") },
       { status: 500 }
     );
   }

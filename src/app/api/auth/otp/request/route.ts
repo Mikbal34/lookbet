@@ -10,7 +10,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createLoginCode, sendLoginCode } from "@/lib/auth/login-code";
-import { hizSiniri, istemciIp } from "@/lib/hiz-siniri";
+import { hizSiniri, istemciIp, sinirdaMi } from "@/lib/hiz-siniri";
 import { getTranslations } from "next-intl/server";
 
 const schema = z.object({
@@ -39,10 +39,13 @@ export async function POST(request: Request): Promise<NextResponse> {
       [`otp-istek-aralik:${email}`, 1, 30_000],
     ];
     if (ip) sinirlar.unshift([`otp-istek:ip:${ip}`, 20, 15 * 60_000]);
-    for (const [anahtar, sinir, pencere] of sinirlar) {
-      const s = hizSiniri(anahtar, sinir, pencere);
-      if (!s.izin) return cok(s.bekle);
+    // Önce saymadan bak: 30 sn kuralına takılan istek 15 dk'lık hakkı yemesin
+    // (art arda denemeler yoksa 15 dk kilitliyordu).
+    for (const [anahtar, sinir] of sinirlar) {
+      const s = sinirdaMi(anahtar, sinir);
+      if (s.dolu) return cok(s.bekle);
     }
+    for (const [anahtar, sinir, pencere] of sinirlar) hizSiniri(anahtar, sinir, pencere);
 
     const code = await createLoginCode(email);
     await sendLoginCode(email, code);

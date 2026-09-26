@@ -15,6 +15,7 @@ import {
 } from "@/lib/royal-api/sync";
 import { prisma } from "@/lib/prisma";
 import { temizle } from "@/lib/temizlik";
+import { USE_MOCK } from "@/lib/royal-api/mock";
 
 export const ADIMLAR = ["revizyon", "fiyat", "listeler", "oteller", "icerik", "temizlik"] as const;
 export type Adim = (typeof ADIMLAR)[number];
@@ -47,8 +48,28 @@ function ozetle(sonuc: unknown): string {
 
 export class MesgulHatasi extends Error {}
 
+/**
+ * Toplu işler tek tek istek hatalarını `hatalar`da toplar, fırlatmaz. Hata var
+ * ve hiçbir sayaç ilerlememişse iş başarısızdır; bir kısmıysa özette hata sayısı.
+ */
+function basariDurumu(sonuc: unknown): { basarili: boolean; hataSayisi: number; ilkHata: string | null } {
+  if (!sonuc || typeof sonuc !== "object") return { basarili: true, hataSayisi: 0, ilkHata: null };
+  const o = sonuc as Record<string, unknown>;
+  const hatalar = Array.isArray(o.hatalar) ? (o.hatalar as unknown[]).map(String) : [];
+  if (!hatalar.length) return { basarili: true, hataSayisi: 0, ilkHata: null };
+  const ilerleme = Object.entries(o).filter(([k, v]) => typeof v === "number" && k !== "taranan" && k !== "toplam");
+  const hicIlerlemedi = ilerleme.every(([, v]) => v === 0);
+  return { basarili: !hicIlerlemedi, hataSayisi: hatalar.length, ilkHata: hatalar[0] };
+}
+
+/** Örnek veri modunda (ROYAL_API_MOCK) gerçek tedarikçiye giden ya da DB'ye örnek veri yazan işler çalışmaz. */
+const ORNEK_VERIDE_OLMAZ: Adim[] = ["revizyon", "fiyat", "icerik", "listeler", "oteller"];
+export const ORNEK_VERI_MESAJI = "Örnek veri modunda bu iş çalışmaz: gerçek tedarikçiye gider ya da veritabanına örnek veri yazar.";
+export const ornekVerideEngelli = (adim: Adim) => USE_MOCK && ORNEK_VERIDE_OLMAZ.includes(adim);
+
 export async function isCalistir(adim: Adim, ilerleme?: (satir: string) => void) {
   if (calisan) throw new MesgulHatasi(`Şu an "${calisan}" çalışıyor`);
+  if (ornekVerideEngelli(adim)) throw new Error(ORNEK_VERI_MESAJI);
   const feedId = process.env.ROYAL_API_FEED_ID_B2B || process.env.ROYAL_API_FEED_ID_B2C || "";
   const baslangic = Date.now();
   calisan = adim;
@@ -85,11 +106,16 @@ export async function isCalistir(adim: Adim, ilerleme?: (satir: string) => void)
     throw e;
   } finally {
     calisan = null;
+    const b = basariDurumu(sonuc);
     const kayit: SonCalisma = {
       zaman: new Date().toISOString(),
       sure: Math.round((Date.now() - baslangic) / 1000),
-      basarili: !hata,
-      ozet: hata ? (hata instanceof Error ? hata.message : String(hata)).slice(0, 300) : ozetle(sonuc),
+      basarili: !hata && b.basarili,
+      ozet: hata
+        ? (hata instanceof Error ? hata.message : String(hata)).slice(0, 300)
+        : !b.basarili
+          ? `Tüm istekler başarısız (${b.hataSayisi}): ${b.ilkHata}`.slice(0, 300)
+          : [ozetle(sonuc), b.hataSayisi ? `${b.hataSayisi} hata` : ""].filter(Boolean).join(" · "),
     };
     await prisma.systemSetting
       .upsert({

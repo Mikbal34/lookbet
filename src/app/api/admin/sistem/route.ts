@@ -13,7 +13,7 @@ const tanimli = (ad: string, enAz = 1) => (process.env[ad]?.length ?? 0) >= enAz
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session || session.user.role !== "ADMIN") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return NextResponse.json({ error: "Bu işlem için yönetici yetkisi gerekiyor" }, { status: 403 });
   }
   let tedarikci: string | null = null;
   try {

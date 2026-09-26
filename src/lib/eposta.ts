@@ -142,3 +142,22 @@ export async function iptalEpostasi(r: EpostaRezervasyonu & { cancellationFee: n
   const text = [`${t("iptalBaslik")}: ${otel}`, r.bookingNumber ? `${t("rezervasyonNo")}: ${r.bookingNumber}` : "", ucret].filter(Boolean).join("\n");
   return { subject: t("iptalKonu", { otel }), html, text };
 }
+
+/** Acente başvurusunun sonucu (onay ya da ret). Acente paneli Türkçe: e-posta da. */
+export async function acenteSonucEpostasi(p: { onay: boolean; ad: string; sirket: string; sebep?: string | null }) {
+  const t = await getTranslations({ locale: "tr", namespace: "api.eposta" });
+  const link = SITE() ? `${SITE()}/agency/dashboard` : null;
+  const baslik = p.onay ? t("acenteOnayBaslik") : t("acenteRetBaslik");
+  const satirlar = p.onay
+    ? [t("acenteOnayMetin", { ad: p.ad, sirket: p.sirket })]
+    : [t("acenteRetMetin", { ad: p.ad, sirket: p.sirket }), ...(p.sebep ? [t("acenteRetSebep", { sebep: p.sebep })] : []), t("acenteRetYeniden")];
+  const dugme = p.onay ? t("panelAc") : t("panelGit");
+  const html = kabuk(
+    baslik,
+    `${satirlar.map((x) => `<p>${kacir(x)}</p>`).join("\n  ")}
+  ${link ? `<p><a href="${kacir(link)}" style="display:inline-block;background:#141414;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:600">${kacir(dugme)}</a></p>` : ""}`,
+    t("acenteAltNot")
+  );
+  const text = [baslik, ...satirlar, link ? `${dugme}: ${link}` : ""].filter(Boolean).join("\n");
+  return { subject: p.onay ? t("acenteOnayKonu", { sirket: p.sirket }) : t("acenteRetKonu", { sirket: p.sirket }), html, text };
+}

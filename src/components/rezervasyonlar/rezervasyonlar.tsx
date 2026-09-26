@@ -270,8 +270,12 @@ function SatirKart({ r, simdi, soluk }: { r: Rezervasyon; simdi: number; soluk?:
   const kalan = kalanGun(r, simdi);
   const alt = soluk
     ? [
-        r.status === "CANCELLED" ? t("liste.iptalTarihi", { tarih: b.gunAyYil(new Date(r.updatedAt)) }) : t("liste.tamamlanamadi"),
-        r.cancellationFee != null ? t("liste.iptalUcreti", { tutar: b.para(r.cancellationFee, r.cancellationFeeCurrency || r.currency) }) : null,
+        r.status === "CANCELLED" ? t("liste.iptalTarihi", { tarih: b.gunAyYil(new Date(r.cancelledAt ?? r.updatedAt)) }) : t("liste.tamamlanamadi"),
+        r.cancellationFee == null
+          ? null
+          : r.cancellationFee > 0
+            ? t("liste.iptalUcreti", { tutar: b.para(r.cancellationFee, r.cancellationFeeCurrency || r.currency) })
+            : t("liste.iptalUcretsiz"),
       ]
         .filter(Boolean)
         .join(" · ")

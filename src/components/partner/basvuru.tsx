@@ -1,7 +1,8 @@
 "use client";
 
-// Onaysız acentenin paneli: başvuru formu (bir kez gönderilir) ya da
-// başvurunun durumu. Onaylanınca panel düzeni bunun yerine paneli gösterir.
+// Onaysız acentenin paneli: başvuru formu ya da başvurunun durumu. Reddedilen
+// başvuru, bilgileri düzeltilerek yeniden gönderilebilir (form dolu açılır).
+// Onaylanınca panel düzeni bunun yerine paneli gösterir.
 // Durum sunucuda (lib/acente-durumu) hesaplanır; gönderince sayfa yenilenir.
 
 import * as React from "react";
@@ -29,7 +30,7 @@ function denetle(f: Form): Partial<Record<Alan, string>> {
   const h: Partial<Record<Alan, string>> = {};
   const rakam = (v: string) => v.replace(/\D/g, "").length;
   if (f.contactName.trim().length < 3) h.contactName = "Adını ve soyadını yaz";
-  if (rakam(f.phone) < 10) h.phone = "Telefon numarası eksik";
+  if (rakam(f.phone) < 10 || rakam(f.phone) > 15) h.phone = "Telefon numarası 10–15 haneli olmalı";
   if (f.companyName.trim().length < 2) h.companyName = "Şirket unvanını yaz";
   if (!/^\d{10,11}$/.test(f.taxId.trim())) h.taxId = "Vergi no 10, TC kimlik no 11 hane olmalı";
   if (f.taxOffice.trim().length < 2) h.taxOffice = "Vergi dairesini yaz";
@@ -43,7 +44,9 @@ const tarihYaz = (iso: string) => {
 };
 
 export function AcenteBasvuru({ durum }: { durum: Exclude<AcenteDurumu, { tur: "onayli" }> }) {
+  const [yeniden, setYeniden] = React.useState(false);
   if (durum.tur === "basvuru") return <BasvuruFormu />;
+  if (durum.tur === "reddedildi" && yeniden) return <BasvuruFormu baslangic={durum.onceki} />;
   return (
     <div className={s.dis}>
       <div className={s.durum}>
@@ -74,7 +77,10 @@ export function AcenteBasvuru({ durum }: { durum: Exclude<AcenteDurumu, { tur: "
                 <span>{durum.sebep}</span>
               </div>
             )}
-            <p className={s.soluk}>Eksik bilgiyi tamamlamak ya da yeniden değerlendirme için destek ekibine yaz.</p>
+            <p className={s.soluk}>Eksik bilgiyi tamamlayıp yeniden başvurabilir ya da destek ekibine yazabilirsin.</p>
+            <button type="button" className={`${s.dugme} ${s.siyah}`} onClick={() => setYeniden(true)}>
+              Bilgileri düzeltip yeniden başvur
+            </button>
           </>
         )}
         {durum.tur === "kapali" && (
@@ -111,10 +117,10 @@ function Adim({ no, baslik, aciklama, bitti, aktif }: { no: number; baslik: stri
   );
 }
 
-function BasvuruFormu() {
+function BasvuruFormu({ baslangic }: { baslangic?: Partial<Form> }) {
   const router = useRouter();
   const { data: oturum } = useSession();
-  const [f, setF] = React.useState<Form>(BOS);
+  const [f, setF] = React.useState<Form>({ ...BOS, ...baslangic });
   const [hatalar, setHatalar] = React.useState<Partial<Record<Alan, string>>>({});
   const [onay, setOnay] = React.useState(false);
   const [gonderiliyor, setGonderiliyor] = React.useState(false);

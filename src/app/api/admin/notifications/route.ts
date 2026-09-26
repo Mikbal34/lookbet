@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return NextResponse.json({ error: "Bu işlem için yönetici yetkisi gerekiyor" }, { status: 403 });
     }
 
     const { searchParams } = new URL(req.url);
@@ -67,7 +67,7 @@ export async function GET(req: NextRequest) {
     });
   } catch (error) {
     console.error("[ADMIN_NOTIFICATIONS_GET]", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Sunucu hatası, biraz sonra tekrar dene" }, { status: 500 });
   }
 }
 
@@ -77,7 +77,7 @@ export async function PATCH(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return NextResponse.json({ error: "Bu işlem için yönetici yetkisi gerekiyor" }, { status: 403 });
     }
     const body = await req.json().catch(() => ({}));
     if (body?.markAllRead !== true) {
@@ -90,7 +90,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ count });
   } catch (error) {
     console.error("[ADMIN_NOTIFICATIONS_PATCH]", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Sunucu hatası, biraz sonra tekrar dene" }, { status: 500 });
   }
 }
 
@@ -99,15 +99,15 @@ export async function POST(req: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return NextResponse.json({ error: "Bu işlem için yönetici yetkisi gerekiyor" }, { status: 403 });
     }
 
-    const body = await req.json();
+    const body = await req.json().catch(() => null);
     const parsed = createNotificationSchema.safeParse(body);
 
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Validation failed", details: parsed.error.flatten() },
+        { error: parsed.error.issues[0]?.message ?? "Bilgileri kontrol et", details: parsed.error.flatten() },
         { status: 400 }
       );
     }
@@ -123,7 +123,7 @@ export async function POST(req: NextRequest) {
 
       if (users.length === 0) {
         return NextResponse.json(
-          { error: "No active users found for the specified role" },
+          { error: "Bu roldeki etkin kullanıcı yok" },
           { status: 404 }
         );
       }
@@ -155,7 +155,7 @@ export async function POST(req: NextRequest) {
     // Send to a single user
     const userExists = await prisma.user.findUnique({ where: { id: userId! } });
     if (!userExists) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return NextResponse.json({ error: "Kullanıcı bulunamadı" }, { status: 404 });
     }
 
     const notification = await prisma.notification.create({
@@ -183,6 +183,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ notification }, { status: 201 });
   } catch (error) {
     console.error("[ADMIN_NOTIFICATIONS_POST]", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Sunucu hatası, biraz sonra tekrar dene" }, { status: 500 });
   }
 }

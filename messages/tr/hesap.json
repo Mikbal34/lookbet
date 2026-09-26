@@ -67,7 +67,8 @@
       "belcika": "Belçika",
       "italya": "İtalya",
       "ispanya": "İspanya"
-    }
+    },
+    "telefonUzun": "Telefon numarası çok uzun"
   },
   "misafirler": {
     "baslik": "Kayıtlı misafirler",

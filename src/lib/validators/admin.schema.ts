@@ -27,7 +27,16 @@ const priceRuleAlanlari = {
 };
 // Yüzde sınırları: indirim %100'ü, kâr payı %500'ü aşamaz (fiyat motoru
 // ayrıca maliyet tabanını korur; bu yalnız yazım hatalarına karşı).
-const kuralDegeri = (k: { type?: string; value?: number }, ctx: z.RefinementCtx) => {
+/** Başlangıç bitişten sonra olamaz (ikisi de verildiyse). */
+const tarihSirasi = (k: { startDate?: string | null; endDate?: string | null }, ctx: z.RefinementCtx) => {
+  if (k.startDate && k.endDate && Date.parse(k.startDate) > Date.parse(k.endDate)) {
+    ctx.addIssue({ code: "custom", path: ["endDate"], message: "Bitiş başlangıçtan önce olamaz" });
+  }
+};
+const kuralDegeri = (k: { type?: string; value?: number; appliesTo?: string; agencyId?: string | null; startDate?: string | null; endDate?: string | null }, ctx: z.RefinementCtx) => {
+  tarihSirasi(k, ctx);
+  // Tek acente kuralı acentesiz hiçbir satışa uymaz: acente seçilmeli.
+  if (k.appliesTo === "SPECIFIC_AGENCY" && k.agencyId === null) ctx.addIssue({ code: "custom", path: ["agencyId"], message: "Acente seçin" });
   if (k.value === undefined) return;
   if (k.type === "PERCENTAGE_DISCOUNT" && k.value > 100) ctx.addIssue({ code: "custom", path: ["value"], message: "İndirim yüzdesi en fazla 100 olabilir" });
   if (k.type === "MARKUP" && k.value > 500) ctx.addIssue({ code: "custom", path: ["value"], message: "Kâr payı yüzdesi en fazla 500 olabilir" });
@@ -38,7 +47,7 @@ export const priceRuleSchema = z
     isActive: z.boolean().default(true),
     priority: z.number().int().default(0),
   })
-  .superRefine(kuralDegeri);
+  .superRefine((k, ctx) => kuralDegeri({ ...k, agencyId: k.agencyId ?? null }, ctx));
 // Güncelleme: yalnız gönderilen alanlar değişir. partial() Zod 4'te
 // varsayılanları yine uygular (isActive → true, priority → 0); bu yüzden
 // varsayılansız alanlardan ayrı kurulur.
@@ -54,7 +63,8 @@ const commissionAlanlari = {
   endDate: tarihMetni,
   isActive: z.boolean(),
 };
-const komisyonDegeri = (k: { type?: string; value?: number }, ctx: z.RefinementCtx) => {
+const komisyonDegeri = (k: { type?: string; value?: number; startDate?: string | null; endDate?: string | null }, ctx: z.RefinementCtx) => {
+  tarihSirasi(k, ctx);
   if (k.type === "PERCENTAGE" && k.value !== undefined && k.value > 90) ctx.addIssue({ code: "custom", path: ["value"], message: "Komisyon yüzdesi en fazla 90 olabilir" });
 };
 export const commissionSchema = z.object({ ...commissionAlanlari, isActive: z.boolean().default(true) }).superRefine(komisyonDegeri);
@@ -63,42 +73,26 @@ export const commissionUpdateSchema = z.object(commissionAlanlari).partial().sup
 // ── Acenteler ──
 const ORAN_HATA = "Oranlar 0 ile 100 arasında olmalı";
 const oran = z.number({ error: ORAN_HATA }).min(0, ORAN_HATA).max(100, ORAN_HATA);
+// Komisyon %90'ı aşamaz: fiyat tabanı net ÷ (1 − komisyon) 90'da kesiliyor,
+// üstünde acente net fiyatın altına satabilirdi.
+const KOMISYON_HATA = "Komisyon 0 ile 90 arasında olmalı";
+const komisyonOrani = z.number({ error: KOMISYON_HATA }).min(0, KOMISYON_HATA).max(90, KOMISYON_HATA);
 const feedIdAlani = z.string().trim().max(100, "Feed kimliği en fazla 100 karakter").nullish();
 const notAlani = z.string().trim().max(2000, "Not en fazla 2000 karakter").nullish();
 
-export const agencyApproveSchema = z.object({
-  discountRate: oran.optional(),
-  commission: oran.optional(),
-  feedId: feedIdAlani,
-  notes: notAlani,
-});
 
 // Başvuru onayı: anlaşma oranları. Şifre yok; acente e-posta koduyla girer.
 export const applicationApproveSchema = z.object({
   discountRate: oran.optional(),
-  commission: oran.optional(),
+  commission: komisyonOrani.optional(),
   feedId: feedIdAlani,
   notes: notAlani,
 });
 
-// Yönetimden acente açmak (API): kullanıcı önceden var olmalı (etkin, rolü
-// acente, henüz acentesi yok; route kontrol eder).
-export const agencyCreateSchema = z.object({
-  userId: z.string().trim().min(1, "Kullanıcı gerekli"),
-  companyName: z.string().trim().min(2, "Şirket unvanı gerekli").max(200, "Şirket unvanı en fazla 200 karakter"),
-  taxId: z.string().trim().regex(/^\d{10,11}$/, "Vergi no 10, TC kimlik no 11 hane olmalı"),
-  address: z.string().trim().max(500, "Adres en fazla 500 karakter").nullish(),
-  phone: z.string().trim().max(40, "Telefon en fazla 40 karakter").nullish(),
-  discountRate: oran.default(0),
-  commission: oran.default(0),
-  feedId: feedIdAlani,
-  notes: notAlani,
-  isApproved: z.boolean().default(false),
-});
 
 // Anlaşma güncellemesi: yalnız gönderilen alanlar değişir.
 export const agencyUpdateSchema = z
-  .object({ discountRate: oran, commission: oran, feedId: feedIdAlani, notes: notAlani, isApproved: z.boolean() })
+  .object({ discountRate: oran, commission: komisyonOrani, feedId: feedIdAlani, notes: notAlani, isApproved: z.boolean() })
   .partial();
 
 export const applicationRejectSchema = z.object({
@@ -109,11 +103,6 @@ export const applicationRejectSchema = z.object({
 // saklanır, giriş de öyle arar.
 const epostaAlani = z.string().trim().toLowerCase().email("Geçerli bir e-posta adresi yaz").max(254);
 
-export const userCreateSchema = z.object({
-  name: z.string().trim().min(2, "Ad en az 2 harf olmalı").max(120, "Ad en fazla 120 karakter"),
-  email: epostaAlani,
-  role: z.enum(["CUSTOMER", "AGENCY", "ADMIN"]).default("CUSTOMER"),
-});
 
 export const userUpdateSchema = z.object({
   name: z.string().trim().min(2, "Ad en az 2 harf olmalı").max(120, "Ad en fazla 120 karakter").optional(),
@@ -125,12 +114,9 @@ export const userUpdateSchema = z.object({
 
 export type PriceRuleInput = z.input<typeof priceRuleSchema>;
 export type CommissionInput = z.input<typeof commissionSchema>;
-export type AgencyApproveInput = z.infer<typeof agencyApproveSchema>;
 export type ApplicationApproveInput = z.infer<typeof applicationApproveSchema>;
 export type ApplicationRejectInput = z.infer<typeof applicationRejectSchema>;
-export type AgencyCreateInput = z.input<typeof agencyCreateSchema>;
 export type AgencyUpdateInput = z.infer<typeof agencyUpdateSchema>;
-export type UserCreateInput = z.input<typeof userCreateSchema>;
 export type UserUpdateInput = z.infer<typeof userUpdateSchema>;
 
 // ── Kampanyalar ──

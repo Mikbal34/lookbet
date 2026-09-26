@@ -5,7 +5,7 @@
 // (oran düzenleme, kapatma/açma) ve karar geçmişi.
 
 import * as React from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Ikon } from "@/components/lb/ikon";
 import { Nesne } from "@/components/lb/nesne";
 import { Pencere } from "@/components/lb/pencere";
@@ -57,11 +57,18 @@ export function Acenteler() {
     queryKey: ["yonetim", "basvurular", "PENDING"],
     queryFn: () => getir<{ applications: Basvuru[]; pendingCount: number }>("/api/admin/agency-applications?status=PENDING&limit=100"),
   });
-  const acenteler = useQuery({
+  const acenteSayfalari = useInfiniteQuery({
     queryKey: ["yonetim", "acenteler"],
-    queryFn: () => getir<{ agencies: Acente[]; pagination: { total: number } }>("/api/admin/agencies?limit=100"),
+    queryFn: ({ pageParam }) =>
+      getir<{ agencies: Acente[]; pagination: { total: number; page: number; totalPages: number } }>(`/api/admin/agencies?limit=50&page=${pageParam}`),
+    initialPageParam: 1,
+    getNextPageParam: (son) => (son.pagination.page < son.pagination.totalPages ? son.pagination.page + 1 : undefined),
     enabled: sekme === "liste" || !!bekleyen.data,
   });
+  const acenteVerisi = acenteSayfalari.data && {
+    agencies: acenteSayfalari.data.pages.flatMap((p) => p.agencies),
+    pagination: acenteSayfalari.data.pages[0].pagination,
+  };
   const gecmis = useQuery({
     queryKey: ["yonetim", "basvurular", "KARAR"],
     queryFn: () => getir<{ applications: Basvuru[] }>("/api/admin/agency-applications?status=KARAR&limit=50"),
@@ -78,7 +85,7 @@ export function Acenteler() {
           Başvurular {!!bekleyen.data?.pendingCount && <i className={s.say}>{bekleyen.data.pendingCount}</i>}
         </button>
         <button role="tab" type="button" aria-selected={sekme === "liste"} onClick={() => setSekme("liste")}>
-          Acenteler {acenteler.data && <i>{acenteler.data.pagination.total}</i>}
+          Acenteler {acenteVerisi && <i>{acenteVerisi.pagination.total}</i>}
         </button>
         <button role="tab" type="button" aria-selected={sekme === "gecmis"} onClick={() => setSekme("gecmis")}>Karar geçmişi</button>
       </div>
@@ -103,10 +110,10 @@ export function Acenteler() {
         ))}
 
       {sekme === "liste" &&
-        (acenteler.isPending ? (
+        (!acenteVerisi && !acenteSayfalari.isError ? (
           <div className={s.iskelet} aria-busy="true" />
-        ) : acenteler.isError ? (
-          <Hata onTekrar={() => acenteler.refetch()} />
+        ) : !acenteVerisi ? (
+          <Hata onTekrar={() => acenteSayfalari.refetch()} />
         ) : (
           <div className={s.tabloKap}>
             <table className={s.tablo}>
@@ -122,7 +129,7 @@ export function Acenteler() {
                 </tr>
               </thead>
               <tbody>
-                {acenteler.data.agencies.map((a) => (
+                {acenteVerisi.agencies.map((a) => (
                   <tr key={a.id} data-tik tabIndex={0} onClick={() => setDuzenlenen(a)} onKeyDown={(e) => e.key === "Enter" && setDuzenlenen(a)}>
                     <td>
                       <div className={s.hucre}>
@@ -144,7 +151,14 @@ export function Acenteler() {
                 ))}
               </tbody>
             </table>
-            {!acenteler.data.agencies.length && <div className={s.tabloBos}>Henüz onaylı acente yok.</div>}
+            {!acenteVerisi.agencies.length && <div className={s.tabloBos}>Henüz acente yok.</div>}
+            {acenteSayfalari.hasNextPage && (
+              <div className={s.dahaFazla}>
+                <button type="button" className={`${s.dugme} ${s.cerceve}`} disabled={acenteSayfalari.isFetchingNextPage} onClick={() => acenteSayfalari.fetchNextPage()}>
+                  {acenteSayfalari.isFetchingNextPage ? "Yükleniyor…" : "Daha fazla göster"}
+                </button>
+              </div>
+            )}
           </div>
         ))}
 
@@ -252,10 +266,11 @@ function BasvuruIcerik({ b, onKapat }: { b: Basvuru; onKapat: () => void }) {
     },
     onError: (e: Error) => setHata(e.message),
   });
-  const oran = (v: string) => v !== "" && Number(v) >= 0 && Number(v) <= 100;
+  const oran = (v: string, ust = 100) => v !== "" && Number(v) >= 0 && Number(v) <= ust;
   const tamam = () => {
     setHata(null);
-    if (mod === "onay" && (!oran(kom) || !oran(ind))) return setHata("Oranlar 0 ile 100 arasında olmalı");
+    if (mod === "onay" && !oran(kom, 90)) return setHata("Komisyon 0 ile 90 arasında olmalı");
+    if (mod === "onay" && !oran(ind)) return setHata("İndirim 0 ile 100 arasında olmalı");
     if (mod === "red" && sebep.trim().length < 5) return setHata("Acentenin göreceği bir sebep yaz");
     karar.mutate();
   };
@@ -292,7 +307,7 @@ function BasvuruIcerik({ b, onKapat }: { b: Basvuru; onKapat: () => void }) {
             <div className={s.form}>
               <span className={s.pEtiket}>Anlaşma</span>
               <div className={s.ikiAlan}>
-                <Girdi id="k-kom" etiket="Komisyon (%)" type="number" min={0} max={100} inputMode="decimal" value={kom} onDegis={setKom} />
+                <Girdi id="k-kom" etiket="Komisyon (%)" type="number" min={0} max={90} inputMode="decimal" value={kom} onDegis={setKom} />
                 <Girdi id="k-ind" etiket="İndirim (%)" type="number" min={0} max={100} inputMode="decimal" value={ind} onDegis={setInd} />
               </div>
               <div className={s.alan}>
@@ -366,7 +381,7 @@ function AcenteIcerik({ a, onKapat }: { a: Acente; onKapat: () => void }) {
       </div>
       <span className={s.pEtiket}>Anlaşma</span>
       <div className={s.ikiAlan}>
-        <Girdi id="d-kom" etiket="Komisyon (%)" type="number" min={0} max={100} value={kom} onDegis={setKom} />
+        <Girdi id="d-kom" etiket="Komisyon (%)" type="number" min={0} max={90} value={kom} onDegis={setKom} />
         <Girdi id="d-ind" etiket="İndirim (%)" type="number" min={0} max={100} value={ind} onDegis={setInd} />
       </div>
       <p className={s.not}>Oran değişikliği yeni rezervasyonlara uygulanır ve denetim kaydına düşer.</p>
@@ -391,7 +406,8 @@ function AcenteIcerik({ a, onKapat }: { a: Acente; onKapat: () => void }) {
               disabled={kaydet.isPending}
               onClick={() => {
                 const k = Number(kom), i = Number(ind);
-                if (kom === "" || ind === "" || k < 0 || k > 100 || i < 0 || i > 100) return setHata("Oranlar 0 ile 100 arasında olmalı");
+                if (kom === "" || k < 0 || k > 90) return setHata("Komisyon 0 ile 90 arasında olmalı");
+                if (ind === "" || i < 0 || i > 100) return setHata("İndirim 0 ile 100 arasında olmalı");
                 kaydet.mutate({ commission: k, discountRate: i });
               }}
             >

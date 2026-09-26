@@ -54,6 +54,8 @@ interface Kupon {
   isActive: boolean;
   note: string | null;
   toplamIndirim: number;
+  /** Bağlı rezervasyon (iptal edilenler dahil); varsa silinemez. */
+  bagli: number;
 }
 
 const TUR: Record<Tur, { ad: string; aciklama: string; nesne: NesneAdi; ikon: IkonAdi }> = {
@@ -323,6 +325,7 @@ function IndirimFormu({ d, kar, onKapat }: { d: Indirim | null; kar: { yuzde: nu
     setHata(null);
     const n = Math.round(Number(gunSayi));
     if (!(oran > 0)) return setHata("İndirim yüzdesini yaz (1–90)");
+    if (Number(yuzde) > 90) return setHata("İndirim en fazla %90 olabilir");
     if (tur !== "DATE_RANGE" && !(n >= (tur === "LAST_MINUTE" ? 0 : 1))) return setHata("Gün ya da gece sayısını yaz");
     if (tur === "DATE_RANGE" && (!konBas || !konSon)) return setHata("Konaklama tarih aralığını seç");
     if (kapsam === "bolge" && !bolge.trim()) return setHata("Bölge seç");
@@ -629,7 +632,7 @@ function KuponSatiri({ k, onDuzenle, onKopyala }: { k: Kupon; onDuzenle: () => v
           ) : (
             <>
               <button type="button" className={s.metinDugme} onClick={onDuzenle}>Düzenle</button>
-              {!k.usedCount && <button type="button" className={s.metinDugme} onClick={() => setEmin(true)}>Sil</button>}
+              {!k.bagli && <button type="button" className={s.metinDugme} onClick={() => setEmin(true)}>Sil</button>}
             </>
           )}
         </div>

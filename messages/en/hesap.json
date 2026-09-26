@@ -67,7 +67,8 @@
       "belcika": "Belgium",
       "italya": "Italy",
       "ispanya": "Spain"
-    }
+    },
+    "telefonUzun": "The phone number is too long"
   },
   "misafirler": {
     "baslik": "Saved guests",

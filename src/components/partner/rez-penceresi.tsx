@@ -80,7 +80,7 @@ function Icerik({ r, simdi, oran, onIptalAc }: { r: Rezervasyon; simdi: number; 
         <div><span>Tutar</span><span>{para(t, r.currency)}</span></div>
         {komisyon && <div><span>Komisyonun{komisyon.kayitli ? "" : ` (%${oran}, tahmini)`}</span><span>{para(komisyon.tutar, r.currency)}</span></div>}
         {r.status === "CANCELLED" && r.cancellationFee != null && (
-          <div><span>İptal ücreti</span><span>{para(r.cancellationFee, r.cancellationFeeCurrency || r.currency)}</span></div>
+          <div><span>İptal ücreti</span><span>{r.cancellationFee > 0 ? para(r.cancellationFee, r.cancellationFeeCurrency || r.currency) : "Alınmadı"}</span></div>
         )}
         <div className={s.toplam}><span>Rezervasyon no</span><span>{r.bookingNumber ?? "—"}</span></div>
         {r.hotelConfirmationNumber && <div><span>Otel onay no</span><span>{r.hotelConfirmationNumber}</span></div>}
@@ -105,7 +105,7 @@ function Icerik({ r, simdi, oran, onIptalAc }: { r: Rezervasyon; simdi: number; 
       {r.status === "CANCELLED" && (
         <p className={s.durumNot} data-renk="kirmizi">
           <Ikon ad="info" boyut={18} />
-          {gunKisa(new Date(r.updatedAt))} tarihinde iptal edildi.
+          {gunKisa(new Date(r.cancelledAt ?? r.updatedAt))} tarihinde iptal edildi.
         </p>
       )}
 

@@ -12,15 +12,16 @@ export default withAuth(
         if (path.startsWith("/api/")) {
           return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 403 });
         }
-        // Yönetici girişi acente girişiyle aynı sayfada (e-posta kodu).
-        return NextResponse.redirect(new URL("/agency/login?callbackUrl=/admin", req.url));
+        // Yönetici girişi acente girişiyle aynı sayfada (e-posta kodu);
+        // girişten sonra istenen sayfaya dönülür.
+        return NextResponse.redirect(new URL(`/agency/login?callbackUrl=${encodeURIComponent(path + req.nextUrl.search)}`, req.url));
       }
     }
 
     // Agency routes (login sayfası hariç — o herkese açık)
     if (path.startsWith("/agency") && path !== "/agency/login") {
       if (token?.role !== "AGENCY") {
-        return NextResponse.redirect(new URL("/agency/login", req.url));
+        return NextResponse.redirect(new URL(`/agency/login?callbackUrl=${encodeURIComponent(path + req.nextUrl.search)}`, req.url));
       }
     }
 

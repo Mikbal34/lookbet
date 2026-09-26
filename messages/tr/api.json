@@ -42,7 +42,12 @@
     "yetiskin18": "Yetişkin misafir girişte en az 18 yaşında olmalı",
     "cocukYasi": "Girişteki yaş aramadaki çocuk yaşlarıyla ({yaslar}) uyuşmuyor",
     "tekOda": "Şimdilik rezervasyon başına tek oda yapılabiliyor.",
-    "basarisiz": "Rezervasyon tamamlanamadı; lütfen tekrar dene."
+    "basarisiz": "Rezervasyon tamamlanamadı; lütfen tekrar dene.",
+    "bulunamadi": "Rezervasyon bulunamadı",
+    "erisimYok": "Bu rezervasyona erişim iznin yok",
+    "listeHatasi": "Rezervasyonlar alınırken bir hata oluştu",
+    "getirmeHatasi": "Rezervasyon alınırken bir hata oluştu",
+    "acenteYok": "Acente bilgisi bulunamadı"
   },
   "kupon": {
     "girisGerekli": "Kupon için giriş yap",
@@ -112,6 +117,27 @@
     "iptalBaslik": "Rezervasyonun iptal edildi",
     "iptalGiris": "Merhaba {ad}, {otel} rezervasyonun iptal edildi.",
     "iptalUcreti": "İptal ücreti: {tutar}.",
-    "ucretYok": "İptal ücreti alınmadı."
+    "ucretYok": "İptal ücreti alınmadı.",
+    "acenteOnayKonu": "LookBeds Partner başvurun onaylandı · {sirket}",
+    "acenteOnayBaslik": "Başvurun onaylandı",
+    "acenteOnayMetin": "Merhaba {ad}, {sirket} için yaptığın LookBeds Partner başvurusu onaylandı. Panelin açıldı: acente fiyatlarıyla rezervasyon yapabilir, komisyonunu takip edebilirsin.",
+    "acenteRetKonu": "LookBeds Partner başvurun hakkında · {sirket}",
+    "acenteRetBaslik": "Başvurun onaylanmadı",
+    "acenteRetMetin": "Merhaba {ad}, {sirket} için yaptığın başvuruyu şu an onaylayamadık.",
+    "acenteRetSebep": "Sebep: {sebep}",
+    "acenteRetYeniden": "Bilgileri düzeltip panelden yeniden başvurabilirsin.",
+    "panelAc": "Paneli aç",
+    "panelGit": "Panele git",
+    "acenteAltNot": "Bu e-posta LookBeds Partner başvurunla ilgili bilgi vermek için gönderildi."
+  },
+  "favori": {
+    "alinamadi": "Favoriler alınamadı",
+    "kaydedilemedi": "Favori kaydedilemedi",
+    "silinemedi": "Favori silinemedi"
+  },
+  "bildirim": {
+    "alinamadi": "Bildirimler alınamadı",
+    "bulunamadi": "Bildirim bulunamadı",
+    "guncellenemedi": "Bildirim güncellenemedi"
   }
 }

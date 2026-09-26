@@ -18,7 +18,7 @@ async function yonetici() {
 
 export async function PATCH(req: NextRequest, { params }: P) {
   const s = await yonetici();
-  if (!s) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!s) return NextResponse.json({ error: "Bu işlem için yönetici yetkisi gerekiyor" }, { status: 403 });
   const { id } = await params;
   const eski = await prisma.discount.findUnique({ where: { id } });
   if (!eski) return NextResponse.json({ error: "İndirim bulunamadı" }, { status: 404 });
@@ -53,7 +53,7 @@ export async function PATCH(req: NextRequest, { params }: P) {
 
 export async function DELETE(_req: NextRequest, { params }: P) {
   const s = await yonetici();
-  if (!s) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!s) return NextResponse.json({ error: "Bu işlem için yönetici yetkisi gerekiyor" }, { status: 403 });
   const { id } = await params;
   const kullanim = await prisma.reservation.count({ where: { discountId: id } });
   if (kullanim > 0) {

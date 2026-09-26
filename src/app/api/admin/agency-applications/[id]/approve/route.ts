@@ -9,7 +9,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { randomBytes } from "crypto";
 import bcrypt from "bcryptjs";
-import { authOptions } from "@/lib/auth/auth-options";
+import { authOptions, hesapOnbelleginiSil } from "@/lib/auth/auth-options";
+import { acenteSonucEpostasi, epostaGonder } from "@/lib/eposta";
 import { prisma } from "@/lib/prisma";
 import { applicationApproveSchema } from "@/lib/validators";
 import { benzersizIhlali } from "../../../_ortak";
@@ -21,7 +22,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
   try {
     const session = await getServerSession(authOptions);
     if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return NextResponse.json({ error: "Bu işlem için yönetici yetkisi gerekiyor" }, { status: 403 });
     }
 
     const { id } = await params;
@@ -41,7 +42,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     const parsed = applicationApproveSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Doğrulama hatası", details: parsed.error.flatten().fieldErrors },
+        { error: parsed.error.issues[0]?.message ?? "Bilgileri kontrol et", details: parsed.error.flatten().fieldErrors },
         { status: 422 }
       );
     }
@@ -137,6 +138,11 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       return { user, agency };
     });
 
+    // Panel hemen açılsın: acentenin oturumu bir sonraki istekte DB'den okunur.
+    hesapOnbelleginiSil(result.user.id);
+    const eposta = await acenteSonucEpostasi({ onay: true, ad: application.contactName, sirket: application.companyName });
+    void epostaGonder({ to: application.email, ...eposta }).catch((e) => console.error("[EPOSTA_ACENTE_ONAY]", application.email, e));
+
     return NextResponse.json({
       message: "Başvuru onaylandı, acente paneli açıldı",
       agency: result.agency,
@@ -148,6 +154,6 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "Bu e-posta ya da vergi numarası başka bir hesaba veya acenteye bağlı" }, { status: 409 });
     }
     console.error("[ADMIN_AGENCY_APPLICATION_APPROVE]", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Sunucu hatası, biraz sonra tekrar dene" }, { status: 500 });
   }
 }

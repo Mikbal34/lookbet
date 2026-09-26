@@ -158,6 +158,8 @@ function Satirlar({ p }: { p: Profil }) {
         <form className={s.satirForm} onSubmit={(e) => {
           const rakam = tel.replace(/\D/g, "");
           if (rakam && rakam.length < 7) { e.preventDefault(); return setHata(t("kisisel.telefonHata")); }
+          // Sunucu en fazla 20 karakter saklar (ülke kodu dahil).
+          if (rakam.length > 15 || `${ulke} ${tel.trim()}`.length > 20) { e.preventDefault(); return setHata(t("kisisel.telefonUzun")); }
           gonder(e, { phone: rakam ? `${ulke} ${tel.trim()}` : "" });
         }}>
           <div className={s.tel}>

@@ -202,7 +202,10 @@ function OdemeFormu({ p, acik }: { p: URLSearchParams; acik: boolean }) {
     const soyad = parca.length > 1 ? parca.pop()! : "";
     const ad = parca.join(" ");
     setIletisim((i) => ({ ...i, ad: i.ad || ad, soyad: i.soyad || soyad, eposta: i.eposta || (kullanici.email ?? "") }));
-    if (benDe) setMisafirler((m) => m.map((x, j) => (j === 0 ? { ...x, ad: x.ad || ad, soyad: x.soyad || soyad } : x)));
+    // Acente müşterisi adına yapar: iletişim acentede kalır (onay ona gider),
+    // kendisi konaklamaz; misafirler boş gelir.
+    if (kullanici.role === "AGENCY") setBenDe(false);
+    else if (benDe) setMisafirler((m) => m.map((x, j) => (j === 0 ? { ...x, ad: x.ad || ad, soyad: x.soyad || soyad } : x)));
   }
   // Hesaptaki telefon ve doğum tarihi de (bir kez); kayıtlı misafirler çip olur.
   const profil = useProfil(!!kullanici && kullanici.role === "CUSTOMER");

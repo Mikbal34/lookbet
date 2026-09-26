@@ -20,7 +20,7 @@ async function yonetici() {
 }
 
 export async function GET() {
-  if (!(await yonetici())) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!(await yonetici())) return NextResponse.json({ error: "Bu işlem için yönetici yetkisi gerekiyor" }, { status: 403 });
   const [indirimler, kullanim, karKurali] = await Promise.all([
     prisma.discount.findMany({ orderBy: [{ isActive: "desc" }, { createdAt: "desc" }] }),
     prisma.reservation.groupBy({
@@ -29,9 +29,20 @@ export async function GET() {
       _count: { _all: true },
       _sum: { campaignDiscount: true },
     }),
+    // Bugün geçerli olan (tarih aralığı dahil) genel müşteri kâr payı; fiyat motoruyla aynı sıra.
     prisma.priceRule.findFirst({
-      where: { isActive: true, appliesTo: "ALL_CUSTOMERS", type: "MARKUP", hotelCode: null, boardType: null },
-      orderBy: { priority: "desc" },
+      where: {
+        isActive: true,
+        appliesTo: "ALL_CUSTOMERS",
+        type: "MARKUP",
+        hotelCode: null,
+        boardType: null,
+        AND: [
+          { OR: [{ startDate: null }, { startDate: { lte: new Date() } }] },
+          { OR: [{ endDate: null }, { endDate: { gte: new Date() } }] },
+        ],
+      },
+      orderBy: [{ priority: "desc" }, { createdAt: "desc" }],
       select: { value: true, name: true },
     }),
   ]);
@@ -55,7 +66,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const s = await yonetici();
-  if (!s) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!s) return NextResponse.json({ error: "Bu işlem için yönetici yetkisi gerekiyor" }, { status: 403 });
   const parsed = discountSchema.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success) {
     const ilk = parsed.error.issues[0];

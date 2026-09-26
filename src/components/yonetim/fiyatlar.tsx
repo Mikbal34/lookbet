@@ -575,7 +575,9 @@ function KuralFormu({ k, secenek, onKapat }: { k: Kural | null; secenek?: Secene
     e.preventDefault();
     setHata(null);
     if (ad.trim().length < 2) return setHata("Kurala bir ad ver");
-    if (!(d > 0) || (tur !== "FIXED_DISCOUNT" && d > 100)) return setHata(tur === "FIXED_DISCOUNT" ? "Tutar sıfırdan büyük olmalı" : "Yüzde 0 ile 100 arasında olmalı");
+    // Sınırlar sunucuyla aynı (admin.schema): indirim %100, kâr payı %500.
+    const ust = tur === "MARKUP" ? 500 : 100;
+    if (!(d > 0) || (tur !== "FIXED_DISCOUNT" && d > ust)) return setHata(tur === "FIXED_DISCOUNT" ? "Tutar sıfırdan büyük olmalı" : `Yüzde 0 ile ${ust} arasında olmalı`);
     if (hedef === "SPECIFIC_AGENCY" && !acente) return setHata("Acente seç");
     if (bas && bit && bas > bit) return setHata("Bitiş başlangıçtan önce olamaz");
     kaydet.mutate({
@@ -673,7 +675,7 @@ function KomisyonFormu({ k, secenek, onKapat }: { k: Komisyon | null; secenek?: 
     e.preventDefault();
     setHata(null);
     if (!acente) return setHata("Acente seç");
-    if (!(d > 0) || (tur === "PERCENTAGE" && d > 100)) return setHata(tur === "PERCENTAGE" ? "Yüzde 0 ile 100 arasında olmalı" : "Tutar sıfırdan büyük olmalı");
+    if (!(d > 0) || (tur === "PERCENTAGE" && d > 90)) return setHata(tur === "PERCENTAGE" ? "Yüzde 0 ile 90 arasında olmalı" : "Tutar sıfırdan büyük olmalı");
     if (bas && bit && bas > bit) return setHata("Bitiş başlangıçtan önce olamaz");
     kaydet.mutate({
       agencyId: acente,

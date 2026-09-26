@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { z } from "zod";
@@ -35,7 +36,7 @@ const ekleSemasi = z.object(
   { error: "Geçersiz istek" }
 );
 
-const girisGerekli = () => NextResponse.json({ error: "Giriş yapman gerekiyor" }, { status: 401 });
+const girisGerekli = (t: (k: "genel.girisGerekli") => string) => NextResponse.json({ error: t("genel.girisGerekli") }, { status: 401 });
 
 async function oturumdakiKullanici() {
   const session = await getServerSession(authOptions);
@@ -55,22 +56,24 @@ async function liste(userId: string) {
 }
 
 export async function GET() {
+  const t = await getTranslations("api");
   const userId = await oturumdakiKullanici();
-  if (!userId) return girisGerekli();
+  if (!userId) return girisGerekli(t);
   try {
     return NextResponse.json({ kodlar: await liste(userId) });
   } catch (error) {
     console.error("[GET /api/favoriler]", error);
-    return NextResponse.json({ error: "Favoriler alınamadı" }, { status: 500 });
+    return NextResponse.json({ error: t("favori.alinamadi") }, { status: 500 });
   }
 }
 
 export async function POST(req: NextRequest) {
+  const t = await getTranslations("api");
   const userId = await oturumdakiKullanici();
-  if (!userId) return girisGerekli();
+  if (!userId) return girisGerekli(t);
   const parsed = ekleSemasi.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Geçersiz istek" }, { status: 400 });
+    return NextResponse.json({ error: t("genel.gecersizIstek") }, { status: 400 });
   }
   const istenen = [...new Set(parsed.data.kodlar)];
   try {
@@ -99,16 +102,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ kodlar: await liste(userId) });
   } catch (error) {
     console.error("[POST /api/favoriler]", error);
-    return NextResponse.json({ error: "Favori kaydedilemedi" }, { status: 500 });
+    return NextResponse.json({ error: t("favori.kaydedilemedi") }, { status: 500 });
   }
 }
 
 export async function DELETE(req: NextRequest) {
+  const t = await getTranslations("api");
   const userId = await oturumdakiKullanici();
-  if (!userId) return girisGerekli();
+  if (!userId) return girisGerekli(t);
   const parsed = kodSemasi.safeParse(req.nextUrl.searchParams.get("kod") ?? "");
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Otel kodu gerekli" }, { status: 400 });
+    return NextResponse.json({ error: t("genel.gecersizIstek") }, { status: 400 });
   }
   try {
     // Zaten yoksa da başarı: çift tıklama ya da iki sekme hata göstermesin.
@@ -116,6 +120,6 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ kodlar: await liste(userId) });
   } catch (error) {
     console.error("[DELETE /api/favoriler]", error);
-    return NextResponse.json({ error: "Favori silinemedi" }, { status: 500 });
+    return NextResponse.json({ error: t("favori.silinemedi") }, { status: 500 });
   }
 }

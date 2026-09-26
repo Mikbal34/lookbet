@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { z } from "zod";
@@ -27,10 +28,11 @@ const okunduSemasi = z.union([
 ]);
 
 export async function GET(req: NextRequest) {
+  const t = await getTranslations("api");
   try {
     const oturum = await getServerSession(authOptions);
     if (!oturum?.user?.id) {
-      return NextResponse.json({ error: "Bu işlem için giriş yapmanız gerekiyor" }, { status: 401 });
+      return NextResponse.json({ error: t("genel.girisGerekli") }, { status: 401 });
     }
     const userId = oturum.user.id;
     const sp = req.nextUrl.searchParams;
@@ -53,21 +55,22 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ bildirimler, okunmamis, pagination: { page, totalPages: Math.ceil(toplam / limit) } });
   } catch (error) {
     console.error("[BILDIRIMLER_GET]", error);
-    return NextResponse.json({ error: "Bildirimler alınamadı" }, { status: 500 });
+    return NextResponse.json({ error: t("bildirim.alinamadi") }, { status: 500 });
   }
 }
 
 export async function PATCH(req: NextRequest) {
+  const t = await getTranslations("api");
   try {
     const oturum = await getServerSession(authOptions);
     if (!oturum?.user?.id) {
-      return NextResponse.json({ error: "Bu işlem için giriş yapmanız gerekiyor" }, { status: 401 });
+      return NextResponse.json({ error: t("genel.girisGerekli") }, { status: 401 });
     }
     const userId = oturum.user.id;
 
     const parsed = okunduSemasi.safeParse(await req.json().catch(() => null));
     if (!parsed.success) {
-      return NextResponse.json({ error: "{ id } ya da { hepsi: true } gönder", details: z.flattenError(parsed.error) }, { status: 400 });
+      return NextResponse.json({ error: t("genel.gecersizIstek"), details: z.flattenError(parsed.error) }, { status: 400 });
     }
 
     if ("hepsi" in parsed.data) {
@@ -77,10 +80,10 @@ export async function PATCH(req: NextRequest) {
 
     // Kullanıcıya ait değilse eşleşme olmaz: 404 (okunmuşsa yine 200).
     const { count } = await prisma.notification.updateMany({ where: { id: parsed.data.id, userId }, data: { isRead: true } });
-    if (!count) return NextResponse.json({ error: "Bildirim bulunamadı" }, { status: 404 });
+    if (!count) return NextResponse.json({ error: t("bildirim.bulunamadi") }, { status: 404 });
     return NextResponse.json({ guncellenen: count });
   } catch (error) {
     console.error("[BILDIRIMLER_PATCH]", error);
-    return NextResponse.json({ error: "Bildirim güncellenemedi" }, { status: 500 });
+    return NextResponse.json({ error: t("bildirim.guncellenemedi") }, { status: 500 });
   }
 }

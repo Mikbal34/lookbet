@@ -1,4 +1,4 @@
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
@@ -30,12 +30,13 @@ const VALID_STATUSES: ReservationStatus[] = [
 //   page    – 1-based page number (default: 1)
 //   limit   – page size (default: 20, max: 100)
 export async function GET(request: NextRequest) {
+  const t = await getTranslations("api");
   try {
     const session = await getServerSession(authOptions);
 
     if (!session?.user) {
       return NextResponse.json(
-        { error: "Bu işlem için giriş yapmanız gerekiyor" },
+        { error: t("genel.girisGerekli") },
         { status: 401 }
       );
     }
@@ -63,7 +64,7 @@ export async function GET(request: NextRequest) {
     if (role === "AGENCY") {
       if (!agencyId) {
         return NextResponse.json(
-          { error: "Acente bilgisi bulunamadı" },
+          { error: t("rezervasyon.acenteYok") },
           { status: 403 }
         );
       }
@@ -154,7 +155,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("[GET /api/reservations]", error);
     return NextResponse.json(
-      { error: "Rezervasyonlar alınırken bir hata oluştu" },
+      { error: t("rezervasyon.listeHatasi") },
       { status: 500 }
     );
   }

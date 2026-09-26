@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
-import { ADIMLAR, MesgulHatasi, calisanIs, isCalistir, sonCalismalar, type Adim } from "@/lib/icerik-isleri";
+import { ADIMLAR, MesgulHatasi, calisanIs, isCalistir, sonCalismalar, type Adim, ORNEK_VERI_MESAJI, ornekVerideEngelli } from "@/lib/icerik-isleri";
 
 // Yönetim › İçerik senkronu.
 //   GET  — otel/konum sayıları, fiyat veren ve içeriği eksik oteller, her
@@ -20,7 +20,7 @@ async function yonetici() {
 
 export async function GET() {
   try {
-    if (!(await yonetici())) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    if (!(await yonetici())) return NextResponse.json({ error: "Bu işlem için yönetici yetkisi gerekiyor" }, { status: 403 });
 
     const gun = new Date(Date.now() - 24 * 3600 * 1000);
     const [aktif, pasif, konum, fiyatVeren, fotografsiz, son] = await Promise.all([
@@ -54,6 +54,7 @@ export async function POST(request: NextRequest) {
   if (calisanIs()) {
     return NextResponse.json({ error: `Şu an "${calisanIs()}" çalışıyor` }, { status: 409 });
   }
+  if (ornekVerideEngelli(adim as Adim)) return NextResponse.json({ error: ORNEK_VERI_MESAJI }, { status: 409 });
   await prisma.auditLog.create({
     data: { userId: session.user.id, action: "RUN_CONTENT_SYNC", entity: "Hotel", entityId: adim, newData: { adim } },
   });

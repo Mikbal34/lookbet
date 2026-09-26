@@ -35,17 +35,23 @@ async function findOrCreateCustomer(email: string, name?: string | null) {
 const HESAP_KAPALI = "Hesap kapalı ya da silinmiş";
 
 // Oturum başına DB okuması: aynı kullanıcı için 15 sn önbellek (her API
-// isteği ve useSession yoklaması DB'ye gitmesin). Yönetici bir hesabı
-// kapattığında ya da rolünü değiştirdiğinde en geç 15 sn'de etkili olur.
-type HesapDurumu = { role: string; isActive: boolean; agency: { id: string; isApproved: boolean } | null };
+// isteği ve useSession yoklaması DB'ye gitmesin). Hesabı değiştiren yönetim
+// işlemleri (onay, rol, kapatma) hesapOnbelleginiSil ile hemen etkili olur;
+// başka yoldan değişiklik en geç 15 sn'de yansır.
+type HesapDurumu = { name: string; role: string; isActive: boolean; agency: { id: string; isApproved: boolean } | null };
 const hesapOnbellegi = new Map<string, { zaman: number; deger: HesapDurumu | null }>();
+
+/** Kullanıcının oturum bilgisi bir sonraki istekte DB'den okunsun. */
+export function hesapOnbelleginiSil(userId: string) {
+  hesapOnbellegi.delete(userId);
+}
 async function hesapDurumu(userId: string): Promise<HesapDurumu | null> {
   const simdi = Date.now();
   const o = hesapOnbellegi.get(userId);
   if (o && simdi - o.zaman < 15_000) return o.deger;
   const deger = await prisma.user.findUnique({
     where: { id: userId },
-    select: { role: true, isActive: true, agency: { select: { id: true, isApproved: true } } },
+    select: { name: true, role: true, isActive: true, agency: { select: { id: true, isApproved: true } } },
   });
   if (hesapOnbellegi.size > 5000) hesapOnbellegi.clear();
   hesapOnbellegi.set(userId, { zaman: simdi, deger });
@@ -200,6 +206,7 @@ export const authOptions: NextAuthOptions = {
       if (trigger === "update" && typeof session?.name === "string") {
         token.name = session.name.trim().slice(0, 100);
       }
+      if (trigger === "update" && token.userId) hesapOnbelleginiSil(token.userId as string);
       if (user) {
         if (account?.provider === "google" || account?.provider === "apple") {
           // OAuth user objesi bizim alanları taşımaz; DB'den doldur.
@@ -223,6 +230,8 @@ export const authOptions: NextAuthOptions = {
       if (token.userId) {
         const hesap = await hesapDurumu(token.userId as string);
         if (!hesap || !hesap.isActive) throw new Error(HESAP_KAPALI);
+        // Ad da DB'den: acentenin adı başvuruda yazılıyor (girişte e-postadan).
+        token.name = hesap.name;
         token.role = hesap.role;
         token.agencyId = hesap.role === "AGENCY" && hesap.agency?.isApproved ? hesap.agency.id : null;
       }

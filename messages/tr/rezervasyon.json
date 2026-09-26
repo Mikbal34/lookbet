@@ -58,7 +58,8 @@
     "iptalTarihi": "{tarih} tarihinde iptal edildi",
     "tamamlanamadi": "Rezervasyon tamamlanamadı",
     "iptalUcreti": "iptal ücreti {tutar}",
-    "gunSonra": "{sayi} gün sonra"
+    "gunSonra": "{sayi} gün sonra",
+    "iptalUcretsiz": "iptal ücreti alınmadı"
   },
   "detay": {
     "yukleniyor": "Rezervasyon yükleniyor",
@@ -134,7 +135,8 @@
       "etiket": "Rezervasyon işlemleri",
       "otelIletisim": "Otelle iletişime geç",
       "otelSayfasi": "Otel sayfası"
-    }
+    },
+    "iptalUcretsiz": "İptal ücreti alınmadı."
   },
   "iptal": {
     "hata": "Rezervasyon iptal edilemedi",

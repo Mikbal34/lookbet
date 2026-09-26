@@ -18,7 +18,7 @@ async function yonetici() {
 
 export async function PATCH(req: NextRequest, { params }: P) {
   const s = await yonetici();
-  if (!s) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!s) return NextResponse.json({ error: "Bu işlem için yönetici yetkisi gerekiyor" }, { status: 403 });
   const { id } = await params;
   const eski = await prisma.coupon.findUnique({ where: { id } });
   if (!eski) return NextResponse.json({ error: "Kupon bulunamadı" }, { status: 404 });
@@ -52,12 +52,15 @@ export async function PATCH(req: NextRequest, { params }: P) {
 
 export async function DELETE(_req: NextRequest, { params }: P) {
   const s = await yonetici();
-  if (!s) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!s) return NextResponse.json({ error: "Bu işlem için yönetici yetkisi gerekiyor" }, { status: 403 });
   const { id } = await params;
   const kupon = await prisma.coupon.findUnique({ where: { id } });
   if (!kupon) return NextResponse.json({ error: "Kupon bulunamadı" }, { status: 404 });
-  if (kupon.usedCount > 0) {
-    return NextResponse.json({ error: `${kupon.usedCount} kez kullanıldığı için silinemez; durdurabilirsin.` }, { status: 409 });
+  // İptal edilen rezervasyon da kupona bağlı kalır (kullanım sayısı düşse de):
+  // bağlı rezervasyon varsa silinmez, durdurulur.
+  const bagli = await prisma.reservation.count({ where: { couponId: id } });
+  if (bagli > 0) {
+    return NextResponse.json({ error: `${bagli} rezervasyonda kullanıldığı için silinemez; durdurabilirsin.` }, { status: 409 });
   }
   await prisma.coupon.delete({ where: { id } });
   await prisma.auditLog.create({

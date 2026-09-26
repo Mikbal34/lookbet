@@ -25,6 +25,8 @@
 .turuncu:hover { filter: brightness(0.96); }
 .cerceve { border: 1px solid var(--lb-cizgi); background: #fff; color: var(--lb-yazi); }
 .cerceve:hover { border-color: var(--lb-yazi); }
+.siyah { background: var(--lb-yazi); color: #fff; }
+.siyah:hover { filter: brightness(1.2); }
 .buyuk { height: 52px; padding: 0 28px; font-size: 16px; }
 .soluk { color: var(--lb-soluk); }
 

@@ -66,7 +66,8 @@ const kurallariGetir = (simdi: Date) =>
         { OR: [{ endDate: null }, { endDate: { gte: simdi } }] },
       ],
     },
-    orderBy: { priority: "desc" },
+    // Eşit öncelikte en yeni kural: yönetim listesi ve hesaplayıcı da böyle sıralar.
+    orderBy: [{ priority: "desc" }, { createdAt: "desc" }],
   });
 const komisyonlariGetir = (agencyId: string, simdi: Date) =>
   prisma.commission.findMany({

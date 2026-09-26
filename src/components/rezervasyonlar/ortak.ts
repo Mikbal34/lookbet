@@ -39,6 +39,8 @@ export interface Rezervasyon {
   notes?: string | null;
   createdAt: string;
   updatedAt: string;
+  /** İptal anı (eski kayıtlarda boş: updatedAt'e düşülür). */
+  cancelledAt?: string | null;
   hotel?: { image: string | null; stars: number | null; place?: string | null; address?: string | null; city?: string | null; phone?: string | null } | null;
 }
 

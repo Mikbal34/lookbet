@@ -6,7 +6,8 @@ import { couponSchema } from "@/lib/validators";
 import { tarihAlani, trGunSonu } from "@/lib/kampanya-tarih";
 import { benzersizIhlali } from "../_ortak";
 
-// GET  /api/admin/coupons — kuponlar ve toplam verilen indirim.
+// GET  /api/admin/coupons — kuponlar, toplam verilen indirim ve bağlı
+//      rezervasyon sayısı (`bagli`: iptal edilenler dahil; varsa silinemez).
 // POST /api/admin/coupons — yeni kupon (kod benzersiz, büyük harf).
 
 export const dynamic = "force-dynamic";
@@ -17,19 +18,21 @@ async function yonetici() {
 }
 
 export async function GET() {
-  if (!(await yonetici())) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  const [kuponlar, tutarlar] = await Promise.all([
+  if (!(await yonetici())) return NextResponse.json({ error: "Bu işlem için yönetici yetkisi gerekiyor" }, { status: 403 });
+  const [kuponlar, tutarlar, baglar] = await Promise.all([
     prisma.coupon.findMany({ orderBy: [{ isActive: "desc" }, { createdAt: "desc" }] }),
     prisma.couponUse.groupBy({ by: ["couponId"], _sum: { amount: true } }),
+    prisma.reservation.groupBy({ by: ["couponId"], where: { couponId: { not: null } }, _count: { _all: true } }),
   ]);
   // _sum ondalık (Decimal) gelebilir; sayıya çevrilir.
   const t = new Map(tutarlar.map((x) => [x.couponId, Number(x._sum.amount ?? 0)]));
-  return NextResponse.json({ kuponlar: kuponlar.map((k) => ({ ...k, toplamIndirim: t.get(k.id) ?? 0 })) });
+  const b = new Map(baglar.map((x) => [x.couponId, x._count._all]));
+  return NextResponse.json({ kuponlar: kuponlar.map((k) => ({ ...k, toplamIndirim: t.get(k.id) ?? 0, bagli: b.get(k.id) ?? 0 })) });
 }
 
 export async function POST(req: NextRequest) {
   const s = await yonetici();
-  if (!s) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!s) return NextResponse.json({ error: "Bu işlem için yönetici yetkisi gerekiyor" }, { status: 403 });
   const parsed = couponSchema.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Bilgileri kontrol et" }, { status: 422 });

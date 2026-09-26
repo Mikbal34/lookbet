@@ -47,6 +47,7 @@ const EYLEM: Record<string, string> = {
   CREATE_COUPON: "kupon oluşturdu",
   UPDATE_COUPON: "kuponu güncelledi",
   DELETE_COUPON: "kuponu sildi",
+  CANCEL_RESERVATION: "rezervasyonu iptal etti",
 };
 // auditLog.create'teki tüm `entity` değerleri (api/admin/** ve içerik işi:
 // api/content/sync → "Hotel"). Yeni bir varlık kaydedilince buraya da ekle.
@@ -58,6 +59,7 @@ const FILTRE = [
   { ad: "Komisyon", varlik: "Commission" },
   { ad: "İndirim", varlik: "Discount" },
   { ad: "Kupon", varlik: "Coupon" },
+  { ad: "Rezervasyon", varlik: "Reservation" },
   { ad: "Kullanıcı", varlik: "User" },
   { ad: "Bildirim", varlik: "Notification" },
   { ad: "İçerik", varlik: "Hotel" },

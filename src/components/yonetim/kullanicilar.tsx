@@ -138,6 +138,7 @@ function KullaniciIcerik({ k, onKapat }: { k: Kullanici; onKapat: () => void }) 
   const istemci = useQueryClient();
   const bildiri = useBildiri();
   const [rol, setRol] = React.useState<Rol>(k.role);
+  const [kapatOnay, setKapatOnay] = React.useState(false);
   const [hata, setHata] = React.useState<string | null>(null);
   const kaydet = useMutation({
     mutationFn: (govde: { role?: Rol; isActive?: boolean }) => gonder(`/api/admin/users/${k.id}`, "PATCH", govde),
@@ -165,11 +166,25 @@ function KullaniciIcerik({ k, onKapat }: { k: Kullanici; onKapat: () => void }) 
       </p>
       {hata && <HataYazi>{hata}</HataYazi>}
       <div className={s.pAlt}>
-        {!ben && (
-          <button type="button" className={`${s.dugme} ${s.cerceve} ${s.solda}`} disabled={kaydet.isPending} onClick={() => kaydet.mutate({ isActive: !k.isActive })}>
+        {!ben && (kapatOnay ? (
+          <span className={s.solda}>
+            <span className={s.soluk}>Oturumu hemen kapansın mı?</span>{" "}
+            <button type="button" className={`${s.metinDugme} ${s.tehlike}`} disabled={kaydet.isPending} onClick={() => kaydet.mutate({ isActive: false })}>
+              Evet, kapat
+            </button>{" "}
+            <button type="button" className={s.metinDugme} onClick={() => setKapatOnay(false)}>Vazgeç</button>
+          </span>
+        ) : (
+          <button
+            type="button"
+            className={`${s.dugme} ${s.cerceve} ${s.solda}`}
+            disabled={kaydet.isPending}
+            // Kapatmak kullanıcının oturumunu hemen düşürür: bir kez daha sorulur.
+            onClick={() => (k.isActive ? setKapatOnay(true) : kaydet.mutate({ isActive: true }))}
+          >
             {k.isActive ? "Hesabı kapat" : "Hesabı aç"}
           </button>
-        )}
+        ))}
         <button type="button" className={`${s.dugme} ${s.siyah}`} disabled={kaydet.isPending || rol === k.role || ben} onClick={() => kaydet.mutate({ role: rol })}>
           {kaydet.isPending ? "Kaydediliyor…" : "Rolü kaydet"}
         </button>

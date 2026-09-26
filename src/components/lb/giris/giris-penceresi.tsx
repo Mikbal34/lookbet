@@ -45,6 +45,8 @@ export function GirisPenceresi({ acik, hedef, onKapat }: {
   const [kalan, setKalan] = React.useState(0);
   const [sosyal, setSosyal] = React.useState<{ google: boolean; apple: boolean }>({ google: false, apple: false });
   const epostaRef = React.useRef<HTMLInputElement>(null);
+  // Genel pencere ve /login sayfasının penceresi birlikte bulunabilir: kimlik tekil.
+  const baslikId = React.useId();
   useKatman(acik, onKapat, epostaRef);
 
   // Her açılışta baştan başla.
@@ -103,6 +105,7 @@ export function GirisPenceresi({ acik, hedef, onKapat }: {
       setBilgi(d.devCode ? t("kod.gelistirme", { kod: d.devCode }) : null);
       setKod(Array(6).fill(""));
       setKalan(60);
+      dogrulaniyor.current = false;
       if (adim !== "kod") git("kod");
     } catch {
       setHata(t("hata.baglanti"));
@@ -111,8 +114,14 @@ export function GirisPenceresi({ acik, hedef, onKapat }: {
     }
   };
 
+  // Son hane kodu kendiliğinden gönderir; düğmeyle aynı anda ikinci istek
+  // gitmesin (durum güncellemesi eşzamanlı değil, bayrak ref'te). Başarılı
+  // girişte açık kalır; yeni kod istenince sıfırlanır.
+  const dogrulaniyor = React.useRef(false);
   const kodDogrula = async (tam = kod.join("")) => {
-    if (tam.length !== 6 || yukleniyor) return;
+    if (tam.length !== 6 || dogrulaniyor.current) return;
+    dogrulaniyor.current = true;
+    let tamam = false;
     setYukleniyor(true);
     setHata(null);
     try {
@@ -124,6 +133,7 @@ export function GirisPenceresi({ acik, hedef, onKapat }: {
         setKod(Array(6).fill(""));
         return;
       }
+      tamam = true;
       const oturum = await getSession();
       // Kodla ilk kez gelen hesabın adı e-postanın baş kısmı: adını soralım.
       const yerel = eposta.trim().toLowerCase().split("@")[0];
@@ -134,6 +144,7 @@ export function GirisPenceresi({ acik, hedef, onKapat }: {
       await bitir();
     } finally {
       setYukleniyor(false);
+      if (!tamam) dogrulaniyor.current = false;
     }
   };
 
@@ -162,7 +173,7 @@ export function GirisPenceresi({ acik, hedef, onKapat }: {
   const baslik = adim === "tamamla" ? t("pencere.baslikTamamla") : t("pencere.baslik");
   return (
     <div className={s.perde} data-acik={acik || undefined} onClick={(e) => e.target === e.currentTarget && onKapat()} aria-hidden={!acik}>
-      <div className={s.pencere} role="dialog" aria-modal="true" aria-labelledby="giris-baslik">
+      <div className={s.pencere} role="dialog" aria-modal="true" aria-labelledby={baslikId}>
         <div className={s.ust}>
           {adim === "kod" ? (
             <button type="button" className={s.yuvarlak} onClick={() => git("eposta")} aria-label={tk("geri")} tabIndex={acik ? 0 : -1}>
@@ -171,7 +182,7 @@ export function GirisPenceresi({ acik, hedef, onKapat }: {
           ) : (
             <span />
           )}
-          <h2 id="giris-baslik">{baslik}</h2>
+          <h2 id={baslikId}>{baslik}</h2>
           <button type="button" className={s.yuvarlak} onClick={onKapat} aria-label={tk("kapat")} tabIndex={acik ? 0 : -1}>
             <Ikon ad="close" boyut={18} />
           </button>

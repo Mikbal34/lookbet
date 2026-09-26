@@ -58,7 +58,8 @@
     "iptalTarihi": "Cancelled on {tarih}",
     "tamamlanamadi": "Booking couldn't be completed",
     "iptalUcreti": "cancellation fee {tutar}",
-    "gunSonra": "in {sayi, plural, one {# day} other {# days}}"
+    "gunSonra": "in {sayi, plural, one {# day} other {# days}}",
+    "iptalUcretsiz": "no cancellation fee"
   },
   "detay": {
     "yukleniyor": "Loading booking",
@@ -134,7 +135,8 @@
       "etiket": "Booking actions",
       "otelIletisim": "Contact the hotel",
       "otelSayfasi": "Hotel page"
-    }
+    },
+    "iptalUcretsiz": "No cancellation fee was charged."
   },
   "iptal": {
     "hata": "The booking couldn't be cancelled",

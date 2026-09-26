@@ -4,7 +4,7 @@
 
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/auth-options";
+import { authOptions, hesapOnbelleginiSil } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
 import { acenteDurumu } from "@/lib/acente-durumu";
 import { acenteBasvuruSchema } from "@/lib/validators";
@@ -19,7 +19,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     }
 
     const durum = await acenteDurumu(session.user.id, session.user.email);
-    if (durum.tur !== "basvuru") {
+    if (durum.tur !== "basvuru" && durum.tur !== "reddedildi") {
       return NextResponse.json({ error: "Başvurun zaten alındı" }, { status: 409 });
     }
 
@@ -86,6 +86,8 @@ export async function POST(request: Request): Promise<NextResponse> {
     });
 
     if (!basvuru) return NextResponse.json({ error: "Başvurun zaten alındı" }, { status: 409 });
+    // Başvuruda yazılan ad ve telefon hesaba geçti: oturum hemen tazelensin.
+    hesapOnbelleginiSil(session.user.id);
     return NextResponse.json({ basvuru }, { status: 201 });
   } catch (error) {
     console.error("[AGENCY_BASVURU_POST]", error);

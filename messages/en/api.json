@@ -42,7 +42,12 @@
     "yetiskin18": "Adult guests must be at least 18 on check-in",
     "cocukYasi": "The age on check-in doesn't match the children's ages in your search ({yaslar})",
     "tekOda": "For now, each booking can include only one room.",
-    "basarisiz": "The booking couldn't be completed; please try again."
+    "basarisiz": "The booking couldn't be completed; please try again.",
+    "bulunamadi": "Booking not found",
+    "erisimYok": "You don't have access to this booking",
+    "listeHatasi": "Something went wrong while loading your bookings",
+    "getirmeHatasi": "Something went wrong while loading the booking",
+    "acenteYok": "Agency details not found"
   },
   "kupon": {
     "girisGerekli": "Log in to use a coupon",
@@ -112,6 +117,27 @@
     "iptalBaslik": "Your booking has been cancelled",
     "iptalGiris": "Hi {ad}, your booking at {otel} has been cancelled.",
     "iptalUcreti": "Cancellation fee: {tutar}.",
-    "ucretYok": "No cancellation fee was charged."
+    "ucretYok": "No cancellation fee was charged.",
+    "acenteOnayKonu": "Your LookBeds Partner application is approved · {sirket}",
+    "acenteOnayBaslik": "Your application is approved",
+    "acenteOnayMetin": "Hi {ad}, the LookBeds Partner application for {sirket} has been approved. Your panel is open: you can book at agency rates and track your commission.",
+    "acenteRetKonu": "About your LookBeds Partner application · {sirket}",
+    "acenteRetBaslik": "Your application wasn't approved",
+    "acenteRetMetin": "Hi {ad}, we couldn't approve the application for {sirket} at this time.",
+    "acenteRetSebep": "Reason: {sebep}",
+    "acenteRetYeniden": "You can correct your details and apply again from the panel.",
+    "panelAc": "Open the panel",
+    "panelGit": "Go to the panel",
+    "acenteAltNot": "This email was sent to keep you informed about your LookBeds Partner application."
+  },
+  "favori": {
+    "alinamadi": "We couldn't load your favourites",
+    "kaydedilemedi": "We couldn't save the favourite",
+    "silinemedi": "We couldn't remove the favourite"
+  },
+  "bildirim": {
+    "alinamadi": "We couldn't load notifications",
+    "bulunamadi": "Notification not found",
+    "guncellenemedi": "We couldn't update the notification"
   }
 }

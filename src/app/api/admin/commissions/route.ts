@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return NextResponse.json({ error: "Bu işlem için yönetici yetkisi gerekiyor" }, { status: 403 });
     }
 
     const { searchParams } = new URL(req.url);
@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ commissions: commissions.map((x) => ({ ...x, hotelName: x.hotelCode ? adlar.get(x.hotelCode) ?? null : null })) });
   } catch (error) {
     console.error("[ADMIN_COMMISSIONS_GET]", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Sunucu hatası, biraz sonra tekrar dene" }, { status: 500 });
   }
 }
 
@@ -51,10 +51,10 @@ export async function POST(req: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return NextResponse.json({ error: "Bu işlem için yönetici yetkisi gerekiyor" }, { status: 403 });
     }
 
-    const body = await req.json();
+    const body = await req.json().catch(() => null);
     const parsed = commissionSchema.safeParse(body);
 
     if (!parsed.success) {
@@ -98,6 +98,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ commission }, { status: 201 });
   } catch (error) {
     console.error("[ADMIN_COMMISSIONS_POST]", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Sunucu hatası, biraz sonra tekrar dene" }, { status: 500 });
   }
 }

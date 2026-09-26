@@ -63,6 +63,7 @@ export function AcenteGirisi() {
       setBilgi(d.devCode ? t("kod.gelistirme", { kod: d.devCode }) : null);
       setKod(Array(6).fill(""));
       setKalan(60);
+      dogrulaniyor.current = false;
       setAdim("kod");
     } catch {
       setHata(t("hata.baglanti"));
@@ -71,8 +72,14 @@ export function AcenteGirisi() {
     }
   };
 
+  // Son hane kodu kendiliğinden gönderir; düğmeyle aynı anda ikinci istek
+  // gitmesin (durum güncellemesi eşzamanlı değil, bayrak ref'te). Başarılı
+  // girişte açık kalır; yeni kod istenince sıfırlanır.
+  const dogrulaniyor = React.useRef(false);
   const kodDogrula = async (tam = kod.join("")) => {
-    if (tam.length !== 6 || yukleniyor) return;
+    if (tam.length !== 6 || dogrulaniyor.current) return;
+    dogrulaniyor.current = true;
+    let tamam = false;
     setYukleniyor(true);
     setHata(null);
     try {
@@ -84,11 +91,17 @@ export function AcenteGirisi() {
         setKod(Array(6).fill(""));
         return;
       }
+      tamam = true;
       const rol = (await getSession())?.user?.role;
-      router.push(guvenliHedef(ham) ?? (rol === "ADMIN" ? "/admin" : "/agency/dashboard"));
+      const panel = rol === "ADMIN" ? "/admin" : "/agency/dashboard";
+      // Hedef başka rolün alanındaysa (yönetici acente sayfasından geldi) kendi paneline.
+      const hedef = guvenliHedef(ham);
+      const uygun = hedef && !(rol === "ADMIN" && hedef.startsWith("/agency")) && !(rol !== "ADMIN" && hedef.startsWith("/admin"));
+      router.push(uygun ? hedef : panel);
       router.refresh();
     } finally {
       setYukleniyor(false);
+      if (!tamam) dogrulaniyor.current = false;
     }
   };
 

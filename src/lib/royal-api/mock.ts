@@ -564,19 +564,20 @@ function cancellationPoliciesFor(
   totalPrice: number,
   currency: string
 ): CancellationPolicy[] {
+  // Gerçek Etscore gibi: ücretsiz pencere açıkça (tutar 0), ardından ceza.
   const checkInDate = new Date(checkIn);
   const freeUntil = new Date(checkInDate);
   freeUntil.setDate(freeUntil.getDate() - 7); // 7 gün öncesine kadar ücretsiz
-  return [
-    {
-      fromDate: freeUntil.toISOString(),
-      toDate: checkInDate.toISOString(),
-      penalty: Math.round(totalPrice * 0.5),
-      penaltyCurrency: currency,
-      description:
-        "Girişten 7 gün öncesine kadar ücretsiz iptal; sonrasında toplam tutarın %50'si tahsil edilir.",
-    },
-  ];
+  const simdi = new Date();
+  const ceza: CancellationPolicy = {
+    fromDate: (freeUntil > simdi ? freeUntil : simdi).toISOString(),
+    toDate: checkInDate.toISOString(),
+    penalty: Math.round(totalPrice * 0.5),
+    penaltyCurrency: currency,
+    description: "Girişten 7 gün öncesine kadar ücretsiz iptal; sonrasında toplam tutarın %50'si tahsil edilir.",
+  };
+  if (freeUntil <= simdi) return [ceza];
+  return [{ fromDate: simdi.toISOString(), toDate: freeUntil.toISOString(), penalty: 0, penaltyCurrency: currency, description: "Ücretsiz iptal" }, ceza];
 }
 
 export function mockSearchRooms(
@@ -631,7 +632,8 @@ export function mockSearchRooms(
 export function mockCreateBooking(
   params: CreateBookingRequest
 ): Promise<CreateBookingResponse> {
-  const bookingNumber = `LB${Date.now().toString().slice(-8)}`;
+  // Aynı milisaniyede iki rezervasyon çakışmasın (numara tekil alan).
+  const bookingNumber = `LB${Date.now().toString().slice(-8)}${Math.floor(Math.random() * 90 + 10)}`;
   const roomCount = params.rooms?.length || 1;
   return Promise.resolve({
     bookingNumber,
@@ -671,13 +673,23 @@ export function mockGetReservationDetail(
   });
 }
 
-export function mockCancelReservation(
+export async function mockCancelReservation(
   params: CancelBookingRequest
 ): Promise<CancelBookingResponse> {
-  return Promise.resolve({
+  // Ücret, rezervasyonda kayıtlı poliçede şu anın düştüğü pencereden (gerçek
+  // tedarikçi de böyle keser); pencere yoksa ücretsiz.
+  const { prisma } = await import("@/lib/prisma");
+  const r = await prisma.reservation.findFirst({
+    where: { bookingNumber: params.bookingNumber },
+    select: { cancellationPolicy: true, currency: true },
+  });
+  const simdi = Date.now();
+  const politikalar = (Array.isArray(r?.cancellationPolicy) ? r.cancellationPolicy : []) as unknown as CancellationPolicy[];
+  const pencere = politikalar.find((p) => Date.parse(p.fromDate) <= simdi && simdi <= Date.parse(p.toDate));
+  return {
     bookingNumber: params.bookingNumber,
     status: "CANCELLED",
-    cancellationFee: 0, // 7 günden önce iptal varsayımı: ücretsiz
-    currency: "EUR",
-  });
+    cancellationFee: pencere?.penalty ?? 0,
+    currency: pencere?.penaltyCurrency || r?.currency || "EUR",
+  };
 }
