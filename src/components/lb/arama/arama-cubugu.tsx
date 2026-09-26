@@ -99,11 +99,14 @@ export function AramaCubugu({
     const alan = alanlar.current[aktif];
     const ic = icerikler.current[aktif];
     if (!alan || !ic) return;
-    const yerlestir = () => {
+    const vurguKoy = () => {
       const br = b.getBoundingClientRect(), ar = alan.getBoundingClientRect();
-      v.dataset.ani = ani ? "1" : "";
       v.style.width = `${ar.width}px`;
       v.style.transform = `translateX(${ar.left - br.left}px)`;
+    };
+    const yerlestir = () => {
+      v.dataset.ani = ani ? "1" : "";
+      vurguKoy();
       v.style.opacity = "1";
       const W = k.offsetWidth;
       if (aktif === "tarih") ic.style.width = `${W}px`;
@@ -120,12 +123,23 @@ export function AramaCubugu({
     };
     yerlestir();
     ilkAcilis.current = false;
+    // Çubuk açılınca "Ara" düğmesi genişleyip alanları daraltıyor (0,3 sn):
+    // vurgu alanı anında izlesin, yoksa açılış anındaki yerinde kalır.
+    let alanGenisligi = alan.getBoundingClientRect().width;
     const ro = new ResizeObserver(() => {
       const w = ic.offsetWidth, h = ic.offsetHeight;
       p.style.width = `${w}px`;
       p.style.height = `${h}px`;
+      const g = alan.getBoundingClientRect().width;
+      if (g === alanGenisligi) return;
+      alanGenisligi = g;
+      v.dataset.ani = "1";
+      vurguKoy();
+      void v.offsetWidth;
+      v.dataset.ani = "";
     });
     ro.observe(ic);
+    ro.observe(alan);
     return () => ro.disconnect();
   }, [aktif, kok, buyuk]);
 
