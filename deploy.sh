@@ -135,15 +135,26 @@ cmd_migrate() {
 }
 
 # ---- Health Check ----
+# Önce uygulamanın kendisi (sunucunun içinden; DNS ve Cloudflare'den bağımsız),
+# sonra dışarıdan alan adı (Cloudflare → nginx → uygulama). IP ile HTTP artık
+# alan adına yönlendiriliyor, HTTPS'te IP ile el sıkışma reddediliyor.
+SITE_URL="${SITE_URL:-https://lookbeds.com}"
 cmd_health() {
     check_config
-    log "Health check: http://${EC2_HOST}"
-    STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://${EC2_HOST}" || true)
+    log "Health check: uygulama (sunucu içinden)"
+    STATUS=$(ssh_cmd "curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/api/saglik" || true)
     if [[ "$STATUS" == "200" ]]; then
-        log "Sunucu çalışıyor (HTTP $STATUS)"
+        log "Uygulama çalışıyor (HTTP $STATUS)"
     else
-        err "Sunucu yanıt vermiyor (HTTP $STATUS)"
+        err "Uygulama yanıt vermiyor (HTTP $STATUS)"
         exit 1
+    fi
+    log "Health check: ${SITE_URL}"
+    DIS=$(curl -s -o /dev/null -w "%{http_code}" "${SITE_URL}/api/saglik" || true)
+    if [[ "$DIS" == "200" ]]; then
+        log "Site dışarıdan açılıyor (HTTP $DIS)"
+    else
+        warn "Site dışarıdan açılmıyor (HTTP $DIS): DNS ya da Cloudflare ayarına bak"
     fi
 }
 
