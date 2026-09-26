@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 3000
+    },
+    {
+      "name": "lookbet-e2e",
+      "runtimeExecutable": "env",
+      "runtimeArgs": ["ROYAL_API_MOCK=true", "REZERVASYON_ACIK=1", "NEXTAUTH_URL=http://localhost:3100", "npx", "next", "dev", "-p", "3100"],
+      "port": 3100
     }
   ]
 }

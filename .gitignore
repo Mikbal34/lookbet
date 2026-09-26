@@ -51,3 +51,8 @@ next-env.d.ts
 
 # Claude Code — makineye özel izinler (EC2 IP, .pem yolu içeriyor)
 .claude/settings.local.json
+
+# Playwright
+/test-results/
+/playwright-report/
+/e2e/.auth/
