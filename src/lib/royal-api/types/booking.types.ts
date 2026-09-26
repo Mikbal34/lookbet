@@ -48,8 +48,14 @@ export interface CreateBookingRequest {
   roomSearchId: string;
   priceCode: string;
   clientReferenceId: string;
+  hotelCode: string;
+  checkIn: string;
+  checkOut: string;
+  currency: string;
   contact: BookingContact;
   rooms: BookingRoom[];
+  /** Otele iletilecek not (üst kat ricası vb.). */
+  additionalInfo?: string;
 }
 
 export interface BookingContact {
@@ -70,6 +76,8 @@ export interface BookingGuest {
   age?: number;
   gender: "Male" | "Female";
   nationality: string;
+  /** yyyy-MM-dd. Etscore her misafir için istiyor. */
+  birthDate?: string;
 }
 
 export interface CreateBookingResponse {
@@ -102,6 +110,8 @@ export interface ReservationDetailResponse {
 
 export interface CancelBookingRequest {
   bookingNumber: string;
+  /** Etscore iptalde oda onay kodlarını istiyor; yoksa detaydan okunur. */
+  roomConfirmationCodes?: string[];
 }
 
 export interface CancelBookingResponse {

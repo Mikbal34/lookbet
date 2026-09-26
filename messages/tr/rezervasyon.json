@@ -1,0 +1,156 @@
+{
+  "baslik": "Rezervasyonlarım",
+  "otel": "Otel",
+  "rezervasyonNo": "Rezervasyon no",
+  "giris": "Giriş",
+  "cikis": "Çıkış",
+  "iptalEt": "Rezervasyonu iptal et",
+  "tekrarRezervasyon": "Tekrar rezervasyon yap",
+  "yardimMerkezi": "Yardım merkezi",
+  "ucretsizIptal": "{tarih} kadar ücretsiz iptal",
+  "misafir": "{yetiskin} yetişkin",
+  "misafirCocuklu": "{yetiskin} yetişkin, {cocuk} çocuk",
+  "kopyala": "{etiket} kopyala",
+  "numarayiKopyala": "Numarayı kopyala",
+  "baglantiHatasi": "Bağlantıda bir sorun oldu; birazdan tekrar dene.",
+  "durum": {
+    "iptal": "İptal edildi",
+    "tamamlanamadi": "Tamamlanamadı",
+    "tamamlandi": "Tamamlandı",
+    "bekliyor": "Otel onayı bekleniyor",
+    "onaylandi": "Onaylandı"
+  },
+  "kalan": {
+    "gun": "<b>{sayi} gün</b> kaldı",
+    "bugun": "Giriş bugün",
+    "suruyor": "Konaklaman sürüyor"
+  },
+  "liste": {
+    "sekmeler": "Rezervasyonlar",
+    "sekme": {
+      "gelecek": "Yaklaşan",
+      "gecmis": "Geçmiş",
+      "iptal": "İptal edilen"
+    },
+    "yukleniyor": "Rezervasyonlar yükleniyor",
+    "hata": "Rezervasyonlar şu an alınamadı",
+    "bos": {
+      "gelecek": {
+        "baslik": "Henüz bir seyahat planlamadın",
+        "metin": "Bir otel seçtiğinde rezervasyonun burada görünür."
+      },
+      "gecmis": {
+        "baslik": "Tamamlanan konaklaman yok",
+        "metin": "Konakladığın oteller burada birikir; beğendiğine tek dokunuşla yeniden gidebilirsin."
+      },
+      "iptal": {
+        "baslik": "İptal edilen rezervasyon yok",
+        "metin": "İptal ettiğin rezervasyonlar ve iptal ücretleri burada görünür."
+      }
+    },
+    "otelAra": "Otel ara",
+    "sonrakiler": "Sonraki konaklamalar",
+    "devamHata": "Devamı yüklenemedi, tekrar dene.",
+    "yardimBaslik": "Bir sorun mu var?",
+    "yardimMetin": "Tarih değişikliği, özel istek ya da iptal için yardım merkezine bakabilirsin.",
+    "ayrintiEtiket": "{otel} rezervasyon ayrıntıları",
+    "ayrintilar": "Ayrıntılar",
+    "iptalTarihi": "{tarih} tarihinde iptal edildi",
+    "tamamlanamadi": "Rezervasyon tamamlanamadı",
+    "iptalUcreti": "iptal ücreti {tutar}",
+    "gunSonra": "{sayi} gün sonra",
+    "iptalUcretsiz": "iptal ücreti alınmadı"
+  },
+  "detay": {
+    "yukleniyor": "Rezervasyon yükleniyor",
+    "bulunamadi": "Bu rezervasyonu bulamadık",
+    "bulunamadiMetin": "Bağlantı eski olabilir ya da rezervasyon başka bir hesaba ait.",
+    "alinamadi": "Rezervasyon şu an alınamadı",
+    "alinamadiMetin": "Birazdan tekrar dene.",
+    "iptalEdildi": "Bu rezervasyon iptal edildi",
+    "tamamlanamadi": "Bu rezervasyon tamamlanamadı",
+    "iptalUcreti": "İptal ücreti {tutar}.",
+    "iptalUcretiYok": "İptal ücreti bilgisi otelden gelmedi.",
+    "onaylanmadi": "Otel rezervasyonu onaylamadı; ücret alınmadı.",
+    "yolculuk": {
+      "etiket": "Konaklama çizelgesi",
+      "baslik": "Yolculuğun",
+      "rezervasyon": "Rezervasyon",
+      "ucretsizSon": "Ücretsiz iptal son gün",
+      "bugun": "Bugün"
+    },
+    "girisCikis": {
+      "baslik": "Giriş ve çıkış",
+      "girisSaati": "{saat} ve sonrası",
+      "cikisSaati": "En geç {saat}"
+    },
+    "oda": {
+      "baslik": "Oda ve misafirler",
+      "yedek": "Oda",
+      "cocukYasi": "{ad} ({yas} yaş)",
+      "ozelIstek": "Özel istek"
+    },
+    "bilgi": {
+      "baslik": "Rezervasyon bilgileri",
+      "otelOnayNo": "Otel onay no",
+      "onayBekleniyor": "Otel onaylayınca burada görünür",
+      "iletisim": "İletişim",
+      "telefon": "Telefon",
+      "tarih": "Rezervasyon tarihi"
+    },
+    "konum": {
+      "baslik": "Konum ve iletişim",
+      "haritaYukleniyor": "Harita yükleniyor…",
+      "haritaYok": "Harita şu an gösterilemiyor.",
+      "yolTarifi": "Yol tarifi al"
+    },
+    "kosul": {
+      "baslik": "İptal koşulları",
+      "ucretsizSon": "{tarih} kadar (saat {saat})",
+      "ucretsiz": "Ücretsiz iptal",
+      "cezaBaslangic": "{tarih}, saat {saat} ve sonrası",
+      "rezervasyondan": "Rezervasyondan itibaren",
+      "ceza": "İptal ücreti {tutar}",
+      "yok": "İptal koşulları bu rezervasyon için kayıtlı değil; iptal ederken otelin koşulları uygulanır.",
+      "planlar": "Planların mı değişti?",
+      "simdiUcretsiz": "Şu an iptal edersen ücret alınmaz.",
+      "simdiUcretli": "Şu an iptal edersen {tutar} iptal ücreti kesilir.",
+      "simdiBelirsiz": "İptal ücreti otelin koşullarına göre belirlenir.",
+      "onayBekliyor": "Rezervasyonun otelden onay bekliyor; onay gelince buradan iptal edebilirsin."
+    },
+    "ozet": {
+      "baslik": "Ödeme özeti",
+      "geceBasi": "{fiyat} × {sayi} gece",
+      "indirim": "İndirim",
+      "vergiler": "Vergiler ve ücretler",
+      "dahil": "Dahil",
+      "toplam": "Toplam ({birim})",
+      "iptalUcreti": "İptal ücreti"
+    },
+    "tekrar": {
+      "baslik": "Yine gitmek ister misin?",
+      "metin": "Aynı otel, yeni tarihler."
+    },
+    "eylem": {
+      "etiket": "Rezervasyon işlemleri",
+      "otelIletisim": "Otelle iletişime geç",
+      "otelSayfasi": "Otel sayfası"
+    },
+    "iptalUcretsiz": "İptal ücreti alınmadı."
+  },
+  "iptal": {
+    "hata": "Rezervasyon iptal edilemedi",
+    "bittiBaslik": "Rezervasyonun iptal edildi",
+    "bittiUcretli": "İptal ücreti: {tutar}. Bilgisi e-posta adresine gönderildi.",
+    "bittiUcretsiz": "İptal ücreti alınmadı. Bilgisi e-posta adresine gönderildi.",
+    "bittiIletildi": "İptal otele iletildi. Bilgisi e-posta adresine gönderildi.",
+    "tamam": "Tamam",
+    "ucretYok": "Ücret yok",
+    "ucretBelirsiz": "Ücret otelin koşullarına göre",
+    "ucretsizHak": "{tarih} kadar ücretsiz iptal hakkın var.",
+    "kosulaGore": "Bu tutar, rezervasyondaki iptal koşullarına göre kesilir.",
+    "otelYanitina": "İptal ücreti otelden gelen yanıta göre kesinleşir.",
+    "vazgec": "Vazgeç",
+    "gidiyor": "İptal ediliyor…"
+  }
+}

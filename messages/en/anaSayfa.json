@@ -1,0 +1,65 @@
+{
+  "kategori": {
+    "hepsi": "All",
+    "deniz": "Beach",
+    "termal": "Thermal",
+    "kayak": "Ski",
+    "sehir": "City"
+  },
+  "tatilTuru": "Trip type",
+  "logoEtiket": "LookBeds, back to top",
+  "otelAra": "Search hotels",
+  "otellereIn": "Scroll to hotels",
+  "bos": "No hotels to show in this category right now.",
+  "satir": {
+    "onceki": "{baslik}: previous",
+    "sonraki": "{baslik}: next",
+    "favoriEkle": "{ad}: add to favourites",
+    "favoriEklendi": "{ad}: added to favourites"
+  },
+  "satirlar": {
+    "bodrum": "Hotels in Bodrum",
+    "antalya": "Hotels in Antalya",
+    "kapadokya": "Hotels in Cappadocia",
+    "istanbul": "Hotels in İstanbul",
+    "fethiye": "Hotels in Fethiye",
+    "termal": "Thermal hotels",
+    "kayak": "Ski hotels",
+    "marmaris": "Hotels in Marmaris",
+    "cesme": "Hotels in Çeşme",
+    "afyon": "Thermal hotels in Afyon",
+    "uludag": "Hotels in Uludağ",
+    "izmir": "Hotels in İzmir",
+    "ankara": "Hotels in Ankara"
+  },
+  "kampanya": {
+    "baslik": "Deals",
+    "yuzde": "{yuzde}%",
+    "baslangic": "Starts {tarih}",
+    "bitis": "Until {tarih}",
+    "suresiz": "No end date",
+    "kosul": {
+      "erken": "{yuzde}% off {kapsam, select, secili {at selected hotels} bolge {at hotels in {bolge}} other {at all hotels}} when you book {gun, plural, one {# day} other {# days}} or more before check-in.",
+      "sonDakika": "{yuzde}% last-minute discount {kapsam, select, secili {at selected hotels} bolge {at hotels in {bolge}} other {at all hotels}} when check-in is {gun, plural, one {# day} other {# days}} away or less.",
+      "uzun": "{yuzde}% off {kapsam, select, secili {at selected hotels} bolge {at hotels in {bolge}} other {at all hotels}} on stays of {gece, plural, one {# night} other {# nights}} or more.",
+      "aralik": "{yuzde}% off {kapsam, select, secili {at selected hotels} bolge {at hotels in {bolge}} other {at all hotels}} for check-ins between {bas} and {son}."
+    },
+    "dugme": {
+      "bolge": "Hotels in {bolge}",
+      "otel": "View hotel",
+      "ara": "Search hotels"
+    }
+  },
+  "vitrin": {
+    "baslik": "Deals",
+    "aciklama": "No code needed: if your booking qualifies, the discount is applied automatically, and you'll see the original price crossed out in search.",
+    "digerOteller": "and {sayi, plural, one {# more hotel} other {# more hotels}}",
+    "bosBaslik": "No deals running right now",
+    "bosAciklama": "New deals will show up here. In the meantime, take a look at our hotels.",
+    "otelAra": "Search hotels",
+    "meta": {
+      "baslik": "Deals — LookBeds",
+      "aciklama": "Early booking, last-minute and long-stay discounts. No code needed: they're applied to the price automatically."
+    }
+  }
+}

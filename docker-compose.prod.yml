@@ -15,30 +15,44 @@ services:
       retries: 5
 
   app:
-    build: .
+    build:
+      context: .
+      # deploy.sh compose'u --env-file .env.production ile çağırıyor; değer oradan.
+      args:
+        NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY:-}
     restart: unless-stopped
     # Yalnızca localhost'a bağla; dış dünya nginx (80) üzerinden erişir.
     ports:
       - "127.0.0.1:3000:3000"
     env_file:
       - .env.production
+    environment:
+      # Raporlardaki "bugün" ve ay sınırları Türkiye saatiyle (Node ICU'yu
+      # kullanıyor; Alpine'de tzdata gerekmiyor).
+      TZ: Europe/Istanbul
     depends_on:
       db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000"]
+      # 127.0.0.1: Alpine'de localhost önce ::1'e çözülüyor, Next yalnızca
+      # IPv4'te (0.0.0.0) dinliyor; kontrol hep "unhealthy" çıkıyordu.
+      # Hafif uç, yanıt tamamen okunur (--spider değil): ana sayfayı çizdirip
+      # akışı yarıda kesmek soğuk açılışta log hatası üretiyordu.
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3000/api/saglik"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 30s
 
-  # Şemayı DB'ye uygular (ilk kurulumda tabloları oluşturur).
+  # Bekleyen migration'ları uygular (prisma/migrations; ilk kurulumda tabloları
+  # oluşturur). `db push` değil: sütun adı değişikliği veri silmesin, her
+  # değişiklik gözden geçirilmiş SQL olarak depoda dursun.
   # `docker compose --profile migrate run --rm migrate` ile çalıştırılır.
   migrate:
     build:
       context: .
       target: builder
-    command: ["npx", "prisma", "db", "push"]
+    command: ["npx", "prisma", "migrate", "deploy"]
     env_file:
       - .env.production
     depends_on:

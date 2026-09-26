@@ -10,3 +10,9 @@ node_modules
 .idea
 npm-debug.log*
 .DS_Store
+
+# Uçtan uca testler sunucu imajına girmez
+e2e
+playwright.config.ts
+test-results
+playwright-report

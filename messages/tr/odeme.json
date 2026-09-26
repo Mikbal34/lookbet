@@ -1,0 +1,183 @@
+{
+  "ust": {
+    "guvenliBaglanti": "Güvenli bağlantı",
+    "oteleDon": "Otel sayfasına dön",
+    "baslik": "Onay ve ödeme"
+  },
+  "kapali": {
+    "baslik": "Rezervasyonlar şu an kapalı",
+    "gozdenGecir": "Ödeme altyapımız hazırlanıyor; bilgilerini gözden geçirebilirsin ama rezervasyon henüz tamamlanamıyor.",
+    "yakinda": "Ödeme altyapımız hazırlanıyor. Çok yakında buradan rezervasyon yapabileceksin."
+  },
+  "adim": {
+    "iletisim": "İletişim bilgileri",
+    "misafirler": "Konaklayacak misafirler",
+    "yontem": "Ödeme yöntemi",
+    "gozden": "Rezervasyonunu gözden geçir",
+    "duzenle": "Düzenle"
+  },
+  "iletisim": {
+    "girisYaptinAdli": "{ad} olarak giriş yaptın",
+    "girisYaptin": "Giriş yaptın",
+    "hesabaKaydedilir": "Rezervasyon hesabına kaydedilir; Rezervasyonlarım sayfasından takip edebilirsin.",
+    "epostaNot": "Onay e-postası bu adrese gönderilir",
+    "ulkeKodu": "Ülke kodu"
+  },
+  "alan": {
+    "ad": "Ad",
+    "soyad": "Soyad",
+    "eposta": "E-posta",
+    "telefon": "Telefon",
+    "cinsiyet": "Cinsiyet",
+    "kadin": "Kadın",
+    "erkek": "Erkek",
+    "dogum": "Doğum tarihi",
+    "dogumOrnek": "GG.AA.YYYY"
+  },
+  "misafir": {
+    "benDe": "Rezervasyonu yapan kişi de konaklıyor",
+    "kayitliDolu": "Kayıtlı misafirlerin · tüm yerler dolu",
+    "kayitliSec": "Kayıtlı misafirlerin · dokun, boş yere yazalım",
+    "yetiskinBaslik": "{sira}. misafir · yetişkin",
+    "cocukBaslik": "{sira}. misafir · çocuk ({yas} yaş)",
+    "istek": "Özel istek (isteğe bağlı)",
+    "istekOrnek": "Örneğin yüksek kat, erken giriş, bebek yatağı",
+    "istekNot": "{sayi} / 500 · Otele iletilir, garanti edilmez"
+  },
+  "yontem": {
+    "kart": "Kart ile öde",
+    "kartAlt": "Kredi ya da banka kartı",
+    "havale": "Havale / EFT",
+    "havaleAlt": "Banka hesabına",
+    "kartBilgi": "Kart bilgilerini onaydan sonra bankanın güvenli ödeme ekranında gireceksin. LookBeds kart bilgisi saklamaz.",
+    "havaleBaslik": "Banka bilgileri onay e-postasıyla gelir",
+    "havaleBilgi": "Açıklamaya rezervasyon numaranı yazman yeterli.",
+    "ozetKart": "Kart ile ödeme",
+    "ozetHavale": "Havale / EFT"
+  },
+  "gozden": {
+    "iptalUcretsiz": "{gun} {ay}{ay, select, Eylül {'e} Ekim {'e} other {'a}} kadar (saat {saat}) ücretsiz iptal.",
+    "iptalUcretsizCezali": "{gun} {ay}{ay, select, Eylül {'e} Ekim {'e} other {'a}} kadar (saat {saat}) ücretsiz iptal; sonrasında {ceza} kesilir.",
+    "iadeEdilmez": "Bu rezervasyon iade edilmez.",
+    "iptalBilgiYok": "İptal koşulları bilgisi alınamadı; odayı otel sayfasından yeniden seçebilirsin.",
+    "girisCikisBaslik": "Giriş ve çıkış",
+    "girisCikis": "Giriş {giris} ve sonrası, çıkış en geç {cikis}. Girişte kimlik istenir.",
+    "girisSaati": "Giriş {giris} ve sonrası. Girişte kimlik istenir.",
+    "notlarBaslik": "Otelin önemli notları",
+    "notlariOku": "Notları oku",
+    "sozlesme": "<dugme>Ön bilgilendirmeyi</dugme> okudum; otel kurallarını ve iptal koşullarını kabul ediyorum.",
+    "tamamlanamadi": "Rezervasyon tamamlanamadı",
+    "odayiYenidenSec": "Otel sayfasına dön, odayı yeniden seç",
+    "onayla": "Rezervasyonu onayla · {tutar}",
+    "yapiliyor": "Rezervasyon yapılıyor…"
+  },
+  "ozet": {
+    "etiket": "Rezervasyon özeti",
+    "iptalUcretsiz": "{gun} {ay}{ay, select, Eylül {'e} Ekim {'e} other {'a}} kadar ücretsiz iptal",
+    "iadeYapilmaz": "Bu rezervasyon için iade yapılmaz",
+    "iptalBilgiYok": "İptal koşulları bilgisi alınamadı",
+    "ayrintilar": "Ayrıntılar",
+    "tarihler": "Tarihler",
+    "tarihAraligi": "{giris} – {cikis} · {gece} gece",
+    "degistir": "Değiştir",
+    "misafirler": "Misafirler",
+    "misafirOzeti": "{yetiskin} yetişkin{cocuk, plural, =0 {} other {, # çocuk}} · 1 oda",
+    "guvendeBaslik": "Bilgilerin güvende",
+    "guvendeMetin": "Bağlantın şifreli. Bilgilerin yalnızca rezervasyon için otelle paylaşılır."
+  },
+  "fiyat": {
+    "baslik": "Fiyat ayrıntıları",
+    "geceBasi": "{fiyat} × {gece} gece",
+    "kampanya": "{ad} %{yuzde}",
+    "indirim": "İndirim",
+    "kupon": "Kupon {kod}",
+    "kaldir": "Kaldır",
+    "vergiler": "Vergiler ve ücretler",
+    "dahil": "Dahil",
+    "toplam": "Toplam <kucuk>{birim}</kucuk>",
+    "kurNotu": "Ödeme {para} ile alınır: <b>{tutar}</b>. {birim, select, TRY {TL tutarı} other {{birim} tutarı}} TCMB kuruyla yaklaşıktır.",
+    "kurNotuTarihli": "Ödeme {para} ile alınır: <b>{tutar}</b>. {birim, select, TRY {TL tutarı} other {{birim} tutarı}} TCMB kuruyla ({tarih}) yaklaşıktır.",
+    "dokum": "Fiyat dökümü"
+  },
+  "kupon": {
+    "ekle": "Kupon ekle",
+    "kod": "Kupon kodu",
+    "uygula": "Uygula",
+    "kodYaz": "Kupon kodunu yaz",
+    "uygulanamadi": "Kupon uygulanamadı"
+  },
+  "iptal": {
+    "baslik": "İptal koşulları",
+    "kadar": "{gun} {ay}{ay, select, Eylül {'e} Ekim {'e} other {'a}} kadar",
+    "ucretsizTamIade": "Saat {saat} öncesi ücretsiz iptal, tam iade",
+    "cezaBaslangic": "{tarih}, saat {saat} ve sonrası",
+    "rezervasyondan": "Rezervasyondan itibaren",
+    "ucret": "İptal ücreti {tutar}",
+    "ucretToplam": "İptal ücreti {tutar} (toplam tutar)",
+    "not": "Saatler Türkiye saatine göredir. İptal, Rezervasyonlarım sayfasından yapılır."
+  },
+  "dokum": {
+    "baslik": "Ön bilgilendirme ve fiyat dökümü",
+    "hizmet": "Hizmet",
+    "otelKonaklamasi": "Otel konaklaması",
+    "otel": "Otel",
+    "oda": "Oda",
+    "misafirler": "Misafirler",
+    "toplam": "Toplam ({birim}, vergiler dahil)",
+    "odenecek": "Ödenecek ({para})",
+    "iptal": "İptal",
+    "ucretsizCezali": "{gun} {ay}{ay, select, Eylül {'e} Ekim {'e} other {'a}} kadar ücretsiz, sonrasında {tutar}",
+    "ucretsizUcretli": "{gun} {ay}{ay, select, Eylül {'e} Ekim {'e} other {'a}} kadar ücretsiz, sonrasında ücretli",
+    "iadeEdilmez": "İade edilmez",
+    "bilgiYok": "Bilgi yok"
+  },
+  "katman": {
+    "onaylandi": "Rezervasyonun onaylandı",
+    "alindi": "Rezervasyonun alındı",
+    "yapiliyor": "Rezervasyonun yapılıyor",
+    "yonlendiriliyor": "Onay sayfasına geçiliyor",
+    "iletiliyor": "Bilgilerin otele iletiliyor",
+    "ayirtiliyor": "Oda ayırtılıyor",
+    "bekleniyor": "Otelden onay bekleniyor",
+    "sayfayiKapatma": "Bu birkaç saniye sürebilir; sayfayı kapatma."
+  },
+  "hata": {
+    "ad": "Adını yaz",
+    "soyad": "Soyadını yaz",
+    "eposta": "Geçerli bir e-posta yaz",
+    "telefon": "Telefon numaranı yaz",
+    "telefonTr": "10 haneli numara yaz (5XX XXX XX XX)",
+    "telefonEksik": "Telefon numarası eksik",
+    "misafirAd": "Misafirin adını yaz",
+    "misafirSoyad": "Misafirin soyadını yaz",
+    "cinsiyet": "Cinsiyet seç",
+    "dogumBicim": "GG.AA.YYYY biçiminde yaz",
+    "dogum": "Doğum tarihini yaz",
+    "yetiskinYasi": "Yetişkin misafir girişte en az 18 yaşında olmalı",
+    "cocukYasi": "Girişte {yas} yaşında olmalı (aramadaki yaş)",
+    "alan": "Bu alanı kontrol et",
+    "kuponKaldirildi": "{hata} Kupon kaldırıldı; onaylarsan kuponsuz fiyattan devam edilir.",
+    "olusturulamadi": "Rezervasyon oluşturulamadı",
+    "baglanti": "Bağlantıda bir sorun oldu; birazdan tekrar dene."
+  },
+  "bos": {
+    "baslik": "Rezervasyon bilgisi bulunamadı",
+    "metin": "Bu sayfaya bir oda seçtikten sonra ulaşabilirsin. Bekleyen bir seçimin süresi de dolmuş olabilir.",
+    "aramayaDon": "Otel aramaya dön"
+  },
+  "kartlar": {
+    "etiket": "Geçerli kartlar: Visa, Mastercard, Troy, American Express"
+  },
+  "onay": {
+    "metaBaslik": "Rezervasyon — LookBeds",
+    "onaylandi": "Rezervasyonun onaylandı!",
+    "alindi": "Rezervasyon talebin alındı",
+    "epostaGonderildi": "Onay bilgileri e-posta adresine gönderildi.",
+    "onayBekleniyor": "Otelden onay bekleniyor. Sonucu Rezervasyonlarım'da görebilirsin; ekibimiz de takip ediyor.",
+    "numara": "Rezervasyon numarası",
+    "numaraEtiket": "Rezervasyon numarası: {no}",
+    "numaraNot": "Otelde bu numara sorulabilir",
+    "rezervasyonlarim": "Rezervasyonlarım",
+    "yeniArama": "Yeni arama"
+  }
+}

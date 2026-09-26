@@ -1,41 +1,95 @@
 @import "tailwindcss";
 
 /* LookBeds tasarım sistemi — CruiseScanner (Skyscanner-tarzı) tasarımının
-   TURUNCU versiyonu: dümdüz tek renk marka bandı, beyaz gövde, Manrope,
-   amber fiyat/CTA vurguları, keskin köşeler.
-   Marka turuncusu logodan örneklendi: #E06028 */
+   Palet CruiseScanner ile hizalı — jetonları siteden okundu:
+     --brand   #0a1f44   koyu lacivert, yüzey ve başlık
+     --primary #0b63e5   canlı mavi, eylem
+     --accent  #ffc829   altın
+   Altın (#ffc829) ve chip (#f1ede4) zaten birebir aynıydı; bu projede
+   yalnızca lacivert ailesi turuncuya boyanmış, nötrler olduğu gibi kalmıştı.
+
+   Turuncunun ölçülen sorunu: #e06028 üstünde beyaz yazı 3.58 (sınır 4.5),
+   saydam çubukta 3.01. Beyaz yazı taşıyan her yüzey için ayrı koyu ton
+   türetmek gerekiyordu. İki mavili sistemde bu sorun yok. */
 @theme inline {
-  /* Marka — turuncu ailesi (eski "navy" token adları geriye uyumluluk için
-     korunuyor; TÜM uygulama bu adları kullanıyor) */
-  --color-navy: #e06028; /* birincil — marka turuncusu */
-  --color-navy-dark: #c24e1d; /* hover */
-  --color-navy-deep: #8f3a12; /* koyu zemin / panel sidebar */
-  --color-navy-mid: #ed7b45;
-  --color-navy-bright: #f59468;
+  /* Marka — lacivert ailesi. Jeton adları zaten "navy"ydi: tasarım baştan
+     lacivertti, bir ara turuncuya boyanmış ama adlar kalmıştı.
+
+     İki rol ayrı: navy EYLEM (düğme, ikon, bağlantı, aktif sekme),
+     navy-deep/navy-bar YÜZEY (kimlik çubuğu, koyu bloklar). */
+  --color-navy: #0b63e5; /* eylem — CruiseScanner --primary */
+  --color-navy-dark: #094fba; /* hover */
+  --color-navy-deep: #0a1f44; /* koyu yüzey — CruiseScanner --brand */
+  --color-navy-mid: #3d85ee;
+  --color-navy-bright: #74a8f5;
+  /* Kimlik çubuğunun dolu hâli — CruiseScanner'ın hero bloğuyla aynı ton.
+     Çubuk %95 saydam olduğu için altındaki açık zemin renge karışıyor;
+     bu tonla beyaz başlık 14.6 kontrast alıyor. */
+  --color-navy-bar: #0a1f44;
 
   /* Vurgu — amber (CruiseScanner CTA/fiyat etiketi rengi) */
   --color-gold: #ffc829;
   --color-gold-dark: #f0b400;
-  --color-gold-text: #9a7300;
+  /* Altın METİN olarak — indirim/tasarruf satırları ve gold-soft kutular.
+     #9a7300 idi ve beyazda 4.35, canvas'ta 3.96 veriyordu; sınır 4.5.
+     Bu ton üç zeminde de geçiyor (beyaz 5.61, canvas 5.11, gold-soft 5.06)
+     ve geçenlerin en açığı. Altın DOLGU (#ffc829) ayrı iş: üstünde yalnızca
+     koyu yazı taşır (11.43), beyaz yazı 1.55 verir ve asla kullanılmaz. */
+  --color-gold-text: #856200;
   --color-gold-soft: #fff3cd;
 
   /* Metin / zemin — sıcak nötrler (CruiseScanner warm-ink) */
   --color-ink: #1a1814; /* ana metin */
   --color-slate-text: #3f3a33; /* ikincil metin */
-  --color-muted: #8a8377; /* soluk metin */
+  --color-muted: #6f685c; /* soluk metin.
+     Eskiden #8a8377 idi: beyazda 3.75 kontrast veriyordu ve 13px ikincil
+     metin için AA sınırı 4.5. Uygulamanın en çok kullanılan ikincil rengi
+     (93 yer), bu yüzden düzeltme jetonun kendisinde yapıldı.
+     Bu ton kullanıldığı dört zeminde de geçiyor: beyaz 5.51, canvas 5.02,
+     chip 4.72, chip-blue 4.73 — ve geçenlerin en açığı. */
   --color-line: #e5e0d3; /* ince çizgi */
   --color-line-strong: #ccc6b5; /* input border */
   --color-row: #f1ede4; /* satır çizgisi / paper-strong */
+  --color-canvas: #f7f4ed; /* sayfa zemini — beyaz kartların üstünde durduğu
+     ton. Beyaza yakın bir zeminde beyaz kart kart gibi durmuyor. */
   --color-chip: #f1ede4; /* etiket zemini */
-  --color-chip-blue: #fdeae0; /* turuncu tonlu soft zemin */
+  --color-chip-blue: #e7effc; /* lacivert tonlu soft zemin */
   --color-paper: #ffffff; /* gövde beyaz (Skyscanner-tarzı) */
 
-  /* Fontlar — Manrope her yerde (display dahil) */
-  --font-sans: var(--font-manrope), "Helvetica Neue", Helvetica, Arial,
+  /* Fontlar — Nunito her yerde (display dahil) */
+  --font-sans: var(--font-nunito), "Helvetica Neue", Helvetica, Arial,
     sans-serif;
-  --font-serif: var(--font-manrope), "Helvetica Neue", Helvetica, Arial,
+  --font-serif: var(--font-nunito), "Helvetica Neue", Helvetica, Arial,
     sans-serif;
 }
+
+/* ── Yeni tasarım (LookBeds kimliği) ────────────────────────────────
+   Siyah-beyaz zemin, vurgu turuncu ve az kullanılır; başlıklar LB Yastık,
+   metin Figtree. Yeni sayfalar kök öğelerine .lb sınıfı verir; eski sayfalar
+   ve paneller eski jetonlarla kalır, geçtikçe silinecek. */
+:root {
+  --lb-yazi: #141414;
+  --lb-soluk: #6a6a6a;
+  --lb-cizgi: #ebebeb;
+  --lb-kart: #f5f5f4;
+  --lb-gri: #ebebea;
+  --lb-turuncu: #ff5f1f;
+  --lb-yesil: #16794c;
+  --lb-kirmizi: #c13515;
+  --lb-golge: 0 6px 24px rgb(0 0 0 / 0.08), 0 1px 2px rgb(0 0 0 / 0.06);
+  --lb-yay: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --lb-zipla: cubic-bezier(0.3, 1.6, 0.5, 1);
+  --lb-kenar: clamp(16px, 4vw, 64px);
+}
+.lb {
+  font-family: var(--font-figtree), "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--lb-yazi);
+  background: #fff;
+}
+.lb :focus-visible { outline: 2px solid var(--lb-yazi); outline-offset: 2px; }
+.lb-y { font-family: var(--font-yastik), var(--font-figtree), sans-serif; font-weight: 700; }
 
 body {
   background: #ffffff;
@@ -43,7 +97,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Başlık dili: eski font-serif başlıklar artık Manrope — CruiseScanner'daki
+/* Başlık dili: eski font-serif başlıklar artık Nunito — CruiseScanner'daki
    extrabold + sıkı tracking hissi için global düzeltme */
 .font-serif {
   font-weight: 800;
@@ -80,7 +134,7 @@ body {
   --rdp-day-height: 23px;
   --rdp-day-width: 23px;
   --rdp-nav-height: 24px;
-  font-family: var(--font-manrope), sans-serif;
+  font-family: var(--font-nunito), sans-serif;
   font-size: 11px;
 }
 /* İki ay her zaman yan yana (dar popup'ta alt alta sarmasın) */
@@ -90,7 +144,7 @@ body {
   gap: 1.25rem;
 }
 .lookbet-daypicker .rdp-month_caption {
-  font-family: var(--font-manrope), sans-serif;
+  font-family: var(--font-nunito), sans-serif;
   font-size: 14px;
   font-weight: 800;
   letter-spacing: -0.01em;
@@ -116,3 +170,192 @@ body {
   background-color: #fdeae0 !important;
   color: #1a1814;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   MOBİL TEMEL
+   Telefon tarayıcısında doğru ölçek ve dokunma davranışı.
+   ═══════════════════════════════════════════════════════════════════ */
+
+html {
+  /* iOS yatay çevirmede metni kendiliğinden büyütmesin */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  /* Taşan bir öğe tüm sayfayı yatay kaydırılabilir yapmasın */
+  overflow-x: hidden;
+  /* Dokunuşta beliren gri kutu */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Görseller hiçbir zaman kabından taşmasın */
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+}
+
+/* iOS Safari, 16px'ten küçük fontlu bir alana odaklanınca sayfayı
+   zoom'lar ve bir daha geri çıkmaz. Mobilde tüm form alanları 16px. */
+@media (max-width: 1023px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Yatay kaydırmalı şeritler (chip'ler, sekmeler) için gizli scrollbar +
+   parmakla momentum kaydırma. */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Alt sayfa (bottom sheet) animasyonu — mobil filtre/menü panelleri */
+@keyframes sheetUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+.animate-sheet-up {
+  animation: sheetUp 0.22s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+/* ── Takvim: 1024px altında tek ay, parmakla basılabilir gün kutuları ──
+   Masaüstündeki 11px/23px hücreler dokunma için çok küçük. */
+@media (max-width: 1023px) {
+  .lookbet-daypicker .rdp-root {
+    --rdp-day-height: 40px;
+    --rdp-day-width: 40px;
+    --rdp-nav-height: 32px;
+    font-size: 14px;
+  }
+  .lookbet-daypicker .rdp-months {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  .lookbet-daypicker .rdp-month_caption {
+    font-size: 15px;
+  }
+  .lookbet-daypicker .rdp-weekday {
+    font-size: 11px;
+  }
+}
+
+
+/* ── Hareket ──────────────────────────────────────────────────────────
+   Tek imza: içerik hep aynı şekilde beliriyor. Süre kısa (180ms) çünkü bu
+   animasyon her gezinmede tekrar oynuyor; 250ms üstü ağır hissettiriyor. */
+@keyframes sayfa-belir {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.sayfa-gecisi {
+  animation: sayfa-belir 180ms ease-out both;
+}
+
+/* Sistemde "hareketi azalt" açıksa hepsi susuyor.
+   Uygulamada 112 yerde geçiş var ve bunlardan yalnızca biri bu ayara saygı
+   duyuyordu; tek tek sınıf eklemek yerine kural burada, bir kez. Hareket
+   vestibüler rahatsızlığı olan kullanıcıda mide bulantısı yapabiliyor,
+   işletim sistemi bu ayarı onun için sunuyor. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Harita (Google Maps, components/harita) ─────────────────────────
+   Fiyat hapı Airbnb'deki gibi: beyaz, üstüne gelince ya da seçilince siyah,
+   bakılmış olan gri. HtmlIsaret içeriği noktanın sol üstüne koyar; hap
+   kendini noktaya ortalıyor. */
+.lb-fiyat-pini {
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  border: 0;
+  border-radius: 9999px;
+  background: #fff;
+  color: #141414;
+  padding: 6px 11px;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.18), 0 0 0 1px rgb(0 0 0 / 0.05);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+.lb-fiyat-pini:hover,
+.lb-fiyat-pini[data-acik] {
+  background: #141414;
+  color: #fff;
+  transform: translate(-50%, -50%) scale(1.08);
+  box-shadow: 0 6px 16px rgb(0 0 0 / 0.3);
+}
+.lb-fiyat-pini[data-gorulen]:not([data-acik]):not(:hover) { background: #ececeb; }
+.lb-fiyat-pini:focus-visible { outline: 2px solid #141414; outline-offset: 2px; }
+
+.lb-harita-kart {
+  position: relative;
+  width: 260px;
+  transform: translate(-50%, calc(-100% - 22px));
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 12px 36px rgb(0 0 0 / 0.25);
+  animation: lb-harita-kart 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes lb-harita-kart {
+  from { opacity: 0; transform: translate(-50%, calc(-100% - 12px)) scale(0.97); }
+}
+.lb-harita-kart a { display: block; color: inherit; text-decoration: none; }
+.lb-harita-kart-foto { aspect-ratio: 16 / 10; background: #f2f1ee; }
+.lb-harita-kart-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.lb-harita-kart-alt { display: grid; gap: 2px; padding: 10px 14px 12px; font-size: 13.5px; color: #6a6a6a; }
+.lb-harita-kart-alt > b { color: #141414; font-size: 14.5px; }
+.lb-harita-kart-alt span b { color: #141414; }
+.lb-harita-kart-kapat {
+  position: absolute; right: 8px; top: 8px; z-index: 1;
+  width: 30px; height: 30px; display: grid; place-items: center;
+  border: 0; border-radius: 9999px; background: #fff; cursor: pointer;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.15);
+}
+.lb-harita-kart-kapat svg { width: 14px; height: 14px; fill: none; stroke: #141414; stroke-width: 2.4; stroke-linecap: round; }
+
+.lb-konum-pini {
+  display: grid; place-items: center;
+  width: 46px; height: 46px;
+  transform: translate(-50%, -50%);
+  border-radius: 9999px;
+  background: #141414;
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.3);
+}
+.lb-konum-pini svg { width: 24px; height: 24px; fill: none; stroke: #fff; stroke-width: 1.75; stroke-linejoin: round; }
+
+
+/* Sayfa geçişi: üstte ince turuncu çizgi (components/layout/ust-cizgi) */
+.ust-cizgi { position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: 3px; pointer-events: none; }
+.ust-cizgi i { position: absolute; inset: 0 auto 0 0; width: 0; border-radius: 0 3px 3px 0; background: var(--lb-turuncu, #ff5f1f); box-shadow: 0 0 8px rgb(255 95 31 / 0.55); animation: ust-cizgi 8s cubic-bezier(0.1, 0.8, 0.2, 1) forwards; }
+.ust-cizgi[data-durum="bitiyor"] i { width: 100%; animation: none; opacity: 0; transition: width 0.2s ease, opacity 0.25s 0.2s ease; }
+@keyframes ust-cizgi { 0% { width: 0; } 10% { width: 35%; } 40% { width: 70%; } 100% { width: 92%; } }
+@media (prefers-reduced-motion: reduce) { .ust-cizgi i { animation: none; width: 60%; } }

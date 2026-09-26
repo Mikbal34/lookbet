@@ -1,0 +1,26 @@
+.kod { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
+.kod[data-titre] { animation: titre 0.4s; }
+@keyframes titre { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
+.kod input {
+  min-width: 0;
+  height: 60px;
+  border: 1px solid #b0b0b0;
+  border-radius: 14px;
+  text-align: center;
+  font-family: var(--font-yastik), var(--font-figtree), sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  font-variant-numeric: tabular-nums;
+  caret-color: var(--lb-turuncu);
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s var(--lb-zipla);
+}
+.kod input:focus { outline: none; border-color: var(--lb-yazi); box-shadow: 0 0 0 1px var(--lb-yazi); }
+.kod input[data-dolu] { transform: scale(1.04); }
+@media (max-width: 720px) {
+  .kod { gap: 6px; }
+  .kod input { height: 52px; font-size: 20px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kod input { transition: none; }
+  .kod[data-titre] { animation: none; }
+}

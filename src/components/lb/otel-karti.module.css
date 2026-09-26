@@ -1,0 +1,62 @@
+.kart { position: relative; min-width: 0; animation: gir 0.5s var(--lb-yay) both; animation-delay: calc(var(--s, 0) * 40ms); }
+@keyframes gir { from { opacity: 0; transform: translateY(14px); } }
+.bag { display: block; color: inherit; text-decoration: none; border-radius: 20px; }
+.foto { position: relative; aspect-ratio: 1 / 0.95; border-radius: 20px; overflow: hidden; background: var(--lb-kart); }
+.foto > img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.6s var(--lb-yay); }
+.kart:hover .foto > img { transform: scale(1.04); }
+.fotoYok {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 6px;
+  color: var(--lb-soluk);
+  font-size: 13px;
+  font-weight: 500;
+  background: linear-gradient(160deg, #f6f5f3, #ecebe8);
+}
+.etiketler { position: absolute; left: 12px; top: 12px; right: 52px; display: flex; flex-wrap: wrap; gap: 6px; }
+.etiket {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.94);
+  font-size: 12.5px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+}
+.kalp {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  color: #fff;
+}
+.kalp svg { fill: rgb(0 0 0 / 0.35); transition: fill 0.15s; }
+.kalp[aria-pressed="true"] svg { fill: var(--lb-turuncu); animation: pat 0.45s var(--lb-zipla); }
+@keyframes pat { 35% { transform: scale(0.7); } }
+.satir1 { display: flex; justify-content: space-between; gap: 8px; margin-top: 10px; font-weight: 600; }
+.satir1 > span:first-child { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.yildiz { display: inline-flex; align-items: center; gap: 3px; font-weight: 500; flex: none; }
+.yildiz svg { fill: currentColor; }
+.kart p { margin: 1px 0 0; color: var(--lb-soluk); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kart .fiyat { margin-top: 4px; color: var(--lb-yazi); }
+.fiyat b { font-size: 15px; text-decoration: underline; text-underline-offset: 2px; }
+.fiyat span { color: var(--lb-soluk); }
+.fiyat s { color: var(--lb-soluk); }
+.indirim { background: var(--lb-turuncu); color: #fff; font-weight: 700; }
+.iskelet .foto { background: linear-gradient(100deg, #f3f3f2 30%, #e9e9e7 50%, #f3f3f2 70%); background-size: 300% 100%; animation: parla 1.2s linear infinite; }
+.iskelet i { display: block; height: 12px; border-radius: 6px; background: #f0f0ef; margin-top: 10px; }
+.iskelet i + i { width: 60%; margin-top: 8px; }
+@keyframes parla { to { background-position: -150% 0; } }
+@media (prefers-reduced-motion: reduce) { .kart, .kalp svg, .iskelet .foto { animation: none; } .foto > img { transition: none; } }

@@ -1,0 +1,201 @@
+{
+  "yukleniyor": "Loading hotel",
+  "hata": {
+    "yokBaslik": "We couldn't find this hotel",
+    "yokMetin": "The link may be out of date; try finding the hotel through search.",
+    "anaSayfa": "Back to home",
+    "baslik": "We couldn't load this hotel right now",
+    "metin": "Please try again in a moment."
+  },
+  "bolumler": {
+    "etiket": "Page sections",
+    "fotograflar": "Photos",
+    "odalar": "Rooms",
+    "olanaklar": "Amenities",
+    "konum": "Location",
+    "bilinmesi": "Things to know"
+  },
+  "baslik": {
+    "yildizliOtel": "{sayi}-star hotel",
+    "otel": "Hotel"
+  },
+  "eylem": {
+    "paylas": "Share",
+    "kaydet": "Save",
+    "kaydedildi": "Saved"
+  },
+  "bildiri": {
+    "odaKalmadi": "This room is no longer available; please choose another one",
+    "odaSecildi": "Room selected",
+    "baglantiKopyalandi": "Link copied",
+    "baglantiKopyalanamadi": "Couldn't copy the link",
+    "favoridenCikarildi": "Removed from favourites",
+    "favoriyeEklendi": "Added to favourites"
+  },
+  "ana": {
+    "tarihSec": "Choose dates",
+    "devam": "Continue to booking",
+    "odaSec": "Choose a room",
+    "hazirlaniyor": "Getting ready…"
+  },
+  "geceTarih": "{gece, plural, one {# night} other {# nights}} · {tarih}",
+  "ozet": {
+    "baslik": "Hotel · {yer}",
+    "musaitOda": "{sayi, plural, one {# room option available} other {# room options available}}",
+    "giris": "Check-in {giris}",
+    "girisCikis": "Check-in {giris}, check-out {cikis}",
+    "ucretsizIptal": "Free cancellation options"
+  },
+  "oneCikan": {
+    "etiket": "Highlights",
+    "plaj": "Beach amenities",
+    "spa": "Spa and relaxation",
+    "termal": "Thermal springs",
+    "kayak": "Skiing",
+    "iptalHepsi": "Applies to every room for these dates.",
+    "iptalBazi": "{sayi, plural, one {# room option comes with free cancellation.} other {# room options come with free cancellation.}}"
+  },
+  "aciklama": {
+    "devami": "Show more",
+    "pencere": "About this hotel"
+  },
+  "odalar": {
+    "baslik": "Choose your room",
+    "altBaslik": "{tarih} · {misafir} · prices for {gece, plural, one {# night} other {# nights}}",
+    "tarihYok": "Add dates to see prices",
+    "tarihYokMetin": "We'll show you the available rooms and total price for your dates.",
+    "soruluyor": "Checking available rooms",
+    "araniyor": "Looking for rooms on your dates",
+    "fiyatlarGeliyor": "Getting prices and cancellation terms",
+    "hataBaslik": "We couldn't load rooms right now",
+    "hata": "There was a connection problem; please try again in a moment.",
+    "yok": "No rooms available for these dates",
+    "yokMetin": "Try different dates or a different number of guests.",
+    "tarihDegistir": "Change dates",
+    "tumu": "{sayi, plural, one {Show # option} other {Show all # options}}",
+    "pencere": "All rooms",
+    "pencereTarih": "All rooms · {tarih}",
+    "geceToplam": "total for {gece, plural, one {# night} other {# nights}}"
+  },
+  "olanaklar": {
+    "baslik": "What this hotel offers",
+    "tumu": "{sayi, plural, one {Show # amenity} other {Show all # amenities}}"
+  },
+  "olanakGrubu": {
+    "genel": "General",
+    "spor": "Sports and activities",
+    "spa": "Spa and wellness",
+    "plaj": "Beach",
+    "yemeIcme": "Food and drink",
+    "cocukBebek": "Kids and babies",
+    "termal": "Thermal springs",
+    "kayak": "Skiing",
+    "hizmetler": "Services",
+    "otel": "Hotel",
+    "ozellik": "Features",
+    "diger": "Other"
+  },
+  "rez": {
+    "etiket": "Booking",
+    "teklifBaslik": "Member-only deals",
+    "teklifMetin": "Log in to keep your bookings and favourites in one place.",
+    "girisYap": "Log in",
+    "fiyatlarGeliyor": "Getting prices",
+    "geceIcin": "for {gece, plural, one {# night} other {# nights}}",
+    "geceIcinEnUygun": "for {gece, plural, one {# night} other {# nights}}, cheapest room",
+    "kampanya": "{ad} · {yuzde}%",
+    "kampanyaAciklama": {
+      "erkenRezervasyon": "Discounted because you're booking well ahead of check-in. No code needed.",
+      "sonDakika": "Last-minute discount because check-in is coming up soon. No code needed.",
+      "uzunKonaklama": "Long-stay discount. No code needed.",
+      "tarihAraligi": "Special discount for these dates. No code needed."
+    },
+    "degistir": "Change",
+    "odemeYok": "You won't be charged yet"
+  },
+  "fiyat": {
+    "geceCarpi": "{fiyat} × {gece, plural, one {# night} other {# nights}}",
+    "toplam": "Total"
+  },
+  "iptal": {
+    "baslik": "Cancellation policy",
+    "ucretsizKadar": "Free cancellation until {tarih}",
+    "iadeEdilmez": "Non-refundable"
+  },
+  "konum": {
+    "baslik": "Where you'll be",
+    "haritaYukleniyor": "Loading map…",
+    "haritaYok": "The map can't be shown right now.",
+    "googleHaritalar": "Open in Google Maps"
+  },
+  "bilinmesi": {
+    "baslik": "Things to know",
+    "kurallar": "House rules",
+    "girisSaati": "Check-in: from {saat}",
+    "cikisSaati": "Check-out: by {saat}",
+    "saatlerTeyit": "Check-in and check-out times are confirmed with the hotel",
+    "ucretsizIptalSaat": "Free cancellation until {saat} on {tarih}",
+    "iadeEdilmez": "This room is non-refundable",
+    "odayaGore": "Cancellation terms vary by room; you'll see them once you choose one",
+    "sonraUcret": "After that, the cancellation fee is {tutar}",
+    "onemli": "Important information",
+    "dahaFazla": "More info"
+  },
+  "mobil": {
+    "fiyatlarGeliyor": "Getting prices…",
+    "odaYok": "No rooms available",
+    "tarihSec": "Add dates for prices",
+    "tarihEkle": "Add dates"
+  },
+  "galeri": {
+    "fotoYok": "No photos of this hotel yet",
+    "fotograflar": "Photos",
+    "fotograf": "Photo {sira}",
+    "tumu": "Show all photos",
+    "genelBakis": "Overview",
+    "tur": "Photo tour",
+    "turBaslik": "Hotel tour",
+    "bolumFotografi": "{bolum}, photo {sira}",
+    "isik": "Photo",
+    "onceki": "Previous",
+    "sonraki": "Next"
+  },
+  "odaPenceresi": {
+    "digerOdalar": "Other rooms",
+    "fotoYok": "No photos of this room",
+    "sunulanlar": "What this room offers",
+    "kadar": "Until {tarih}",
+    "ucretsizOnce": "Free cancellation before {saat}; you'll get a full refund",
+    "cezaSonrasi": "From {gun} at {saat}",
+    "iptalUcreti": "Cancellation fee: {tutar}",
+    "iptalUcretiToplam": "Cancellation fee: {tutar} (the full amount)",
+    "iptalSonra": "Cancellation terms are shown when you book.",
+    "fiyat": "Price",
+    "kampanya": "{ad} {yuzde}%",
+    "acenteIndirimi": "Agency discount",
+    "vergilerDahil": "{gece, plural, one {# night} other {# nights}}, taxes included",
+    "odayiSec": "Choose this room"
+  },
+  "odaOzelligi": {
+    "kingYatak": "King bed",
+    "queenYatak": "Queen bed",
+    "ikiTekYatak": "Two single beds",
+    "kismiDenizManzarasi": "Partial sea view",
+    "denizManzarasi": "Sea view",
+    "bahceManzarasi": "Garden view",
+    "havuzManzarasi": "Pool view",
+    "balkon": "Balcony",
+    "jakuzi": "Hot tub"
+  },
+  "tarihAlani": {
+    "giris": "Check-in",
+    "cikis": "Check-out",
+    "misafirler": "Guests",
+    "tarihEkle": "Add date",
+    "tarihSec": "Choose dates",
+    "tamam": "Done",
+    "pencere": "Dates and guests",
+    "odalariGoster": "Show rooms",
+    "girisCikisSec": "Choose check-in and checkout"
+  }
+}

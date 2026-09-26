@@ -1,114 +1,270 @@
+import { aramaHatasi } from "@/lib/dogrulama";
+import { getLocale, getTranslations } from "next-intl/server";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
 import { hotelSearchSchema } from "@/lib/validators";
 import { searchHotels } from "@/lib/royal-api";
+import type { HotelSearchResult } from "@/lib/royal-api/types";
+import { boardTypeAdlari } from "@/lib/board-types";
+import { hedefOtelKodlari } from "@/lib/otel-arama";
+import { aramaAnahtari, onbellegeYaz, onbellektenAl, type AramaKaydi } from "@/lib/arama-onbellegi";
+import { fiyatBaglami, fiyatla, otelKonumAdlari } from "@/lib/pricing";
+import { feedBul } from "@/lib/feed";
 
 // POST /api/hotels/search
-// Searches hotels by destination via Royal API.
-// B2B users (AGENCY role with agencyId) use their agency-specific feedId or the
-// B2B env fallback; everyone else uses the B2C feedId.
+//
+// İki yanıt biçimi:
+//   • Accept: application/x-ndjson → AKIŞ. Etscore'a 50'lik paketler paralel
+//     gidiyor; her paketin otelleri geldiği anda bir satır olarak yazılıyor.
+//     İlk oteller ~0,3 sn'de ekranda, liste ~2,5 sn'de tamam (İstanbul).
+//       {"tip":"bas","searchId":…,"eslesme":…,"onbellek":false}
+//       {"tip":"oteller","hotels":[…]}          ← her paket için
+//       {"tip":"son","toplam":295}   ya da   {"tip":"hata","error":"…"}
+//   • Aksi halde tek JSON: { searchId, hotels, eslesme } (eski istemciler).
+//
+// Aynı arama 10 dakika içinde tekrar gelirse Etscore'a gidilmez
+// (lib/arama-onbellegi.ts).
+//
+// B2B kullanıcılar (AGENCY + agencyId) kendi feedId'sini ya da B2B'yi,
+// diğerleri B2C feedId'sini kullanır (lib/feed).
+
+type Girdi = ReturnType<typeof hotelSearchSchema.parse>;
+
+/** Şu an Etscore'da yürüyen aramalar (anahtar → sonuç). */
+const yurutulen = new Map<string, Promise<AramaKaydi>>();
+function tekSeferde(anahtar: string, fn: () => Promise<AramaKaydi>): Promise<AramaKaydi> {
+  const p = fn().finally(() => yurutulen.delete(anahtar));
+  yurutulen.set(anahtar, p);
+  return p;
+}
+
 export async function POST(request: NextRequest) {
+  // Kullanıcıya dönen hata metni isteğin dilinde (akışın içinde de kullanılır).
+  const ta = await getTranslations("api.arama");
+  const dil = await getLocale();
   try {
-    const body = await request.json();
+    const body = await request.json().catch(() => null);
 
     const parsed = hotelSearchSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Geçersiz istek verisi", details: parsed.error.flatten().fieldErrors },
-        { status: 400 }
-      );
+      return NextResponse.json(await aramaHatasi(parsed.error), { status: 400 });
     }
-
     const input = parsed.data;
 
-    // Resolve feedId: authenticated agency users may have their own B2B feed.
     const session = await getServerSession(authOptions);
+    const feedId = await feedBul(session?.user.role, session?.user.agencyId);
 
-    let feedId = process.env.ROYAL_API_FEED_ID_B2C ?? "";
+    // Pansiyon adları dile göre zenginleştirildiği için önbellek dil başına.
+    const anahtar = aramaAnahtari({ ...input, feedId, dil });
+    // Önbellekte yoksa ama aynı arama şu an yürüyorsa onu bekle: aynı anda
+    // gelen aynı aramalar Etscore'a bir kez gider.
+    const kayit = onbellektenAl(anahtar) ?? (await yurutulen.get(anahtar)?.catch(() => null)) ?? null;
+    const userId = session?.user?.id ?? null;
+    const akis = request.headers.get("accept")?.includes("application/x-ndjson");
 
-    if (session?.user.role === "AGENCY" && session.user.agencyId) {
-      const agency = await prisma.agency.findUnique({
-        where: { id: session.user.agencyId },
-        select: { feedId: true },
-      });
-      feedId =
-        agency?.feedId ??
-        process.env.ROYAL_API_FEED_ID_B2B ??
-        process.env.ROYAL_API_FEED_ID_B2C ??
-        "";
+    // Önbellekte Etscore'un ham fiyatları; kullanıcıya göre fiyat (kural,
+    // kampanya, acente indirimi) her istekte uygulanır.
+    const fiyatlat = await listeFiyatlayici(input, session?.user.role, session?.user.agencyId ?? undefined);
+
+    if (!akis) {
+      const sonuc = kayit ?? (await tekSeferde(anahtar, () => aramayiYurut(input, feedId, userId, anahtar, dil)));
+      return NextResponse.json({ ...sonuc, hotels: await fiyatlat(sonuc.hotels) });
     }
 
-    // Resolve hotel codes for the requested destination from the local DB.
-    // Match locations whose name contains the destination string (case-insensitive),
-    // then collect all hotels belonging to those locations AND their descendants
-    // (e.g. "Antalya" should also surface hotels in Lara / Belek districts).
-    const matched = await prisma.location.findMany({
-      where: { name: { contains: input.destination, mode: "insensitive" } },
-      select: { id: true },
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream<Uint8Array>({
+      async start(controller) {
+        let acik = true;
+        const yaz = (satir: object) => {
+          if (!acik) return;
+          try {
+            controller.enqueue(encoder.encode(JSON.stringify(satir) + "\n"));
+          } catch {
+            acik = false; // istemci ayrıldı; arama sürüp önbelleği doldursun
+          }
+        };
+        try {
+          if (kayit) {
+            yaz({ tip: "bas", searchId: kayit.searchId, eslesme: kayit.eslesme, onbellek: true });
+            if (kayit.hotels.length) yaz({ tip: "oteller", hotels: await fiyatlat(kayit.hotels) });
+            yaz({ tip: "son", toplam: kayit.hotels.length });
+          } else {
+            const sonuc = await tekSeferde(anahtar, () =>
+              aramayiYurut(input, feedId, userId, anahtar, dil, {
+                onBas: (searchId, eslesme) => yaz({ tip: "bas", searchId, eslesme, onbellek: false }),
+                onParca: async (hotels) => yaz({ tip: "oteller", hotels: await fiyatlat(hotels) }),
+              })
+            );
+            yaz({ tip: "son", toplam: sonuc.hotels.length });
+          }
+        } catch (error) {
+          console.error("[POST /api/hotels/search akış]", error);
+          yaz({ tip: "hata", error: ta("otelHatasi") });
+        } finally {
+          if (acik) controller.close();
+        }
+      },
     });
 
-    const matchedIds = matched.map((l: { id: string }) => l.id);
-
-    // Pull direct children of the matched locations so a city query includes
-    // hotels registered under its districts.
-    const children = matchedIds.length
-      ? await prisma.location.findMany({
-          where: { parentId: { in: matchedIds } },
-          select: { id: true },
-        })
-      : [];
-
-    const locationIds = [...matchedIds, ...children.map((l: { id: string }) => l.id)];
-
-    const hotels = await prisma.hotel.findMany({
-      where: locationIds.length > 0 ? { locationId: { in: locationIds } } : {},
-      select: { hotelCode: true },
+    return new Response(stream, {
+      headers: {
+        "Content-Type": "application/x-ndjson; charset=utf-8",
+        "Cache-Control": "no-store",
+        // nginx yanıtı tamponlarsa akış kullanıcıya tek parça ulaşır.
+        "X-Accel-Buffering": "no",
+      },
     });
+  } catch (error) {
+    console.error("[POST /api/hotels/search]", error);
+    return NextResponse.json({ error: ta("otelHatasi") }, { status: 500 });
+  }
+}
 
-    const hotelCodes = hotels.map((h: { hotelCode: string }) => h.hotelCode);
+/**
+ * Arama listesinin fiyatları: gecelik minPrice'a fiyat motoru (kural →
+ * kampanya → acente indirimi) konaklama toplamı üzerinden uygulanır, geceye
+ * bölünür. Kampanya varsa üstü çizili önceki fiyat ve etiket eklenir. Liste
+ * fiyatında pansiyon bilinmediği için pansiyona özel kurallar burada uymaz.
+ */
+async function listeFiyatlayici(input: Girdi, rol: string | undefined, agencyId: string | undefined) {
+  const userType = rol === "AGENCY" ? "AGENCY" : rol === "ADMIN" ? "ADMIN" : "CUSTOMER";
+  const b = await fiyatBaglami(userType, userType === "AGENCY" ? agencyId : undefined);
+  // Kural, kampanya ve acente yoksa satış fiyatı = net fiyat; hesaba gerek yok.
+  if (!b.kurallar.length && !b.indirimler.length && !b.acente) return async (h: HotelSearchResult[]) => h;
+  const gece = Math.max(1, Math.round((Date.parse(input.checkOut) - Date.parse(input.checkIn)) / 864e5));
+  return async (oteller: HotelSearchResult[]) => {
+    const konumlar = await otelKonumAdlari(b, oteller.map((h) => h.hotelCode));
+    return oteller.map((h) => {
+      if (!(h.minPrice > 0)) return h;
+      const s = fiyatla(b, {
+        basePrice: h.minPrice * gece,
+        hotelCode: h.hotelCode,
+        checkIn: input.checkIn,
+        checkOut: input.checkOut,
+        konumAdlari: konumlar.get(h.hotelCode),
+      });
+      const gecelik = (n: number) => Math.round((n / gece) * 100) / 100;
+      return {
+        ...h,
+        minPrice: gecelik(s.finalPrice),
+        ...(s.kampanya ? { oncekiFiyat: gecelik(s.oncekiFiyat), kampanya: { ad: s.kampanya.ad, yuzde: s.kampanya.yuzde, tur: s.kampanya.tur } } : {}),
+      };
+    });
+  };
+}
 
-    // Call Royal API
-    const results = await searchHotels({
+/**
+ * Aramayı yürütür, sonucu önbelleğe yazar. `onParca` her paketin
+ * zenginleştirilmiş otelleriyle çağrılır.
+ */
+async function aramayiYurut(
+  input: Girdi,
+  feedId: string,
+  userId: string | null,
+  anahtar: string,
+  dil: string,
+  dinle: {
+    onBas?: (searchId: string, eslesme: string) => void;
+    onParca?: (hotels: HotelSearchResult[]) => void | Promise<void>;
+  } = {}
+): Promise<AramaKaydi> {
+  // Yazılanı otel kodlarına çevir — konum adında, bulunamazsa otel adında.
+  // Etscore şehre göre arama sunmuyor, eşleşme bizim veritabanımızda
+  // (bkz. lib/otel-arama.ts).
+  const hedef = await hedefOtelKodlari(input.destination, input.locationId);
+  if (hedef.kodlar.length === 0) {
+    dinle.onBas?.("", hedef.eslesme);
+    return { searchId: "", hotels: [], eslesme: hedef.eslesme };
+  }
+
+  const searchId = crypto.randomUUID();
+  dinle.onBas?.(searchId, hedef.eslesme);
+  const boardTypeNames = await boardTypeAdlari(dil);
+  const tumu: HotelSearchResult[] = [];
+
+  await searchHotels(
+    {
       feedId,
       currency: input.currency,
       nationality: input.nationality,
       checkIn: input.checkIn,
       checkOut: input.checkOut,
-      hotelCodes,
+      hotelCodes: hedef.kodlar,
       rooms: input.rooms,
-    });
+    },
+    async (parca) => {
+      const zengin = await zenginlestir(parca, boardTypeNames);
+      tumu.push(...zengin);
+      await dinle.onParca?.(zengin);
+    }
+  );
 
-    // Persist search history (fire-and-forget; errors are swallowed intentionally)
-    prisma.searchHistory
-      .create({
-        data: {
-          userId: session?.user.id ?? null,
-          params: { ...input, searchId: results.searchId } as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-          resultCount: results.hotels?.length ?? 0,
+  // Fiyatla dönen otelleri işaretle: sonraki geniş aramalarda önce onlar
+  // seçilir (bkz. otel-arama.ts). Sonucu bekletmesin.
+  if (tumu.length) {
+    void prisma.hotel
+      .updateMany({
+        where: { hotelCode: { in: tumu.map((h) => h.hotelCode) } },
+        data: { lastPricedAt: new Date() },
+      })
+      .catch((e) => console.error("[FIYAT_GORULDU]", e));
+  }
+
+  // Arama geçmişi — analitik ve ileride kişiselleştirme için. Ekrandaki
+  // "son aramaların" listesi cihazdan besleniyor (girişsiz kullanıcıda da
+  // çalışsın diye), burası ondan bağımsız. Bilerek await edilmiyor.
+  void prisma.searchHistory
+    .create({ data: { userId, params: input as object, resultCount: tumu.length } })
+    .catch((e) => console.error("[SEARCH_HISTORY_WRITE]", e));
+
+  const sonuc = { searchId, hotels: tumu, eslesme: hedef.eslesme };
+  onbellegeYaz(anahtar, sonuc);
+  return sonuc;
+}
+
+/**
+ * Etscore aramada yıldız, adres ve görsel vermiyor; bunlar bizim
+ * veritabanımızda. API'nin boş bıraktığı alanlar oradan dolduruluyor,
+ * API'nin verdiği (fiyat, koordinat) ezilmiyor. Pansiyon kodları Türkçe
+ * adlarına çevriliyor.
+ */
+async function zenginlestir(
+  oteller: HotelSearchResult[],
+  boardTypeNames: Map<string, string>
+): Promise<HotelSearchResult[]> {
+  const icerik = new Map(
+    (
+      await prisma.hotel.findMany({
+        where: { hotelCode: { in: oteller.map((h) => h.hotelCode) } },
+        select: {
+          hotelCode: true,
+          stars: true,
+          address: true,
+          thumbnailImage: true,
+          images: true,
+          latitude: true,
+          longitude: true,
+          location: { select: { name: true } },
         },
       })
-      .catch(() => {
-        // Non-critical – do not surface history write failures to the caller.
-      });
+    ).map((h) => [h.hotelCode, h])
+  );
 
-    // Translate board type codes to display names using the synced content
-    // table; unknown codes fall through as-is.
-    const boardTypeRows = await prisma.boardType.findMany();
-    const boardTypeNames = new Map(boardTypeRows.map((b) => [b.code, b.name]));
-
-    const hotelsWithBoardNames = (results.hotels ?? []).map((h) => ({
+  return oteller.map((h) => {
+    const db = icerik.get(h.hotelCode);
+    const ilkGorsel = Array.isArray(db?.images)
+      ? (db.images as unknown[]).find((x) => typeof x === "string")
+      : undefined;
+    return {
       ...h,
+      stars: h.stars || db?.stars || 0,
+      address: h.address || db?.address || db?.location?.name || "",
+      thumbnailImage: h.thumbnailImage || db?.thumbnailImage || (ilkGorsel as string | undefined) || "",
+      latitude: h.latitude || db?.latitude || 0,
+      longitude: h.longitude || db?.longitude || 0,
       boardTypes: (h.boardTypes ?? []).map((code) => boardTypeNames.get(code) ?? code),
-    }));
-
-    return NextResponse.json({ ...results, hotels: hotelsWithBoardNames });
-  } catch (error) {
-    console.error("[POST /api/hotels/search]", error);
-    return NextResponse.json(
-      { error: "Otel arama sırasında bir hata oluştu" },
-      { status: 500 }
-    );
-  }
+    };
+  });
 }

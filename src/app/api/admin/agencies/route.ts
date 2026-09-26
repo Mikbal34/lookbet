@@ -2,22 +2,23 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
+import { sayfalama } from "../_ortak";
+
+// GET /api/admin/agencies ?search ?isApproved ?page ?limit
+// Acente yalnız başvuru onayıyla açılır (agency-applications/:id/approve).
 
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
     if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return NextResponse.json({ error: "Bu işlem için yönetici yetkisi gerekiyor" }, { status: 403 });
     }
 
     const { searchParams } = new URL(req.url);
-    const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
-    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") ?? "20", 10)));
+    const { page, limit, skip } = sayfalama(searchParams);
     const search = searchParams.get("search") ?? "";
     const isApprovedParam = searchParams.get("isApproved");
-
-    const skip = (page - 1) * limit;
 
     const where: Record<string, unknown> = {};
 
@@ -55,8 +56,17 @@ export async function GET(req: NextRequest) {
       prisma.agency.count({ where }),
     ]);
 
+    // Bu yılın satışı: onaylı rezervasyonların satış fiyatı.
+    const yilBasi = new Date(new Date().getFullYear(), 0, 1);
+    const satislar = await prisma.reservation.findMany({
+      where: { agencyId: { in: agencies.map((a) => a.id) }, status: "CONFIRMED", createdAt: { gte: yilBasi } },
+      select: { agencyId: true, totalPrice: true, discountedPrice: true },
+    });
+    const satis = new Map<string, number>();
+    for (const r of satislar) satis.set(r.agencyId!, (satis.get(r.agencyId!) ?? 0) + (r.discountedPrice ?? r.totalPrice));
+
     return NextResponse.json({
-      agencies,
+      agencies: agencies.map((a) => ({ ...a, yilSatis: Math.round((satis.get(a.id) ?? 0) * 100) / 100 })),
       pagination: {
         page,
         limit,
@@ -66,78 +76,6 @@ export async function GET(req: NextRequest) {
     });
   } catch (error) {
     console.error("[ADMIN_AGENCIES_GET]", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-  }
-}
-
-export async function POST(req: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions);
-
-    if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    const body = await req.json();
-    const {
-      userId,
-      companyName,
-      taxId,
-      address,
-      phone,
-      discountRate,
-      commission,
-      feedId,
-      notes,
-      isApproved,
-    } = body;
-
-    if (!userId || !companyName || !taxId) {
-      return NextResponse.json(
-        { error: "userId, companyName and taxId are required" },
-        { status: 400 }
-      );
-    }
-
-    const userExists = await prisma.user.findUnique({ where: { id: userId } });
-    if (!userExists) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    const taxIdExists = await prisma.agency.findUnique({ where: { taxId } });
-    if (taxIdExists) {
-      return NextResponse.json({ error: "Tax ID already registered" }, { status: 409 });
-    }
-
-    const agency = await prisma.agency.create({
-      data: {
-        userId,
-        companyName,
-        taxId,
-        address,
-        phone,
-        discountRate: discountRate ?? 0,
-        commission: commission ?? 0,
-        feedId,
-        notes,
-        isApproved: isApproved ?? false,
-        approvedById: isApproved ? session.user.id : undefined,
-      },
-    });
-
-    await prisma.auditLog.create({
-      data: {
-        userId: session.user.id,
-        action: "CREATE_AGENCY",
-        entity: "Agency",
-        entityId: agency.id,
-        newData: { companyName, taxId, userId },
-      },
-    });
-
-    return NextResponse.json({ agency }, { status: 201 });
-  } catch (error) {
-    console.error("[ADMIN_AGENCIES_POST]", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Sunucu hatası, biraz sonra tekrar dene" }, { status: 500 });
   }
 }

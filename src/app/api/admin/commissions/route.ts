@@ -2,14 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
+import { otelAdlari } from "@/lib/rezervasyon-otel";
 import { commissionSchema } from "@/lib/validators";
+// Yalnız tarih gelirse Türkiye saatiyle: başlangıç günün başı, bitiş günün
+// sonu (kampanyalarla aynı; sunucunun saat dilimine bağlı değil).
+import { baslangicTarihi, bitisTarihi } from "../_ortak";
 
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
     if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return NextResponse.json({ error: "Bu işlem için yönetici yetkisi gerekiyor" }, { status: 403 });
     }
 
     const { searchParams } = new URL(req.url);
@@ -34,10 +38,11 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ commissions });
+    const adlar = await otelAdlari(commissions.map((x) => x.hotelCode));
+    return NextResponse.json({ commissions: commissions.map((x) => ({ ...x, hotelName: x.hotelCode ? adlar.get(x.hotelCode) ?? null : null })) });
   } catch (error) {
     console.error("[ADMIN_COMMISSIONS_GET]", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Sunucu hatası, biraz sonra tekrar dene" }, { status: 500 });
   }
 }
 
@@ -46,15 +51,15 @@ export async function POST(req: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return NextResponse.json({ error: "Bu işlem için yönetici yetkisi gerekiyor" }, { status: 403 });
     }
 
-    const body = await req.json();
+    const body = await req.json().catch(() => null);
     const parsed = commissionSchema.safeParse(body);
 
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Validation failed", details: parsed.error.flatten() },
+        { error: parsed.error.issues[0]?.message ?? "Bilgileri kontrol et", details: parsed.error.flatten() },
         { status: 400 }
       );
     }
@@ -64,7 +69,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (!agencyExists) {
-      return NextResponse.json({ error: "Agency not found" }, { status: 404 });
+      return NextResponse.json({ error: "Acente bulunamadı" }, { status: 404 });
     }
 
     const { startDate, endDate, ...rest } = parsed.data;
@@ -72,8 +77,8 @@ export async function POST(req: NextRequest) {
     const commission = await prisma.commission.create({
       data: {
         ...rest,
-        startDate: startDate ? new Date(startDate) : undefined,
-        endDate: endDate ? new Date(endDate) : undefined,
+        startDate: startDate ? baslangicTarihi(startDate) : undefined,
+        endDate: endDate ? bitisTarihi(endDate) : undefined,
       },
       include: {
         agency: { select: { id: true, companyName: true } },
@@ -93,6 +98,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ commission }, { status: 201 });
   } catch (error) {
     console.error("[ADMIN_COMMISSIONS_POST]", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Sunucu hatası, biraz sonra tekrar dene" }, { status: 500 });
   }
 }

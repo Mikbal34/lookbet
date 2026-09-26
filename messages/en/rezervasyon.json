@@ -1,0 +1,156 @@
+{
+  "baslik": "My bookings",
+  "otel": "Hotel",
+  "rezervasyonNo": "Booking no.",
+  "giris": "Check-in",
+  "cikis": "Check-out",
+  "iptalEt": "Cancel booking",
+  "tekrarRezervasyon": "Book again",
+  "yardimMerkezi": "Help Centre",
+  "ucretsizIptal": "Free cancellation until {tarih}",
+  "misafir": "{yetiskin, plural, one {# adult} other {# adults}}",
+  "misafirCocuklu": "{yetiskin, plural, one {# adult} other {# adults}}, {cocuk, plural, one {# child} other {# children}}",
+  "kopyala": "Copy {etiket}",
+  "numarayiKopyala": "Copy number",
+  "baglantiHatasi": "There was a connection problem; please try again shortly.",
+  "durum": {
+    "iptal": "Cancelled",
+    "tamamlanamadi": "Not completed",
+    "tamamlandi": "Completed",
+    "bekliyor": "Awaiting hotel confirmation",
+    "onaylandi": "Confirmed"
+  },
+  "kalan": {
+    "gun": "<b>{sayi, plural, one {# day} other {# days}}</b> to go",
+    "bugun": "Check-in is today",
+    "suruyor": "Your stay is underway"
+  },
+  "liste": {
+    "sekmeler": "Bookings",
+    "sekme": {
+      "gelecek": "Upcoming",
+      "gecmis": "Past",
+      "iptal": "Cancelled"
+    },
+    "yukleniyor": "Loading your bookings",
+    "hata": "We can't load your bookings right now",
+    "bos": {
+      "gelecek": {
+        "baslik": "No travel plans yet",
+        "metin": "Once you book a hotel, your booking will show up here."
+      },
+      "gecmis": {
+        "baslik": "No past stays yet",
+        "metin": "Hotels you've stayed at will gather here, so you can go back to a favourite in one tap."
+      },
+      "iptal": {
+        "baslik": "No cancelled bookings",
+        "metin": "Bookings you cancel, along with any cancellation fees, will show up here."
+      }
+    },
+    "otelAra": "Search hotels",
+    "sonrakiler": "More upcoming stays",
+    "devamHata": "Couldn't load more. Please try again.",
+    "yardimBaslik": "Need help?",
+    "yardimMetin": "For date changes, special requests or cancellations, take a look at the Help Centre.",
+    "ayrintiEtiket": "{otel} booking details",
+    "ayrintilar": "Details",
+    "iptalTarihi": "Cancelled on {tarih}",
+    "tamamlanamadi": "Booking couldn't be completed",
+    "iptalUcreti": "cancellation fee {tutar}",
+    "gunSonra": "in {sayi, plural, one {# day} other {# days}}",
+    "iptalUcretsiz": "no cancellation fee"
+  },
+  "detay": {
+    "yukleniyor": "Loading booking",
+    "bulunamadi": "We couldn't find this booking",
+    "bulunamadiMetin": "The link may be out of date, or the booking may belong to another account.",
+    "alinamadi": "We can't load this booking right now",
+    "alinamadiMetin": "Please try again shortly.",
+    "iptalEdildi": "This booking was cancelled",
+    "tamamlanamadi": "This booking couldn't be completed",
+    "iptalUcreti": "Cancellation fee: {tutar}.",
+    "iptalUcretiYok": "The hotel hasn't sent the cancellation fee details.",
+    "onaylanmadi": "The hotel didn't confirm the booking, so you haven't been charged.",
+    "yolculuk": {
+      "etiket": "Stay timeline",
+      "baslik": "Your journey",
+      "rezervasyon": "Booked",
+      "ucretsizSon": "Free cancellation ends",
+      "bugun": "Today"
+    },
+    "girisCikis": {
+      "baslik": "Check-in and check-out",
+      "girisSaati": "From {saat}",
+      "cikisSaati": "By {saat}"
+    },
+    "oda": {
+      "baslik": "Room and guests",
+      "yedek": "Room",
+      "cocukYasi": "{ad} (age {yas})",
+      "ozelIstek": "Special request"
+    },
+    "bilgi": {
+      "baslik": "Booking details",
+      "otelOnayNo": "Hotel confirmation no.",
+      "onayBekleniyor": "Shown here once the hotel confirms",
+      "iletisim": "Contact",
+      "telefon": "Phone",
+      "tarih": "Booked on"
+    },
+    "konum": {
+      "baslik": "Location and contact",
+      "haritaYukleniyor": "Loading map…",
+      "haritaYok": "The map can't be shown right now.",
+      "yolTarifi": "Get directions"
+    },
+    "kosul": {
+      "baslik": "Cancellation policy",
+      "ucretsizSon": "Until {tarih} at {saat}",
+      "ucretsiz": "Free cancellation",
+      "cezaBaslangic": "From {tarih} at {saat}",
+      "rezervasyondan": "From the time of booking",
+      "ceza": "{tutar} cancellation fee",
+      "yok": "There's no cancellation policy on file for this booking; the hotel's own terms apply if you cancel.",
+      "planlar": "Change of plans?",
+      "simdiUcretsiz": "If you cancel now, you won't be charged.",
+      "simdiUcretli": "If you cancel now, you'll be charged a {tutar} cancellation fee.",
+      "simdiBelirsiz": "Any cancellation fee depends on the hotel's terms.",
+      "onayBekliyor": "Your booking is awaiting confirmation from the hotel; once it's confirmed, you can cancel it here."
+    },
+    "ozet": {
+      "baslik": "Payment summary",
+      "geceBasi": "{fiyat} × {sayi, plural, one {# night} other {# nights}}",
+      "indirim": "Discount",
+      "vergiler": "Taxes and fees",
+      "dahil": "Included",
+      "toplam": "Total ({birim})",
+      "iptalUcreti": "Cancellation fee"
+    },
+    "tekrar": {
+      "baslik": "Want to go again?",
+      "metin": "Same hotel, new dates."
+    },
+    "eylem": {
+      "etiket": "Booking actions",
+      "otelIletisim": "Contact the hotel",
+      "otelSayfasi": "Hotel page"
+    },
+    "iptalUcretsiz": "No cancellation fee was charged."
+  },
+  "iptal": {
+    "hata": "The booking couldn't be cancelled",
+    "bittiBaslik": "Your booking has been cancelled",
+    "bittiUcretli": "Cancellation fee: {tutar}. We've emailed you the details.",
+    "bittiUcretsiz": "No cancellation fee was charged. We've emailed you the details.",
+    "bittiIletildi": "Your cancellation has been sent to the hotel. We've emailed you the details.",
+    "tamam": "OK",
+    "ucretYok": "No fee",
+    "ucretBelirsiz": "Fee depends on the hotel's terms",
+    "ucretsizHak": "You can cancel for free until {tarih}.",
+    "kosulaGore": "This amount is charged under your booking's cancellation policy.",
+    "otelYanitina": "The final cancellation fee depends on the hotel's response.",
+    "vazgec": "Keep booking",
+    "gidiyor": "Cancelling…"
+  }
+}

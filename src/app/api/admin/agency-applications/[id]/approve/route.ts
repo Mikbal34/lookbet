@@ -1,32 +1,28 @@
 // POST /api/admin/agency-applications/[id]/approve (sadece ADMIN)
-// Başvuruyu onaylar ve hesabı OLUŞTURUR: User (AGENCY rolü) + Agency
-// tek transaction'da açılır, başvuru APPROVED'a çekilir.
-//   Body: { password?, discountRate?, commission?, feedId?, notes? }
-// password verilmezse geçici şifre üretilir; yanıtta BİR KEZ döner —
-// admin bu bilgiyi acenteye iletmelidir.
+// Başvuruyu onaylar: Agency açılır ve başvuru APPROVED'a çekilir, tek
+// transaction'da. Başvuru panelden yapıldıysa acentenin kullanıcısı zaten
+// var (acente girişinde açıldı), ona bağlanır; eski başvurularda kullanıcı
+// açılır. Şifre yok: acente e-posta koduyla girer, panel hemen açılır.
+//   Body: { discountRate?, commission?, feedId?, notes? }
 
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { randomBytes } from "crypto";
 import bcrypt from "bcryptjs";
-import { authOptions } from "@/lib/auth/auth-options";
+import { authOptions, hesapOnbelleginiSil } from "@/lib/auth/auth-options";
+import { acenteSonucEpostasi, epostaGonder } from "@/lib/eposta";
 import { prisma } from "@/lib/prisma";
 import { applicationApproveSchema } from "@/lib/validators";
-
-const BCRYPT_ROUNDS = 12;
+import { benzersizIhlali } from "../../../_ortak";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
-function generateTempPassword(): string {
-  // URL-güvenli, okunabilir 12 karakterlik geçici şifre.
-  return randomBytes(9).toString("base64url").slice(0, 12);
-}
 
 export async function POST(req: NextRequest, { params }: RouteParams) {
   try {
     const session = await getServerSession(authOptions);
     if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return NextResponse.json({ error: "Bu işlem için yönetici yetkisi gerekiyor" }, { status: 403 });
     }
 
     const { id } = await params;
@@ -46,20 +42,22 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     const parsed = applicationApproveSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Doğrulama hatası", details: parsed.error.flatten().fieldErrors },
+        { error: parsed.error.issues[0]?.message ?? "Bilgileri kontrol et", details: parsed.error.flatten().fieldErrors },
         { status: 422 }
       );
     }
-    const { password, discountRate, commission, feedId, notes } = parsed.data;
+    const { discountRate, commission, feedId, notes } = parsed.data;
 
-    // Başvuru bekleyen sürede aynı email/vergi no ile hesap açılmış olabilir.
     const [existingUser, existingAgency] = await Promise.all([
-      prisma.user.findUnique({ where: { email: application.email } }),
+      prisma.user.findUnique({
+        where: application.userId ? { id: application.userId } : { email: application.email },
+        include: { agency: { select: { id: true } } },
+      }),
       prisma.agency.findUnique({ where: { taxId: application.taxId } }),
     ]);
-    if (existingUser) {
+    if (existingUser && (existingUser.role !== "AGENCY" || existingUser.agency)) {
       return NextResponse.json(
-        { error: "Bu email ile kayıtlı bir hesap zaten var" },
+        { error: "Bu e-posta başka bir hesaba ya da acenteye bağlı" },
         { status: 409 }
       );
     }
@@ -70,25 +68,28 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const plainPassword = password ?? generateTempPassword();
-    const passwordHash = await bcrypt.hash(plainPassword, BCRYPT_ROUNDS);
-
     const result = await prisma.$transaction(async (tx: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
-      const user = await tx.user.create({
-        data: {
-          name: application.contactName,
-          email: application.email,
-          phone: application.phone,
-          passwordHash,
-          role: "AGENCY",
-        },
-      });
+      const user =
+        existingUser ??
+        (await tx.user.create({
+          data: {
+            name: application.contactName,
+            email: application.email,
+            phone: application.phone,
+            // Şifresiz hesap: hiçbir şifreyle eşleşmeyen rastgele hash.
+            passwordHash: await bcrypt.hash(randomBytes(32).toString("hex"), 10),
+            role: "AGENCY",
+          },
+        }));
 
       const agency = await tx.agency.create({
         data: {
           userId: user.id,
           companyName: application.companyName,
           taxId: application.taxId,
+          taxOffice: application.taxOffice,
+          tursabNo: application.tursabNo,
+          website: application.website,
           address: application.address,
           phone: application.companyPhone,
           discountRate: discountRate ?? 0,
@@ -129,25 +130,30 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
         data: {
           userId: user.id,
           type: "AGENCY_APPROVED",
-          title: "Acente Hesabınız Oluşturuldu",
-          message: `Tebrikler! ${application.companyName} acente başvurunuz onaylandı ve hesabınız oluşturuldu.`,
+          title: "Acente başvurunuz onaylandı",
+          message: `Tebrikler! ${application.companyName} başvurunuz onaylandı; LookBeds Partner paneliniz açıldı.`,
         },
       });
 
       return { user, agency };
     });
 
+    // Panel hemen açılsın: acentenin oturumu bir sonraki istekte DB'den okunur.
+    hesapOnbelleginiSil(result.user.id);
+    const eposta = await acenteSonucEpostasi({ onay: true, ad: application.contactName, sirket: application.companyName });
+    void epostaGonder({ to: application.email, ...eposta }).catch((e) => console.error("[EPOSTA_ACENTE_ONAY]", application.email, e));
+
     return NextResponse.json({
-      message: "Başvuru onaylandı, acente hesabı oluşturuldu",
+      message: "Başvuru onaylandı, acente paneli açıldı",
       agency: result.agency,
-      credentials: {
-        email: application.email,
-        // Geçici şifre yalnızca bu yanıtta görünür; DB'de sadece hash tutulur.
-        tempPassword: plainPassword,
-      },
+      email: application.email,
     });
   } catch (error) {
+    // Ön kontrolden sonra aynı e-posta / vergi no / başvuru aynı anda işlendiyse.
+    if (benzersizIhlali(error)) {
+      return NextResponse.json({ error: "Bu e-posta ya da vergi numarası başka bir hesaba veya acenteye bağlı" }, { status: 409 });
+    }
     console.error("[ADMIN_AGENCY_APPLICATION_APPROVE]", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Sunucu hatası, biraz sonra tekrar dene" }, { status: 500 });
   }
 }

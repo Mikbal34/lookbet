@@ -1,104 +1,62 @@
-import { Navbar, Footer } from "@/components/layout";
-import Link from "next/link";
-import { CheckCircle2, CalendarCheck, Home } from "lucide-react";
+// Rezervasyon onayı: anahtar kartı gelir, numara ve iki yol (Rezervasyonlarım,
+// yeni arama). Otel adı ve tarihler ödeme sayfasından adresle gelir.
+
 import type { Metadata } from "next";
+import Link from "next/link";
+import { getServerSession } from "next-auth";
+import { getLocale, getTranslations } from "next-intl/server";
+import { authOptions } from "@/lib/auth/auth-options";
+import { AltBilgi } from "@/components/lb/alt-bilgi";
+import { Nesne } from "@/components/lb/nesne";
+import { isoOku } from "@/components/lb/arama/durum";
+import { bicimleyici } from "@/i18n/bicim";
+import s from "@/components/odeme/onay.module.css";
 
-export const metadata: Metadata = {
-  title: "Rezervasyon Onaylandı - Lookbet",
-};
-
-interface ConfirmationPageProps {
-  searchParams: Promise<{ bookingNumber?: string }>;
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("odeme");
+  return { title: t("onay.metaBaslik") };
 }
 
-export default async function ConfirmationPage({
-  searchParams,
-}: ConfirmationPageProps) {
-  const { bookingNumber } = await searchParams;
+export default async function OnaySayfasi({ searchParams }: {
+  searchParams: Promise<{ bookingNumber?: string; hotelName?: string; checkIn?: string; checkOut?: string; durum?: string }>;
+}) {
+  const { bookingNumber, hotelName, checkIn, checkOut, durum } = await searchParams;
+  const t = await getTranslations("odeme");
+  const b = bicimleyici(await getLocale());
+  // Acentenin rezervasyonları kendi panelinde.
+  const acente = (await getServerSession(authOptions))?.user?.role === "AGENCY";
+  // "bekliyor": talep alındı ama otelden onay henüz gelmedi (ya da tedarikçi
+  // yanıtı gecikti); "onaylandı" denmez, numara yoksa gösterilmez.
+  const onayli = durum !== "bekliyor";
+  const giris = isoOku(checkIn);
+  const cikis = isoOku(checkOut);
+  const ozet = [hotelName, giris && cikis ? `${b.gunAyUzun(giris)} – ${b.gunAyYil(cikis)}` : null].filter(Boolean).join(" · ");
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <Navbar />
-
-      <main className="flex flex-1 items-center justify-center px-4 py-12">
-        <div className="w-full max-w-lg">
-          {/* Success card */}
-          <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-sm text-center">
-            {/* Icon */}
-            <div className="mb-6 flex justify-center">
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
-                <CheckCircle2
-                  className="h-10 w-10 text-green-600"
-                  aria-hidden="true"
-                />
-              </div>
+    <div className={`lb ${s.sayfa}`}>
+      <header className={s.ust}>
+        <Link href="/" className={`lb-y ${s.logo}`}>LookBeds</Link>
+      </header>
+      <main className={s.ana}>
+        <div className={s.kart}>
+          <Nesne ad="anahtar-karti" boyut={150} className={s.nesne} />
+          <h1 className="lb-y">{onayli ? t("onay.onaylandi") : t("onay.alindi")}</h1>
+          {ozet && <p className={s.ozet}>{ozet}</p>}
+          <p>{onayli ? t("onay.epostaGonderildi") : t("onay.onayBekleniyor")}</p>
+          {bookingNumber && (
+            <div className={s.no}>
+              <small>{t("onay.numara")}</small>
+              <b aria-label={t("onay.numaraEtiket", { no: bookingNumber })}>{bookingNumber}</b>
+              <span>{t("onay.numaraNot")}</span>
             </div>
-
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Rezervasyonunuz Onaylandı!
-            </h1>
-            <p className="text-gray-500 text-sm mb-6">
-              Rezervasyonunuz başarıyla oluşturuldu. Onay bilgileri email
-              adresinize gönderilecektir.
-            </p>
-
-            {/* Booking number */}
-            {bookingNumber && (
-              <div className="mb-8 rounded-lg border border-line bg-chip-blue px-6 py-4">
-                <p className="text-xs font-medium text-navy uppercase tracking-wider mb-1">
-                  Rezervasyon Numarası
-                </p>
-                <p
-                  className="text-2xl font-bold font-mono text-navy-dark"
-                  aria-label={`Rezervasyon numarası: ${bookingNumber}`}
-                >
-                  #{bookingNumber}
-                </p>
-                <p className="text-xs text-blue-500 mt-1">
-                  Bu numarayı kaydedin
-                </p>
-              </div>
-            )}
-
-            {/* Info boxes */}
-            <div className="mb-8 grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
-              <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
-                <p className="text-xs font-medium text-gray-500 mb-1">Sonraki Adım</p>
-                <p className="text-sm text-gray-700">
-                  Rezervasyon detaylarınızı &quot;Rezervasyonlarım&quot; sayfasından
-                  takip edebilirsiniz.
-                </p>
-              </div>
-              <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
-                <p className="text-xs font-medium text-gray-500 mb-1">İptal Politikası</p>
-                <p className="text-sm text-gray-700">
-                  İptal koşulları rezervasyon detay sayfasında görüntülenebilir.
-                </p>
-              </div>
-            </div>
-
-            {/* Action buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link
-                href="/reservations"
-                className="inline-flex items-center justify-center gap-2 rounded-lg bg-navy px-5 py-3 text-sm font-semibold text-white hover:bg-navy-dark transition-colors"
-              >
-                <CalendarCheck className="h-4 w-4" aria-hidden="true" />
-                Rezervasyonlarım
-              </Link>
-              <Link
-                href="/"
-                className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
-              >
-                <Home className="h-4 w-4" aria-hidden="true" />
-                Ana Sayfa
-              </Link>
-            </div>
+          )}
+          <div className={s.yollar}>
+            <Link href={acente ? "/agency/reservations" : "/reservations"} className={s.dugme}>{t("onay.rezervasyonlarim")}</Link>
+            <Link href="/" className={s.ikincil}>{t("onay.yeniArama")}</Link>
           </div>
         </div>
       </main>
-
-      <Footer />
+      <AltBilgi />
     </div>
   );
 }

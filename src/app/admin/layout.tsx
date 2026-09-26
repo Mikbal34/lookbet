@@ -1,19 +1,18 @@
-"use client";
+// LookBeds Yönetim: üst çubuk + sayfa. Yetki middleware'de (yalnız ADMIN).
+import type { Metadata } from "next";
+import { YonetimCubugu } from "@/components/yonetim/yonetim-cubugu";
+import { BildiriSaglayici } from "@/components/yonetim/ortak";
+import s from "@/components/yonetim/yonetim.module.css";
 
-// Admin paneli — koyu lacivert sidebar + açık içerik alanı.
-import { AdminSidebar } from "@/components/layout";
+export const metadata: Metadata = { title: "LookBeds Yönetim", robots: { index: false } };
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function YonetimDuzeni({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-paper flex flex-col lg:flex-row">
-      <AdminSidebar />
-      <main className="flex-1 min-w-0 px-4 sm:px-8 lg:px-11 py-6 lg:py-9">
-        {children}
-      </main>
+    <div className={`lb ${s.sayfa}`}>
+      <BildiriSaglayici>
+        <YonetimCubugu />
+        <main>{children}</main>
+      </BildiriSaglayici>
     </div>
   );
 }

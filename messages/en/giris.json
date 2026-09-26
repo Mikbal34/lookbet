@@ -1,0 +1,68 @@
+{
+  "meta": {
+    "giris": {
+      "baslik": "Log in — LookBeds",
+      "aciklama": "Log in to your LookBeds account or sign up in seconds"
+    },
+    "acente": {
+      "baslik": "Agency login — LookBeds Partner",
+      "aciklama": "Log in to the LookBeds Partner panel"
+    }
+  },
+  "pencere": {
+    "baslik": "Log in or sign up",
+    "baslikTamamla": "Finish signing up",
+    "hosGeldin": "Welcome to LookBeds",
+    "aciklama": "No password needed: we'll email you a 6-digit code. New here? We'll create your account in the same step.",
+    "veya": "or",
+    "google": "Continue with Google",
+    "apple": "Continue with Apple",
+    "acenteMisin": "Are you a travel agency?",
+    "acenteAyri": "Agencies log in on a separate page",
+    "kodBaslik": "Enter the code",
+    "kodGonderildi": "We sent a 6-digit code to <b>{eposta}</b>. Can't find it? Check your spam folder."
+  },
+  "tamamla": {
+    "baslik": "Complete your account",
+    "aciklama": "Enter your name as it should appear on your bookings and at the hotel. We'll fill in your details for you at checkout.",
+    "ad": "First name",
+    "soyad": "Last name",
+    "kimlikNotu": "Make sure it matches your ID; the hotel will ask to see it at check-in.",
+    "ulkeKodu": "Country code",
+    "telefon": "Phone (optional)",
+    "onay": "By selecting \"Agree and continue\", you agree to the <kosullar>Terms of Use</kosullar> and confirm that you've read the <aydinlatma>Privacy Notice</aydinlatma>.",
+    "kaydediliyor": "Saving…",
+    "kabulEt": "Agree and continue"
+  },
+  "acente": {
+    "musteriMisin": "Booking a stay?",
+    "siteyeDon": "Back to the site",
+    "baslik": "Agency login",
+    "altBaslikEposta": "Log in or become a LookBeds Partner",
+    "altBaslikKod": "Enter the code we emailed you",
+    "sirketEpostasi": "No password needed: we'll email you a 6-digit code. Please use your company email.",
+    "kodGonderildi": "We sent a code to <b>{eposta}</b>. Can't find it? Check your spam folder.",
+    "ilkKez": "First time here? After you log in, you'll fill out a short application form; your panel opens once it's approved."
+  },
+  "kod": {
+    "eposta": "Email",
+    "gonderiliyor": "Sending code…",
+    "gelistirme": "Development mode, code: {kod}",
+    "kutular": "6-digit code",
+    "hane": "Digit {sira}",
+    "yeniKod": "Resend code in {kalan}s",
+    "yenidenGonder": "Resend code",
+    "epostaDegistir": "Change email",
+    "girisYapiliyor": "Logging in…",
+    "girisYap": "Log in"
+  },
+  "hata": {
+    "eposta": "Enter a valid email address",
+    "gonderilemedi": "Couldn't send the code; please try again in a moment",
+    "baglanti": "Couldn't send the code; check your connection",
+    "kodHatali": "That code is incorrect or has expired",
+    "adSoyad": "Enter your first and last name",
+    "telefon": "The phone number is incomplete",
+    "kaydedilemedi": "Couldn't save your details; please try again"
+  }
+}
