@@ -15,7 +15,11 @@ services:
       retries: 5
 
   app:
-    build: .
+    build:
+      context: .
+      # deploy.sh compose'u --env-file .env.production ile çağırıyor; değer oradan.
+      args:
+        NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY:-}
     restart: unless-stopped
     # Yalnızca localhost'a bağla; dış dünya nginx (80) üzerinden erişir.
     ports:
@@ -28,7 +32,9 @@ services:
     healthcheck:
       # 127.0.0.1: Alpine'de localhost önce ::1'e çözülüyor, Next yalnızca
       # IPv4'te (0.0.0.0) dinliyor; kontrol hep "unhealthy" çıkıyordu.
-      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000"]
+      # Hafif uç, yanıt tamamen okunur (--spider değil): ana sayfayı çizdirip
+      # akışı yarıda kesmek soğuk açılışta log hatası üretiyordu.
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3000/api/saglik"]
       interval: 30s
       timeout: 10s
       retries: 3

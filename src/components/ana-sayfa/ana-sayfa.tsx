@@ -295,6 +295,9 @@ export function AnaSayfa({ satirlar, kampanyalar = [] }: { satirlar: AnaSayfaSat
 
     const kaydir = () => {
       hedef = hedefHesapla();
+      // Safari: odaktaki "Nereye" kutusu küçülürken gizlenince sayfayı en üste
+      // atıyor; çubuk kapanmadan odağı bırak.
+      if ((gHedef || hedef > 0.05) && A.contains(document.activeElement)) (document.activeElement as HTMLElement).blur();
       if (gHedef) genis.current?.kapat();
       else if (hedef > 0.05 && panelAcik.current) kontrol.current?.panelKapat();
       oynat();
