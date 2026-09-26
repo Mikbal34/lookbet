@@ -7,6 +7,9 @@ import type { CancellationPolicy } from "@/lib/royal-api/types";
 import { bicimleyici } from "@/i18n/bicim";
 
 const GONDEREN = () => process.env.EMAIL_FROM ?? "LookBeds <noreply@lookbeds.com>";
+// Alıcı "yanıtla" derse destek adresine gider (Cloudflare Email Routing ekibin
+// gelen kutusuna iletir); noreply@ posta almaz.
+const YANIT = () => process.env.EMAIL_REPLY_TO ?? "info@lookbeds.com";
 const SITE = () => (process.env.NEXTAUTH_URL ?? "").replace(/\/$/, "");
 
 /** HTML'e giden her dış değer (ad, not, otel adı) kaçırılır. */
@@ -22,7 +25,7 @@ export async function epostaGonder(p: { to: string; subject: string; html: strin
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: GONDEREN(), to: [p.to], subject: p.subject, html: p.html, text: p.text }),
+    body: JSON.stringify({ from: GONDEREN(), to: [p.to], reply_to: YANIT(), subject: p.subject, html: p.html, text: p.text }),
     signal: AbortSignal.timeout(10_000),
   });
   if (!res.ok) throw new Error(`E-posta gönderilemedi: ${res.status}`);

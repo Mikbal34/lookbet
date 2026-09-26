@@ -86,4 +86,4 @@ export const makaleleriKur = (metinler: MakaleMetinleri) => MAKALELER.map((k) =>
 /** Kitlenin konuları, makale sırasına göre. */
 export const konular = (k: Kitle) => [...new Set(MAKALELER.filter((m) => m.kitle === k).map((m) => m.konu))];
 
-export const DESTEK = { eposta: "destek@lookbet.com", telefon: "0850 255 00 00", telefonHref: "tel:+908502550000" };
+export const DESTEK = { eposta: "info@lookbeds.com", telefon: "0850 255 00 00", telefonHref: "tel:+908502550000" };
