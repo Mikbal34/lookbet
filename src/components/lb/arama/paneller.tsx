@@ -14,10 +14,10 @@ import s from "./paneller.module.css";
 /* ── Yer ─────────────────────────────────────────────────────────── */
 
 const POPULER: { ad: string; ust: string; alt: string; nesne: NesneAdi }[] = [
-  { ad: "Bodrum", ust: "Muğla", alt: "Koylar, marina ve beach club'lar", nesne: "deniz" },
-  { ad: "Antalya", ust: "Akdeniz", alt: "Her şey dahil, uzun sahil", nesne: "deniz" },
-  { ad: "Kapadokya", ust: "Nevşehir", alt: "Mağara oteller ve balonlar", nesne: "sehir" },
-  { ad: "İstanbul", ust: "Marmara", alt: "Boğaz ve tarihi yarımada", nesne: "sehir" },
+  { ad: "Bodrum", ust: "Muğla", alt: "Koylar, marina ve beach club'lar", nesne: "bodrum" },
+  { ad: "Antalya", ust: "Akdeniz", alt: "Her şey dahil, uzun sahil", nesne: "antalya" },
+  { ad: "Kapadokya", ust: "Nevşehir", alt: "Mağara oteller ve balonlar", nesne: "kapadokya" },
+  { ad: "İstanbul", ust: "Marmara", alt: "Boğaz ve tarihi yarımada", nesne: "istanbul" },
   { ad: "Uludağ", ust: "Bursa", alt: "Kayak merkezi otelleri", nesne: "kayak" },
   { ad: "Afyonkarahisar", ust: "Ege", alt: "Termal ve kaplıca otelleri", nesne: "termal" },
 ];

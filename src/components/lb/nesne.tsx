@@ -6,7 +6,7 @@ export type NesneAdi =
   | "zil" | "deniz" | "termal" | "kayak" | "sehir" | "anahtar-karti" | "bavul"
   | "plaj" | "spa" | "iptal" | "indirim" | "kilit" | "odeme-karti" | "havale"
   | "kahvalti" | "hersey-dahil" | "kartpostal" | "pasaport" | "kapi"
-  | "bodrum" | "kapadokya" | "antalya";
+  | "bodrum" | "kapadokya" | "antalya" | "istanbul";
 
 export function Nesne({ ad, boyut = 56, className }: { ad: NesneAdi; boyut?: number; className?: string }) {
   return (

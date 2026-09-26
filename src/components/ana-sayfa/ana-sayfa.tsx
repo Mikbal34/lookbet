@@ -293,20 +293,42 @@ export function AnaSayfa({ satirlar, kampanyalar = [] }: { satirlar: AnaSayfaSat
       },
     };
 
+    // Safari: odaktaki "Nereye" kutusu çubuk küçülürken gizlenince sayfayı en
+    // üste atıyor. Kaydırma başlamadan (tekerlek/dokunma) odağı bırak; yine de
+    // kapanıştan hemen sonra sayfa bir anda yukarı fırlarsa eski yerine koy.
+    const odakCubuktaMi = () => A.contains(document.activeElement) && document.activeElement !== document.body;
+    const odagiBirak = () => {
+      if ((gHedef || panelAcik.current || scrollY > 0) && odakCubuktaMi()) {
+        koru = scrollY;
+        koruBitis = performance.now() + 800;
+        (document.activeElement as HTMLElement).blur();
+      }
+    };
+    let koru = 0, koruBitis = 0;
     const kaydir = () => {
+      const y = scrollY;
+      if (performance.now() < koruBitis) {
+        if (y < koru - 150) {
+          scrollTo(0, koru);
+          return;
+        }
+        koru = Math.max(koru, y);
+      }
       hedef = hedefHesapla();
-      // Safari: odaktaki "Nereye" kutusu küçülürken gizlenince sayfayı en üste
-      // atıyor; çubuk kapanmadan odağı bırak.
-      if ((gHedef || hedef > 0.05) && A.contains(document.activeElement)) (document.activeElement as HTMLElement).blur();
+      if ((gHedef || hedef > 0.05) && odakCubuktaMi()) odagiBirak();
       if (gHedef) genis.current?.kapat();
       else if (hedef > 0.05 && panelAcik.current) kontrol.current?.panelKapat();
       oynat();
     };
+    addEventListener("wheel", odagiBirak, { passive: true });
+    addEventListener("touchmove", odagiBirak, { passive: true });
     addEventListener("scroll", kaydir, { passive: true });
     addEventListener("resize", olcul);
     document.fonts?.ready.then(olcul);
     olcul();
     return () => {
+      removeEventListener("wheel", odagiBirak);
+      removeEventListener("touchmove", odagiBirak);
       removeEventListener("scroll", kaydir);
       removeEventListener("resize", olcul);
       genis.current = null;
