@@ -14,6 +14,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { getSession, signIn } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Ikon } from "@/components/lb/ikon";
+import { Logo } from "@/components/lb/logo";
 import { Nesne, type NesneAdi } from "@/components/lb/nesne";
 import { guvenliHedef } from "./hedef";
 import { KodKutulari } from "./kod-kutulari";
@@ -112,7 +113,7 @@ export function AcenteGirisi({ yonetim = false }: { yonetim?: boolean }) {
     <div className={`lb ${s.sayfa}`}>
       <header className={s.ust}>
         <Link href={yonetim ? "/admin/giris" : "/"} className={s.marka}>
-          <span className="lb-y">LookBeds</span>
+          <span className="lb-y lb-logo"><Logo /></span>
           <small>{yonetim ? "Yönetim" : "Partner"}</small>
         </Link>
         {!yonetim && (

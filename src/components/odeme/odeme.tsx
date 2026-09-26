@@ -16,6 +16,7 @@ import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { AltBilgi } from "@/components/lb/alt-bilgi";
 import { Ikon } from "@/components/lb/ikon";
+import { Logo } from "@/components/lb/logo";
 import { Nesne } from "@/components/lb/nesne";
 import { Pencere } from "@/components/lb/pencere";
 import { Bekleme, DonenMetin } from "@/components/lb/bekleme";
@@ -427,7 +428,7 @@ function OdemeFormu({ p, acik }: { p: URLSearchParams; acik: boolean }) {
   return (
     <div className={`lb ${s.sayfa}`}>
       <header className={s.ust}>
-        <Link href="/" className={`lb-y ${s.logo}`}>LookBeds</Link>
+        <Link href="/" className={`lb-y lb-logo ${s.logo}`}><Logo /></Link>
         <span className={s.guvenli}>
           <Ikon ad="lock" boyut={18} />
           <span>{t("ust.guvenliBaglanti")}</span>
@@ -932,7 +933,7 @@ function Bos() {
   return (
     <div className={`lb ${s.sayfa}`}>
       <header className={s.ust}>
-        <Link href="/" className={`lb-y ${s.logo}`}>LookBeds</Link>
+        <Link href="/" className={`lb-y lb-logo ${s.logo}`}><Logo /></Link>
       </header>
       <div className={s.bos}>
         <Nesne ad="bavul" boyut={110} />

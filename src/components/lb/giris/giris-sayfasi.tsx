@@ -7,6 +7,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Logo } from "@/components/lb/logo";
 import { GirisPenceresi } from "./giris-penceresi";
 import { guvenliHedef } from "./hedef";
 import s from "./giris-sayfasi.module.css";
@@ -23,7 +24,7 @@ export function GirisSayfasi() {
   }, [router]);
   return (
     <div className={`lb ${s.zemin}`}>
-      <Link href="/" className={`lb-y ${s.logo}`}>LookBeds</Link>
+      <Link href="/" className={`lb-y lb-logo ${s.logo}`}><Logo /></Link>
       <GirisPenceresi acik={acik} hedef={hedef} onKapat={kapat} />
     </div>
   );

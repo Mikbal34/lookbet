@@ -24,6 +24,7 @@ import { MobilArama } from "@/components/lb/arama/mobil-arama";
 import { aramaAdresi, BOS_ARAMA, iso, type AramaDegeri, type PanelAdi } from "@/components/lb/arama/durum";
 import { AltBilgi } from "@/components/lb/alt-bilgi";
 import { Ikon } from "@/components/lb/ikon";
+import { Logo } from "@/components/lb/logo";
 import { Nesne } from "@/components/lb/nesne";
 import { DunyaDugmesi, MenuDugmesi } from "@/components/lb/ust-araclar";
 import { useFavoriler } from "@/components/lb/favoriler";
@@ -215,7 +216,9 @@ export function AnaSayfa({ satirlar, kampanyalar = [] }: { satirlar: AnaSayfaSat
       const logoSon = m ? 22 : 26;
       const buyukPunto = parseFloat(getComputedStyle(LY!).fontSize);
       L!.style.fontSize = `${buyukPunto}px`;
+      // Küçük haldeki logo kutusu. Sembol yazıdan uzun, yükseklik de ölçülüyor.
       const logoSonGen = (L!.offsetWidth * logoSon) / buyukPunto;
+      const logoSonYuk = (L!.offsetHeight * logoSon) / buyukPunto;
       const sag = U!.querySelector<HTMLElement>(`.${s.sag}`);
       const yan = Math.max(logoSonGen, sag?.offsetWidth ?? 0) + 40;
       // Mobilde logo kaydırınca kayboluyor (Airbnb gibi); arama soldan menüye kadar uzanıyor.
@@ -225,7 +228,7 @@ export function AnaSayfa({ satirlar, kampanyalar = [] }: { satirlar: AnaSayfaSat
       olc = {
         mobil: m,
         mesafe: m ? 250 : 325,
-        logo: { x0: lr.left, y0: lr.top + y, x1: m ? 16 : pad, y1: (ustH - logoSon) / 2, s1: logoSon / buyukPunto },
+        logo: { x0: lr.left, y0: lr.top + y, x1: m ? 16 : pad, y1: (ustH - logoSonYuk) / 2, s1: logoSon / buyukPunto },
         arama: {
           x0: ar.left, y0: ar.top + y, w0: ar.width, h0: ar.height,
           x1: m ? 16 : (vw - aramaSonGen) / 2, y1: (ustH - aramaSonH) / 2, w1: aramaSonGen, h1: aramaSonH,
@@ -395,8 +398,8 @@ export function AnaSayfa({ satirlar, kampanyalar = [] }: { satirlar: AnaSayfaSat
 
       <div ref={perde} className={s.perde} onClick={() => genis.current?.kapat()} />
 
-      <Link ref={logo} href="/" className={`lb-y ${s.logoUcan}`} onClick={(e) => { e.preventDefault(); yukari(); }} aria-label={t("logoEtiket")}>
-        LookBeds
+      <Link ref={logo} href="/" className={`lb-y lb-logo ${s.logoUcan}`} onClick={(e) => { e.preventDefault(); yukari(); }} aria-label={t("logoEtiket")}>
+        <Logo />
       </Link>
 
       <AramaCubugu
@@ -416,7 +419,7 @@ export function AnaSayfa({ satirlar, kampanyalar = [] }: { satirlar: AnaSayfaSat
 
       <section className={s.acilis} aria-label={t("otelAra")}>
         <div className={s.acilisIc}>
-          <h1 ref={logoYer} className={`lb-y ${s.logoYer}`}>LookBeds</h1>
+          <h1 ref={logoYer} className={`lb-y lb-logo ${s.logoYer}`}><Logo /></h1>
           <div ref={sekmelerEl} className={s.sekmeler} role="tablist" aria-label={t("tatilTuru")}>
             {KATEGORILER.map((k, i) => (
               <button

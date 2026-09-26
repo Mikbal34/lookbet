@@ -90,6 +90,11 @@
 }
 .lb :focus-visible { outline: 2px solid var(--lb-yazi); outline-offset: 2px; }
 .lb-y { font-family: var(--font-yastik), var(--font-figtree), sans-serif; font-weight: 700; }
+/* Logo (components/lb/logo.tsx). :where — sayfanın kendi sınıfı (ör. mobilde
+   display: none) her zaman üstün gelsin. */
+:where(.lb-logo) { display: inline-flex; align-items: center; gap: 0.28em; line-height: 1; white-space: nowrap; }
+.lb-logo-isaret { display: block; flex: none; width: 1.015em; height: 1.15em; fill: var(--lb-turuncu); }
+.lb-logo-beds { color: var(--lb-turuncu); }
 
 body {
   background: #ffffff;

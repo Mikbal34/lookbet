@@ -14,6 +14,7 @@ import { AramaCubugu, type AramaKontrol } from "./arama/arama-cubugu";
 import { MobilArama } from "./arama/mobil-arama";
 import type { AramaDegeri, PanelAdi } from "./arama/durum";
 import { Ikon } from "./ikon";
+import { Logo } from "./logo";
 import { Nesne, type NesneAdi } from "./nesne";
 import { DunyaDugmesi, MenuDugmesi } from "./ust-araclar";
 import s from "./ust-cubuk.module.css";
@@ -72,7 +73,7 @@ export function UstCubuk({ deger, onDegis, onAra, nesne = "zil", alt, aramaYok }
     <>
       <header className={`lb ${s.ust}`} data-acik={acik || undefined}>
         <div className={s.satir}>
-          <Link href="/" className={`lb-y ${s.logo}`}>LookBeds</Link>
+          <Link href="/" className={`lb-y lb-logo ${s.logo}`}><Logo /></Link>
           {!aramaYok && (
             <button
               type="button"

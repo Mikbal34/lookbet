@@ -7,6 +7,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Ikon } from "@/components/lb/ikon";
+import { Logo } from "@/components/lb/logo";
 import { Nesne } from "@/components/lb/nesne";
 import { DunyaDugmesi, MenuDugmesi } from "@/components/lb/ust-araclar";
 import { DESTEK } from "./makaleler";
@@ -18,7 +19,7 @@ export function YardimCubugu({ araGoster }: { araGoster?: boolean }) {
     <header className={s.ust}>
       <div className={s.ustIc}>
         <div className={s.marka}>
-          <Link href="/" className="lb-y">LookBeds</Link>
+          <Link href="/" className="lb-y lb-logo"><Logo /></Link>
           <Link href="/yardim" className={s.markaAlt}>{t("yardimMerkezi")}</Link>
         </div>
         {araGoster && (

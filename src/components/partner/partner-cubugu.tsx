@@ -12,6 +12,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { signOut, useSession } from "next-auth/react";
 import { Ikon } from "@/components/lb/ikon";
+import { Logo } from "@/components/lb/logo";
 import { Nesne, type NesneAdi } from "@/components/lb/nesne";
 import { gecenSure } from "./ortak";
 import { BILDIRIM_ANAHTARI, okunduYap, useBildirimler, type Bildirim, type BildirimKutusu } from "./veri";
@@ -62,7 +63,7 @@ export function PartnerCubugu({ kilitli = false }: { kilitli?: boolean }) {
     <header className={s.ust}>
       <div className={s.ustIc}>
         <Link href="/agency/dashboard" className={s.marka}>
-          <span className="lb-y">LookBeds</span>
+          <span className="lb-y lb-logo"><Logo /></span>
           <small>Partner</small>
         </Link>
         {kilitli ? (

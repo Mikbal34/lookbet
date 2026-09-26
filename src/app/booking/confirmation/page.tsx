@@ -7,6 +7,7 @@ import { getServerSession } from "next-auth";
 import { getLocale, getTranslations } from "next-intl/server";
 import { authOptions } from "@/lib/auth/auth-options";
 import { AltBilgi } from "@/components/lb/alt-bilgi";
+import { Logo } from "@/components/lb/logo";
 import { Nesne } from "@/components/lb/nesne";
 import { isoOku } from "@/components/lb/arama/durum";
 import { bicimleyici } from "@/i18n/bicim";
@@ -35,7 +36,7 @@ export default async function OnaySayfasi({ searchParams }: {
   return (
     <div className={`lb ${s.sayfa}`}>
       <header className={s.ust}>
-        <Link href="/" className={`lb-y ${s.logo}`}>LookBeds</Link>
+        <Link href="/" className={`lb-y lb-logo ${s.logo}`}><Logo /></Link>
       </header>
       <main className={s.ana}>
         <div className={s.kart}>

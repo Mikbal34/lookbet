@@ -11,6 +11,7 @@ import { usePathname } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { signOut, useSession } from "next-auth/react";
 import { Ikon, type IkonAdi } from "@/components/lb/ikon";
+import { Logo } from "@/components/lb/logo";
 import { getir } from "./ortak";
 import s from "./yonetim.module.css";
 
@@ -69,7 +70,7 @@ export function YonetimCubugu() {
     <header className={s.ust}>
       <div className={s.ustIc}>
         <Link href="/admin" className={s.marka}>
-          <span className="lb-y">LookBeds</span>
+          <span className="lb-y lb-logo"><Logo /></span>
           <small>Yönetim</small>
         </Link>
         <nav className={s.sekmeler} aria-label="Yönetim">
