@@ -3,6 +3,8 @@
 // (src/lib/uygulama-ortak.ts): alt sekmeler, büyük açılış yok, yalnız müşteri.
 //
 // Denemek için yerel sunucu: npm run ios:yerel (CAP_SUNUCU=http://localhost:3000).
+// Android: npm run android (emülatör ya da USB'li telefon); geri tuşu, hata sayfası
+// ve açılış ayarları android/app/src/main (MainActivity.java, res/values/styles.xml).
 
 import { writeFileSync } from "node:fs";
 import type { CapacitorConfig } from "@capacitor/cli";

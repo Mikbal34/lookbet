@@ -6,9 +6,12 @@
   "scripts": {
     "ios": "cap run ios",
     "ios:yerel": "CAP_SUNUCU=http://localhost:3000 cap run ios",
+    "android": "cap run android",
+    "android:ac": "cap open android",
     "esitle": "cap sync"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.2",
     "@capacitor/core": "^8.5.2",
     "@capacitor/ios": "^8.5.2",
     "@capacitor/splash-screen": "^8.0.2",
