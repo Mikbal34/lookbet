@@ -6,6 +6,8 @@
 // rehber adları da orada. Makale metinleri ICU'dan geçmeden, olduğu gibi
 // okunur: sunucuda getMessages(), istemcide useMessages() → makaleKur /
 // makaleleriKur. Böylece sayfa da arama da geçerli dilin metinlerini kullanır.
+// Uygulamada menü yok (alt sekmeler var): tarif farklıysa makalenin `uygulama`
+// nesnesindeki paragraf (ör. uygulama.p1) aynı adlı paragrafın yerine geçer.
 
 import type { Messages } from "next-intl";
 import type { NesneAdi } from "@/components/lb/nesne";
@@ -74,14 +76,15 @@ export const REHBERLER: Record<Kitle, { nesne: NesneAdi; anahtar: keyof Messages
 
 export const makaleBul = (id: string) => MAKALELER.find((m) => m.id === id) ?? null;
 
-/** Kayda geçerli dilin başlığını ve paragraflarını ekler. */
-export function makaleKur(k: MakaleKaydi, metinler: MakaleMetinleri): Makale {
-  const { baslik, metin } = metinler[k.anahtar];
-  return { ...k, baslik, metin: Object.values(metin) };
+/** Kayda geçerli dilin başlığını ve paragraflarını ekler; uygulamada varsa uygulama paragrafları. */
+export function makaleKur(k: MakaleKaydi, metinler: MakaleMetinleri, uygulama = false): Makale {
+  const kayit = metinler[k.anahtar];
+  const ozel = uygulama && "uygulama" in kayit ? (kayit.uygulama as Record<string, string>) : {};
+  return { ...k, baslik: kayit.baslik, metin: Object.entries(kayit.metin).map(([p, v]) => ozel[p] ?? v) };
 }
 
 /** Bütün makaleler, geçerli dilde, kayıt sırasıyla. */
-export const makaleleriKur = (metinler: MakaleMetinleri) => MAKALELER.map((k) => makaleKur(k, metinler));
+export const makaleleriKur = (metinler: MakaleMetinleri, uygulama = false) => MAKALELER.map((k) => makaleKur(k, metinler, uygulama));
 
 /** Kitlenin konuları, makale sırasına göre. */
 export const konular = (k: Kitle) => [...new Set(MAKALELER.filter((m) => m.kitle === k).map((m) => m.konu))];

@@ -9,11 +9,13 @@
 
 import { fotoBoyutu } from "@/lib/foto";
 import * as React from "react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Map as GoogleMap, useMap } from "@vis.gl/react-google-maps";
 import type { HotelSearchResult } from "@/lib/royal-api/types";
 import { useBicim } from "@/i18n/use-bicim";
 import { HARITA_STILI, HaritaSaglayici, HtmlIsaret } from "@/components/harita/google-harita";
+import { useYeniSekme } from "@/components/lb/uygulama";
 
 export interface HotelMapProps {
   hotels: HotelSearchResult[];
@@ -64,12 +66,13 @@ function MiniKart({ h, href, fiyat, onKapat }: { h: HotelSearchResult; href: str
   const t = useTranslations("arama.kart");
   const tk = useTranslations("ortak");
   const [fotoYok, setFotoYok] = React.useState(!h.thumbnailImage);
+  const yeniSekme = useYeniSekme();
   return (
     <div className="lb-harita-kart" role="dialog" aria-label={h.hotelName}>
       <button type="button" className="lb-harita-kart-kapat" onClick={onKapat} aria-label={tk("kapat")}>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
       </button>
-      <a href={href} target={`otel_${h.hotelCode}`}>
+      <Link href={href} target={yeniSekme ? `otel_${h.hotelCode}` : undefined} prefetch={false}>
         <div className="lb-harita-kart-foto">
           {!fotoYok && (
             // eslint-disable-next-line @next/next/no-img-element -- dış kaynaklı otel görseli
@@ -86,7 +89,7 @@ function MiniKart({ h, href, fiyat, onKapat }: { h: HotelSearchResult; href: str
             <b>{fiyat}</b>{h.freeCancellation ? ` · ${t("ucretsizIptal")}` : ""}
           </span>
         </div>
-      </a>
+      </Link>
     </div>
   );
 }

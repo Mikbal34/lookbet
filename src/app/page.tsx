@@ -4,8 +4,10 @@
 // (derlemede veritabanına bağlanılmıyor).
 
 import { AnaSayfa } from "@/components/ana-sayfa/ana-sayfa";
+import { UygulamaKesfet } from "@/components/ana-sayfa/uygulama-kesfet";
 import { anaSayfaSatirlari } from "@/lib/ana-sayfa";
 import { vitrinKampanyalari } from "@/lib/kampanya-vitrin";
+import { uygulamaMi } from "@/lib/uygulama";
 
 export const dynamic = "force-dynamic";
 
@@ -20,5 +22,7 @@ export default async function HomePage() {
       return [];
     }),
   ]);
+  // Uygulamada büyük açılış yok: Keşfet doğrudan arama ve satırlarla açılır.
+  if (await uygulamaMi()) return <UygulamaKesfet satirlar={satirlar} kampanyalar={kampanyalar} />;
   return <AnaSayfa satirlar={satirlar} kampanyalar={kampanyalar} />;
 }

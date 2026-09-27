@@ -30,7 +30,7 @@
   cursor: pointer;
   transition: opacity 0.2s, transform 0.3s var(--lb-yay), box-shadow 0.2s;
 }
-.hap:hover { box-shadow: 0 6px 24px rgb(0 0 0 / 0.14); }
+@media (hover: hover) { .hap:hover { box-shadow: 0 6px 24px rgb(0 0 0 / 0.14); } }
 .ust[data-acik] .hap { opacity: 0; transform: scale(1.1) translateY(12px); pointer-events: none; }
 .hap span {
   flex: 1;
@@ -68,15 +68,30 @@
 .perde { position: fixed; inset: 0; z-index: 39; background: rgb(0 0 0 / 0.28); opacity: 0; pointer-events: none; transition: opacity 0.3s; }
 .perde[data-acik] { opacity: 1; pointer-events: auto; }
 
+.hapIki { display: none; }
+
 @media (max-width: 1100px) {
   .hap span:nth-of-type(n + 2) { display: none; }
 }
 @media (max-width: 720px) {
   .satir { height: 68px; grid-template-columns: 1fr auto; padding-inline: 16px; gap: 10px; }
+  /* Uygulamada menü yok, hap tüm genişlikte. */
+  :global(html[data-uygulama]) .satir { grid-template-columns: 1fr; }
+  :global(html[data-uygulama]) .satir[data-geri] { grid-template-columns: auto 1fr; }
   .logo, .dunya { display: none; }
   .hap { width: 100%; }
+  .hap span { display: none; }
+  .hapIki { display: grid; flex: 1; min-width: 0; padding: 0 12px; font-style: normal; text-align: left; line-height: 1.25; }
+  .hapIki b, .hapIki small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hapIki b { font-size: 14.5px; font-weight: 700; }
+  .hapIki small { font-size: 12.5px; color: var(--lb-soluk); }
   .genis { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .genis, .genisIc > *, .hap, .perde { transition: none; }
+}
+
+/* Dokunmatik: arama hapına basınca hafif küçülür. */
+@media (hover: none) {
+  .hap:active { transform: scale(0.98); }
 }

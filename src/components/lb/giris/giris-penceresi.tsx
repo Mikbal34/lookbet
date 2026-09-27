@@ -13,6 +13,7 @@ import { useTranslations } from "next-intl";
 import { Ikon } from "@/components/lb/ikon";
 import { Nesne } from "@/components/lb/nesne";
 import { useKatman } from "@/components/lb/pencere";
+import { useUygulama } from "@/components/lb/uygulama";
 import { KodKutulari } from "./kod-kutulari";
 import s from "./giris.module.css";
 
@@ -30,6 +31,8 @@ export function GirisPenceresi({ acik, hedef, onKapat }: {
   const { update } = useSession();
   const t = useTranslations("giris");
   const tk = useTranslations("ortak");
+  // Uygulama yalnız müşteri için: acente girişi önerilmez.
+  const uygulama = useUygulama();
   const [adim, setAdim] = React.useState<Adim>("eposta");
   const [geri, setGeri] = React.useState(false);
   const [eposta, setEposta] = React.useState("");
@@ -232,14 +235,16 @@ export function GirisPenceresi({ acik, hedef, onKapat }: {
                     </div>
                   </>
                 )}
-                <Link href="/agency/login" className={s.acente} onClick={onKapat}>
-                  <Nesne ad="anahtar-karti" boyut={44} />
-                  <span>
-                    <b>{t("pencere.acenteMisin")}</b>
-                    <span>{t("pencere.acenteAyri")}</span>
-                  </span>
-                  <Ikon ad="chevron-right" boyut={16} kalinlik={2.1} />
-                </Link>
+                {!uygulama && (
+                  <Link href="/agency/login" className={s.acente} onClick={onKapat}>
+                    <Nesne ad="anahtar-karti" boyut={44} />
+                    <span>
+                      <b>{t("pencere.acenteMisin")}</b>
+                      <span>{t("pencere.acenteAyri")}</span>
+                    </span>
+                    <Ikon ad="chevron-right" boyut={16} kalinlik={2.1} />
+                  </Link>
+                )}
               </form>
             )}
 

@@ -1,5 +1,4 @@
 "use client";
-/* eslint-disable @next/next/no-img-element -- otel ve oda görselleri dış kaynaklı (tedarikçi) */
 
 // Otel detay sayfası (Airbnb düzeni): başlık ve fotoğraf ızgarası, solda özet,
 // öne çıkanlar, açıklama, odalar ve olanaklar; sağda yapışık rezervasyon
@@ -22,6 +21,7 @@ import { AltBilgi } from "@/components/lb/alt-bilgi";
 import { Ikon } from "@/components/lb/ikon";
 import { Bekleme, DonenMetin } from "@/components/lb/bekleme";
 import { Nesne } from "@/components/lb/nesne";
+import { DisFoto, useKirikFotolar } from "@/components/lb/dis-foto";
 import { Pencere } from "@/components/lb/pencere";
 import { useFavoriler } from "@/components/lb/favoriler";
 import { useGiris } from "@/components/lb/giris/giris-saglayici";
@@ -32,6 +32,7 @@ import { FotoTuru, Galeri, IsikKutusu, type TurBolumu } from "./galeri";
 import { OdaPenceresi, odaOncekiFiyati, odaToplami, type Oda } from "./oda-penceresi";
 import { TarihAlani, TarihPenceresi, useMisafirMetni, type TarihPaneli } from "./tarih-alani";
 import { iptalOzeti, olanakGruplari, olanakIkonu, oneCikanlar, oneCikanOlanaklar } from "./yardimci";
+import { icGecisVar } from "@/components/layout/sayfa-gecisi";
 import s from "./otel-detay.module.css";
 
 const KonumHaritasi = dynamic(() => import("./konum-haritasi").then((m) => m.KonumHaritasi), {
@@ -289,28 +290,32 @@ export function OtelDetay({ kod }: { kod: string }) {
     favDegistir(kod);
   };
   const geri = () => {
-    if (history.length > 1 && document.referrer.startsWith(location.origin)) history.back();
+    // Siteden gelindiyse (istemci geçişi ya da aynı sitenin önceki sayfası) geçmişe dön: kaydırma yeri korunur.
+    if (icGecisVar() || (history.length > 1 && document.referrer.startsWith(location.origin))) history.back();
     else router.push(hedef ? aramaAdresi(urlDeger) : "/");
   };
 
   /* ── Türetilenler ── */
+  // Açılmayan fotoğraflar (ör. etstur 403) galeriden ve turdan düşülür.
+  const kirik = useKirikFotolar();
   const gorseller = React.useMemo(() => {
     const g = [...(otel?.images ?? [])].sort((a, b) => Number(b.isMain) - Number(a.isMain)).map((i) => i.url);
-    return [...new Set(g)];
-  }, [otel?.images]);
+    return [...new Set(g)].filter((u) => !kirik.has(u));
+  }, [otel?.images, kirik]);
   const turBolumleri = React.useMemo<TurBolumu[]>(() => {
     const b: TurBolumu[] = gorseller.length ? [{ ad: t("galeri.genelBakis"), gorseller }] : [];
     odalar.forEach((o) => {
-      if (o.images.length && !b.some((x) => x.ad === o.roomName)) b.push({ ad: o.roomName, gorseller: o.images });
+      const g = o.images.filter((u) => !kirik.has(u));
+      if (g.length && !b.some((x) => x.ad === o.roomName)) b.push({ ad: o.roomName, gorseller: g });
     });
     return b;
-  }, [gorseller, odalar, t]);
+  }, [gorseller, odalar, kirik, t]);
   const odaFoto = (o: Oda, j: number) => {
     const b = turBolumleri.findIndex((x) => x.ad === o.roomName);
     if (b >= 0) setIsik({ b, j });
   };
 
-  if (otelQ.isPending) return <Iskelet />;
+  if (otelQ.isPending) return <OtelIskeleti />;
   if (otelQ.isError || !otel) {
     return (
       <div className={`lb ${s.sayfa}`}>
@@ -470,13 +475,8 @@ export function OtelDetay({ kod }: { kod: string }) {
       <main className={s.ana}>
         <div className={s.bas}>
           <div className={s.baslik}>
-            <div>
-              <h1 className="lb-y">{otel.name}</h1>
-              <p>
-                {otel.stars ? t("baslik.yildizliOtel", { sayi: otel.stars }) : t("baslik.otel")}
-                {yer && ` · ${yer}`}
-              </p>
-            </div>
+            {/* Tür ve yer galerinin altındaki başlıkta (Airbnb gibi); burada tekrar edilmez. */}
+            <h1 className="lb-y">{otel.name}</h1>
             {eylemler}
           </div>
           <div ref={galeriRef} className={s.galeri}>
@@ -505,7 +505,7 @@ export function OtelDetay({ kod }: { kod: string }) {
         <div className={s.govde}>
           <div className={s.sol}>
             <section className={s.ozet}>
-              <h2>{t("ozet.baslik", { yer: ozetBolum })}</h2>
+              <h2>{t("ozet.baslik", { tur: otel.stars ? t("baslik.yildizliOtel", { sayi: otel.stars }) : t("baslik.otel"), yer: ozetBolum })}</h2>
               <p>
                 {[
                   tarihVar && odaQ.isSuccess && odalar.length ? t("ozet.musaitOda", { sayi: odalar.length }) : null,
@@ -822,13 +822,15 @@ function OdaKarti({ oda, gece, misafir, secili, liste, onAc }: {
   const { yaz } = useFiyat();
   const ip = iptalOzeti(oda.cancellationPolicies, bicim);
   const yatak = oda.attributes?.find((a) => a.categoryName === "Yatak")?.name;
+  const kirik = useKirikFotolar();
+  const fotolar = oda.images.filter((u) => !kirik.has(u));
   return (
     <button type="button" className={s.oda} data-liste={liste || undefined} data-secili={secili || undefined} onClick={onAc}>
       <span className={s.odaFoto}>
-        {oda.images[0] ? <img src={oda.images[0]} alt="" loading="lazy" /> : <Nesne ad="zil" boyut={40} />}
-        {oda.images.length > 0 && (
+        <DisFoto src={fotolar[0]} loading="lazy" yedek={<Nesne ad="zil" boyut={40} />} />
+        {fotolar.length > 0 && (
           <small>
-            <Ikon ad="photos" boyut={12} kalinlik={2.2} /> {oda.images.length}
+            <Ikon ad="photos" boyut={12} kalinlik={2.2} /> {fotolar.length}
           </small>
         )}
       </span>
@@ -857,11 +859,12 @@ function HaritaBekleme() {
   return <div className={s.haritaYedek}>{t("konum.haritaYukleniyor")}</div>;
 }
 
-function Iskelet() {
+/** Otel sayfası yüklenirken; rota geçişinde de (app/hotel/[hotelCode]/loading.tsx) aynısı görünür. */
+export function OtelIskeleti() {
   const t = useTranslations("otel");
   return (
     <div className={`lb ${s.sayfa}`} aria-busy="true" aria-label={t("yukleniyor")}>
-      <div className={s.ana}>
+      <div className={`${s.ana} ${s.iskeletAna}`}>
         <div className={s.iskeletBaslik}><i /><i /></div>
         <div className={s.iskeletGaleri} />
         <div className={s.govde}>

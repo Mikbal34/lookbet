@@ -80,5 +80,13 @@
     "bavul": "Oteller aranıyor",
     "takvim": "Fiyatlar aranıyor",
     "kart": "Rezervasyon yapılıyor"
+  },
+  "uygulama": {
+    "sekmeler": "Uygulama sekmeleri",
+    "kesfet": "Keşfet",
+    "favoriler": "Favoriler",
+    "rezervasyonlar": "Rezervasyonlar",
+    "profil": "Profil",
+    "girisYap": "Giriş yap"
   }
 }

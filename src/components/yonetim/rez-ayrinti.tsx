@@ -1,5 +1,4 @@
 "use client";
-/* eslint-disable @next/next/no-img-element -- otel görseli dış kaynaklı (tedarikçi) */
 
 // Yönetim › rezervasyon ayrıntısı: otel, tarihler, kaynak, iletişim,
 // misafirler ve fiyatın oluşumu (Etscore net fiyatı → uygulanan kural →
@@ -11,6 +10,7 @@
 import * as React from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Pencere } from "@/components/lb/pencere";
+import { DisFoto } from "@/components/lb/dis-foto";
 import { para } from "@/components/otel-detay/yardimci";
 import { aralik, geceler, gunOku, gunUzun, gunYonelme, iptalDurumu, komisyonTutari } from "@/components/rezervasyonlar/ortak";
 import { DurumRozet, HataYazi, eur, gonder, satisFiyati, simdiAl, tarihUzun, saatYazi, useBildiri, type YRez } from "./ortak";
@@ -126,7 +126,7 @@ function Icerik({ r, onIptal }: { r: YRez; onIptal: () => void }) {
     <div className={s.pIc}>
       {r.hotel?.image ? (
         <div className={s.pFoto}>
-          <img src={r.hotel.image} alt="" />
+          <DisFoto src={r.hotel.image} />
           <DurumRozet durum={r.status} />
         </div>
       ) : (

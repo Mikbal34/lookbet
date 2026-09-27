@@ -22,11 +22,11 @@
 .dugme:active { transform: scale(0.98); }
 .dugme:disabled { opacity: 0.5; cursor: default; transform: none; }
 .turuncu { background: var(--lb-turuncu); color: #fff; font-weight: 700; }
-.turuncu:hover { filter: brightness(0.96); }
+@media (hover: hover) { .turuncu:hover { filter: brightness(0.96); } }
 .cerceve { border: 1px solid var(--lb-cizgi); background: #fff; color: var(--lb-yazi); }
-.cerceve:hover { border-color: var(--lb-yazi); }
+@media (hover: hover) { .cerceve:hover { border-color: var(--lb-yazi); } }
 .siyah { background: var(--lb-yazi); color: #fff; }
-.siyah:hover { filter: brightness(1.2); }
+@media (hover: hover) { .siyah:hover { filter: brightness(1.2); } }
 .buyuk { height: 52px; padding: 0 28px; font-size: 16px; }
 .soluk { color: var(--lb-soluk); }
 
@@ -88,7 +88,7 @@
 .durum > p { margin: 0; color: var(--lb-soluk); font-size: 16px; line-height: 1.5; }
 .durum > p b { color: var(--lb-yazi); }
 .durumNesne { transition: transform 0.4s var(--lb-zipla); }
-.durum:hover .durumNesne { transform: rotate(-6deg) scale(1.04); }
+@media (hover: hover) { .durum:hover .durumNesne { transform: rotate(-6deg) scale(1.04); } }
 .rozet { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 999px; background: #fff4dc; color: #8a5a00; font-size: 13px; font-weight: 700; }
 .rozet i { width: 7px; height: 7px; border-radius: 999px; background: currentColor; animation: nabiz 1.6s ease-in-out infinite; }
 @keyframes nabiz { 50% { opacity: 0.3; } }

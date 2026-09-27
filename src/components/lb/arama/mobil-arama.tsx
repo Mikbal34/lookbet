@@ -22,12 +22,14 @@ export function MobilArama({ acik, deger, onDegis, onAra, onKapat }: {
   const tk = useTranslations("ortak");
   const b = useBicim();
   const [blok, setBlok] = React.useState<PanelAdi>("yer");
-  const kapatDugme = React.useRef<HTMLButtonElement>(null);
+  const kok = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     if (!acik) return;
     document.body.style.overflow = "hidden";
-    const t = setTimeout(() => kapatDugme.current?.focus(), 60);
+    // Odak pencerenin kendisine (ekran okuyucu başlığı okur); kapat düğmesine
+    // verilince dokunmatikte etrafında kalın odak halkası kalıyordu.
+    const t = setTimeout(() => kok.current?.focus({ preventScroll: true }), 60);
     const tus = (e: KeyboardEvent) => e.key === "Escape" && onKapat();
     document.addEventListener("keydown", tus);
     return () => {
@@ -54,8 +56,8 @@ export function MobilArama({ acik, deger, onDegis, onAra, onKapat }: {
     );
 
   return (
-    <div className={s.sayfa} data-acik={acik || undefined} role="dialog" aria-modal="true" aria-label={t("otelAra")} aria-hidden={!acik}>
-      <button ref={kapatDugme} type="button" className={s.kapat} onClick={onKapat} aria-label={tk("kapat")}>
+    <div ref={kok} tabIndex={-1} className={s.sayfa} data-acik={acik || undefined} role="dialog" aria-modal="true" aria-label={t("otelAra")} aria-hidden={!acik}>
+      <button type="button" className={s.kapat} onClick={onKapat} aria-label={tk("kapat")}>
         <Ikon ad="close" boyut={18} />
       </button>
       {Blok({

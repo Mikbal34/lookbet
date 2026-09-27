@@ -25,11 +25,11 @@
 .dugme:active { transform: scale(0.98); }
 .dugme:disabled { opacity: 0.5; cursor: default; transform: none; }
 .siyah { background: var(--lb-yazi); color: #fff; }
-.siyah:hover { background: #2a2a2a; }
+@media (hover: hover) { .siyah:hover { background: #2a2a2a; } }
 .cerceve { border: 1px solid var(--lb-yazi); background: #fff; color: var(--lb-yazi); }
-.cerceve:hover { background: var(--lb-kart); }
+@media (hover: hover) { .cerceve:hover { background: var(--lb-kart); } }
 .turuncu { background: var(--lb-turuncu); color: #fff; font-weight: 700; }
-.turuncu:hover { filter: brightness(0.96); }
+@media (hover: hover) { .turuncu:hover { filter: brightness(0.96); } }
 .metinDugme {
   display: inline-flex;
   align-items: center;
@@ -52,7 +52,7 @@
 .bos h1, .bos h2 { margin: 8px 0 0; font-size: clamp(24px, 3vw, 30px); }
 .bos p { margin: 0 0 8px; max-width: 44ch; color: var(--lb-soluk); }
 .bos img { transition: transform 0.4s var(--lb-zipla); }
-.bos:hover img { transform: rotate(-6deg) scale(1.04); }
+@media (hover: hover) { .bos:hover img { transform: rotate(-6deg) scale(1.04); } }
 
 /* Hesap ana */
 .hesapBas { display: flex; align-items: center; gap: 18px; padding-block: 44px 28px; }
@@ -77,10 +77,10 @@
   cursor: pointer;
   transition: box-shadow 0.25s, transform 0.25s var(--lb-yay);
 }
-.kart:hover { box-shadow: 0 12px 30px rgb(0 0 0 / 0.12), 0 0 0 1px rgb(0 0 0 / 0.04); transform: translateY(-3px); }
+@media (hover: hover) { .kart:hover { box-shadow: 0 12px 30px rgb(0 0 0 / 0.12), 0 0 0 1px rgb(0 0 0 / 0.04); transform: translateY(-3px); } }
 .kart:focus-visible { outline: 2px solid var(--lb-yazi); outline-offset: 2px; }
 .kart img { margin-bottom: 26px; transition: transform 0.4s var(--lb-zipla); }
-.kart:hover img { transform: rotate(-8deg) scale(1.08); }
+@media (hover: hover) { .kart:hover img { transform: rotate(-8deg) scale(1.08); } }
 .kart b { font-size: 16px; font-weight: 600; }
 .kart span { color: var(--lb-soluk); font-size: 14px; line-height: 1.4; }
 .hesapAlt { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: center; padding-block: 12px 64px; font-size: 14.5px; }
@@ -88,7 +88,7 @@
 /* Alt sayfalar */
 .kirinti { display: flex; align-items: center; gap: 6px; padding-top: 40px; font-size: 14px; font-weight: 600; }
 .kirinti a { color: var(--lb-soluk); text-decoration: none; }
-.kirinti a:hover { color: var(--lb-yazi); text-decoration: underline; }
+@media (hover: hover) { .kirinti a:hover { color: var(--lb-yazi); text-decoration: underline; } }
 .kirinti svg { color: var(--lb-soluk); }
 .altBaslik { margin: 8px 0 28px; font-size: clamp(28px, 3.4vw, 34px); line-height: 1.1; }
 .altDuzen { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: clamp(32px, 6vw, 96px); align-items: start; padding-bottom: 72px; }
@@ -155,7 +155,7 @@
 .kucukAvatar { display: grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: 999px; background: var(--lb-kart); font-weight: 700; }
 .misafirForm { display: grid; gap: 12px; padding: 16px; border: 1px solid var(--lb-cizgi); border-radius: 16px; animation: gel 0.3s var(--lb-yay); }
 .ekle { display: flex; align-items: center; justify-content: center; gap: 8px; height: 52px; border: 1px dashed #b0b0b0; border-radius: 14px; background: none; color: var(--lb-yazi); font: inherit; font-weight: 600; cursor: pointer; }
-.ekle:hover { background: var(--lb-kart); border-style: solid; }
+@media (hover: hover) { .ekle:hover { background: var(--lb-kart); border-style: solid; } }
 
 /* Güvenlik */
 .yontem { display: flex; align-items: center; gap: 14px; }
@@ -186,4 +186,13 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .kart, .kart img, .satir, .satirForm, .misafir, .misafirForm, .bildiri, .iskelet { animation: none; transition: none; }
+}
+
+/* Uygulama: girişsiz Profil'de altına ayar kartları geliyor; bildirim alt sekmelerin üstünde. */
+.bos.bosUygulama { padding-block: 40px 28px; }
+:global(html[data-uygulama]) .bildiri { bottom: calc(88px + env(safe-area-inset-bottom, 0px)); }
+
+/* Dokunmatik: hesap kartları basınca hafif küçülür. */
+@media (hover: none) {
+  .kart:active { transform: scale(0.98); }
 }

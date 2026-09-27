@@ -40,7 +40,7 @@
   },
   "geceTarih": "{gece, plural, one {# night} other {# nights}} · {tarih}",
   "ozet": {
-    "baslik": "Hotel · {yer}",
+    "baslik": "{tur} · {yer}",
     "musaitOda": "{sayi, plural, one {# room option available} other {# room options available}}",
     "giris": "Check-in {giris}",
     "girisCikis": "Check-in {giris}, check-out {cikis}",

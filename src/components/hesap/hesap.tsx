@@ -12,6 +12,7 @@ import { Ikon } from "@/components/lb/ikon";
 import { Nesne, type NesneAdi } from "@/components/lb/nesne";
 import { BolgePenceresi } from "@/components/lb/ust-araclar";
 import { useFavoriler } from "@/components/lb/favoriler";
+import { useUygulama } from "@/components/lb/uygulama";
 import { CURRENCIES, LANGUAGES, useLocale } from "@/components/providers/locale-provider";
 import { useBicim } from "@/i18n/use-bicim";
 import { HesapKabugu } from "./kabuk";
@@ -27,6 +28,8 @@ export function Hesap() {
   const { lang, currency } = useLocale();
   const [bolge, setBolge] = React.useState(false);
   const [sekme, setSekme] = React.useState<"dil" | "para">("dil");
+  // Uygulamada rezervasyonlar ve favoriler alt sekmelerde; burada tekrar edilmez.
+  const uygulama = useUygulama();
 
   const p = profil.data;
   const uye = p ? new Date(p.createdAt) : null;
@@ -61,7 +64,7 @@ export function Hesap() {
         </div>
       </div>
       <div className={s.izgara}>
-        {KARTLAR.map((k) =>
+        {KARTLAR.filter((k) => !uygulama || (k.href !== "/reservations" && k.href !== "/favoriler")).map((k) =>
           k.href ? (
             <Link key={k.baslik} href={k.href} className={s.kart}>
               <Nesne ad={k.nesne} boyut={52} />

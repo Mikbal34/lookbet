@@ -163,7 +163,7 @@ export function AramaSonuclari({ params }: { params: URLSearchParams }) {
         <Nesne ad="zil" boyut={110} />
         <h2 className="lb-y">{t("sonuc.hataBaslik")}</h2>
         <p>{arama.hata ?? t("sonuc.hataMetin")}</p>
-        <button type="button" className={s.siyah} onClick={() => router.refresh()}>{tk("tekrarDene")}</button>
+        <button type="button" className={s.siyah} onClick={arama.tekrarDene}>{tk("tekrarDene")}</button>
       </div>
     );
   } else if (liste.length === 0 && !arama.devamEdiyor) {

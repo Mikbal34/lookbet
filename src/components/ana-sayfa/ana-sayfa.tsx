@@ -28,6 +28,7 @@ import { Logo } from "@/components/lb/logo";
 import { Nesne } from "@/components/lb/nesne";
 import { DunyaDugmesi, MenuDugmesi } from "@/components/lb/ust-araclar";
 import { useFavoriler } from "@/components/lb/favoriler";
+import { useYeniSekme } from "@/components/lb/uygulama";
 import type { AnaSayfaSatiri } from "@/lib/ana-sayfa";
 import { KATEGORILER, type KategoriKodu } from "@/lib/ana-sayfa-kategoriler";
 import s from "./ana-sayfa.module.css";
@@ -35,10 +36,11 @@ import s from "./ana-sayfa.module.css";
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
-function Satir({ satir, aramaEki, fav, onFav }: {
+export function Satir({ satir, aramaEki, fav, onFav }: {
   satir: AnaSayfaSatiri; aramaEki: string; fav: Set<string>; onFav: (kod: string) => void;
 }) {
   const t = useTranslations("anaSayfa");
+  const yeniSekme = useYeniSekme();
   const tk = useTranslations("ortak");
   const baslikMetni = t(`satirlar.${satir.kod}`);
   const serit = React.useRef<HTMLUListElement>(null);
@@ -86,11 +88,13 @@ function Satir({ satir, aramaEki, fav, onFav }: {
       <ul ref={serit} className={s.serit} onScroll={guncelle}>
         {satir.oteller.map((o, i) => (
           <li key={o.kod} className={s.kart} style={{ "--s": i } as React.CSSProperties}>
-            <a
+            <Link
               className={s.kartA}
               href={`/hotel/${o.kod}${aramaEki ? `?${aramaEki.slice(1)}` : ""}`}
-              // Airbnb gibi her otel kendi sekmesinde.
-              target={`otel_${o.kod}`}
+              // Masaüstünde Airbnb gibi her otel kendi sekmesinde; telefonda ve uygulamada aynı
+              // sekmede, sayfa yeniden yüklenmeden (istemci geçişi).
+              target={yeniSekme ? `otel_${o.kod}` : undefined}
+              prefetch={false}
             >
               <div className={s.foto}>
                 {/* eslint-disable-next-line @next/next/no-img-element -- dış kaynaklı otel görseli */}
@@ -98,7 +102,7 @@ function Satir({ satir, aramaEki, fav, onFav }: {
               </div>
               <h3>{o.ad}</h3>
               <p>{[o.yildiz ? tk("yildizli", { sayi: o.yildiz }) : null, o.yer].filter(Boolean).join(" · ")}</p>
-            </a>
+            </Link>
             <button
               type="button"
               className={s.kalp}
@@ -116,7 +120,7 @@ function Satir({ satir, aramaEki, fav, onFav }: {
 }
 
 /** Vitrindeki kampanyalar (Yönetim › Kampanyalar), bölge satırlarının üstünde yatay şerit. */
-function Kampanyalar({ kampanyalar }: { kampanyalar: VitrinKampanya[] }) {
+export function Kampanyalar({ kampanyalar }: { kampanyalar: VitrinKampanya[] }) {
   const t = useTranslations("anaSayfa.kampanya");
   const metin = useKampanyaMetni();
   return (

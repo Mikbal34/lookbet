@@ -10,16 +10,20 @@ import { Ikon } from "@/components/lb/ikon";
 import { Logo } from "@/components/lb/logo";
 import { Nesne } from "@/components/lb/nesne";
 import { DunyaDugmesi, MenuDugmesi } from "@/components/lb/ust-araclar";
+import { UygulamaGeri, useUygulama } from "@/components/lb/uygulama";
 import { DESTEK } from "./makaleler";
 import s from "./yardim.module.css";
 
 export function YardimCubugu({ araGoster }: { araGoster?: boolean }) {
   const t = useTranslations("yardim");
+  // Uygulamada menü ve dil düğmesi Profil sekmesinde; logo yerine geri düğmesi
+  // (sekme çubuğu yok, yardıma Profil'den gelinir).
+  const uygulama = useUygulama();
   return (
     <header className={s.ust}>
       <div className={s.ustIc}>
         <div className={s.marka}>
-          <Link href="/" className="lb-y lb-logo"><Logo /></Link>
+          {uygulama ? <UygulamaGeri yedek="/profile" /> : <Link href="/" className="lb-y lb-logo"><Logo /></Link>}
           <Link href="/yardim" className={s.markaAlt}>{t("yardimMerkezi")}</Link>
         </div>
         {araGoster && (
@@ -28,10 +32,12 @@ export function YardimCubugu({ araGoster }: { araGoster?: boolean }) {
             {t("yardimAra")}
           </Link>
         )}
-        <div className={s.ustSag}>
-          <DunyaDugmesi />
-          <MenuDugmesi />
-        </div>
+        {!uygulama && (
+          <div className={s.ustSag}>
+            <DunyaDugmesi />
+            <MenuDugmesi />
+          </div>
+        )}
       </div>
     </header>
   );

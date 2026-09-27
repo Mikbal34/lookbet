@@ -1,5 +1,4 @@
 "use client";
-/* eslint-disable @next/next/no-img-element -- otel görselleri dış kaynaklı (tedarikçi) */
 
 // Partner · Rezervasyonlar: durum çipleri, arama, fotoğraflı tablo ve
 // Excel'e aktarma (CSV; Excel doğrudan açar). Satıra tıklayınca ayrıntı.
@@ -12,6 +11,7 @@ import * as React from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Ikon } from "@/components/lb/ikon";
 import { Nesne } from "@/components/lb/nesne";
+import { DisFoto } from "@/components/lb/dis-foto";
 import { para } from "@/components/otel-detay/yardimci";
 import { durumBilgisi, gunKisa, gunOku, komisyonTutari, tutar, type Rezervasyon } from "@/components/rezervasyonlar/ortak";
 import { Bos } from "./bugun";
@@ -163,7 +163,7 @@ export function RezervasyonListesi() {
                   <tr key={r.id} onClick={() => setSecili(r)} tabIndex={0} onKeyDown={(e) => e.key === "Enter" && setSecili(r)}>
                     <td>
                       <div className={s.hucreOtel}>
-                        <span>{r.hotel?.image ? <img src={r.hotel.image} alt="" loading="lazy" /> : <Nesne ad="zil" boyut={28} />}</span>
+                        <span><DisFoto src={r.hotel?.image} loading="lazy" yedek={<Nesne ad="zil" boyut={28} />} /></span>
                         <div>
                           <b>{misafirAdi(r)}</b>
                           <small>{r.hotelName ?? r.hotelCode}</small>

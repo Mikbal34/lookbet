@@ -14,6 +14,8 @@ const YOL = {
   "user": "<rect x=\"8\" y=\"3.5\" width=\"8\" height=\"8\" rx=\"3.2\"/><path d=\"M4.5 20.5v-.5a5 5 0 0 1 5-5h5a5 5 0 0 1 5 5v.5\"/>",
   "guests": "<rect x=\"5\" y=\"4\" width=\"7\" height=\"7\" rx=\"2.8\"/><path d=\"M2.5 20v-.5A4.5 4.5 0 0 1 7 15h3a4.5 4.5 0 0 1 4.5 4.5v.5M15.5 4.3a3.4 3.4 0 0 1 0 6.4M17.5 15a4 4 0 0 1 4 4v1\"/>",
   "heart": "<path d=\"M12 20s-8-4.9-8-10.5A4.5 4.5 0 0 1 8.5 5c1.5 0 2.7.7 3.5 1.9C12.8 5.7 14 5 15.5 5A4.5 4.5 0 0 1 20 9.5C20 15.1 12 20 12 20z\"/>",
+  // Logodaki yatak sembolünün çizgisi (uygulamada Rezervasyonlar sekmesi).
+  "rezervasyon": "<path d=\"M5.3 3v15M18.7 6v15M5.3 13.5h13.4\"/>",
   "share": "<path d=\"M12 3v12M7.5 7.5 12 3l4.5 4.5M5 12v6a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3v-6\"/>",
   "filter": "<path d=\"M3 7h9.5M17.5 7H21M3 17h3.5M11.5 17H21\"/><rect x=\"12.5\" y=\"4.5\" width=\"5\" height=\"5\" rx=\"2\"/><rect x=\"6.5\" y=\"14.5\" width=\"5\" height=\"5\" rx=\"2\"/>",
   "sort": "<path d=\"M7 4v16M3.5 7.5 7 4l3.5 3.5M17 20V4M13.5 16.5 17 20l3.5-3.5\"/>",

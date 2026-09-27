@@ -9,6 +9,7 @@ import { useTranslations } from "next-intl";
 import { Ikon } from "./ikon";
 import { useLocale } from "@/components/providers/locale-provider";
 import { BolgePenceresi } from "./ust-araclar";
+import { useUygulama } from "./uygulama";
 import s from "./alt-bilgi.module.css";
 
 // Sekme ve otel türü adları metin dosyasında: ust.altBilgi.sekme.* ve
@@ -43,6 +44,9 @@ export function AltBilgi() {
   const kapat = React.useCallback(() => setPencere(null), []);
   const liste = FIKIR[sekme];
   const gosterilen = hepsi ? liste : liste.slice(0, ILK);
+  // Uygulamada alt bilgi yok: dil, para birimi ve yardım Profil sekmesinde.
+  const uygulama = useUygulama();
+  if (uygulama) return null;
 
   return (
     <footer className={`lb ${s.alt}`}>

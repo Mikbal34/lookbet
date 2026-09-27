@@ -86,6 +86,9 @@
         "p1": "Sağ üstteki menüden \"Giriş yap ya da üye ol\"u seç. E-posta adresini yaz ve \"Devam et\"e bas.",
         "p2": "E-postana 6 haneli bir kod gelir. Kodu kutulara yazdığında giriş tamamlanır; şifre hatırlaman gerekmez.",
         "p3": "Bu e-postayla hesabın yoksa aynı adımda açılır. İlk girişte adını ve soyadını soruyoruz; rezervasyonlarda ve otelde bu ad görünür."
+      },
+      "uygulama": {
+        "p1": "Alttaki \"Giriş yap\" sekmesine dokun, sonra \"Giriş yap ya da üye ol\"a bas. E-posta adresini yaz ve \"Devam et\"e bas."
       }
     },
     "kod": {
@@ -102,6 +105,9 @@
       "metin": {
         "p1": "Menüden \"Hesabım\"a git. Ad ve telefon oradan değiştirilir.",
         "p2": "E-posta adresin girişin anahtarı olduğu için değiştirmek istersen destek ekibine yaz."
+      },
+      "uygulama": {
+        "p1": "Alttaki \"Profil\" sekmesinde \"Kişisel bilgiler\"e dokun. Ad ve telefon oradan değiştirilir."
       }
     },
     "rezervasyonlarim": {
@@ -110,6 +116,9 @@
         "p1": "Menüden \"Rezervasyonlarım\"a git. Yaklaşan, Geçmiş ve İptal edilen sekmeleri var.",
         "p2": "Sıradaki konaklaman üstte büyük kartta durur: kaç gün kaldığı, giriş ve çıkış günleri, ücretsiz iptalin son günü.",
         "p3": "Bir karta basınca rezervasyonun tüm ayrıntıları açılır: oda, misafirler, konum, otelin iletişim bilgileri ve iptal koşulları."
+      },
+      "uygulama": {
+        "p1": "Giriş yaptıktan sonra alttaki \"Rezervasyonlar\" sekmesine dokun. Yaklaşan, Geçmiş ve İptal edilen sekmeleri var."
       }
     },
     "onayBekliyor": {

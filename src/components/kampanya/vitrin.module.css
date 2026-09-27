@@ -6,10 +6,10 @@
 .bas p { margin: 10px 0 0; color: var(--lb-soluk); font-size: 16px; }
 .kartlar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
 .kart { display: grid; grid-template-columns: 180px minmax(0, 1fr); overflow: hidden; border: 1px solid var(--lb-cizgi); border-radius: 24px; background: #fff; transition: box-shadow 0.25s, transform 0.25s var(--lb-yay); animation: gel 0.45s var(--lb-yay) both; animation-delay: calc(var(--s, 0) * 60ms); }
-.kart:hover { box-shadow: 0 12px 32px rgb(0 0 0 / 0.09); transform: translateY(-2px); }
+@media (hover: hover) { .kart:hover { box-shadow: 0 12px 32px rgb(0 0 0 / 0.09); transform: translateY(-2px); } }
 .gorsel { display: grid; place-items: center; border-right: 1px solid var(--lb-cizgi); background: #fff; }
 .gorsel img { transition: transform 0.5s var(--lb-zipla); }
-.kart:hover .gorsel img { transform: rotate(-6deg) scale(1.06); }
+@media (hover: hover) { .kart:hover .gorsel img { transform: rotate(-6deg) scale(1.06); } }
 .ic { display: grid; gap: 6px; align-content: start; padding: 22px; min-width: 0; }
 .tarih { color: var(--lb-turuncu); font-size: 13px; font-weight: 700; }
 .tarih[data-yakinda] { color: #8a5a00; }
@@ -19,7 +19,7 @@
 .alt { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 12px; margin-top: 10px; }
 .alt b { font-size: 34px; }
 .dugme { display: inline-flex; align-items: center; justify-content: center; height: 42px; padding: 0 18px; border-radius: 12px; background: var(--lb-yazi); color: #fff; font-weight: 600; font-size: 14.5px; text-decoration: none; white-space: nowrap; transition: background 0.2s; }
-.dugme:hover { background: #2a2a2a; }
+@media (hover: hover) { .dugme:hover { background: #2a2a2a; } }
 .bos { display: grid; justify-items: center; gap: 8px; padding: 56px 16px; border: 1px dashed #d6d6d4; border-radius: 24px; text-align: center; }
 .bos b { font-size: 18px; }
 .bos span { color: var(--lb-soluk); }

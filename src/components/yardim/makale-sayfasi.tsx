@@ -7,14 +7,16 @@ import { getMessages, getTranslations } from "next-intl/server";
 import { AltBilgi } from "@/components/lb/alt-bilgi";
 import { Ikon } from "@/components/lb/ikon";
 import { Nesne } from "@/components/lb/nesne";
+import { uygulamaMi } from "@/lib/uygulama";
 import { DESTEK, makaleKur, makaleleriKur, type MakaleKaydi } from "./makaleler";
 import { Geribildirim, YardimCubugu } from "./yardim-parcalari";
 import s from "./yardim.module.css";
 
 export async function MakaleSayfasi({ kayit }: { kayit: MakaleKaydi }) {
-  const [t, mesajlar] = await Promise.all([getTranslations("yardim"), getMessages()]);
-  const m = makaleKur(kayit, mesajlar.yardim.makale);
-  const makaleler = makaleleriKur(mesajlar.yardim.makale);
+  const [t, mesajlar, uygulama] = await Promise.all([getTranslations("yardim"), getMessages(), uygulamaMi()]);
+  // Uygulamada tarifler sekmelere göre (menü yok).
+  const m = makaleKur(kayit, mesajlar.yardim.makale, uygulama);
+  const makaleler = makaleleriKur(mesajlar.yardim.makale, uygulama);
   const ayni = makaleler.filter((x) => x.id !== m.id && x.kitle === m.kitle && x.konu === m.konu).slice(0, 4);
   const ek = ayni.length < 3 ? makaleler.filter((x) => x.kitle === m.kitle && x.konu !== m.konu).slice(0, 3 - ayni.length) : [];
   const kitleAdresi = m.kitle === "acente" ? "/yardim?kitle=acente" : "/yardim";

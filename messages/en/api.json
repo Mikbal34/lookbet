@@ -14,6 +14,7 @@
     "kilit": "Too many incorrect attempts. Try again in {dk, plural, one {# minute} other {# minutes}}.",
     "hesapKapali": "Your account has been deactivated",
     "acenteGirisiKullan": "Please use the agency login for this account",
+    "acenteUygulamadaYok": "Agency accounts can't be used in the app. Open lookbeds.com to use the agency login.",
     "musteriHesabi": "This email belongs to a customer account. Use your company email for the agency account.",
     "buGiristenOlmaz": "This account can't sign in here",
     "yoneticiDegil": "This email doesn't belong to an administrator account"

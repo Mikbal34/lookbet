@@ -1,5 +1,4 @@
 "use client";
-/* eslint-disable @next/next/no-img-element -- otel görseli dış kaynaklı (tedarikçi) */
 
 // Onay ve ödeme (Airbnb gibi): solda adım adım açılan kartlar (iletişim,
 // misafirler, ödeme yöntemi, gözden geçir), sağda yapışık özet. Adım
@@ -18,6 +17,7 @@ import { AltBilgi } from "@/components/lb/alt-bilgi";
 import { Ikon } from "@/components/lb/ikon";
 import { Logo } from "@/components/lb/logo";
 import { Nesne } from "@/components/lb/nesne";
+import { DisFoto } from "@/components/lb/dis-foto";
 import { Pencere } from "@/components/lb/pencere";
 import { Bekleme, DonenMetin } from "@/components/lb/bekleme";
 import { geceSayisi, gunEkle, isoOku } from "@/components/lb/arama/durum";
@@ -683,7 +683,7 @@ function OdemeFormu({ p, acik }: { p: URLSearchParams; acik: boolean }) {
             </button>
             <div className={s.ozetKart}>
               <div className={s.ozetUst}>
-                <span className={s.ozetFoto}>{foto ? <img src={foto} alt="" /> : <Nesne ad="zil" boyut={48} />}</span>
+                <span className={s.ozetFoto}><DisFoto src={foto} yedek={<Nesne ad="zil" boyut={48} />} /></span>
                 <div>
                   <b>{hotelName}</b>
                   <span>{[roomName, boardTypeName].filter(Boolean).join(" · ")}</span>

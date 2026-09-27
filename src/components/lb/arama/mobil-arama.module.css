@@ -11,6 +11,7 @@
   transition: opacity 0.22s, transform 0.32s var(--lb-yay);
 }
 .sayfa[data-acik] { opacity: 1; transform: none; pointer-events: auto; }
+.sayfa:focus { outline: none; }
 .kapat {
   width: 40px;
   height: 40px;

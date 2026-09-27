@@ -86,6 +86,9 @@
         "p1": "From the menu at the top right, select \"Log in or sign up\". Enter your email address and select \"Continue\".",
         "p2": "You'll receive a 6-digit code by email. Once you type the code into the boxes, you're logged in; there's no password to remember.",
         "p3": "If you don't have an account with this email, one is created in the same step. The first time you log in, we ask for your first and last name; this is the name shown on your bookings and at the hotel."
+      },
+      "uygulama": {
+        "p1": "Tap the \"Log in\" tab at the bottom, then \"Log in or sign up\". Enter your email address and tap \"Continue\"."
       }
     },
     "kod": {
@@ -102,6 +105,9 @@
       "metin": {
         "p1": "Go to \"My account\" from the menu. You can change your name and phone number there.",
         "p2": "Your email address is the key to logging in, so if you'd like to change it, write to our support team."
+      },
+      "uygulama": {
+        "p1": "In the \"Profile\" tab at the bottom, tap \"Personal info\". You can change your name and phone number there."
       }
     },
     "rezervasyonlarim": {
@@ -110,6 +116,9 @@
         "p1": "Go to \"My bookings\" from the menu. There are Upcoming, Past and Cancelled tabs.",
         "p2": "Your next stay is shown in a large card at the top: how many days are left, your check-in and check-out dates, and the last day for free cancellation.",
         "p3": "Select a card to open all the details of the booking: room, guests, location, the hotel's contact details and the cancellation policy."
+      },
+      "uygulama": {
+        "p1": "Once you're logged in, tap the \"Bookings\" tab at the bottom. There are Upcoming, Past and Cancelled tabs."
       }
     },
     "onayBekliyor": {

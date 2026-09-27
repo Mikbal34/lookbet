@@ -6,7 +6,7 @@
 .ustSag { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; }
 .ustSag span { color: var(--lb-soluk); }
 .ustSag a { padding: 10px 14px; border-radius: 999px; color: inherit; text-decoration: none; }
-.ustSag a:hover { background: var(--lb-kart); }
+@media (hover: hover) { .ustSag a:hover { background: var(--lb-kart); } }
 
 /* Airbnb'nin posterleri gibi: kenarlardan taşan yatık ızgara, ortada kart. */
 .sahne { position: relative; min-height: calc(100dvh - 73px); display: grid; place-items: center; padding: 40px 16px; overflow: hidden; }
@@ -42,7 +42,7 @@
 .kodAlt { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 14px; color: var(--lb-soluk); }
 .metin { padding: 0; border: 0; background: none; color: var(--lb-yazi); font: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
 .devam { height: 50px; border: 0; border-radius: 12px; background: var(--lb-turuncu); color: #fff; font: inherit; font-weight: 700; font-size: 16px; cursor: pointer; transition: filter 0.2s, transform 0.15s, opacity 0.2s; }
-.devam:hover { filter: brightness(0.96); }
+@media (hover: hover) { .devam:hover { filter: brightness(0.96); } }
 .devam:active { transform: scale(0.98); }
 .devam:disabled { opacity: 0.5; cursor: default; transform: none; filter: none; }
 .not { margin: 0; text-align: center; color: var(--lb-soluk); font-size: 12.5px; }

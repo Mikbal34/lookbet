@@ -1,5 +1,4 @@
 "use client";
-/* eslint-disable @next/next/no-img-element -- otel görselleri dış kaynaklı (tedarikçi) */
 
 // Partner · Bugün (Airbnb ev sahibi "Bugün" sekmesi gibi): selamlama, müşteri
 // için otel arama çubuğu, rezervasyon çipleri (bugün giriş · konaklayan ·
@@ -14,6 +13,7 @@ import { MobilArama } from "@/components/lb/arama/mobil-arama";
 import { BOS_ARAMA, aramaAdresi, AYLAR } from "@/components/lb/arama/durum";
 import { Ikon } from "@/components/lb/ikon";
 import { Nesne, type NesneAdi } from "@/components/lb/nesne";
+import { DisFoto } from "@/components/lb/dis-foto";
 import { para } from "@/components/otel-detay/yardimci";
 import { aralik, durumBilgisi, geceler, gunOku, kalanGun, type Rezervasyon } from "@/components/rezervasyonlar/ortak";
 import { grup, iptalKalan, misafirAdi, type Grup } from "./ortak";
@@ -214,7 +214,7 @@ export function RezKart({ r, simdi, sira, onAc }: { r: Rezervasyon; simdi: numbe
           <span className={s.etiket}>{etiket}</span>
           <h3>{misafirAdi(r)}</h3>
         </div>
-        <span className={s.rkartFoto}>{r.hotel?.image ? <img src={r.hotel.image} alt="" loading="lazy" /> : <Nesne ad="zil" boyut={36} />}</span>
+        <span className={s.rkartFoto}><DisFoto src={r.hotel?.image} loading="lazy" yedek={<Nesne ad="zil" boyut={36} />} /></span>
       </div>
       <p className={s.rkartOtel}>{r.hotelName ?? r.hotelCode}</p>
       <p className={s.soluk}>{aralik(r)} · {geceler(r)} gece</p>

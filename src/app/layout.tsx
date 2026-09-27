@@ -8,6 +8,8 @@ import { Providers } from "@/components/providers";
 import { Suspense } from "react";
 import { SayfaGecisi } from "@/components/layout/sayfa-gecisi";
 import { UstCizgi } from "@/components/layout/ust-cizgi";
+import { UygulamaSaglayici, UygulamaSekmeleri } from "@/components/lb/uygulama";
+import { uygulamaMi } from "@/lib/uygulama";
 
 // Nunito — yuvarlak uçlu. Logonun kendi yazı tipi yığını zaten bunu istiyor
 // (Arial Rounded MT Bold → Nunito → Quicksand); arayüz Manrope ile düz uçlu
@@ -57,21 +59,28 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const dil = await getLocale();
+  // Mobil uygulamada (yalnız müşteri) alt sekmeler var; alt bilgi, acente
+  // bağlantıları ve büyük açılış yok. Telefon tarayıcısı normal siteyi görür.
+  const uygulama = await uygulamaMi();
   // Sunucu mesajları ve e-posta metinleri (api) tarayıcıya gönderilmez.
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { api, ...istemciMetinleri } = await getMessages();
   return (
-    <html lang={dil}>
+    <html lang={dil} data-uygulama={uygulama ? "" : undefined}>
       <body
         className={`${nunito.variable} ${figtree.variable} ${yastik.variable} font-sans antialiased bg-paper text-ink min-h-dvh`}
       >
         <NextIntlClientProvider messages={istemciMetinleri}>
-          <Providers>
-            <Suspense>
-              <UstCizgi />
-            </Suspense>
-            <SayfaGecisi>{children}</SayfaGecisi>
-          </Providers>
+          {/* Sağlayıcıların dışında: giriş penceresi gibi onların çizdiği parçalar da bilsin. */}
+          <UygulamaSaglayici uygulama={uygulama}>
+            <Providers>
+              <Suspense>
+                <UstCizgi />
+              </Suspense>
+              <SayfaGecisi>{children}</SayfaGecisi>
+              <UygulamaSekmeleri />
+            </Providers>
+          </UygulamaSaglayici>
         </NextIntlClientProvider>
       </body>
     </html>

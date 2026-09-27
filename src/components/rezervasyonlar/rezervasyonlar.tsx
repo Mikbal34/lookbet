@@ -1,5 +1,4 @@
 "use client";
-/* eslint-disable @next/next/no-img-element -- otel görselleri dış kaynaklı (tedarikçi) */
 
 // Rezervasyonlarım: Yaklaşan / Geçmiş / İptal edilen sekmeleri. Sıradaki
 // konaklama büyük kartta (kalan gün, giriş-çıkış, ücretsiz iptal), diğerleri
@@ -15,6 +14,7 @@ import { UstCubuk } from "@/components/lb/ust-cubuk";
 import { AltBilgi } from "@/components/lb/alt-bilgi";
 import { Ikon } from "@/components/lb/ikon";
 import { Nesne, type NesneAdi } from "@/components/lb/nesne";
+import { DisFoto } from "@/components/lb/dis-foto";
 import { BOS_ARAMA, aramaAdresi } from "@/components/lb/arama/durum";
 import { useBicim } from "@/i18n/use-bicim";
 import {
@@ -208,7 +208,7 @@ function Rozet({ r, simdi }: { r: Rezervasyon; simdi: number }) {
 }
 
 function Foto({ r }: { r: Rezervasyon }) {
-  return r.hotel?.image ? <img src={r.hotel.image} alt="" loading="lazy" /> : <Nesne ad="zil" boyut={48} />;
+  return <DisFoto src={r.hotel?.image} loading="lazy" yedek={<Nesne ad="zil" boyut={48} />} />;
 }
 
 function SahneKart({ r, simdi }: { r: Rezervasyon; simdi: number }) {

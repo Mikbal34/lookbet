@@ -1,5 +1,5 @@
 .geri { display: inline-flex; align-items: center; gap: 8px; margin-top: 28px; padding: 6px 12px 6px 8px; border-radius: 999px; color: inherit; font-weight: 600; text-decoration: none; }
-.geri:hover { background: var(--lb-kart); }
+@media (hover: hover) { .geri:hover { background: var(--lb-kart); } }
 .bas { display: flex; justify-content: space-between; align-items: end; gap: 16px; flex-wrap: wrap; padding-block: 14px 22px; }
 .bas h1 { margin: 10px 0 0; font-size: clamp(26px, 3.2vw, 34px); line-height: 1.1; }
 .bas p { margin: 6px 0 0; color: var(--lb-soluk); }
@@ -76,13 +76,13 @@
 .dokum .toplam :global(.lb-y) { font-size: 20px; }
 .tekrar { display: grid; grid-template-columns: 64px 1fr; align-items: center; gap: 12px 14px; padding: 18px; border-radius: 20px; background: var(--lb-kart); }
 .tekrar img { transition: transform 0.4s var(--lb-zipla); }
-.tekrar:hover img { transform: rotate(-8deg) scale(1.06); }
+@media (hover: hover) { .tekrar:hover img { transform: rotate(-8deg) scale(1.06); } }
 .tekrar b { display: block; }
 .tekrar span { color: var(--lb-soluk); font-size: 14px; }
 .tekrar a { grid-column: 1 / -1; }
 .eylemler { display: grid; gap: 8px; }
 .eylemler a { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--lb-cizgi); border-radius: 14px; background: #fff; color: inherit; font-weight: 600; font-size: 14.5px; text-decoration: none; transition: background 0.2s; }
-.eylemler a:hover { background: var(--lb-kart); }
+@media (hover: hover) { .eylemler a:hover { background: var(--lb-kart); } }
 .okIkon { margin-left: auto; color: var(--lb-soluk); }
 
 /* İptal penceresi */

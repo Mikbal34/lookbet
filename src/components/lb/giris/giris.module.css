@@ -27,7 +27,7 @@
 .ust { position: sticky; top: 0; z-index: 1; display: grid; grid-template-columns: 36px 1fr 36px; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--lb-cizgi); background: #fff; }
 .ust h2 { margin: 0; text-align: center; font-size: 16px; font-weight: 700; }
 .yuvarlak { width: 36px; height: 36px; border: 0; border-radius: 999px; background: none; display: grid; place-items: center; color: inherit; cursor: pointer; }
-.yuvarlak:hover { background: var(--lb-kart); }
+@media (hover: hover) { .yuvarlak:hover { background: var(--lb-kart); } }
 .ic { padding: 26px 28px 28px; }
 .adim { display: grid; gap: 16px; animation: kay 0.35s var(--lb-yay); }
 .adim[data-geri] { animation-name: kayGeri; }
@@ -80,7 +80,7 @@
   cursor: pointer;
   transition: transform 0.15s, filter 0.2s, opacity 0.2s;
 }
-.turuncu:hover { filter: brightness(0.96); }
+@media (hover: hover) { .turuncu:hover { filter: brightness(0.96); } }
 .turuncu:active { transform: scale(0.98); }
 .turuncu:disabled { opacity: 0.45; cursor: default; transform: none; filter: none; }
 .metinDugme { padding: 0; border: 0; background: none; color: var(--lb-yazi); font: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
@@ -88,17 +88,17 @@
 .ayrac::before, .ayrac::after { content: ""; flex: 1; height: 1px; background: var(--lb-cizgi); }
 .sosyal { display: grid; gap: 10px; }
 .sosyal button { position: relative; display: flex; align-items: center; justify-content: center; height: 48px; border: 1px solid var(--lb-yazi); border-radius: 12px; background: #fff; color: inherit; font: inherit; font-weight: 600; cursor: pointer; transition: background 0.2s; }
-.sosyal button:hover { background: var(--lb-kart); }
+@media (hover: hover) { .sosyal button:hover { background: var(--lb-kart); } }
 .marka { position: absolute; left: 18px; width: 20px; height: 20px; }
 .acente { display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 16px; background: var(--lb-kart); color: inherit; font-size: 14px; text-decoration: none; }
-.acente:hover { background: var(--lb-gri); }
+@media (hover: hover) { .acente:hover { background: var(--lb-gri); } }
 .acente b { display: block; }
 .acente span span { color: var(--lb-soluk); }
 .kodAlt { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 14px; }
 
 @media (max-width: 720px) {
   .perde { place-items: end stretch; padding: 0; }
-  .pencere { width: 100%; max-height: 94dvh; border-radius: 24px 24px 0 0; transform: translateY(60px); }
+  .pencere { width: 100%; max-height: min(94dvh, calc(100dvh - env(safe-area-inset-top, 0px) - 12px)); border-radius: 24px 24px 0 0; transform: translateY(60px); }
   .ic { padding: 22px 20px calc(24px + env(safe-area-inset-bottom, 0px)); }
 }
 @media (prefers-reduced-motion: reduce) {

@@ -3,12 +3,14 @@
 
 // Otel fotoğrafları: masaüstünde 1 büyük + 4 küçük ızgara, mobilde kaydırmalı
 // şerit. Tıklayınca fotoğraf turu (Genel bakış + oda bölümleri) açılır; turdaki
-// fotoğrafa basınca ışık kutusu.
+// fotoğrafa basınca ışık kutusu. Açılmayan fotoğraf bildirilir, sayfa onu
+// listelerden düşer (bkz. lb/dis-foto).
 
 import { fotoBoyutu, kartFotosu } from "@/lib/foto";
 import * as React from "react";
 import { useTranslations } from "next-intl";
 import { Ikon } from "@/components/lb/ikon";
+import { kirikBildir } from "@/components/lb/dis-foto";
 import { useKatman } from "@/components/lb/pencere";
 import s from "./galeri.module.css";
 
@@ -40,7 +42,7 @@ export function Galeri({ gorseller, onAc, ustDugmeler }: {
       <section className={s.izgara} data-adet={Math.min(5, gorseller.length)} id="fotograflar" aria-label={t("galeri.fotograflar")}>
         {gorseller.slice(0, 5).map((u, i) => (
           <button key={u} type="button" onClick={onAc} aria-label={t("galeri.fotograf", { sira: i + 1 })}>
-            <img src={u} alt="" loading={i ? "lazy" : "eager"} />
+            <img src={u} alt="" loading={i ? "lazy" : "eager"} onError={() => kirikBildir(u)} />
           </button>
         ))}
         <button type="button" className={s.tumu} onClick={onAc}>
@@ -54,11 +56,11 @@ export function Galeri({ gorseller, onAc, ustDugmeler }: {
           onScroll={(e) => setSira(Math.round(e.currentTarget.scrollLeft / e.currentTarget.clientWidth) + 1)}
         >
           {mobil.map((u, i) => (
-            <img key={u} src={u} alt="" loading={i ? "lazy" : "eager"} onClick={onAc} />
+            <img key={u} src={u} alt="" loading={i ? "lazy" : "eager"} onClick={onAc} onError={() => kirikBildir(u)} />
           ))}
         </div>
         <div className={s.mgDugmeler}>{ustDugmeler}</div>
-        <span className={s.sayac}>{sira} / {mobil.length}</span>
+        <span className={s.sayac}>{Math.min(sira, mobil.length)} / {mobil.length}</span>
       </div>
     </>
   );
@@ -97,7 +99,7 @@ export function FotoTuru({ acik, onKapat, bolumler, onFoto, ustSag }: {
           <div className={s.turKucuk}>
             {bolumler.map((b, i) => (
               <button key={b.ad} type="button" onClick={() => bolumeGit(i)}>
-                <img src={fotoBoyutu(b.gorseller[0], "400x300")} alt="" loading="lazy" />
+                <img src={fotoBoyutu(b.gorseller[0], "400x300")} alt="" loading="lazy" onError={() => kirikBildir(b.gorseller[0])} />
                 {b.ad}
               </button>
             ))}
@@ -108,7 +110,7 @@ export function FotoTuru({ acik, onKapat, bolumler, onFoto, ustSag }: {
               <div className={s.turFoto}>
                 {b.gorseller.map((u, j) => (
                   <button key={u} type="button" onClick={() => onFoto(i, j)} aria-label={t("galeri.bolumFotografi", { bolum: b.ad, sira: j + 1 })}>
-                    <img {...kartFotosu(u, "(max-width: 720px) 100vw, 45vw")} alt="" loading="lazy" />
+                    <img {...kartFotosu(u, "(max-width: 720px) 100vw, 45vw")} alt="" loading="lazy" onError={() => kirikBildir(u)} />
                   </button>
                 ))}
               </div>
@@ -133,7 +135,10 @@ export function IsikKutusu({ konum, bolumler, onKapat, onDegis }: {
   useKatman(!!konum, onKapat, kapat);
   const bolum = konum ? bolumler[konum.b] : null;
   const n = bolum?.gorseller.length ?? 0;
-  const git = React.useCallback((d: number) => konum && onDegis((konum.j + d + n) % n), [konum, n, onDegis]);
+  // Açılmayan fotoğraf listeden düşünce sıra taşabilir: sondakine sabitlenir.
+  const j = konum ? Math.min(konum.j, n - 1) : 0;
+  const url = bolum?.gorseller[j];
+  const git = React.useCallback((d: number) => konum && onDegis((j + d + n) % n), [konum, j, n, onDegis]);
   React.useEffect(() => {
     if (!konum) return;
     const tus = (e: KeyboardEvent) => {
@@ -164,7 +169,7 @@ export function IsikKutusu({ konum, bolumler, onKapat, onDegis }: {
         <button ref={kapat} type="button" className={s.yuvarlak} onClick={onKapat} aria-label={tk("kapat")} tabIndex={konum ? 0 : -1}>
           <Ikon ad="close" boyut={18} />
         </button>
-        <span>{bolum && konum ? `${bolum.ad} · ${konum.j + 1} / ${n}` : ""}</span>
+        <span>{bolum && konum && url ? `${bolum.ad} · ${j + 1} / ${n}` : ""}</span>
         <span className={s.bosluk} />
       </div>
       <div className={s.isikIc}>
@@ -173,7 +178,7 @@ export function IsikKutusu({ konum, bolumler, onKapat, onDegis }: {
             <Ikon ad="chevron-left" boyut={20} />
           </button>
         )}
-        {bolum && konum && <img key={`${konum.b}-${konum.j}`} src={bolum.gorseller[konum.j]} alt="" />}
+        {konum && url && <img key={url} src={url} alt="" onError={() => kirikBildir(url)} />}
         {n > 1 && (
           <button type="button" className={`${s.ok} ${s.okIleri}`} onClick={() => git(1)} aria-label={t("galeri.sonraki")}>
             <Ikon ad="chevron-right" boyut={20} />

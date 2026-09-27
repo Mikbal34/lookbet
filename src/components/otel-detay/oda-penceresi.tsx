@@ -11,6 +11,7 @@ import * as React from "react";
 import { useTranslations } from "next-intl";
 import { Ikon } from "@/components/lb/ikon";
 import { Nesne } from "@/components/lb/nesne";
+import { DisFoto, kirikBildir, useKirikFotolar } from "@/components/lb/dis-foto";
 import { Govdeye, useKatman } from "@/components/lb/pencere";
 import { useBicim } from "@/i18n/use-bicim";
 import type { RoomResult } from "@/lib/royal-api/types";
@@ -48,6 +49,7 @@ export function OdaPenceresi({ baslangic, odalar, gece, misafir, seciliKod, onSe
   const t = useTranslations("otel");
   const tk = useTranslations("ortak");
   const { yaz } = useFiyat();
+  const kirik = useKirikFotolar();
   const [kod, setKod] = React.useState(baslangic);
   const [onceki, setOnceki] = React.useState(baslangic);
   const [degisiyor, setDegisiyor] = React.useState(false);
@@ -113,7 +115,7 @@ export function OdaPenceresi({ baslangic, odalar, gece, misafir, seciliKod, onSe
                 onClick={() => degistir(o.priceCode)}
                 tabIndex={acik ? 0 : -1}
               >
-                <span>{o.images[0] ? <img src={o.images[0]} alt="" loading="lazy" /> : <Nesne ad="zil" boyut={34} />}</span>
+                <span><DisFoto src={o.images.find((u) => !kirik.has(u))} loading="lazy" yedek={<Nesne ad="zil" boyut={34} />} /></span>
                 <small>{yaz(odaToplami(o), o.currency)}</small>
               </button>
             ))}
@@ -144,7 +146,8 @@ function OdaIcerik({ oda, gece, misafir, secili, onSec, onDevam, onFoto, sagRef 
   const t = useTranslations("otel");
   const bicim = useBicim();
   const { yaz } = useFiyat();
-  const g = oda.images;
+  const kirik = useKirikFotolar();
+  const g = oda.images.filter((u) => !kirik.has(u));
   const fazla = g.length - 3;
   const toplam = odaToplami(oda);
   const onceki = oda.pricing?.oncekiFiyat ?? toplam;
@@ -162,7 +165,7 @@ function OdaIcerik({ oda, gece, misafir, secili, onSec, onDevam, onFoto, sagRef 
         {g.length ? (
           g.slice(0, 3).map((u, i) => (
             <button key={u} type="button" onClick={() => onFoto(oda, i)} aria-label={t("galeri.fotograf", { sira: i + 1 })}>
-              <img src={u} alt="" />
+              <img src={u} alt="" onError={() => kirikBildir(u)} />
               {i === 2 && fazla > 0 && <span className={s.fazla}>+{fazla}</span>}
             </button>
           ))

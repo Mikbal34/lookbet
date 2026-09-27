@@ -19,7 +19,7 @@
   cursor: pointer;
   transition: border-color 0.2s, background 0.2s, transform 0.15s;
 }
-.cip:hover { border-color: var(--lb-yazi); }
+@media (hover: hover) { .cip:hover { border-color: var(--lb-yazi); } }
 .cip:active { transform: scale(0.97); }
 .cip[aria-pressed="true"] { background: var(--lb-yazi); color: #fff; border-color: var(--lb-yazi); }
 .filtreCip { font-weight: 600; }
@@ -53,7 +53,7 @@
 .siyah { height: 44px; padding: 0 20px; border: 0; border-radius: 12px; background: var(--lb-yazi); color: #fff; font-weight: 700; cursor: pointer; margin-top: 8px; }
 .sayfalama { display: flex; justify-content: center; align-items: center; gap: 6px; padding: 36px 0 12px; flex-wrap: wrap; }
 .sayfalama button { min-width: 36px; height: 36px; border-radius: 999px; border: 0; background: none; font-weight: 600; cursor: pointer; display: grid; place-items: center; }
-.sayfalama button:hover:not(:disabled) { background: var(--lb-kart); }
+@media (hover: hover) { .sayfalama button:hover:not(:disabled) { background: var(--lb-kart); } }
 .sayfalama button[aria-current="page"] { background: var(--lb-yazi); color: #fff; }
 .sayfalama button:disabled { opacity: 0.3; cursor: default; }
 
@@ -107,6 +107,11 @@
     box-shadow: 0 8px 24px rgb(0 0 0 / 0.3);
     cursor: pointer;
   }
+  /* Uygulamada alt sekmelerin üstünde; harita da sekmelerin altına girmesin. */
+  :global(html[data-uygulama]) .haritaDugme { bottom: calc(80px + env(safe-area-inset-bottom, 0px)); transition: transform 0.3s var(--lb-yay); }
+  /* Sekmeler kaydırınca çekilince düğme de aşağı iner (sitedeki yerine). */
+  :global(html[data-sekme-cekili]) .haritaDugme { transform: translate(-50%, 56px); }
+  :global(html[data-uygulama]) .duzen[data-mobil-harita] .haritaKap { height: calc(100dvh - 224px - env(safe-area-inset-bottom, 0px)); }
 }
 @media (max-width: 720px) {
   .kartlar { grid-template-columns: 1fr; gap: 24px; }

@@ -40,7 +40,7 @@
   },
   "geceTarih": "{gece} gece · {tarih}",
   "ozet": {
-    "baslik": "Otel · {yer}",
+    "baslik": "{tur} · {yer}",
     "musaitOda": "{sayi} oda seçeneği müsait",
     "giris": "Giriş {giris}",
     "girisCikis": "Giriş {giris}, çıkış {cikis}",

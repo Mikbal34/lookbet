@@ -14,6 +14,7 @@
     "kilit": "Çok fazla hatalı deneme. {dk} dakika sonra tekrar dene.",
     "hesapKapali": "Hesabınız devre dışı bırakılmış",
     "acenteGirisiKullan": "Bu hesap için acente girişini kullan",
+    "acenteUygulamadaYok": "Acente hesapları uygulamada kullanılamaz. Acente girişi için lookbeds.com'u aç.",
     "musteriHesabi": "Bu e-posta bir müşteri hesabına ait. Acente için şirket e-postanı kullan.",
     "buGiristenOlmaz": "Bu hesapla buradan giriş yapılamaz",
     "yoneticiDegil": "Bu e-posta bir yönetici hesabına ait değil"

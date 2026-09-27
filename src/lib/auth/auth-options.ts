@@ -7,6 +7,7 @@ import { randomBytes } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { kodHatasi, verifyLoginCode } from "@/lib/auth/login-code";
 import { istemciIp } from "@/lib/hiz-siniri";
+import { UYGULAMA_UA } from "@/lib/uygulama-ortak";
 import { getTranslations } from "next-intl/server";
 
 // Hesaplar şifresiz (e-posta kodu); passwordHash sütunu zorunlu olduğu için
@@ -88,7 +89,9 @@ const providers: NextAuthOptions["providers"] = [
       // Yönetici hesabı yalnız gizli yönetim girişinden girer; burada o sayfa anılmaz.
       if (user.role === "ADMIN") throw new Error(t("buGiristenOlmaz"));
       if (user.role !== "CUSTOMER") {
-        throw new Error(t("acenteGirisiKullan"));
+        // Mobil uygulama yalnız müşteri için; orada acente girişi yok.
+        const uygulamadan = String(req?.headers?.["user-agent"] ?? "").includes(UYGULAMA_UA);
+        throw new Error(t(uygulamadan ? "acenteUygulamadaYok" : "acenteGirisiKullan"));
       }
 
       return {

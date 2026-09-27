@@ -80,5 +80,13 @@
     "bavul": "Searching for hotels",
     "takvim": "Checking prices",
     "kart": "Making your booking"
+  },
+  "uygulama": {
+    "sekmeler": "App tabs",
+    "kesfet": "Explore",
+    "favoriler": "Favourites",
+    "rezervasyonlar": "Bookings",
+    "profil": "Profile",
+    "girisYap": "Log in"
   }
 }

@@ -17,9 +17,10 @@ import { Ikon } from "./ikon";
 import { Logo } from "./logo";
 import { Nesne, type NesneAdi } from "./nesne";
 import { DunyaDugmesi, MenuDugmesi } from "./ust-araclar";
+import { UygulamaGeri, useUygulama } from "./uygulama";
 import s from "./ust-cubuk.module.css";
 
-export function UstCubuk({ deger, onDegis, onAra, nesne = "zil", alt, aramaYok }: {
+export function UstCubuk({ deger, onDegis, onAra, nesne = "zil", alt, aramaYok, geri }: {
   deger: AramaDegeri;
   onDegis: (d: AramaDegeri) => void;
   onAra: () => void;
@@ -27,10 +28,14 @@ export function UstCubuk({ deger, onDegis, onAra, nesne = "zil", alt, aramaYok }
   alt?: React.ReactNode;
   /** Ödeme gibi sayfalarda arama hapı gösterilmez. */
   aramaYok?: boolean;
+  /** Uygulamada sekmesiz sayfa: hapın solunda geri düğmesi, doğrudan açıldıysa bu adrese gider. */
+  geri?: string;
 }) {
   const t = useTranslations("ust.cubuk");
   const tk = useTranslations("ortak");
   const b = useBicim();
+  // Uygulamada menü ve dil düğmesi yok: Profil sekmesinde.
+  const uygulama = useUygulama();
   const [acik, setAcik] = React.useState(false);
   const [mobilAcik, setMobilAcik] = React.useState(false);
   const kok = React.useRef<HTMLDivElement | null>(null);
@@ -72,7 +77,8 @@ export function UstCubuk({ deger, onDegis, onAra, nesne = "zil", alt, aramaYok }
   return (
     <>
       <header className={`lb ${s.ust}`} data-acik={acik || undefined}>
-        <div className={s.satir}>
+        <div className={s.satir} data-geri={(uygulama && geri) || undefined}>
+          {uygulama && geri && <UygulamaGeri yedek={geri} />}
           <Link href="/" className={`lb-y lb-logo ${s.logo}`}><Logo /></Link>
           {!aramaYok && (
             <button
@@ -86,13 +92,20 @@ export function UstCubuk({ deger, onDegis, onAra, nesne = "zil", alt, aramaYok }
               <span data-alan="yer">{deger.yer || t("nereye")}</span>
               <span data-alan="tarih" className={s.soluk}>{tarih ?? t("tarihEkle")}</span>
               <span data-alan="misafir" className={s.soluk}>{misafir}</span>
+              {/* Telefonda tek sütun: yer, altında tarih ve misafir. */}
+              <em className={s.hapIki}>
+                <b>{deger.yer || t("nereye")}</b>
+                <small>{tarih ?? t("tarihEkle")} · {misafir}</small>
+              </em>
               <i><Ikon ad="search" boyut={16} kalinlik={2.6} /></i>
             </button>
           )}
-          <div className={s.sag}>
-            <DunyaDugmesi className={s.dunya} />
-            <MenuDugmesi />
-          </div>
+          {!uygulama && (
+            <div className={s.sag}>
+              <DunyaDugmesi className={s.dunya} />
+              <MenuDugmesi />
+            </div>
+          )}
         </div>
         {!aramaYok && (
           <div className={s.genis} aria-hidden={!acik}>

@@ -3,13 +3,16 @@
 // Otel kartı (arama sonuçları): kare fotoğraf, kalp, ücretsiz iptal etiketi,
 // yer ve yıldız, pansiyon, konaklamanın toplam fiyatı; otomatik indirim
 // varsa turuncu etiket ve üstü çizili önceki fiyat. Fotoğrafı açılmayan
-// otelde resepsiyon zilli boş durum. Her otel kendi sekmesinde açılır (Airbnb).
+// otelde resepsiyon zilli boş durum. Masaüstünde her otel kendi sekmesinde
+// açılır (Airbnb); telefonda ve uygulamada aynı sekmede.
 
 import { kartFotosu } from "@/lib/foto";
 import * as React from "react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Ikon } from "./ikon";
 import { Nesne } from "./nesne";
+import { useYeniSekme } from "./uygulama";
 import s from "./otel-karti.module.css";
 
 export interface OtelKartiVerisi {
@@ -36,6 +39,7 @@ export function OtelKarti({ otel, href, favori, onFavori, onUzerinde, sira = 0 }
 }) {
   const t = useTranslations("arama.kart");
   const [fotoYok, setFotoYok] = React.useState(!otel.foto);
+  const yeniSekme = useYeniSekme();
   return (
     <li
       className={s.kart}
@@ -43,7 +47,7 @@ export function OtelKarti({ otel, href, favori, onFavori, onUzerinde, sira = 0 }
       onMouseEnter={() => onUzerinde?.(true)}
       onMouseLeave={() => onUzerinde?.(false)}
     >
-      <a className={s.bag} href={href} target={`otel_${otel.kod}`}>
+      <Link className={s.bag} href={href} target={yeniSekme ? `otel_${otel.kod}` : undefined} prefetch={false}>
         <div className={s.foto}>
           {fotoYok ? (
             <span className={s.fotoYok}>
@@ -88,7 +92,7 @@ export function OtelKarti({ otel, href, favori, onFavori, onUzerinde, sira = 0 }
             <b className="lb-y">{otel.fiyat.tutar}</b> <span>{otel.fiyat.aciklama}</span>
           </p>
         )}
-      </a>
+      </Link>
       <button
         type="button"
         className={s.kalp}

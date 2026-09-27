@@ -1,12 +1,13 @@
 .sayfa { min-height: 100dvh; background: #fff; }
-.ust { height: 76px; display: flex; align-items: center; justify-content: space-between; padding-inline: var(--lb-kenar); border-bottom: 1px solid var(--lb-cizgi); }
+/* Uygulamada saatin ve çentiğin payı çubuğun içinde. */
+.ust { height: calc(76px + env(safe-area-inset-top, 0px)); display: flex; align-items: center; justify-content: space-between; padding: env(safe-area-inset-top, 0px) var(--lb-kenar) 0; border-bottom: 1px solid var(--lb-cizgi); }
 .logo { font-size: 26px; color: inherit; text-decoration: none; }
 .guvenli { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; }
 .dis { max-width: 1160px; margin: 0 auto; padding-inline: var(--lb-kenar); }
 .baslik { display: flex; align-items: center; gap: 16px; padding-block: 36px 28px; }
 .baslik h1 { margin: 0; font-size: clamp(26px, 3vw, 32px); }
 .geri { width: 40px; height: 40px; flex: none; border-radius: 999px; background: var(--lb-kart); display: grid; place-items: center; color: inherit; }
-.geri:hover { background: var(--lb-gri); }
+@media (hover: hover) { .geri:hover { background: var(--lb-gri); } }
 .duzen { display: grid; grid-template-columns: minmax(0, 1fr) 420px; gap: clamp(32px, 6vw, 96px); align-items: start; padding-bottom: 80px; }
 
 /* Düğmeler */
@@ -26,7 +27,7 @@
   cursor: pointer;
   transition: transform 0.15s, filter 0.2s, opacity 0.2s;
 }
-.dugme:hover { filter: brightness(0.96); }
+@media (hover: hover) { .dugme:hover { filter: brightness(0.96); } }
 .dugme:active { transform: scale(0.98); }
 .dugme:disabled { opacity: 0.4; cursor: not-allowed; transform: none; filter: none; }
 .onayla { height: 50px; padding: 0 26px; font-size: 15.5px; }
@@ -47,7 +48,7 @@
   text-decoration: none;
   cursor: pointer;
 }
-.gri:hover { background: var(--lb-gri); }
+@media (hover: hover) { .gri:hover { background: var(--lb-gri); } }
 .metinDugme {
   display: inline;
   padding: 0;
@@ -128,7 +129,8 @@
 .secimAlan[data-hatali] { border-color: var(--lb-kirmizi); box-shadow: 0 0 0 1px var(--lb-kirmizi); background: #fff8f6; }
 .parca { display: flex; gap: 6px; outline: none; }
 .parca label { position: relative; flex: 1; }
-.parca input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+/* Görünmez seçim kutusu alanın tüm yüksekliğini kaplar: dokunma alanı 26 değil 56 px. */
+.parca input { position: absolute; inset: -22px -3px -5px; margin: 0; opacity: 0; cursor: pointer; }
 .parca span { display: block; padding: 3px 0; border-radius: 8px; text-align: center; font-weight: 600; font-size: 14px; color: var(--lb-soluk); transition: background 0.2s, color 0.2s; }
 .parca input:checked + span { background: var(--lb-yazi); color: #fff; }
 .parca input:focus-visible + span { outline: 2px solid var(--lb-yazi); outline-offset: 2px; }
@@ -138,7 +140,7 @@
 .kayitli > span { font-size: 13px; font-weight: 600; color: var(--lb-soluk); }
 .kayitli > div { display: flex; flex-wrap: wrap; gap: 8px; }
 .cipMisafir { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border: 1px solid var(--lb-cizgi); border-radius: 999px; background: #fff; color: var(--lb-yazi); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: border-color 0.2s, background 0.2s; }
-.cipMisafir:hover:not(:disabled) { border-color: var(--lb-yazi); }
+@media (hover: hover) { .cipMisafir:hover:not(:disabled) { border-color: var(--lb-yazi); } }
 .cipMisafir:disabled { background: var(--lb-kart); color: var(--lb-soluk); cursor: default; }
 .onayKatman { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 24px; background: rgb(255 255 255 / 0.88); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); animation: katman 0.3s ease; }
 .onayKatman > div { display: grid; justify-items: center; gap: 8px; max-width: 380px; text-align: center; }

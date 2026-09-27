@@ -11,7 +11,8 @@
   cursor: pointer;
   text-align: left;
 }
-.yer:hover, .yer:focus-visible { background: var(--lb-kart); }
+.yer:focus-visible { background: var(--lb-kart); }
+@media (hover: hover) { .yer:hover { background: var(--lb-kart); } }
 .kutu { width: 52px; height: 52px; border-radius: 14px; background: var(--lb-kart); display: grid; place-items: center; flex: none; }
 .yer b { display: block; font-weight: 600; }
 .yer small { color: var(--lb-soluk); font-size: 13px; }
@@ -33,7 +34,7 @@
   gap: 2px;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
-.hizli button:hover { border-color: #b0b0b0; }
+@media (hover: hover) { .hizli button:hover { border-color: #b0b0b0; } }
 .hizli button[aria-pressed="true"] { border-color: var(--lb-yazi); box-shadow: inset 0 0 0 1px var(--lb-yazi); }
 .hizli b { font-weight: 600; font-size: 15px; }
 .hizli span { color: var(--lb-soluk); font-size: 13.5px; }
@@ -43,7 +44,7 @@
 .ayUst { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
 .ayUst h3 { margin: 0; font-size: 16px; flex: 1; text-align: center; font-weight: 700; }
 .ayOk { width: 32px; height: 32px; border-radius: 999px; border: 0; background: none; display: grid; place-items: center; cursor: pointer; }
-.ayOk:hover { background: var(--lb-kart); }
+@media (hover: hover) { .ayOk:hover { background: var(--lb-kart); } }
 .gunler { display: grid; grid-template-columns: repeat(7, 1fr); row-gap: 2px; text-align: center; }
 .hg { font-size: 12px; color: var(--lb-soluk); font-weight: 600; padding: 6px 0; }
 .gun {
@@ -56,7 +57,7 @@
   border-radius: 12px;
   font-variant-numeric: tabular-nums;
 }
-.gun:hover:not(:disabled) { box-shadow: inset 0 0 0 1.5px var(--lb-yazi); }
+@media (hover: hover) { .gun:hover:not(:disabled) { box-shadow: inset 0 0 0 1.5px var(--lb-yazi); } }
 .gun:disabled { color: #c4c4c4; cursor: default; text-decoration: line-through; }
 .gun[data-arada] { background: var(--lb-kart); border-radius: 0; }
 .gun[data-bas], .gun[data-son] { background: var(--lb-yazi); color: #fff; }

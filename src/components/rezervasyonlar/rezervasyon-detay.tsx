@@ -16,6 +16,7 @@ import { UstCubuk } from "@/components/lb/ust-cubuk";
 import { AltBilgi } from "@/components/lb/alt-bilgi";
 import { Ikon } from "@/components/lb/ikon";
 import { Nesne } from "@/components/lb/nesne";
+import { kirikBildir, useKirikFotolar } from "@/components/lb/dis-foto";
 import { Pencere } from "@/components/lb/pencere";
 import { BOS_ARAMA, aramaAdresi } from "@/components/lb/arama/durum";
 import { bicimleyici } from "@/i18n/bicim";
@@ -52,6 +53,7 @@ export function RezervasyonDetay({ id }: { id: string }) {
   const [simdi, setSimdi] = React.useState(simdiAl);
   const [arama, setArama] = React.useState(BOS_ARAMA);
   const [iptalAcik, setIptalAcik] = React.useState(false);
+  const kirik = useKirikFotolar();
 
   const q = useQuery<Rezervasyon>({
     queryKey: ["rezervasyon", id],
@@ -113,7 +115,7 @@ export function RezervasyonDetay({ id }: { id: string }) {
   const indirim = r.discountAmount ?? 0;
   const misafir = misafirYerel(t, r);
   const yer = [otel?.location?.name, otel?.location?.parent?.name].filter(Boolean).join(", ") || r.hotel?.city || "";
-  const fotolar = [...new Set([...(otel?.images ?? []).sort((a, b) => Number(b.isMain) - Number(a.isMain)).map((i) => i.url), ...(r.hotel?.image ? [r.hotel.image] : [])])].slice(0, 3);
+  const fotolar = [...new Set([...(otel?.images ?? []).sort((a, b) => Number(b.isMain) - Number(a.isMain)).map((i) => i.url), ...(r.hotel?.image ? [r.hotel.image] : [])])].filter((u) => !kirik.has(u)).slice(0, 3);
   const konum = otel?.latitude && otel?.longitude ? { lat: otel.latitude, lng: otel.longitude } : null;
   const telefon = otel?.phone || r.hotel?.phone || null;
   const eposta = otel?.email || null;
@@ -153,7 +155,7 @@ export function RezervasyonDetay({ id }: { id: string }) {
           )}
         </div>
         <div className={d.foto} data-adet={Math.max(1, fotolar.length)}>
-          {fotolar.length ? fotolar.map((u) => <img key={u} src={u} alt="" />) : <div className={d.fotoYok}><Nesne ad="zil" boyut={72} /></div>}
+          {fotolar.length ? fotolar.map((u) => <img key={u} src={u} alt="" onError={() => kirikBildir(u)} />) : <div className={d.fotoYok}><Nesne ad="zil" boyut={72} /></div>}
         </div>
 
         <div className={d.govde}>

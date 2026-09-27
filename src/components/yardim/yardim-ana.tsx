@@ -15,6 +15,7 @@ import { useMessages, useTranslations } from "next-intl";
 import { AltBilgi } from "@/components/lb/alt-bilgi";
 import { Ikon } from "@/components/lb/ikon";
 import { Nesne } from "@/components/lb/nesne";
+import { useUygulama } from "@/components/lb/uygulama";
 import { aralikYerel, durumBilgisi, gunYonelmeYerel, iptalDurumu, type Rezervasyon } from "@/components/rezervasyonlar/ortak";
 import { useBicim } from "@/i18n/use-bicim";
 import { REHBERLER, konular, makaleleriKur, type Kitle, type Konu, type Makale } from "./makaleler";
@@ -57,10 +58,12 @@ export function YardimAna() {
   const tRez = useTranslations("rezervasyon");
   const bicim = useBicim();
   const metinler = useMessages().yardim.makale;
-  const makaleler = React.useMemo(() => makaleleriKur(metinler), [metinler]);
+  // Uygulama yalnız müşteri için: acente makaleleri ve sekmesi yok.
+  const uygulama = useUygulama();
+  const makaleler = React.useMemo(() => makaleleriKur(metinler, uygulama).filter((m) => !uygulama || m.kitle === "misafir"), [metinler, uygulama]);
   const router = useRouter();
   const p = useSearchParams();
-  const kitle: Kitle = p.get("kitle") === "acente" ? "acente" : "misafir";
+  const kitle: Kitle = !uygulama && p.get("kitle") === "acente" ? "acente" : "misafir";
   const { data: oturum } = useSession();
   const [simdi] = React.useState(simdiAl);
   const [konu, setKonu] = React.useState<Konu | null>(null);
@@ -162,13 +165,15 @@ export function YardimAna() {
           </div>
         </section>
 
-        <nav className={s.sekmeler} aria-label={t("ana.kimIcin")}>
-          {(["misafir", "acente"] as const).map((k) => (
-            <button key={k} type="button" aria-current={kitle === k ? "page" : undefined} onClick={() => kitleSec(k)}>
-              {t(`kitle.${k}`)}
-            </button>
-          ))}
-        </nav>
+        {!uygulama && (
+          <nav className={s.sekmeler} aria-label={t("ana.kimIcin")}>
+            {(["misafir", "acente"] as const).map((k) => (
+              <button key={k} type="button" aria-current={kitle === k ? "page" : undefined} onClick={() => kitleSec(k)}>
+                {t(`kitle.${k}`)}
+              </button>
+            ))}
+          </nav>
+        )}
 
         {kitle === "misafir" && siradaki && (
           <section className={s.bolum} aria-labelledby="rez-baslik">

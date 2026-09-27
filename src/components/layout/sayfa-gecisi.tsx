@@ -23,8 +23,19 @@
 import * as React from "react";
 import { usePathname } from "next/navigation";
 
+// Sayfa yüklenmeden (istemci tarafında) yapılan geçiş sayısı. Otel sayfasının
+// geri düğmesi bununla tarayıcı geçmişine döner: istemci geçişinde
+// document.referrer değişmediği için ona bakmak yetmiyor.
+let oncekiYol: string | null = null;
+let icGecis = 0;
+export const icGecisVar = () => icGecis > 0;
+
 export function SayfaGecisi({ children }: { children: React.ReactNode }) {
   const yol = usePathname();
+  React.useEffect(() => {
+    if (oncekiYol !== null && oncekiYol !== yol) icGecis++;
+    oncekiYol = yol;
+  }, [yol]);
   // key: rota değişince alt ağaç yeniden monte olsun ve animasyon baştan
   // çalışsın. Next zaten rota değişiminde sayfayı değiştiriyor; buradaki key
   // animasyonu tetiklemek için.

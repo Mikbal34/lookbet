@@ -9,7 +9,7 @@
   cursor: pointer;
   transition: background 0.2s;
 }
-.yuvarlak:hover { background: rgb(0 0 0 / 0.08); }
+@media (hover: hover) { .yuvarlak:hover { background: rgb(0 0 0 / 0.08); } }
 
 /* ── menü ── */
 .menuKok { position: relative; }
@@ -25,7 +25,8 @@
   cursor: pointer;
   transition: box-shadow 0.2s;
 }
-.menuDugme:hover, .menuDugme[aria-expanded="true"] { box-shadow: var(--lb-golge); }
+.menuDugme[aria-expanded="true"] { box-shadow: var(--lb-golge); }
+@media (hover: hover) { .menuDugme:hover { box-shadow: var(--lb-golge); } }
 .avatar {
   width: 32px;
   height: 32px;
@@ -69,7 +70,7 @@
   text-align: left;
   cursor: pointer;
 }
-.acilir a:hover, .acilir > button:hover { background: var(--lb-kart); }
+@media (hover: hover) { .acilir a:hover, .acilir > button:hover { background: var(--lb-kart); } }
 .acilir hr { border: 0; border-top: 1px solid var(--lb-cizgi); margin: 8px 0; }
 .kalin { font-weight: 600; }
 .merhaba { padding: 8px 20px 4px; color: var(--lb-soluk); font-size: 13px; }
@@ -77,7 +78,7 @@
 .acente b { display: block; font-weight: 600; }
 .acente small { display: block; color: var(--lb-soluk); font-size: 13px; line-height: 1.35; }
 .acente img { flex: none; transition: transform 0.35s var(--lb-zipla); }
-.acente:hover img { transform: rotate(-8deg) scale(1.08); }
+@media (hover: hover) { .acente:hover img { transform: rotate(-8deg) scale(1.08); } }
 
 /* ── dil ve para penceresi ── */
 .kap {
@@ -86,7 +87,8 @@
   z-index: 60;
   display: grid;
   place-items: center;
-  padding: 16px;
+  /* Uygulamada saatin, çentiğin ve alt çizginin payı da boş kalır. */
+  padding: calc(16px + env(safe-area-inset-top, 0px)) 16px calc(16px + env(safe-area-inset-bottom, 0px));
   background: rgb(0 0 0 / 0.4);
   opacity: 0;
   pointer-events: none;
@@ -96,7 +98,7 @@
 .pencere {
   position: relative;
   width: min(760px, 100%);
-  max-height: calc(100dvh - 32px);
+  max-height: calc(100dvh - 32px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
   overflow-y: auto;
   background: #fff;
   border-radius: 24px;
@@ -117,7 +119,7 @@
   cursor: pointer;
   margin: 0 0 8px -8px;
 }
-.kapat:hover { background: var(--lb-kart); }
+@media (hover: hover) { .kapat:hover { background: var(--lb-kart); } }
 .sekmeler { display: flex; gap: 28px; border-bottom: 1px solid var(--lb-cizgi); margin-bottom: 24px; }
 .sekme {
   position: relative;
@@ -160,7 +162,7 @@
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s;
 }
-.secenek:hover { background: var(--lb-kart); }
+@media (hover: hover) { .secenek:hover { background: var(--lb-kart); } }
 .secenek[aria-pressed="true"] { border-color: var(--lb-yazi); }
 .secenek b { font-weight: 600; }
 .secenek span { color: var(--lb-soluk); font-size: 14px; }

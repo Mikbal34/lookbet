@@ -26,6 +26,8 @@ export interface OtelAramasi {
   ilkYukleme: boolean;
   /** Oteller geliyor, liste henüz tamam değil. */
   devamEdiyor: boolean;
+  /** Aramayı yeniden başlatır ("Tekrar dene"). */
+  tekrarDene: () => void;
 }
 
 const ISTEMCI_OMRU_MS = 5 * 60 * 1000;
@@ -42,6 +44,8 @@ export function useOtelAramasi(payload: object, etkin: boolean): OtelAramasi {
   const [durum, setDurum] = React.useState<AramaDurumu>("bekliyor");
   const [hotels, setHotels] = React.useState<HotelSearchResult[]>([]);
   const [hata, setHata] = React.useState<string | null>(null);
+  // Artınca arama yeniden başlar (hata sonrası "Tekrar dene"; hatalı sonuç önbelleğe yazılmıyor).
+  const [deneme, setDeneme] = React.useState(0);
   // Sunucu mesaj vermezse gösterilen metin; dil değişince arama yeniden başlamasın.
   const t = useTranslations("arama.hata");
   const tk = useTranslations("ortak");
@@ -120,13 +124,15 @@ export function useOtelAramasi(payload: object, etkin: boolean): OtelAramasi {
     })();
 
     return () => iptal.abort();
-  }, [anahtar, etkin]);
+  }, [anahtar, etkin, deneme]);
 
+  const tekrarDene = React.useCallback(() => setDeneme((d) => d + 1), []);
   return {
     hotels,
     durum,
     hata,
     ilkYukleme: etkin && (durum === "bekliyor" || (durum === "akiyor" && hotels.length === 0)),
     devamEdiyor: durum === "akiyor" && hotels.length > 0,
+    tekrarDene,
   };
 }

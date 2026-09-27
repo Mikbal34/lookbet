@@ -23,7 +23,7 @@ export function KampanyaVitrini({ kampanyalar }: { kampanyalar: VitrinKampanya[]
   const [arama, setArama] = React.useState(BOS_ARAMA);
   return (
     <div className={`lb ${s.sayfa}`}>
-      <UstCubuk deger={arama} onDegis={setArama} onAra={() => router.push(aramaAdresi(arama))} />
+      <UstCubuk deger={arama} onDegis={setArama} onAra={() => router.push(aramaAdresi(arama))} geri="/" />
       <main className={s.dis}>
         <div className={s.bas}>
           <h1 className="lb-y">{t("baslik")}</h1>

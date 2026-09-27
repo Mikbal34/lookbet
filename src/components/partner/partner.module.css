@@ -23,9 +23,9 @@
 .dugme:active { transform: scale(0.98); }
 .dugme:disabled { opacity: 0.5; cursor: default; transform: none; }
 .siyah { background: var(--lb-yazi); color: #fff; }
-.siyah:hover { background: #2a2a2a; }
+@media (hover: hover) { .siyah:hover { background: #2a2a2a; } }
 .cerceve { border: 1px solid var(--lb-yazi); background: #fff; color: var(--lb-yazi); }
-.cerceve:hover { background: var(--lb-kart); }
+@media (hover: hover) { .cerceve:hover { background: var(--lb-kart); } }
 .metinDugme { padding: 0; border: 0; background: none; color: var(--lb-yazi); font: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
 
 .rozet { display: inline-flex; align-items: center; gap: 6px; justify-self: start; padding: 3px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 700; white-space: nowrap; }
@@ -43,15 +43,15 @@
 .marka small { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--lb-turuncu); }
 .sekmeler { display: flex; gap: 4px; }
 .sekmeler a { position: relative; padding: 10px 16px; border-radius: 999px; color: var(--lb-soluk); font-weight: 600; font-size: 15px; text-decoration: none; transition: color 0.2s, background 0.2s; }
-.sekmeler a:hover { background: var(--lb-kart); color: var(--lb-yazi); }
+@media (hover: hover) { .sekmeler a:hover { background: var(--lb-kart); color: var(--lb-yazi); } }
 .sekmeler a[aria-current="page"] { color: var(--lb-yazi); }
 .sekmeler a[aria-current="page"]::after { content: ""; position: absolute; left: 16px; right: 16px; bottom: 2px; height: 2px; border-radius: 2px; background: var(--lb-yazi); }
 .sag { justify-self: end; display: flex; align-items: center; gap: 8px; }
 .araDugme { display: inline-flex; align-items: center; gap: 8px; height: 42px; padding: 0 16px; border-radius: 999px; background: var(--lb-turuncu); color: #fff; font-weight: 700; font-size: 14px; text-decoration: none; }
-.araDugme:hover { filter: brightness(0.96); }
+@media (hover: hover) { .araDugme:hover { filter: brightness(0.96); } }
 .menuKok { position: relative; }
 .menuDugme { display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 5px 0 13px; border: 1px solid var(--lb-cizgi); border-radius: 999px; background: #fff; color: inherit; cursor: pointer; transition: box-shadow 0.2s; }
-.menuDugme:hover { box-shadow: var(--lb-golge); }
+@media (hover: hover) { .menuDugme:hover { box-shadow: var(--lb-golge); } }
 .avatar { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 999px; background: var(--lb-yazi); color: #fff; font-weight: 700; font-size: 13px; }
 .acilir {
   position: absolute;
@@ -72,7 +72,7 @@
 }
 .acilir[data-acik] { opacity: 1; transform: none; pointer-events: auto; }
 .acilir a, .acilir button { display: flex; align-items: center; gap: 12px; padding: 11px 20px; border: 0; background: none; color: inherit; font: inherit; font-size: 14.5px; text-align: left; text-decoration: none; cursor: pointer; }
-.acilir a:hover, .acilir button:hover { background: var(--lb-kart); }
+@media (hover: hover) { .acilir a:hover, .acilir button:hover { background: var(--lb-kart); } }
 .acilir hr { margin: 8px 0; border: 0; border-top: 1px solid var(--lb-cizgi); }
 .kimlik { display: grid; padding: 8px 20px 10px; }
 .kimlik span { color: var(--lb-soluk); font-size: 13px; overflow: hidden; text-overflow: ellipsis; }
@@ -81,7 +81,8 @@
 /* Bildirim zili ve paneli */
 .zilKok { position: relative; }
 .zil { position: relative; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 999px; background: none; color: inherit; cursor: pointer; transition: background 0.2s; }
-.zil:hover, .zil[aria-expanded="true"] { background: var(--lb-kart); }
+.zil[aria-expanded="true"] { background: var(--lb-kart); }
+@media (hover: hover) { .zil:hover { background: var(--lb-kart); } }
 .zil i { position: absolute; top: 10px; right: 11px; width: 9px; height: 9px; border-radius: 999px; background: var(--lb-turuncu); box-shadow: 0 0 0 2px #fff; }
 .bildirimPanel {
   position: absolute;
@@ -111,7 +112,8 @@
 .metinDugme:disabled { opacity: 0.4; cursor: default; }
 .bildirimListe { margin: 0; padding: 6px 0; list-style: none; overflow-y: auto; overscroll-behavior: contain; }
 .bildirimOge { position: relative; width: 100%; display: grid; grid-template-columns: 32px minmax(0, 1fr); align-items: start; gap: 12px; padding: 12px 20px 12px 28px; border: 0; background: none; color: inherit; font: inherit; text-align: left; text-decoration: none; cursor: pointer; transition: background 0.15s; }
-.bildirimOge:hover, .bildirimOge:focus-visible { background: var(--lb-kart); }
+.bildirimOge:focus-visible { background: var(--lb-kart); }
+@media (hover: hover) { .bildirimOge:hover { background: var(--lb-kart); } }
 .bildirimOge[data-yeni]::before { content: ""; position: absolute; left: 12px; top: 25px; width: 8px; height: 8px; border-radius: 999px; background: var(--lb-turuncu); }
 .bildirimMetin { display: grid; gap: 2px; min-width: 0; }
 .bildirimMetin b { font-size: 14.5px; font-weight: 600; line-height: 1.3; }
@@ -128,7 +130,7 @@
 .selam p { margin: 6px 0 0; color: var(--lb-soluk); }
 .bolgeler { display: flex; gap: 6px; }
 .bolgeler img { transition: transform 0.4s var(--lb-zipla); }
-.bolgeler img:hover { transform: translateY(-4px) rotate(-4deg); }
+@media (hover: hover) { .bolgeler img:hover { transform: translateY(-4px) rotate(-4deg); } }
 .aramaBolum { display: grid; gap: 2px; margin-top: 20px; padding: 22px 24px 26px; border-radius: 28px; background: var(--lb-kart); }
 .aramaBolum > b { font-size: 17px; }
 .aramaBolum > span { margin-bottom: 14px; color: var(--lb-soluk); font-size: 14px; }
@@ -137,12 +139,12 @@
 .bolumBas h2 { margin: 0; font-size: 22px; }
 .cipler { display: flex; flex-wrap: wrap; gap: 8px; }
 .cip { height: 38px; padding: 0 16px; border: 1px solid var(--lb-cizgi); border-radius: 999px; background: #fff; color: var(--lb-yazi); font: inherit; font-weight: 600; font-size: 14px; cursor: pointer; transition: border-color 0.2s, background 0.2s; }
-.cip:hover { border-color: var(--lb-yazi); }
+@media (hover: hover) { .cip:hover { border-color: var(--lb-yazi); } }
 .cip[aria-pressed="true"] { border-color: var(--lb-yazi); box-shadow: inset 0 0 0 1px var(--lb-yazi); background: var(--lb-kart); }
 .cip[data-uyari] { color: #b54708; }
 .kartlar { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
 .rkart { position: relative; display: grid; align-content: start; gap: 6px; padding: 18px; border: 1px solid var(--lb-cizgi); border-radius: 20px; background: #fff; transition: box-shadow 0.25s, transform 0.25s var(--lb-yay); animation: gel 0.35s var(--lb-yay) both; animation-delay: calc(var(--s, 0) * 40ms); }
-.rkart:hover { box-shadow: 0 10px 28px rgb(0 0 0 / 0.09); transform: translateY(-2px); }
+@media (hover: hover) { .rkart:hover { box-shadow: 0 10px 28px rgb(0 0 0 / 0.09); transform: translateY(-2px); } }
 @keyframes gel { from { opacity: 0; transform: translateY(8px); } }
 .rkartTik { position: absolute; inset: 0; z-index: 1; border: 0; border-radius: 20px; background: none; cursor: pointer; }
 .rkartUst { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
@@ -163,7 +165,7 @@
 .bos span { color: var(--lb-soluk); font-size: 14px; }
 .ozet { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
 .ozet a { display: grid; gap: 4px; padding: 20px 22px; border-radius: 20px; background: var(--lb-kart); color: inherit; text-decoration: none; transition: background 0.2s; }
-.ozet a:hover { background: var(--lb-gri); }
+@media (hover: hover) { .ozet a:hover { background: var(--lb-gri); } }
 .ozet span { color: var(--lb-soluk); font-size: 14px; }
 .ozet b { font-size: 26px; }
 .ozet small { color: var(--lb-soluk); font-size: 13px; }
@@ -184,7 +186,8 @@
 .tablo td { padding: 12px 18px; border-bottom: 1px solid var(--lb-cizgi); vertical-align: middle; white-space: nowrap; }
 .tablo tr:last-child td { border-bottom: 0; }
 .tablo tbody tr { cursor: pointer; transition: background 0.15s; }
-.tablo tbody tr:hover, .tablo tbody tr:focus-visible { background: #fafafa; }
+.tablo tbody tr:focus-visible { background: #fafafa; }
+@media (hover: hover) { .tablo tbody tr:hover { background: #fafafa; } }
 .hucreOtel { display: flex; align-items: center; gap: 12px; }
 .hucreOtel > span { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 10px; overflow: hidden; background: var(--lb-kart); }
 .hucreOtel img:not([width]) { width: 100%; height: 100%; object-fit: cover; }
@@ -210,7 +213,7 @@
 .izgaraCizgi { stroke: var(--lb-cizgi); stroke-width: 1; }
 .eksen { fill: var(--lb-soluk); font: 500 11.5px var(--font-figtree), sans-serif; }
 .cubuk rect:first-child { fill: #d9d9d7; transition: fill 0.2s; }
-.cubuk:hover rect:first-child { fill: #a9a9a7; }
+@media (hover: hover) { .cubuk:hover rect:first-child { fill: #a9a9a7; } }
 .cubuk[data-bu] rect:first-child { fill: var(--lb-yazi); }
 .cubuk[data-bu] text { fill: var(--lb-yazi); font-weight: 700; }
 .ipucu { position: absolute; z-index: 2; padding: 6px 10px; border-radius: 10px; background: var(--lb-yazi); color: #fff; font-size: 13px; white-space: nowrap; pointer-events: none; transform: translate(-50%, -110%); }

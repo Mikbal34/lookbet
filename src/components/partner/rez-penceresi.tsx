@@ -1,5 +1,4 @@
 "use client";
-/* eslint-disable @next/next/no-img-element -- otel görseli dış kaynaklı (tedarikçi) */
 
 // Acentenin rezervasyon ayrıntısı: misafir, otel, tarihler, tutar ve
 // komisyon, durum ve iptal koşulu. "Rezervasyon belgesi" rezervasyon sayfasını
@@ -10,6 +9,7 @@ import * as React from "react";
 import Link from "next/link";
 import { Ikon } from "@/components/lb/ikon";
 import { Nesne } from "@/components/lb/nesne";
+import { DisFoto } from "@/components/lb/dis-foto";
 import { Pencere } from "@/components/lb/pencere";
 import { para } from "@/components/otel-detay/yardimci";
 import { IptalPenceresi } from "@/components/rezervasyonlar/rezervasyon-detay";
@@ -64,7 +64,7 @@ function Icerik({ r, simdi, oran, onIptalAc }: { r: Rezervasyon; simdi: number; 
   return (
     <div className={s.pIc}>
       <div className={s.pFoto}>
-        {r.hotel?.image ? <img src={r.hotel.image} alt="" /> : <Nesne ad="zil" boyut={64} />}
+        <DisFoto src={r.hotel?.image} yedek={<Nesne ad="zil" boyut={64} />} />
         <span className={s.rozet} data-renk={d.renk}>{d.ad}</span>
       </div>
       <div className={s.pBas}>
