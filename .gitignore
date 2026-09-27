@@ -56,3 +56,7 @@ next-env.d.ts
 /test-results/
 /playwright-report/
 /e2e/.auth/
+
+# mobil uygulama (Capacitor)
+/mobil/node_modules
+/mobil/www/sunucu.js

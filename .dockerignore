@@ -16,3 +16,6 @@ e2e
 playwright.config.ts
 test-results
 playwright-report
+
+# Mobil uygulama (Capacitor) sunucu imajına girmez
+mobil
