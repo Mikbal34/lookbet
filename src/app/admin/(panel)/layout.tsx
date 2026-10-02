@@ -4,7 +4,7 @@ import { YonetimCubugu } from "@/components/yonetim/yonetim-cubugu";
 import { BildiriSaglayici } from "@/components/yonetim/ortak";
 import s from "@/components/yonetim/yonetim.module.css";
 
-export const metadata: Metadata = { title: "LookBeds Yönetim", robots: { index: false } };
+export const metadata: Metadata = { title: "LookBeds Yönetim", robots: { index: false, follow: false } };
 
 export default function YonetimDuzeni({ children }: { children: React.ReactNode }) {
   return (

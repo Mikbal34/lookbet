@@ -39,7 +39,14 @@ const yastik = localFont({
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("ortak.site");
-  return { title: t("baslik"), description: t("aciklama") };
+  return {
+    title: t("baslik"),
+    description: t("aciklama"),
+    // Site şimdilik arama motorlarına kapalı (kullanıcı kararı, 2026-10-02): her
+    // sayfada noindex, nofollow. Sayfalar kendi robots'unu vermiyor, buradan alıyor.
+    // Açarken nginx'teki X-Robots-Tag başlığını da kaldırın.
+    robots: { index: false, follow: false, googleBot: { index: false, follow: false } },
+  };
 }
 
 // Cihaz genişliği, çentik altına taşan tam ekran (viewport-fit=cover) ve
