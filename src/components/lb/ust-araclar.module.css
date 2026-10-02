@@ -7,9 +7,12 @@
   border: 0;
   background: rgb(0 0 0 / 0.045);
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s, color 0.2s;
 }
 @media (hover: hover) { .yuvarlak:hover { background: rgb(0 0 0 / 0.08); } }
+/* Turuncu üst çubukta (kaydırınca): yarı saydam beyaz, simge beyaz. */
+:global([data-turuncu]) .yuvarlak { background: rgb(255 255 255 / 0.2); color: #fff; }
+@media (hover: hover) { :global([data-turuncu]) .yuvarlak:hover { background: rgb(255 255 255 / 0.3); } }
 
 /* ── menü ── */
 .menuKok { position: relative; }

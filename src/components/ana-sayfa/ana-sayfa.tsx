@@ -271,6 +271,11 @@ export function AnaSayfa({ satirlar, kampanyalar = [] }: { satirlar: AnaSayfaSat
       B!.style.zIndex = g > 0.5 ? "3" : "";
       U!.style.setProperty("--p", String(Math.max(0, (ham - 0.5) / 0.5)));
       U!.style.setProperty("--g", String(g));
+      // Turunculuk (müşteri isteği): çubuk yerleştikçe artar, arama açılınca beyaza döner.
+      const k = Math.max(0, (ham - 0.5) / 0.5) * (1 - g);
+      U!.style.setProperty("--k", String(k));
+      L!.style.setProperty("--k", String(k));
+      U!.toggleAttribute("data-turuncu", k > 0.5);
       P!.style.setProperty("--g", String(g));
       S!.style.opacity = String(Math.max(0, 1 - ham * 1.6));
       S!.style.transform = `scale(${1 - ham * 0.12})`;

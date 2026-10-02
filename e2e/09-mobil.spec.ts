@@ -39,6 +39,18 @@ test("açılmayan otel fotoğrafları kırık simge yerine düşülür", async (
   expect(kirik).toBe(0);
 });
 
+test("kaydırınca üst çubuk turuncu olur, başa dönünce beyaz", async ({ page }) => {
+  await page.goto(`/search?destination=Antalya&checkIn=${gunSonra(60)}&checkOut=${gunSonra(62)}&adults=2`);
+  await expect(page.locator('a[href*="checkIn="]').first()).toBeVisible({ timeout: 30_000 });
+  const cubuk = page.locator("header").first();
+  await expect(cubuk).not.toHaveAttribute("data-turuncu");
+  await page.evaluate(() => window.scrollTo(0, 600));
+  await expect(cubuk).toHaveAttribute("data-turuncu", "true");
+  await expect(cubuk).toHaveCSS("background-color", "rgb(224, 96, 40)");
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await expect(cubuk).not.toHaveAttribute("data-turuncu");
+});
+
 test("sayfa yatay kaymıyor (ana sayfa, arama, otel)", async ({ page }) => {
   for (const yol of ["/", `/search?destination=Antalya&checkIn=${gunSonra(60)}&checkOut=${gunSonra(62)}&adults=2`, `/hotel/HTL004?checkIn=${gunSonra(60)}&checkOut=${gunSonra(62)}&adults=2`]) {
     await page.goto(yol);

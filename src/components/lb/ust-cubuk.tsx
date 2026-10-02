@@ -17,7 +17,7 @@ import { Ikon } from "./ikon";
 import { Logo } from "./logo";
 import { Nesne, type NesneAdi } from "./nesne";
 import { DunyaDugmesi, MenuDugmesi } from "./ust-araclar";
-import { UygulamaGeri, useUygulama } from "./uygulama";
+import { UygulamaGeri, durumCubugu, useUygulama } from "./uygulama";
 import s from "./ust-cubuk.module.css";
 
 export function UstCubuk({ deger, onDegis, onAra, nesne = "zil", alt, aramaYok, geri }: {
@@ -38,6 +38,20 @@ export function UstCubuk({ deger, onDegis, onAra, nesne = "zil", alt, aramaYok, 
   const uygulama = useUygulama();
   const [acik, setAcik] = React.useState(false);
   const [mobilAcik, setMobilAcik] = React.useState(false);
+  // Kaydırınca çubuk turuncu olur (müşteri isteği); arama açıkken beyaz kalır.
+  const [kaydi, setKaydi] = React.useState(false);
+  React.useEffect(() => {
+    const bak = () => setKaydi(window.scrollY > 8);
+    bak();
+    addEventListener("scroll", bak, { passive: true });
+    return () => removeEventListener("scroll", bak);
+  }, []);
+  const turuncu = kaydi && !acik;
+  // Uygulamada turuncu çubukta saat ve pil beyaz; sayfadan çıkınca koyuya döner.
+  React.useEffect(() => {
+    if (uygulama) durumCubugu(turuncu ? "DARK" : "LIGHT");
+  }, [uygulama, turuncu]);
+  React.useEffect(() => () => void (uygulama && durumCubugu("LIGHT")), [uygulama]);
   const kok = React.useRef<HTMLDivElement | null>(null);
   const buyuk = React.useRef<HTMLDivElement | null>(null);
   const kontrol = React.useRef<AramaKontrol>(null);
@@ -76,7 +90,7 @@ export function UstCubuk({ deger, onDegis, onAra, nesne = "zil", alt, aramaYok, 
 
   return (
     <>
-      <header className={`lb ${s.ust}`} data-acik={acik || undefined}>
+      <header className={`lb ${s.ust}`} data-acik={acik || undefined} data-turuncu={turuncu || undefined}>
         <div className={s.satir} data-geri={(uygulama && geri) || undefined}>
           {uygulama && geri && <UygulamaGeri yedek={geri} />}
           <Link href="/" className={`lb-y lb-logo ${s.logo}`}><Logo /></Link>
@@ -125,7 +139,7 @@ export function UstCubuk({ deger, onDegis, onAra, nesne = "zil", alt, aramaYok, 
             </div>
           </div>
         )}
-        {alt}
+        {alt && <div className={s.alt}>{alt}</div>}
       </header>
       <div className={s.perde} data-acik={acik || undefined} onClick={kapat} />
       {!aramaYok && (

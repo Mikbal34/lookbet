@@ -22,6 +22,18 @@ export function UygulamaSaglayici({ uygulama, children }: { uygulama: boolean; c
 
 export const useUygulama = () => React.useContext(Baglam);
 
+type DurumCubuguEklentisi = { setStyle?: (o: { style: "DARK" | "LIGHT" }) => Promise<void> };
+
+/**
+ * Uygulamada saat ve pil simgelerinin rengi: "DARK" koyu (turuncu) zemin için
+ * beyaz yazı, "LIGHT" açık zemin için koyu. Uygulamanın StatusBar eklentisi
+ * siteye köprüyle geliyor (window.Capacitor); sitede bir şey yapmaz.
+ */
+export function durumCubugu(stil: "DARK" | "LIGHT") {
+  const eklenti = (window as { Capacitor?: { Plugins?: { StatusBar?: DurumCubuguEklentisi } } }).Capacitor?.Plugins?.StatusBar;
+  eklenti?.setStyle?.({ style: stil }).catch(() => {});
+}
+
 const DOKUNMATIK = "(hover: none) and (pointer: coarse)";
 const dokunmatikAbone = (bildir: () => void) => {
   const m = matchMedia(DOKUNMATIK);

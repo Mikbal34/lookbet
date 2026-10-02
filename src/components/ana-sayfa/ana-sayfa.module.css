@@ -6,10 +6,12 @@
   position: absolute;
   inset: 0 0 auto;
   height: calc(80px + var(--g, 0) * 106px + env(safe-area-inset-top, 0px));
-  background: rgb(255 255 255 / 0.94);
+  /* Yerleşince turuncu (--k: 0 → 1, arama açılınca 0): müşteri isteği 2026-10-02. */
+  background: color-mix(in srgb, #e06028 calc(var(--k, 0) * 100%), rgb(255 255 255 / 0.94)); /* kare logonun turuncusu */
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border-bottom: 1px solid var(--lb-cizgi);
+  border-bottom: 1px solid color-mix(in srgb, transparent calc(var(--k, 0) * 100%), var(--lb-cizgi));
+  box-shadow: 0 2px 14px rgb(20 16 12 / calc(var(--k, 0) * 0.18));
   opacity: var(--p, 0);
 }
 .ustIc { position: relative; height: 80px; display: flex; align-items: center; justify-content: flex-end; padding-inline: var(--lb-kenar); }
@@ -68,10 +70,13 @@
   white-space: nowrap;
   transform-origin: 0 0;
   will-change: transform;
-  color: var(--lb-yazi);
+  /* Turuncu çubuğa yerleştikçe yazı beyaza, kare logoya beyaz halka (--k). */
+  color: color-mix(in srgb, #fff calc(var(--k, 0) * 100%), var(--lb-yazi));
   text-decoration: none;
   animation: belir 0.7s var(--lb-yay) both;
 }
+.logoUcan :global(.lb-logo-beds) { color: color-mix(in srgb, #fff calc(var(--k, 0) * 100%), var(--lb-turuncu)); }
+.logoUcan :global(.lb-logo-isaret) { border-radius: 24%; box-shadow: 0 0 0 calc(5px * var(--k, 0)) rgb(255 255 255 / var(--k, 0)); }
 @keyframes belir { from { opacity: 0; } }
 .logoYer { font-size: clamp(44px, 7vw, 80px); line-height: 1; visibility: hidden; margin: 0; }
 

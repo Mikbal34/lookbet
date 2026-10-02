@@ -1,5 +1,5 @@
 // Otel sayfasının bağlantısı. Okunur adresi varsa lookbeds.com/<adres>
-// (Etstur, Jolly, Tatilsepeti gibi yalnız otelin adı: /club-hotel-sera), yoksa
+// (il + otelin adı: /antalya/club-hotel-sera), yoksa
 // eski biçim /hotel/<kod>; sunucu o adresi okunur olana yönlendirir
 // (app/hotel/[hotelCode]). Adresleri veren: lib/otel-adresi.ts.
 //

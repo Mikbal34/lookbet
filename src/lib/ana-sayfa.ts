@@ -99,6 +99,6 @@ export const anaSayfaSatirlari = unstable_cache(
     );
     return sonuc.filter((s) => s.oteller.length >= EN_AZ);
   },
-  ["ana-sayfa-satirlari-v4"],
+  ["ana-sayfa-satirlari-v5"],
   { revalidate: 3600 }
 );
