@@ -29,6 +29,17 @@ export interface HotelSearchResult {
   minPrice: number;
   currency: string;
   boardTypes: string[];
+  /**
+   * En az bir fiyat seçeneği ücretsiz iptalli mi. Tanımsızsa bilinmiyor
+   * (mock) ve kart eskisi gibi gösterir; false ise "Ücretsiz iptal" yazmaz.
+   */
+  freeCancellation?: boolean;
+  /** Kampanya indirimi varsa indirimden önceki gecelik fiyat (üstü çizili). */
+  oncekiFiyat?: number;
+  /** Uygulanan otomatik indirim (arama kartındaki etiket). */
+  kampanya?: { ad: string; yuzde: number; tur: string };
+  /** Otel sayfasının okunur adresi (/club-hotel-sera); veritabanından, yoksa /hotel/<kod>. */
+  adres?: string | null;
   // Zenginleştirme (opsiyonel) — arama kartında puan rozeti için.
   reviewScore?: number;
   reviewCount?: number;
@@ -41,6 +52,8 @@ export interface HotelDetailRequest {
 
 export interface HotelDetailResponse {
   hotelCode: string;
+  /** Okunur sayfa adresi (lib/otel-adresi). */
+  slug?: string | null;
   name: string;
   stars: number;
   address: string;
@@ -127,4 +140,6 @@ export interface HotelListItem {
   locationId: number;
   facilities: number[];
   images: string[];
+  phone?: string;
+  email?: string;
 }

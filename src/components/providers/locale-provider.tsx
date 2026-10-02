@@ -1,23 +1,26 @@
 "use client";
 
-// Dil + para birimi tercihi — localStorage'da kalıcı, tüm uygulamada erişilebilir.
-// Para birimi otel aramalarına parametre olarak gider; dil seçimi şimdilik
-// tercih olarak saklanır (tam çeviri altyapısı ayrı iş).
+// Dil + para birimi tercihi. Dil next-intl'den (NEXT_LOCALE çerezi; bkz.
+// i18n/request.ts): değiştirilince çereze yazılır ve sayfa sunucuda yeni
+// dille yeniden çizilir. Para birimi localStorage'da; fiyatlar seçilen
+// birimde TCMB kuruyla yaklaşık gösterilir (lb/fiyat), ödeme EUR.
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
+import { useLocale as useDil } from "next-intl";
+import { dilCereziYaz, dilMi } from "@/i18n/diller";
 
+/** Desteklenen diller (kendi dillerinde yazılır). */
 export const LANGUAGES = [
-  { code: "tr", label: "Türkçe", flag: "🇹🇷" },
-  { code: "en", label: "English", flag: "🇬🇧" },
-  { code: "de", label: "Deutsch", flag: "🇩🇪" },
-  { code: "ru", label: "Русский", flag: "🇷🇺" },
+  { code: "tr", label: "Türkçe" },
+  { code: "en", label: "English" },
 ] as const;
 
 export const CURRENCIES = [
-  { code: "TRY", symbol: "₺", flag: "🇹🇷" },
-  { code: "USD", symbol: "$", flag: "🇺🇸" },
-  { code: "EUR", symbol: "€", flag: "🇪🇺" },
-  { code: "GBP", symbol: "£", flag: "🇬🇧" },
+  { code: "TRY", symbol: "₺" },
+  { code: "USD", symbol: "$" },
+  { code: "EUR", symbol: "€" },
+  { code: "GBP", symbol: "£" },
 ] as const;
 
 interface LocalePrefs {
@@ -34,38 +37,46 @@ const LocaleContext = React.createContext<LocalePrefs>({
   setCurrency: () => {},
 });
 
-export function LocaleProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLangState] = React.useState("tr");
-  const [currency, setCurrencyState] = React.useState("EUR");
+const PARA_ANAHTARI = "lookbet.currency";
+const paraDinleyicileri = new Set<() => void>();
+function paraOku(): string {
+  try {
+    return localStorage.getItem(PARA_ANAHTARI) || "EUR";
+  } catch {
+    return "EUR";
+  }
+}
 
-  React.useEffect(() => {
+export function LocaleProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const lang = useDil();
+  const currency = React.useSyncExternalStore(
+    (dinle) => {
+      paraDinleyicileri.add(dinle);
+      return () => paraDinleyicileri.delete(dinle);
+    },
+    paraOku,
+    () => "EUR"
+  );
+
+  const setLang = React.useCallback(
+    (l: string) => {
+      if (!dilMi(l) || l === lang) return;
+      dilCereziYaz(l);
+      router.refresh();
+    },
+    [lang, router]
+  );
+
+  const setCurrency = React.useCallback((c: string) => {
     try {
-      const l = localStorage.getItem("lookbet.lang");
-      const c = localStorage.getItem("lookbet.currency");
-      if (l) setLangState(l);
-      if (c) setCurrencyState(c);
+      localStorage.setItem(PARA_ANAHTARI, c);
     } catch {}
+    paraDinleyicileri.forEach((f) => f());
   }, []);
 
-  const setLang = (l: string) => {
-    setLangState(l);
-    try {
-      localStorage.setItem("lookbet.lang", l);
-    } catch {}
-  };
-
-  const setCurrency = (c: string) => {
-    setCurrencyState(c);
-    try {
-      localStorage.setItem("lookbet.currency", c);
-    } catch {}
-  };
-
-  return (
-    <LocaleContext.Provider value={{ lang, currency, setLang, setCurrency }}>
-      {children}
-    </LocaleContext.Provider>
-  );
+  const deger = React.useMemo(() => ({ lang, currency, setLang, setCurrency }), [lang, currency, setLang, setCurrency]);
+  return <LocaleContext.Provider value={deger}>{children}</LocaleContext.Provider>;
 }
 
 export function useLocale() {

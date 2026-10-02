@@ -1,0 +1,20 @@
+.sayfa { min-height: 100dvh; display: grid; place-items: center; padding: 48px var(--lb-kenar); background: #fff; }
+.icerik { display: grid; justify-items: center; gap: 8px; max-width: 440px; text-align: center; }
+.icerik h1 { font-size: 26px; margin: 12px 0 0; text-wrap: balance; }
+.icerik p { margin: 0 0 12px; color: var(--lb-soluk); }
+.dugmeler { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.dugme {
+  display: inline-flex;
+  align-items: center;
+  height: 42px;
+  padding: 0 20px;
+  border: 1px solid var(--lb-yazi);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--lb-yazi);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+.dugme[data-siyah] { background: var(--lb-yazi); color: #fff; }

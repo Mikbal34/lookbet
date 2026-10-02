@@ -1,0 +1,53 @@
+/* Uygulamanın alt sekmeleri. Pencereler (60+) ve üst çubuğun perdesi (39) üstte kalır. */
+.sekmeler {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: 38;
+  display: grid;
+  grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+  height: calc(64px + env(safe-area-inset-bottom, 0px));
+  box-sizing: border-box;
+  padding: 6px 4px env(safe-area-inset-bottom, 0px);
+  background: #fff;
+  border-top: 1px solid var(--lb-cizgi);
+  transition: transform 0.3s var(--lb-yay);
+}
+/* Aşağı kaydırınca ya da tam ekran pencere açıkken çekilir. */
+.sekmeler[data-gizli] { transform: translateY(100%); }
+.sekmeler a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  color: var(--lb-soluk);
+  text-decoration: none;
+  font-size: 11.5px;
+  font-weight: 500;
+  line-height: 1.2;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s var(--lb-yay), color 0.2s;
+}
+/* Dokununca hafif basılma; seçilen sekmenin ikonu küçük bir sıçrayışla gelir. */
+.sekmeler a:active { transform: scale(0.92); }
+.sekmeler a[aria-current="page"] { color: var(--lb-turuncu); font-weight: 600; }
+.sekmeler a[aria-current="page"] svg { animation: sekme-sec 0.45s var(--lb-zipla); }
+@keyframes sekme-sec { from { transform: scale(0.78); } }
+/* Sayfanın sonu sekmelerin altında kalmasın. */
+.bosluk { height: calc(64px + env(safe-area-inset-bottom, 0px)); }
+
+/* Sekmesiz sayfaların üst çubuğundaki geri düğmesi. */
+.geri {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: var(--lb-kart);
+  color: var(--lb-yazi);
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s var(--lb-yay);
+}
+.geri:active { transform: scale(0.92); }

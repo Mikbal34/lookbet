@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Uyarlanabilir simgenin zemini: iOS simgesiyle aynı turuncu. -->
+    <color name="ic_launcher_background">#E06028</color>
+</resources>

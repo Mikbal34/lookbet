@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Açılış ekranının ortasındaki turuncu yatak işareti (sitedeki logo). Android 12
+     açılış simgesi kuralı: 288dp kutu, içerik 192dp çembere sığar. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="288dp"
+    android:height="288dp"
+    android:viewportWidth="288"
+    android:viewportHeight="288">
+    <group android:translateX="80" android:translateY="80" android:scaleX="0.25" android:scaleY="0.25">
+        <path android:fillColor="#FF5F1F" android:pathData="M105,52 H105 A29,29 0 0 1 134,81 V363 A29,29 0 0 1 105,392 H105 A29,29 0 0 1 76,363 V81 A29,29 0 0 1 105,52 Z M407,120 H407 A29,29 0 0 1 436,149 V431 A29,29 0 0 1 407,460 H407 A29,29 0 0 1 378,431 V149 A29,29 0 0 1 407,120 Z M106,248 H406 A30,30 0 0 1 436,278 V304 A30,30 0 0 1 406,334 H106 A30,30 0 0 1 76,304 V278 A30,30 0 0 1 106,248 Z"/>
+    </group>
+</vector>

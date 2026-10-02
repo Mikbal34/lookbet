@@ -1,0 +1,65 @@
+{
+  "kategori": {
+    "hepsi": "Hepsi",
+    "deniz": "Deniz",
+    "termal": "Termal",
+    "kayak": "Kayak",
+    "sehir": "Şehir"
+  },
+  "tatilTuru": "Tatil türü",
+  "logoEtiket": "LookBeds, en üste dön",
+  "otelAra": "Otel ara",
+  "otellereIn": "Otellere in",
+  "bos": "Bu kategoride şu an gösterecek otel yok.",
+  "satir": {
+    "onceki": "{baslik}: önceki",
+    "sonraki": "{baslik}: sonraki",
+    "favoriEkle": "{ad}: favorilere ekle",
+    "favoriEklendi": "{ad}: favorilere eklendi"
+  },
+  "satirlar": {
+    "bodrum": "Bodrum'daki oteller",
+    "antalya": "Antalya'daki oteller",
+    "kapadokya": "Kapadokya'daki oteller",
+    "istanbul": "İstanbul'daki oteller",
+    "fethiye": "Fethiye'deki oteller",
+    "termal": "Termal oteller",
+    "kayak": "Kayak otelleri",
+    "marmaris": "Marmaris'teki oteller",
+    "cesme": "Çeşme'deki oteller",
+    "afyon": "Afyon'daki termal oteller",
+    "uludag": "Uludağ'daki oteller",
+    "izmir": "İzmir'deki oteller",
+    "ankara": "Ankara'daki oteller"
+  },
+  "kampanya": {
+    "baslik": "Kampanyalar",
+    "yuzde": "%{yuzde}",
+    "baslangic": "Başlangıç {tarih}",
+    "bitis": "{tarih} kadar",
+    "suresiz": "Süresiz",
+    "kosul": {
+      "erken": "Girişine {gun} gün ve fazlası olan rezervasyonlarda {kapsam, select, secili {seçili otellerde} bolge {{bolge} otellerinde} other {tüm otellerde}} %{yuzde} indirim.",
+      "sonDakika": "Girişe {gun} gün ya da daha az kaldıysa {kapsam, select, secili {seçili otellerde} bolge {{bolge} otellerinde} other {tüm otellerde}} %{yuzde} son dakika indirimi.",
+      "uzun": "{gece} gece ve fazlası konaklamalarda {kapsam, select, secili {seçili otellerde} bolge {{bolge} otellerinde} other {tüm otellerde}} %{yuzde} indirim.",
+      "aralik": "{bas} – {son} arası girişlerde {kapsam, select, secili {seçili otellerde} bolge {{bolge} otellerinde} other {tüm otellerde}} %{yuzde} indirim."
+    },
+    "dugme": {
+      "bolge": "{bolge} otelleri",
+      "otel": "Otele bak",
+      "ara": "Otel ara"
+    }
+  },
+  "vitrin": {
+    "baslik": "Kampanyalar",
+    "aciklama": "Kod gerekmez: koşulu tutan rezervasyonda indirim fiyata kendiliğinden yansır, aramada üstü çizili fiyatla görürsün.",
+    "digerOteller": "ve {sayi} otel daha",
+    "bosBaslik": "Şu an yayında kampanya yok",
+    "bosAciklama": "Yeni kampanyalar burada görünür. Bu arada otellere göz at.",
+    "otelAra": "Otel ara",
+    "meta": {
+      "baslik": "Kampanyalar — LookBeds",
+      "aciklama": "Erken rezervasyon, son dakika ve uzun konaklama indirimleri. Kod gerekmez, fiyata kendiliğinden yansır."
+    }
+  }
+}

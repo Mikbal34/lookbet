@@ -2,23 +2,24 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
-import bcrypt from "bcryptjs";
+import { sayfalama } from "../_ortak";
+
+// GET /api/admin/users ?search ?role ?page ?limit
+// Kullanıcılar kendi girişleriyle (e-posta kodu) açılır; rol ve kapatma
+// PATCH /api/admin/users/:id ile.
 
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
     if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return NextResponse.json({ error: "Bu işlem için yönetici yetkisi gerekiyor" }, { status: 403 });
     }
 
     const { searchParams } = new URL(req.url);
-    const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
-    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") ?? "20", 10)));
+    const { page, limit, skip } = sayfalama(searchParams);
     const search = searchParams.get("search") ?? "";
     const role = searchParams.get("role") ?? "";
-
-    const skip = (page - 1) * limit;
 
     const where: Record<string, unknown> = {};
 
@@ -55,13 +56,17 @@ export async function GET(req: NextRequest) {
               isApproved: true,
             },
           },
+          _count: { select: { reservations: true } },
         },
       }),
       prisma.user.count({ where }),
     ]);
+    const roller = await prisma.user.groupBy({ by: ["role"], _count: { _all: true } });
+    const rolSayilari = Object.fromEntries(roller.map((r) => [r.role, r._count._all]));
 
     return NextResponse.json({
       users,
+      rolSayilari,
       pagination: {
         page,
         limit,
@@ -71,69 +76,6 @@ export async function GET(req: NextRequest) {
     });
   } catch (error) {
     console.error("[ADMIN_USERS_GET]", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-  }
-}
-
-export async function POST(req: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions);
-
-    if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    const body = await req.json();
-    const { name, email, password, role } = body;
-
-    if (!name || !email || !password) {
-      return NextResponse.json(
-        { error: "name, email and password are required" },
-        { status: 400 }
-      );
-    }
-
-    if (role && !["CUSTOMER", "AGENCY", "ADMIN"].includes(role)) {
-      return NextResponse.json({ error: "Invalid role" }, { status: 400 });
-    }
-
-    const existing = await prisma.user.findUnique({ where: { email } });
-    if (existing) {
-      return NextResponse.json({ error: "Email already in use" }, { status: 409 });
-    }
-
-    const passwordHash = await bcrypt.hash(password, 12);
-
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        passwordHash,
-        role: role ?? "CUSTOMER",
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        isActive: true,
-        createdAt: true,
-      },
-    });
-
-    await prisma.auditLog.create({
-      data: {
-        userId: session.user.id,
-        action: "CREATE_USER",
-        entity: "User",
-        entityId: user.id,
-        newData: { name, email, role: user.role },
-      },
-    });
-
-    return NextResponse.json({ user }, { status: 201 });
-  } catch (error) {
-    console.error("[ADMIN_USERS_POST]", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Sunucu hatası, biraz sonra tekrar dene" }, { status: 500 });
   }
 }

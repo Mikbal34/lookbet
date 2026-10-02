@@ -1,0 +1,24 @@
+{
+  "name": "lookbeds-mobil",
+  "private": true,
+  "type": "module",
+  "description": "LookBeds mobil uygulaması (Capacitor): lookbeds.com'u açan kabuk, yalnız müşteri",
+  "scripts": {
+    "ios": "cap run ios",
+    "ios:yerel": "CAP_SUNUCU=http://localhost:3000 cap run ios",
+    "android": "cap run android",
+    "android:ac": "cap open android",
+    "esitle": "cap sync"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/core": "^8.5.2",
+    "@capacitor/ios": "^8.5.2",
+    "@capacitor/splash-screen": "^8.0.2",
+    "@capacitor/status-bar": "^8.0.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.2",
+    "typescript": "^7.0.2"
+  }
+}

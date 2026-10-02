@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Mobil uygulama (Capacitor) ayrı proje; üretilen yerel kodlar da orada.
+    "mobil/**",
   ]),
 ]);
 

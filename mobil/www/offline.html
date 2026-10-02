@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>LookBeds</title>
+<style>
+  :root { color-scheme: light; }
+  body { margin: 0; min-height: 100dvh; display: grid; place-items: center; padding: 24px; box-sizing: border-box; background: #fff; color: #141414; font-family: -apple-system, system-ui, sans-serif; text-align: center; }
+  main { display: grid; justify-items: center; gap: 12px; max-width: 320px; }
+  svg { width: 64px; height: 73px; margin-bottom: 8px; }
+  h1 { margin: 0; font-size: 22px; }
+  p { margin: 0; color: #6a6a6a; line-height: 1.45; }
+  button { margin-top: 12px; height: 48px; padding: 0 28px; border: 0; border-radius: 999px; background: #ff5f1f; color: #fff; font: inherit; font-size: 16px; font-weight: 700; }
+</style>
+<script src="sunucu.js"></script>
+</head>
+<body>
+<main>
+  <svg viewBox="76 52 360 408" fill="#ff5f1f" aria-hidden="true"><rect x="76" y="52" width="58" height="340" rx="29"/><rect x="378" y="120" width="58" height="340" rx="29"/><rect x="76" y="248" width="360" height="86" rx="30"/></svg>
+  <h1>İnternet bağlantısı yok</h1>
+  <p>Bağlantın gelince tekrar dene.<br>No internet connection. Try again when you're back online.</p>
+  <button type="button" onclick="location.replace(window.LB_SUNUCU || 'https://lookbeds.com')">Tekrar dene</button>
+</main>
+</body>
+</html>
