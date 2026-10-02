@@ -317,6 +317,11 @@ model Hotel {
   lastPricedAt   DateTime?
   phone          String?
   email          String?
+  /// Okunur sayfa adresi: lookbeds.com/club-hotel-sera (Etstur, Jolly gibi
+  /// yalnız ad). Aynı adlı otelde sonuna şehir, o da doluysa kod eklenir. Bir
+  /// kez verilir, ad değişse de değişmez: paylaşılan bağlantı bozulmasın.
+  /// Veren: lib/otel-adresi (eşitlemeden sonra ve "adresler" işi).
+  slug           String?   @unique
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 

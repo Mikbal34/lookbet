@@ -32,6 +32,7 @@ import { useYeniSekme } from "@/components/lb/uygulama";
 import type { AnaSayfaSatiri } from "@/lib/ana-sayfa";
 import { KATEGORILER, type KategoriKodu } from "@/lib/ana-sayfa-kategoriler";
 import s from "./ana-sayfa.module.css";
+import { otelYolu } from "@/lib/otel-yolu";
 
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -90,7 +91,7 @@ export function Satir({ satir, aramaEki, fav, onFav }: {
           <li key={o.kod} className={s.kart} style={{ "--s": i } as React.CSSProperties}>
             <Link
               className={s.kartA}
-              href={`/hotel/${o.kod}${aramaEki ? `?${aramaEki.slice(1)}` : ""}`}
+              href={otelYolu(o.kod, o.adres, aramaEki.slice(1) || undefined)}
               // Masaüstünde Airbnb gibi her otel kendi sekmesinde; telefonda ve uygulamada aynı
               // sekmede, sayfa yeniden yüklenmeden (istemci geçişi).
               target={yeniSekme ? `otel_${o.kod}` : undefined}

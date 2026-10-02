@@ -16,6 +16,7 @@ import type { HotelSearchResult } from "@/lib/royal-api/types";
 import { useBicim } from "@/i18n/use-bicim";
 import { HARITA_STILI, HaritaSaglayici, HtmlIsaret } from "@/components/harita/google-harita";
 import { useYeniSekme } from "@/components/lb/uygulama";
+import { otelYolu } from "@/lib/otel-yolu";
 
 export interface HotelMapProps {
   hotels: HotelSearchResult[];
@@ -102,7 +103,7 @@ export function HotelMap({ hotels, searchParams, className, aktifKod, fiyatYaz }
   const gecerli = React.useMemo(() => hotels.filter(koordinatliMi), [hotels]);
   const [acik, setAcik] = React.useState<string | null>(null);
   const [gorulen, setGorulen] = React.useState<Set<string>>(() => new Set());
-  const href = (h: HotelSearchResult) => `/hotel/${h.hotelCode}${searchParams ? `?${searchParams}` : ""}`;
+  const href = (h: HotelSearchResult) => otelYolu(h.hotelCode, h.adres, searchParams || undefined);
   const acikOtel = gecerli.find((h) => h.hotelCode === acik);
 
   const bos = (mesaj: string) => (

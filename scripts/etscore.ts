@@ -20,10 +20,15 @@
 //   npx tsx --env-file=.env.local scripts/etscore.ts listeler
 //       Pansiyon tipleri, otel olanakları ve oda özellikleri (Türkçe).
 //
+//   npx tsx --env-file=.env.local scripts/etscore.ts adresler
+//       Adresi olmayan otellere okunur sayfa adresi verir
+//       (lookbeds.com/club-hotel-sera). Etscore'a gitmez.
+//
 //   npx tsx --env-file=.env.local scripts/etscore.ts hepsi
-//       Sırayla: listeler, oteller, indeks, içerik.
+//       Sırayla: listeler, oteller, indeks, içerik, adresler.
 
 import { prisma } from "@/lib/prisma";
+import { otelAdresleriniTamamla } from "@/lib/otel-adresi";
 import {
   indexHotelLocations,
   syncBoardTypes,
@@ -79,8 +84,11 @@ async function main() {
     const sonuc = await syncRevisions({ gun: arg ? Number(arg) : 2, ilerleme: (satir) => console.log(`   ${satir} · ${sure()}`) });
     console.log("  ", sonuc, sure());
   }
-  if (!["listeler", "oteller", "indeks", "icerik", "revizyon", "hepsi"].includes(komut ?? "")) {
-    console.error("Kullanım: scripts/etscore.ts listeler | oteller | indeks [enFazla] | icerik [enFazla] | revizyon [gün] | hepsi");
+  if (komut === "adresler" || komut === "hepsi") {
+    console.log("adresler:", await otelAdresleriniTamamla(console.log));
+  }
+  if (!["listeler", "oteller", "indeks", "icerik", "revizyon", "adresler", "hepsi"].includes(komut ?? "")) {
+    console.error("Kullanım: scripts/etscore.ts listeler | oteller | indeks [enFazla] | icerik [enFazla] | revizyon [gün] | adresler | hepsi");
     process.exit(1);
   }
 }

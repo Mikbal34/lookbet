@@ -53,7 +53,7 @@ test.describe("reddedilen aday", () => {
   test("panelinde sonucu ve sebebi görür, bildirim alır", async ({ page }) => {
     await page.goto("/agency/dashboard");
     await expect(page.getByRole("heading", { name: "Başvurun onaylanmadı" })).toBeVisible();
-    await expect(page.getByText(SEBEP)).toBeVisible();
+    await expect(page.getByText(SEBEP, { exact: true })).toBeVisible();
     const b = await sorgu(`SELECT 1 FROM notifications n JOIN users u ON u.id = n."userId" WHERE u.email = $1 AND n.type = 'AGENCY_REJECTED'`, [EPOSTA.aday]);
     expect(b.length).toBe(1);
   });

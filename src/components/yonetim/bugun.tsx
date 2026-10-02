@@ -30,8 +30,15 @@ interface Ozet {
   son: YRez[];
 }
 
-const IS_ADI: Record<string, string> = { revizyon: "Değişen oteller", fiyat: "Fiyat veren oteller", listeler: "Listeler", oteller: "Otel listesi", icerik: "Eksik içerik" };
+const IS_ADI: Record<string, string> = { revizyon: "Değişen oteller", fiyat: "Fiyat veren oteller", listeler: "Listeler", oteller: "Otel listesi", icerik: "Eksik içerik", adresler: "Otel adresleri" };
 const yon = (a: number, b: number) => (a > b ? "yukari" : a < b ? "asagi" : undefined);
+// Selam İstanbul saatine göre: sunucu ve tarayıcı farklı saat dilimindeyse de
+// aynı metin çıksın (yoksa sayfa uyuşmazlık hatası veriyordu).
+const istanbulSaati = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Istanbul", hour: "2-digit", hourCycle: "h23" });
+const selam = (zaman: number) => {
+  const saat = Number(istanbulSaati.format(zaman));
+  return saat < 12 ? "Günaydın" : saat < 18 ? "İyi günler" : "İyi akşamlar";
+};
 
 export function Bugun() {
   const [simdi] = React.useState(simdiAl);
@@ -83,7 +90,7 @@ export function Bugun() {
   return (
     <div className={s.dis}>
       <div className={s.selam}>
-        <h1 className="lb-y">{new Date(simdi).getHours() < 12 ? "Günaydın" : new Date(simdi).getHours() < 18 ? "İyi günler" : "İyi akşamlar"}</h1>
+        <h1 className="lb-y">{selam(simdi)}</h1>
         <p>{bugunYazi(new Date(simdi))}{d ? ` · bugün ${d.ozet.bugunAdet} yeni rezervasyon` : ""}</p>
       </div>
 

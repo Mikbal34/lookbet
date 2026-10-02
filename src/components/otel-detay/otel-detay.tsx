@@ -12,7 +12,7 @@ import { sunucuMesaji } from "@/lib/utils";
 import * as React from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
@@ -105,6 +105,7 @@ export function OtelDetay({ kod }: { kod: string }) {
   const { yaz } = useFiyat();
   const params = useSearchParams();
   const router = useRouter();
+  const yol = usePathname();
   const { status: oturum } = useSession();
   const girisPenceresi = useGiris();
   const { fav, degistir: favDegistir } = useFavoriler();
@@ -213,7 +214,7 @@ export function OtelDetay({ kod }: { kod: string }) {
     if (d.cocuklar.length) p.set("childAges", d.cocuklar.join(","));
     else p.delete("childAges");
     setSeciliKod(null);
-    router.replace(`/hotel/${kod}?${p.toString()}`, { scroll: false });
+    router.replace(`${yol}?${p.toString()}`, { scroll: false });
   };
   const tarihSec = () => {
     if (matchMedia("(max-width: 860px)").matches) return setMobilTarih(true);
@@ -859,7 +860,7 @@ function HaritaBekleme() {
   return <div className={s.haritaYedek}>{t("konum.haritaYukleniyor")}</div>;
 }
 
-/** Otel sayfası yüklenirken; rota geçişinde de (app/hotel/[hotelCode]/loading.tsx) aynısı görünür. */
+/** Otel sayfası yüklenirken (otel bilgisi gelene kadar). */
 export function OtelIskeleti() {
   const t = useTranslations("otel");
   return (

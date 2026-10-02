@@ -14,9 +14,12 @@ import { OtelKarti, OtelKartiIskelet } from "@/components/lb/otel-karti";
 import { Nesne } from "@/components/lb/nesne";
 import { HesapKabugu } from "./kabuk";
 import s from "./hesap.module.css";
+import { otelYolu } from "@/lib/otel-yolu";
 
 interface FavOtel {
   hotelCode: string;
+  /** Okunur sayfa adresi (lib/otel-adresi). */
+  slug?: string | null;
   name?: string;
   stars?: number | null;
   address?: string | null;
@@ -74,7 +77,7 @@ export function Favoriler() {
               key={kod}
               sira={i}
               otel={{ kod, ad: o.name ?? kod, foto, yildiz: o.stars ?? 0, yer: yer || null }}
-              href={`/hotel/${kod}`}
+              href={otelYolu(kod, o.slug)}
               favori={fav.has(kod)}
               onFavori={() => degistir(kod)}
             />

@@ -3,6 +3,7 @@
 import type { NesneAdi } from "@/components/lb/nesne";
 import { BOS_ARAMA, aramaAdresi } from "@/components/lb/arama/durum";
 import { katla } from "@/lib/katla";
+import { otelYolu } from "@/lib/otel-yolu";
 
 export interface VitrinKampanya {
   id: string;
@@ -22,7 +23,7 @@ export interface VitrinKampanya {
   baslangic: string | null;
   bitis: string | null;
   bolge: string | null;
-  oteller: { kod: string; ad: string }[];
+  oteller: { kod: string; ad: string; adres: string | null }[];
   yakinda: boolean;
 }
 
@@ -40,6 +41,6 @@ export const kampanyaNesnesi = (k: Pick<VitrinKampanya, "bolge" | "tur">): Nesne
 /** Kartın götürdüğü yer: bölge aramasına, tek otele ya da ana sayfaya (tur: düğme metni için). */
 export function kampanyaHedefi(k: Pick<VitrinKampanya, "bolge" | "oteller">) {
   if (k.bolge) return { href: aramaAdresi({ ...BOS_ARAMA, yer: k.bolge }), tur: "bolge" as const, bolge: k.bolge };
-  if (k.oteller.length === 1) return { href: `/hotel/${k.oteller[0].kod}`, tur: "otel" as const };
+  if (k.oteller.length === 1) return { href: otelYolu(k.oteller[0].kod, k.oteller[0].adres), tur: "otel" as const };
   return { href: "/", tur: "ara" as const };
 }

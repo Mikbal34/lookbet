@@ -47,6 +47,8 @@ const SATIRLAR: SatirTanimi[] = [
 
 export interface AnaSayfaOteli {
   kod: string;
+  /** Okunur sayfa adresi (lib/otel-adresi). */
+  adres: string | null;
   ad: string;
   yildiz: number;
   foto: string;
@@ -78,15 +80,15 @@ async function satirOtelleri(t: SatirTanimi): Promise<AnaSayfaOteli[]> {
          JOIN hotel_facilities hf ON hf."externalId" = f WHERE hf.category = $1)`
     // Tam kelime (\m … \M): "kemer" Kemerburgaz'ı, "side" başka kelimeleri yakalamasın.
     : `${TR_KATLA("h.address")} ~ ('\\m(' || $1 || ')\\M')`;
-  const satirlar = await prisma.$queryRawUnsafe<{ kod: string; ad: string; yildiz: number | null; foto: string; yer: string | null }[]>(
-    `SELECT h."hotelCode" AS kod, h.name AS ad, h.stars AS yildiz, h."thumbnailImage" AS foto, l.name AS yer
+  const satirlar = await prisma.$queryRawUnsafe<{ kod: string; adres: string | null; ad: string; yildiz: number | null; foto: string; yer: string | null }[]>(
+    `SELECT h."hotelCode" AS kod, h.slug AS adres, h.name AS ad, h.stars AS yildiz, h."thumbnailImage" AS foto, l.name AS yer
      FROM hotels h LEFT JOIN locations l ON l.id = h."locationId"
      WHERE h."isActive" AND ${GORSEL_KOSULU} AND ${TEST_DEGIL} AND ${kosul}
      ORDER BY (h."lastPricedAt" IS NULL), h.stars DESC NULLS LAST, h."hotelCode"
      LIMIT ${SATIR_BASINA}`,
     t.olanak ?? t.adres
   );
-  return satirlar.map((s) => ({ kod: s.kod, ad: s.ad.trim(), yildiz: s.yildiz ?? 0, foto: s.foto, yer: t.arama || s.yer || "" }));
+  return satirlar.map((s) => ({ kod: s.kod, adres: s.adres, ad: s.ad.trim(), yildiz: s.yildiz ?? 0, foto: s.foto, yer: t.arama || s.yer || "" }));
 }
 
 /** Bütün satırlar; bir saat önbellekte (oteller ve görseller gece güncelleniyor). */
@@ -97,6 +99,6 @@ export const anaSayfaSatirlari = unstable_cache(
     );
     return sonuc.filter((s) => s.oteller.length >= EN_AZ);
   },
-  ["ana-sayfa-satirlari-v3"],
+  ["ana-sayfa-satirlari-v4"],
   { revalidate: 3600 }
 );

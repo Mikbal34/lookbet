@@ -25,6 +25,7 @@ import type { HotelSearchResult } from "@/lib/royal-api/types";
 import { BOS_FILTRE, filtrele, filtreSayisi, type Filtre, type Siralama } from "./filtre";
 import { FiltrePenceresi } from "./filtre-penceresi";
 import s from "./arama-sonuclari.module.css";
+import { otelYolu } from "@/lib/otel-yolu";
 
 // Google Maps tarayıcıda yükleniyor; ayrı parça.
 const HotelMap = dynamic(() => import("@/components/hotel/hotel-map").then((m) => m.HotelMap), {
@@ -191,7 +192,7 @@ export function AramaSonuclari({ params }: { params: URLSearchParams }) {
                   : null,
                 indirim: h.kampanya ? t(`kampanya.${KAMPANYA_METNI[h.kampanya.tur] ?? "indirim"}`, { yuzde: h.kampanya.yuzde }) : null,
               }}
-              href={`/hotel/${h.hotelCode}?${aramaEki}`}
+              href={otelYolu(h.hotelCode, h.adres, aramaEki)}
               favori={fav.has(h.hotelCode)}
               onFavori={() => favDegistir(h.hotelCode)}
               onUzerinde={(g) => setAktifKod(g ? h.hotelCode : null)}

@@ -247,6 +247,7 @@ async function zenginlestir(
           latitude: true,
           longitude: true,
           location: { select: { name: true } },
+          slug: true,
         },
       })
     ).map((h) => [h.hotelCode, h])
@@ -265,6 +266,7 @@ async function zenginlestir(
       latitude: h.latitude || db?.latitude || 0,
       longitude: h.longitude || db?.longitude || 0,
       boardTypes: (h.boardTypes ?? []).map((code) => boardTypeNames.get(code) ?? code),
+      adres: db?.slug ?? null,
     };
   });
 }

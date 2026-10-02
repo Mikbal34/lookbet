@@ -15,6 +15,7 @@ import { BOS_ARAMA, aramaAdresi } from "@/components/lb/arama/durum";
 import { kampanyaHedefi, kampanyaNesnesi, type VitrinKampanya } from "./ortak";
 import { useKampanyaMetni } from "./metin";
 import s from "./vitrin.module.css";
+import { otelYolu } from "@/lib/otel-yolu";
 
 export function KampanyaVitrini({ kampanyalar }: { kampanyalar: VitrinKampanya[] }) {
   const t = useTranslations("anaSayfa.vitrin");
@@ -48,7 +49,7 @@ export function KampanyaVitrini({ kampanyalar }: { kampanyalar: VitrinKampanya[]
                         {k.oteller.slice(0, 4).map((o, j) => (
                           <React.Fragment key={o.kod}>
                             {j > 0 && " · "}
-                            <Link href={`/hotel/${o.kod}`}>{o.ad}</Link>
+                            <Link href={otelYolu(o.kod, o.adres)}>{o.ad}</Link>
                           </React.Fragment>
                         ))}
                         {k.oteller.length > 4 && ` ${t("digerOteller", { sayi: k.oteller.length - 4 })}`}

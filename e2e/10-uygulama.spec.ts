@@ -26,18 +26,19 @@ test("Keşfet: alt sekmeler var, alt bilgi ve büyük açılış yok", async ({ 
 
 test("otel aynı sekmede açılır, otel sayfasında sekme yok, geri sonuçlara döner", async ({ page }) => {
   await page.goto(`/search?destination=Antalya&checkIn=${gunSonra(60)}&checkOut=${gunSonra(62)}&adults=2`);
-  const otel = page.locator('a[href^="/hotel/"]').first();
+  // Sonuç kartları arama tarihlerini taşır; adres okunur (/otel-adi) ya da eski biçim.
+  const otel = page.locator('a[href*="checkIn="]').first();
   await expect(otel).toBeVisible({ timeout: 30_000 });
   await expect(otel).not.toHaveAttribute("target");
   await expect(sekmeler(page)).toBeVisible();
   await otel.click();
-  await expect(page).toHaveURL(/\/hotel\//);
+  await expect(page).not.toHaveURL(/\/search/);
   await expect(sekmeler(page)).toHaveCount(0);
   // Uygulama içi geçişte geri düğmesi geçmişe döner: sonuçlar (bellekten) ve sekmeler yerinde.
   await page.getByRole("button", { name: "Geri" }).first().click();
   await expect(page).toHaveURL(/\/search\?/);
   await expect(sekmeler(page)).toBeVisible();
-  await expect(page.locator('a[href^="/hotel/"]').first()).toBeVisible({ timeout: 3_000 });
+  await expect(page.locator('a[href*="checkIn="]').first()).toBeVisible({ timeout: 3_000 });
 });
 
 test("girişsiz Profil: dil ve yardım kartları var, giriş penceresinde acente yok", async ({ page }) => {

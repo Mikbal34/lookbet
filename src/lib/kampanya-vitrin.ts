@@ -29,7 +29,7 @@ export async function vitrinKampanyalari(): Promise<VitrinKampanya[]> {
   });
   const kodlar = [...new Set(indirimler.flatMap((d) => d.hotelCodes))];
   const oteller = new Map(
-    (kodlar.length ? await prisma.hotel.findMany({ where: { hotelCode: { in: kodlar } }, select: { hotelCode: true, name: true } }) : []).map((o) => [o.hotelCode, o.name])
+    (kodlar.length ? await prisma.hotel.findMany({ where: { hotelCode: { in: kodlar } }, select: { hotelCode: true, name: true, slug: true } }) : []).map((o) => [o.hotelCode, o])
   );
   return indirimler.map((d) => ({
     id: d.id,
@@ -45,7 +45,7 @@ export async function vitrinKampanyalari(): Promise<VitrinKampanya[]> {
     baslangic: d.startsAt ? istanbulGunu(d.startsAt) : null,
     bitis: d.endsAt ? istanbulGunu(d.endsAt) : null,
     bolge: d.hotelCodes.length ? null : d.locationName,
-    oteller: d.hotelCodes.map((k) => ({ kod: k, ad: oteller.get(k) ?? k })),
+    oteller: d.hotelCodes.map((k) => ({ kod: k, ad: oteller.get(k)?.name ?? k, adres: oteller.get(k)?.slug ?? null })),
     yakinda: !!d.startsAt && d.startsAt > simdi,
   }));
 }

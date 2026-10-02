@@ -38,6 +38,8 @@ export interface HotelSearchResult {
   oncekiFiyat?: number;
   /** Uygulanan otomatik indirim (arama kartındaki etiket). */
   kampanya?: { ad: string; yuzde: number; tur: string };
+  /** Otel sayfasının okunur adresi (/club-hotel-sera); veritabanından, yoksa /hotel/<kod>. */
+  adres?: string | null;
   // Zenginleştirme (opsiyonel) — arama kartında puan rozeti için.
   reviewScore?: number;
   reviewCount?: number;
@@ -50,6 +52,8 @@ export interface HotelDetailRequest {
 
 export interface HotelDetailResponse {
   hotelCode: string;
+  /** Okunur sayfa adresi (lib/otel-adresi). */
+  slug?: string | null;
   name: string;
   stars: number;
   address: string;

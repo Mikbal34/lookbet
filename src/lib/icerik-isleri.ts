@@ -15,9 +15,10 @@ import {
 } from "@/lib/royal-api/sync";
 import { prisma } from "@/lib/prisma";
 import { temizle } from "@/lib/temizlik";
+import { otelAdresleriniTamamla } from "@/lib/otel-adresi";
 import { USE_MOCK } from "@/lib/royal-api/mock";
 
-export const ADIMLAR = ["revizyon", "fiyat", "listeler", "oteller", "icerik", "temizlik"] as const;
+export const ADIMLAR = ["revizyon", "fiyat", "listeler", "oteller", "icerik", "temizlik", "adresler"] as const;
 export type Adim = (typeof ADIMLAR)[number];
 
 export interface SonCalisma {
@@ -78,7 +79,8 @@ export async function isCalistir(adim: Adim, ilerleme?: (satir: string) => void)
   try {
     switch (adim) {
       case "revizyon":
-        sonuc = await syncRevisions({ gun: 2, ilerleme });
+        // Yeni gelen oteller okunur adreslerini hemen alsın.
+        sonuc = { ...(await syncRevisions({ gun: 2, ilerleme })), adres: (await otelAdresleriniTamamla()).verilen };
         break;
       case "fiyat":
         sonuc = await syncPricedHotels({ feedId, ilerleme });
@@ -94,7 +96,10 @@ export async function isCalistir(adim: Adim, ilerleme?: (satir: string) => void)
         };
         break;
       case "oteller":
-        sonuc = await syncHotels(feedId);
+        sonuc = { ...(await syncHotels(feedId)), adres: (await otelAdresleriniTamamla()).verilen };
+        break;
+      case "adresler":
+        sonuc = await otelAdresleriniTamamla(ilerleme);
         break;
       case "temizlik":
         sonuc = await temizle();
