@@ -73,7 +73,9 @@
   --lb-cizgi: #ebebeb;
   --lb-kart: #f5f5f4;
   --lb-gri: #ebebea;
-  --lb-turuncu: #ff5f1f;
+  /* Logonun turuncusu (public/lookbeds-logo.svg, müşterinin Illustrator
+     dosyası: RGB 229 115 53). Sitedeki bütün turuncular bu jetondan. */
+  --lb-turuncu: #e57335;
   --lb-yesil: #16794c;
   --lb-kirmizi: #c13515;
   --lb-golge: 0 6px 24px rgb(0 0 0 / 0.08), 0 1px 2px rgb(0 0 0 / 0.06);
@@ -126,16 +128,16 @@ body {
 
 /* react-day-picker — LookBeds tasarım dili */
 .lookbet-daypicker .rdp-root {
-  --rdp-accent-color: #e06028;
-  --rdp-accent-background-color: #fdeae0;
+  --rdp-accent-color: var(--lb-turuncu);
+  --rdp-accent-background-color: #fbebe3;
   --rdp-today-color: #9a7300;
   --rdp-day_button-border-radius: 4px;
-  --rdp-selected-border: 2px solid #e06028;
+  --rdp-selected-border: 2px solid var(--lb-turuncu);
   --rdp-range_start-color: #ffffff;
   --rdp-range_end-color: #ffffff;
-  --rdp-range_start-date-background-color: #e06028;
-  --rdp-range_end-date-background-color: #e06028;
-  --rdp-range_middle-background-color: #fdeae0;
+  --rdp-range_start-date-background-color: var(--lb-turuncu);
+  --rdp-range_end-date-background-color: var(--lb-turuncu);
+  --rdp-range_middle-background-color: #fbebe3;
   --rdp-day-height: 23px;
   --rdp-day-width: 23px;
   --rdp-nav-height: 24px;
@@ -163,7 +165,7 @@ body {
   color: #8a8377;
 }
 .lookbet-daypicker .rdp-chevron {
-  fill: #e06028;
+  fill: var(--lb-turuncu);
 }
 /* Canlı aralık önizlemesi: giriş seçildikten sonra fare gezdirilen güne kadar
    olan günler açık turuncuyla vurgulanır (Booking tarzı). */
@@ -172,7 +174,7 @@ body {
 }
 .lookbet-daypicker .range-preview,
 .lookbet-daypicker .range-preview .rdp-day_button {
-  background-color: #fdeae0 !important;
+  background-color: #fbebe3 !important;
   color: #1a1814;
 }
 
@@ -371,7 +373,7 @@ svg {
 
 /* Sayfa geçişi: üstte ince turuncu çizgi (components/layout/ust-cizgi) */
 .ust-cizgi { position: fixed; top: env(safe-area-inset-top, 0px); left: 0; right: 0; z-index: 100; height: 3px; pointer-events: none; }
-.ust-cizgi i { position: absolute; inset: 0 auto 0 0; width: 0; border-radius: 0 3px 3px 0; background: var(--lb-turuncu, #ff5f1f); box-shadow: 0 0 8px rgb(255 95 31 / 0.55); animation: ust-cizgi 8s cubic-bezier(0.1, 0.8, 0.2, 1) forwards; }
+.ust-cizgi i { position: absolute; inset: 0 auto 0 0; width: 0; border-radius: 0 3px 3px 0; background: var(--lb-turuncu, #e57335); box-shadow: 0 0 8px rgb(229 115 53 / 0.55); animation: ust-cizgi 8s cubic-bezier(0.1, 0.8, 0.2, 1) forwards; }
 .ust-cizgi[data-durum="bitiyor"] i { width: 100%; animation: none; opacity: 0; transition: width 0.2s ease, opacity 0.25s 0.2s ease; }
 @keyframes ust-cizgi { 0% { width: 0; } 10% { width: 35%; } 40% { width: 70%; } 100% { width: 92%; } }
 @media (prefers-reduced-motion: reduce) { .ust-cizgi i { animation: none; width: 60%; } }

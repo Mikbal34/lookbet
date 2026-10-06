@@ -166,7 +166,6 @@ export function AnaSayfa({ satirlar, kampanyalar = [] }: { satirlar: AnaSayfaSat
 
   const ust = React.useRef<HTMLElement>(null);
   const logo = React.useRef<HTMLAnchorElement>(null);
-  const logoYer = React.useRef<HTMLHeadingElement>(null);
   const aramaYer = React.useRef<HTMLDivElement>(null);
   const arama = React.useRef<HTMLDivElement>(null);
   const buyuk = React.useRef<HTMLDivElement>(null);
@@ -195,15 +194,16 @@ export function AnaSayfa({ satirlar, kampanyalar = [] }: { satirlar: AnaSayfaSat
   /* ── Kaydırmaya bağlı uçuş ── */
   React.useEffect(() => {
     const L = logo.current, A = arama.current, B = buyuk.current, K = kucuk.current, T = tek.current;
-    const U = ust.current, S = sekmelerEl.current, D = asagi.current, P = perde.current, LY = logoYer.current, AY = aramaYer.current;
-    if (!L || !A || !B || !K || !T || !U || !S || !D || !P || !LY || !AY) return;
+    const U = ust.current, S = sekmelerEl.current, D = asagi.current, P = perde.current, AY = aramaYer.current;
+    if (!L || !A || !B || !K || !T || !U || !S || !D || !P || !AY) return;
     const az = matchMedia("(prefers-reduced-motion: reduce)");
     const mobil = matchMedia("(max-width: 720px)");
 
     type Olcu = {
       mobil: boolean;
       mesafe: number;
-      logo: { x0: number; y0: number; x1: number; y1: number; s1: number };
+      /** son: çubuktaki karenin açılıştakine oranı; ilkBoy: açılıştaki karenin boyu (px). */
+      logo: { son: number; ilkBoy: number };
       arama: { x0: number; y0: number; w0: number; h0: number; x1: number; y1: number; w1: number; h1: number };
       genis: { x: number; y: number; w: number; h: number };
     };
@@ -214,16 +214,15 @@ export function AnaSayfa({ satirlar, kampanyalar = [] }: { satirlar: AnaSayfaSat
 
     function olcul() {
       const y = scrollY, vw = document.documentElement.clientWidth;
-      const lr = LY!.getBoundingClientRect(), ar = AY!.getBoundingClientRect();
+      const ar = AY!.getBoundingClientRect();
       const m = mobil.matches;
       const pad = parseFloat(getComputedStyle(U!.querySelector(`.${s.ustIc}`)!).paddingLeft);
       const ustH = m ? 72 : 80;
-      const logoSon = m ? 22 : 26;
-      const buyukPunto = parseFloat(getComputedStyle(LY!).fontSize);
-      L!.style.fontSize = `${buyukPunto}px`;
-      // Küçük haldeki logo kutusu. Sembol yazıdan uzun, yükseklik de ölçülüyor.
-      const logoSonGen = (L!.offsetWidth * logoSon) / buyukPunto;
-      const logoSonYuk = (L!.offsetHeight * logoSon) / buyukPunto;
+      // Logo sol üstte sabit (CSS: .logoUcan). Kare açılış boyunda çizilir
+      // (--ilk-boy), kaydırınca çubuktaki boyuna (yazının 1,3 katı) küçülür.
+      const ilkBoy = L!.querySelector<HTMLElement>(".lb-logo-isaret")!.offsetWidth;
+      const kucuk = 1.3 * parseFloat(getComputedStyle(L!).fontSize);
+      const logoSonGen = L!.offsetWidth - (ilkBoy - kucuk);
       const sag = U!.querySelector<HTMLElement>(`.${s.sag}`);
       const yan = Math.max(logoSonGen, sag?.offsetWidth ?? 0) + 40;
       // Mobilde logo kaydırınca kayboluyor (Airbnb gibi); arama soldan menüye kadar uzanıyor.
@@ -233,7 +232,7 @@ export function AnaSayfa({ satirlar, kampanyalar = [] }: { satirlar: AnaSayfaSat
       olc = {
         mobil: m,
         mesafe: m ? 250 : 325,
-        logo: { x0: lr.left, y0: lr.top + y, x1: m ? 16 : pad, y1: (ustH - logoSonYuk) / 2, s1: logoSon / buyukPunto },
+        logo: { son: kucuk / ilkBoy, ilkBoy },
         arama: {
           x0: ar.left, y0: ar.top + y, w0: ar.width, h0: ar.height,
           x1: m ? 16 : (vw - aramaSonGen) / 2, y1: (ustH - aramaSonH) / 2, w1: aramaSonGen, h1: aramaSonH,
@@ -248,11 +247,17 @@ export function AnaSayfa({ satirlar, kampanyalar = [] }: { satirlar: AnaSayfaSat
       if (!olc) return;
       const ham = anlik, p = ease(ham), ge = ease(g);
       const Lo = olc.logo, Ar = olc.arama, G = olc.genis;
-      L!.style.transform = `translate(${lerp(Lo.x0, Lo.x1, p)}px, ${lerp(Lo.y0, Lo.y1, p)}px) scale(${lerp(1, Lo.s1, p)})`;
+      // Kare küçülürken yazı karenin sağ kenarına yapışık kayarak belirir.
+      const ls = lerp(1, Lo.son, p);
+      L!.style.setProperty("--ls", String(ls));
+      L!.style.setProperty("--lx", `${(ls - 1) * Lo.ilkBoy}px`);
       if (olc.mobil) {
+        // Telefonda çubukta logo yok (arama boydan boya): kaydırınca kaybolur.
+        L!.style.setProperty("--lo", "0");
         L!.style.opacity = String(Math.max(0, 1 - ham * 1.8));
         L!.style.visibility = ham > 0.6 ? "hidden" : "visible";
       } else {
+        L!.style.setProperty("--lo", String(Math.min(1, Math.max(0, (ham - 0.35) / 0.45))));
         L!.style.opacity = "";
         L!.style.visibility = "";
       }
@@ -429,7 +434,8 @@ export function AnaSayfa({ satirlar, kampanyalar = [] }: { satirlar: AnaSayfaSat
 
       <section className={s.acilis} aria-label={t("otelAra")}>
         <div className={s.acilisIc}>
-          <h1 ref={logoYer} className={`lb-y lb-logo ${s.logoYer}`}><Logo /></h1>
+          {/* Açılışta büyük logo yok (müşteri isteği 2026-10-05): logo sol üstte. */}
+          <h1 className={s.gizliBaslik}>LookBeds</h1>
           <div ref={sekmelerEl} className={s.sekmeler} role="tablist" aria-label={t("tatilTuru")}>
             {KATEGORILER.map((k, i) => (
               <button

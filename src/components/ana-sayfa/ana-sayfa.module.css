@@ -7,7 +7,7 @@
   inset: 0 0 auto;
   height: calc(80px + var(--g, 0) * 106px + env(safe-area-inset-top, 0px));
   /* Yerleşince turuncu (--k: 0 → 1, arama açılınca 0): müşteri isteği 2026-10-02. */
-  background: color-mix(in srgb, #e06028 calc(var(--k, 0) * 100%), rgb(255 255 255 / 0.94)); /* kare logonun turuncusu */
+  background: color-mix(in srgb, var(--lb-turuncu) calc(var(--k, 0) * 100%), rgb(255 255 255 / 0.94));
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid color-mix(in srgb, transparent calc(var(--k, 0) * 100%), var(--lb-cizgi));
@@ -58,27 +58,46 @@
 .perde { position: fixed; inset: 0; z-index: 29; background: rgb(0 0 0 / 0.28); opacity: var(--g, 0); pointer-events: none; }
 .perde[data-acik] { pointer-events: auto; }
 
-/* ── Uçan logo ── */
+/* ── Logo: sol üstte ──
+   Açılışta yalnız kare görünür, büyükçe (--ilk-boy); kaydırdıkça çubuktaki
+   boyuna küçülür (--ls < 1) ve yanına "LookBeds" yazısı kayarak gelir (--lo,
+   --lx). Kare büyük boyunda çizilip küçültülüyor: küçük çizip büyütmek
+   bulanık gösteriyordu. Müşteri isteği 2026-10-05: açılıştaki büyük logo
+   yazısı kalktı. Telefonda yazı gelmez, logo kaydırınca kaybolur (çubukta
+   arama boydan boya). */
 .logoUcan {
+  --ilk-boy: 66px;
   position: fixed;
   z-index: 31;
-  left: 0;
-  top: 0;
+  left: var(--lb-kenar);
+  top: calc(env(safe-area-inset-top, 0px) + 40px - var(--ilk-boy) / 2);
   margin: 0;
-  font-size: 80px;
+  font-size: 26px;
   line-height: 1;
   white-space: nowrap;
-  transform-origin: 0 0;
-  will-change: transform;
   /* Turuncu çubuğa yerleştikçe yazı beyaza, kare logoya beyaz halka (--k). */
   color: color-mix(in srgb, #fff calc(var(--k, 0) * 100%), var(--lb-yazi));
   text-decoration: none;
   animation: belir 0.7s var(--lb-yay) both;
+  /* Açılış hâli; JS (olcul/ciz) kaydırmaya göre günceller. */
+  --ls: 1;
+  --lo: 0;
+  --lx: 0px;
 }
+.logoUcan :global(.lb-logo-isaret) {
+  width: var(--ilk-boy);
+  height: var(--ilk-boy);
+  transform-origin: 0 50%;
+  transform: scale(var(--ls));
+  /* Halka logonun köşesini izlesin: karenin köşeleri ~%12 yuvarlak. Küçülmeyle
+     incelmesin diye ölçeğe bölünür (çubukta 2px). */
+  border-radius: 12%;
+  box-shadow: 0 0 0 calc(2px * var(--k, 0) / var(--ls)) rgb(255 255 255 / var(--k, 0));
+}
+.logoUcan :global(.lb-logo-yazi) { opacity: var(--lo); transform: translateX(var(--lx)); }
 .logoUcan :global(.lb-logo-beds) { color: color-mix(in srgb, #fff calc(var(--k, 0) * 100%), var(--lb-turuncu)); }
-.logoUcan :global(.lb-logo-isaret) { border-radius: 24%; box-shadow: 0 0 0 calc(5px * var(--k, 0)) rgb(255 255 255 / var(--k, 0)); }
 @keyframes belir { from { opacity: 0; } }
-.logoYer { font-size: clamp(44px, 7vw, 80px); line-height: 1; visibility: hidden; margin: 0; }
+.gizliBaslik { position: absolute; width: 1px; height: 1px; margin: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
 /* ── Açılış ── */
 .acilis { min-height: 100dvh; display: grid; grid-template-rows: 1fr auto; background: linear-gradient(#fff 55%, #f7f7f6); }
@@ -226,6 +245,7 @@
 @media (hover: none) { .oklar { display: none; } }
 @media (max-width: 720px) {
   .ustIc { height: 72px; padding-inline: 16px; }
+  .logoUcan { --ilk-boy: 52px; left: 16px; top: calc(env(safe-area-inset-top, 0px) + 36px - var(--ilk-boy) / 2); font-size: 22px; }
   .dunya { display: none; }
   .aramaYer { height: 62px; max-width: 440px; }
   .sekmeler { width: 100%; justify-content: space-between; gap: 0; }

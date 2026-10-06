@@ -9,7 +9,7 @@
 }
 /* Kaydırınca turuncu (müşteri isteği 2026-10-02): yazı beyaz, kare logoya beyaz
    halka, arama hapı beyaz kalır. Altındaki şerit (filtreler, kategoriler) beyaz. */
-.ust[data-turuncu] { background: #e06028; /* kare logonun turuncusu */ box-shadow: 0 2px 14px rgb(20 16 12 / 0.18); }
+.ust[data-turuncu] { background: var(--lb-turuncu); box-shadow: 0 2px 14px rgb(20 16 12 / 0.18); }
 .ust[data-turuncu] .logo, .ust[data-turuncu] .logo :global(.lb-logo-beds) { color: #fff; }
 .ust[data-turuncu] .logo :global(.lb-logo-isaret) { box-shadow: 0 0 0 2px #fff; }
 .ust[data-turuncu] .hap { border-color: transparent; }
@@ -24,7 +24,8 @@
 }
 .logo { font-size: 26px; line-height: 1; color: var(--lb-yazi); text-decoration: none; justify-self: start; transition: color 0.25s; }
 .logo :global(.lb-logo-beds) { transition: color 0.25s; }
-.logo :global(.lb-logo-isaret) { border-radius: 24%; transition: box-shadow 0.25s; }
+/* Halka logonun köşesini izlesin: karenin köşeleri ~%12 yuvarlak. */
+.logo :global(.lb-logo-isaret) { border-radius: 12%; transition: box-shadow 0.25s; }
 .sag { justify-self: end; display: flex; gap: 8px; }
 
 .hap {

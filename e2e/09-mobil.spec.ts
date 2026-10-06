@@ -46,7 +46,7 @@ test("kaydırınca üst çubuk turuncu olur, başa dönünce beyaz", async ({ pa
   await expect(cubuk).not.toHaveAttribute("data-turuncu");
   await page.evaluate(() => window.scrollTo(0, 600));
   await expect(cubuk).toHaveAttribute("data-turuncu", "true");
-  await expect(cubuk).toHaveCSS("background-color", "rgb(224, 96, 40)");
+  await expect(cubuk).toHaveCSS("background-color", "rgb(229, 115, 53)"); // logonun turuncusu
   await page.evaluate(() => window.scrollTo(0, 0));
   await expect(cubuk).not.toHaveAttribute("data-turuncu");
 });
