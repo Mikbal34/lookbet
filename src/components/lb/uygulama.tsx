@@ -24,12 +24,26 @@ export const useUygulama = () => React.useContext(Baglam);
 
 type DurumCubuguEklentisi = { setStyle?: (o: { style: "DARK" | "LIGHT" }) => Promise<void> };
 
+/** Sayfa durum çubuğunun altına uzanıyor mu: üstteki güvenli alan payı sıfırdan büyükse. */
+function sayfaCubukAltinda(): boolean {
+  const olcu = document.createElement("div");
+  olcu.style.cssText = "position:fixed;visibility:hidden;padding-top:env(safe-area-inset-top,0px)";
+  document.body.append(olcu);
+  const pay = parseFloat(getComputedStyle(olcu).paddingTop);
+  olcu.remove();
+  return pay > 0;
+}
+
 /**
  * Uygulamada saat ve pil simgelerinin rengi: "DARK" koyu (turuncu) zemin için
  * beyaz yazı, "LIGHT" açık zemin için koyu. Uygulamanın StatusBar eklentisi
  * siteye köprüyle geliyor (window.Capacitor); sitede bir şey yapmaz.
  */
 export function durumCubugu(stil: "DARK" | "LIGHT") {
+  // Saat ve pil beyaza ancak sayfa durum çubuğunun altına uzanıyorsa döner (iOS,
+  // Android'de yeni WebView). Eski Android WebView'unda sayfa çubuğun altından
+  // başlar, çubuk beyaz zeminde kalır: beyaz simge görünmez olurdu.
+  if (stil === "DARK" && !sayfaCubukAltinda()) return;
   const eklenti = (window as { Capacitor?: { Plugins?: { StatusBar?: DurumCubuguEklentisi } } }).Capacitor?.Plugins?.StatusBar;
   eklenti?.setStyle?.({ style: stil }).catch(() => {});
 }
@@ -70,7 +84,7 @@ export function UygulamaGeri({ yedek }: { yedek: string }) {
 const SEKMELI = new Set(["/", "/search", "/favoriler", "/reservations", "/profile"]);
 
 /**
- * Sekmeler aşağı kaydırınca çekilir, yukarı kaydırınca döner (Airbnb gibi);
+ * Sekmeler aşağı kaydırınca çekilir, yukarı kaydırınca ve sayfanın sonunda döner (Airbnb gibi);
  * tam ekran bir pencere açıkken (arama, oda, giriş: sayfa kaydırması
  * kilitli) de çekilir, pencerenin altında kalmasın. Başka sayfaya geçince görünür.
  */
@@ -82,6 +96,12 @@ function useSekmelerGizli(etkin: boolean, yol: string): boolean {
     let son = window.scrollY;
     const kaydir = () => {
       const y = window.scrollY;
+      // Sayfanın sonunda geri gelir: altta sekmelere ayrılan boşluk boş kalmasın.
+      if (y + window.innerHeight >= document.documentElement.scrollHeight - 4) {
+        setAsagiYol(null);
+        son = y;
+        return;
+      }
       if (Math.abs(y - son) < 10) return;
       setAsagiYol(y > son && y > 120 ? yol : null);
       son = y;

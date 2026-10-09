@@ -414,7 +414,7 @@ export function AnaSayfa({ satirlar, kampanyalar = [] }: { satirlar: AnaSayfaSat
       <div ref={perde} className={s.perde} onClick={() => genis.current?.kapat()} />
 
       <Link ref={logo} href="/" className={`lb-y lb-logo ${s.logoUcan}`} onClick={(e) => { e.preventDefault(); yukari(); }} aria-label={t("logoEtiket")}>
-        <Logo />
+        <Logo yazi />
       </Link>
 
       <AramaCubugu

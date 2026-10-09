@@ -20,7 +20,10 @@ import { DunyaDugmesi, MenuDugmesi } from "./ust-araclar";
 import { UygulamaGeri, durumCubugu, useUygulama } from "./uygulama";
 import s from "./ust-cubuk.module.css";
 
-export function UstCubuk({ deger, onDegis, onAra, nesne = "zil", alt, aramaYok, geri }: {
+/** Çubuğun tamamen turuncu olduğu kaydırma (px). */
+const TURUNCU_MESAFE = 80;
+
+export function UstCubuk({ deger, onDegis, onAra, nesne = "zil", alt, aramaYok, geri, turuncusuz }: {
   deger: AramaDegeri;
   onDegis: (d: AramaDegeri) => void;
   onAra: () => void;
@@ -30,6 +33,8 @@ export function UstCubuk({ deger, onDegis, onAra, nesne = "zil", alt, aramaYok, 
   aramaYok?: boolean;
   /** Uygulamada sekmesiz sayfa: hapın solunda geri düğmesi, doğrudan açıldıysa bu adrese gider. */
   geri?: string;
+  /** Kaydırınca turuncuya dönmez, logo yazısız kalır (otel sayfası: müşteri isteği 2026-10-09). */
+  turuncusuz?: boolean;
 }) {
   const t = useTranslations("ust.cubuk");
   const tk = useTranslations("ortak");
@@ -38,15 +43,29 @@ export function UstCubuk({ deger, onDegis, onAra, nesne = "zil", alt, aramaYok, 
   const uygulama = useUygulama();
   const [acik, setAcik] = React.useState(false);
   const [mobilAcik, setMobilAcik] = React.useState(false);
-  // Kaydırınca çubuk turuncu olur (müşteri isteği); arama açıkken beyaz kalır.
-  const [kaydi, setKaydi] = React.useState(false);
+  // Kaydırdıkça çubuk turuncuya döner (müşteri isteği): ilk TURUNCU_MESAFE px
+  // boyunca --k 0'dan 1'e, renk parmağı izler (CSS: .ust). Arama açıkken beyaz.
+  // Yarıyı geçince turuncu sayılır: uygulamada saat ve pil beyaza döner.
+  const ust = React.useRef<HTMLElement | null>(null);
+  const [turuncu, setTuruncu] = React.useState(false);
   React.useEffect(() => {
-    const bak = () => setKaydi(window.scrollY > 8);
-    bak();
+    let kare = 0;
+    const ciz = () => {
+      kare = 0;
+      const k = acik || turuncusuz ? 0 : Math.min(1, Math.max(0, window.scrollY / TURUNCU_MESAFE));
+      ust.current?.style.setProperty("--k", String(k));
+      setTuruncu(k >= 0.5);
+    };
+    const bak = () => {
+      if (!kare) kare = requestAnimationFrame(ciz);
+    };
+    ciz();
     addEventListener("scroll", bak, { passive: true });
-    return () => removeEventListener("scroll", bak);
-  }, []);
-  const turuncu = kaydi && !acik;
+    return () => {
+      removeEventListener("scroll", bak);
+      cancelAnimationFrame(kare);
+    };
+  }, [acik, turuncusuz]);
   // Uygulamada turuncu çubukta saat ve pil beyaz; sayfadan çıkınca koyuya döner.
   React.useEffect(() => {
     if (uygulama) durumCubugu(turuncu ? "DARK" : "LIGHT");
@@ -90,10 +109,10 @@ export function UstCubuk({ deger, onDegis, onAra, nesne = "zil", alt, aramaYok, 
 
   return (
     <>
-      <header className={`lb ${s.ust}`} data-acik={acik || undefined} data-turuncu={turuncu || undefined}>
+      <header ref={ust} className={`lb ${s.ust}`} data-acik={acik || undefined} data-turuncu={turuncu || undefined}>
         <div className={s.satir} data-geri={(uygulama && geri) || undefined}>
           {uygulama && geri && <UygulamaGeri yedek={geri} />}
-          <Link href="/" className={`lb-y lb-logo ${s.logo}`}><Logo /></Link>
+          <Link href="/" className={`lb-y lb-logo ${s.logo}`}><Logo yazi={!turuncusuz} /></Link>
           {!aramaYok && (
             <button
               type="button"

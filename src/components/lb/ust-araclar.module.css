@@ -5,13 +5,13 @@
   place-items: center;
   border-radius: 999px;
   border: 0;
-  background: rgb(0 0 0 / 0.045);
+  /* Turuncu üst çubukta (--k, kaydırdıkça): yarı saydam beyaz, simge beyaz. */
+  background: color-mix(in srgb, rgb(255 255 255 / 0.2) calc(var(--k, 0) * 100%), rgb(0 0 0 / 0.045));
+  color: color-mix(in srgb, #fff calc(var(--k, 0) * 100%), var(--lb-yazi));
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition: background 0.15s linear, color 0.15s linear;
 }
 @media (hover: hover) { .yuvarlak:hover { background: rgb(0 0 0 / 0.08); } }
-/* Turuncu üst çubukta (kaydırınca): yarı saydam beyaz, simge beyaz. */
-:global([data-turuncu]) .yuvarlak { background: rgb(255 255 255 / 0.2); color: #fff; }
 @media (hover: hover) { :global([data-turuncu]) .yuvarlak:hover { background: rgb(255 255 255 / 0.3); } }
 
 /* ── menü ── */

@@ -46,7 +46,12 @@ test("kaydırınca üst çubuk turuncu olur, başa dönünce beyaz", async ({ pa
   await expect(cubuk).not.toHaveAttribute("data-turuncu");
   await page.evaluate(() => window.scrollTo(0, 600));
   await expect(cubuk).toHaveAttribute("data-turuncu", "true");
-  await expect(cubuk).toHaveCSS("background-color", "rgb(229, 115, 53)"); // logonun turuncusu
+  // Turuncu çubuğun ::before katmanında; kaydırdıkça saydamlığı 0'dan 1'e çıkar.
+  const katman = () => cubuk.evaluate((el) => {
+    const cs = getComputedStyle(el, "::before");
+    return `${cs.backgroundColor} ${cs.opacity}`;
+  });
+  await expect.poll(katman).toBe("rgb(229, 115, 53) 1"); // logonun turuncusu, tam
   await page.evaluate(() => window.scrollTo(0, 0));
   await expect(cubuk).not.toHaveAttribute("data-turuncu");
 });

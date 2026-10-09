@@ -321,7 +321,7 @@ export function OtelDetay({ kod }: { kod: string }) {
     return (
       <div className={`lb ${s.sayfa}`}>
         <div className={s.ust}>
-          <UstCubuk deger={ustDeger} onDegis={setUstDeger} onAra={() => router.push(aramaAdresi(ustDeger))} />
+          <UstCubuk deger={ustDeger} onDegis={setUstDeger} onAra={() => router.push(aramaAdresi(ustDeger))} turuncusuz />
         </div>
         <div className={s.durum}>
           <Nesne ad="zil" boyut={110} />
@@ -441,7 +441,7 @@ export function OtelDetay({ kod }: { kod: string }) {
   return (
     <div className={`lb ${s.sayfa}`}>
       <div className={s.ust}>
-        <UstCubuk deger={ustDeger} onDegis={setUstDeger} onAra={() => router.push(aramaAdresi(ustDeger))} />
+        <UstCubuk deger={ustDeger} onDegis={setUstDeger} onAra={() => router.push(aramaAdresi(ustDeger))} turuncusuz />
       </div>
 
       <nav className={s.bolumNav} data-gorunur={navGorunur || undefined} aria-label={t("bolumler.etiket")} aria-hidden={!navGorunur}>

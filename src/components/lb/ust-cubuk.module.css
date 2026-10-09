@@ -5,14 +5,25 @@
   background: #fff;
   border-bottom: 1px solid var(--lb-cizgi);
   padding-top: env(safe-area-inset-top, 0px);
-  transition: background-color 0.25s, box-shadow 0.25s, border-color 0.25s;
+  /* Kaydırdıkça turuncu (müşteri isteği 2026-10-02): --k 0 → 1 kaydırmayı izler
+     (ust-cubuk.tsx). Yazı beyaza, kare logoya beyaz halka, arama hapının çizgisi
+     kaybolur. Altındaki şerit (filtreler, kategoriler) beyaz kalır. */
+  --k: 0;
 }
-/* Kaydırınca turuncu (müşteri isteği 2026-10-02): yazı beyaz, kare logoya beyaz
-   halka, arama hapı beyaz kalır. Altındaki şerit (filtreler, kategoriler) beyaz. */
-.ust[data-turuncu] { background: var(--lb-turuncu); box-shadow: 0 2px 14px rgb(20 16 12 / 0.18); }
-.ust[data-turuncu] .logo, .ust[data-turuncu] .logo :global(.lb-logo-beds) { color: #fff; }
-.ust[data-turuncu] .logo :global(.lb-logo-isaret) { box-shadow: 0 0 0 2px #fff; }
-.ust[data-turuncu] .hap { border-color: transparent; }
+/* Turuncu ayrı katmanda, yalnız saydamlığı değişir: zemin rengini her karede
+   değiştirmek Android'in eski WebView'unda çubuğun bir parçasını beyaz bırakıyordu
+   (yeniden çizilmeyen alan). Kısa geçiş titremeyi yumuşatır, arama açılınca süzülür. */
+.ust::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--lb-turuncu);
+  box-shadow: 0 2px 14px rgb(20 16 12 / 0.18);
+  opacity: var(--k);
+  transition: opacity 0.15s linear;
+  pointer-events: none;
+}
 .alt { background: #fff; }
 .satir {
   height: 80px;
@@ -22,10 +33,12 @@
   gap: 16px;
   padding-inline: var(--lb-kenar);
 }
-.logo { font-size: 26px; line-height: 1; color: var(--lb-yazi); text-decoration: none; justify-self: start; transition: color 0.25s; }
-.logo :global(.lb-logo-beds) { transition: color 0.25s; }
+.logo { font-size: 26px; line-height: 1; color: color-mix(in srgb, #fff calc(var(--k) * 100%), var(--lb-yazi)); text-decoration: none; justify-self: start; transition: color 0.15s linear; }
+.logo :global(.lb-logo-beds) { color: color-mix(in srgb, #fff calc(var(--k) * 100%), var(--lb-turuncu)); transition: color 0.15s linear; }
+/* "LookBeds" yazısı yalnız turuncu çubukta: beyaz zeminde yalnız logo (müşteri isteği 2026-10-09). */
+.logo :global(.lb-logo-yazi) { opacity: var(--k); transition: opacity 0.15s linear; }
 /* Halka logonun köşesini izlesin: karenin köşeleri ~%12 yuvarlak. */
-.logo :global(.lb-logo-isaret) { border-radius: 12%; transition: box-shadow 0.25s; }
+.logo :global(.lb-logo-isaret) { border-radius: 12%; box-shadow: 0 0 0 2px rgb(255 255 255 / var(--k)); transition: box-shadow 0.15s linear; }
 .sag { justify-self: end; display: flex; gap: 8px; }
 
 .hap {
@@ -34,7 +47,7 @@
   width: min(600px, 46vw);
   height: 52px;
   background: #fff;
-  border: 1px solid var(--lb-cizgi);
+  border: 1px solid color-mix(in srgb, transparent calc(var(--k) * 100%), var(--lb-cizgi));
   border-radius: 999px;
   box-shadow: var(--lb-golge);
   padding: 0 6px 0 10px;

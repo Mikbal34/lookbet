@@ -73,7 +73,10 @@ export default async function RootLayout({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { api, ...istemciMetinleri } = await getMessages();
   return (
-    <html lang={dil} data-uygulama={uygulama ? "" : undefined}>
+    // suppressHydrationWarning: Android uygulamasında Capacitor (eski WebView'da)
+    // güvenli alan payını React'ten önce <html>'e stil olarak yazıyor; yalnız bu
+    // etiketin özniteliklerindeki farkı susturur.
+    <html lang={dil} data-uygulama={uygulama ? "" : undefined} suppressHydrationWarning>
       <body
         className={`${nunito.variable} ${figtree.variable} ${yastik.variable} font-sans antialiased bg-paper text-ink min-h-dvh`}
       >
