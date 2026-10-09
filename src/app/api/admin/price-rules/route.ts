@@ -2,14 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
+import { otelAdlari } from "@/lib/rezervasyon-otel";
 import { priceRuleSchema } from "@/lib/validators";
+// Yalnız tarih gelirse Türkiye saatiyle: başlangıç günün başı, bitiş günün
+// sonu (kampanyalarla aynı; sunucunun saat dilimine bağlı değil).
+import { baslangicTarihi, bitisTarihi } from "../_ortak";
 
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
     if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return NextResponse.json({ error: "Bu işlem için yönetici yetkisi gerekiyor" }, { status: 403 });
     }
 
     const { searchParams } = new URL(req.url);
@@ -30,10 +34,11 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ priceRules });
+    const adlar = await otelAdlari(priceRules.map((x) => x.hotelCode));
+    return NextResponse.json({ priceRules: priceRules.map((x) => ({ ...x, hotelName: x.hotelCode ? adlar.get(x.hotelCode) ?? null : null })) });
   } catch (error) {
     console.error("[ADMIN_PRICE_RULES_GET]", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Sunucu hatası, biraz sonra tekrar dene" }, { status: 500 });
   }
 }
 
@@ -42,26 +47,29 @@ export async function POST(req: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return NextResponse.json({ error: "Bu işlem için yönetici yetkisi gerekiyor" }, { status: 403 });
     }
 
-    const body = await req.json();
+    const body = await req.json().catch(() => null);
     const parsed = priceRuleSchema.safeParse(body);
 
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Validation failed", details: parsed.error.flatten() },
+        { error: parsed.error.issues[0]?.message ?? "Bilgileri kontrol et", details: parsed.error.flatten() },
         { status: 400 }
       );
     }
 
     const { startDate, endDate, ...rest } = parsed.data;
+    if (rest.agencyId && !(await prisma.agency.findUnique({ where: { id: rest.agencyId }, select: { id: true } }))) {
+      return NextResponse.json({ error: "Seçilen acente bulunamadı" }, { status: 400 });
+    }
 
     const priceRule = await prisma.priceRule.create({
       data: {
         ...rest,
-        startDate: startDate ? new Date(startDate) : undefined,
-        endDate: endDate ? new Date(endDate) : undefined,
+        startDate: startDate ? baslangicTarihi(startDate) : undefined,
+        endDate: endDate ? bitisTarihi(endDate) : undefined,
         createdById: session.user.id,
       },
       include: {
@@ -83,6 +91,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ priceRule }, { status: 201 });
   } catch (error) {
     console.error("[ADMIN_PRICE_RULES_POST]", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Sunucu hatası, biraz sonra tekrar dene" }, { status: 500 });
   }
 }

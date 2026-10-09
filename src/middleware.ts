@@ -6,20 +6,24 @@ export default withAuth(
     const token = req.nextauth.token;
     const path = req.nextUrl.pathname;
 
-    // Admin routes
+    // Yönetim: giriş sayfası (/admin/giris) açık, yönetici zaten girdiyse panele.
+    // Panel ve API'si yönetici olmayana "bulunamadı": varlığı dışarıdan belli
+    // olmasın (siteden bağlantı da yok).
+    if (path === "/admin/giris") {
+      if (token?.role === "ADMIN") return NextResponse.redirect(new URL("/admin", req.url));
+      return NextResponse.next();
+    }
     if (path.startsWith("/admin") || path.startsWith("/api/admin")) {
       if (token?.role !== "ADMIN") {
-        if (path.startsWith("/api/")) {
-          return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 403 });
-        }
-        return NextResponse.redirect(new URL("/login", req.url));
+        if (path.startsWith("/api/")) return NextResponse.json({ error: "Bulunamadı" }, { status: 404 });
+        return NextResponse.rewrite(new URL("/_bulunamadi", req.url));
       }
     }
 
     // Agency routes (login sayfası hariç — o herkese açık)
     if (path.startsWith("/agency") && path !== "/agency/login") {
       if (token?.role !== "AGENCY") {
-        return NextResponse.redirect(new URL("/agency/login", req.url));
+        return NextResponse.redirect(new URL(`/agency/login?callbackUrl=${encodeURIComponent(path + req.nextUrl.search)}`, req.url));
       }
     }
 
@@ -41,12 +45,16 @@ export default withAuth(
           return true;
         }
 
-        // /agency rotalarının auth kontrolü yukarıdaki middleware fonksiyonunda:
-        // girişsiz veya rolü uymayan kullanıcı /agency/login'e yönlendirilir
-        // (genel /login'e değil).
-        if (path.startsWith("/agency")) {
+        // /agency ve /admin rotalarının auth kontrolü yukarıdaki middleware
+        // fonksiyonunda: acente sayfaları /agency/login'e yönlendirir; yönetim
+        // yönetici olmayana "bulunamadı" döner (giriş: /admin/giris).
+        if (path.startsWith("/agency") || path.startsWith("/admin") || path.startsWith("/api/admin")) {
           return true;
         }
+
+        // Diğer API'ler oturumu kendileri denetler ve JSON 401 döner; giriş
+        // sayfasına yönlendirme (HTML) istemciyi yanıltıyordu.
+        if (path.startsWith("/api/")) return true;
 
         // All other routes require authentication
         return !!token;
@@ -61,7 +69,6 @@ export const config = {
     "/agency/:path*",
     "/reservations/:path*",
     "/booking/:path*",
-    "/profile/:path*",
     "/api/admin/:path*",
     "/api/booking/:path*",
     "/api/reservations/:path*",

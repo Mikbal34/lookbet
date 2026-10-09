@@ -3,6 +3,9 @@ FROM node:20-alpine AS deps
 WORKDIR /app
 
 COPY package.json package-lock.json ./
+# postinstall "prisma generate" çalıştırıyor; şema burada olmazsa npm ci düşüyor.
+COPY prisma ./prisma
+COPY prisma.config.ts ./
 RUN npm ci
 
 # ============ Stage 2: Build ============
@@ -18,6 +21,10 @@ RUN npx prisma generate
 # Build Next.js (standalone çıktı yalnızca Docker'da)
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV DOCKER_BUILD=1
+# NEXT_PUBLIC_* değişkenleri derlemede istemci koduna gömülüyor; compose'un
+# env_file'ı yalnız çalışma anında geliyor, o yüzden build-arg ile verilir.
+ARG NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=""
+ENV NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=$NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 RUN npm run build
 
 # ============ Stage 3: Production ============

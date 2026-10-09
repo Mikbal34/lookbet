@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/auth-options";
+import { authOptions, hesapOnbelleginiSil } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
+import { agencyUpdateSchema } from "@/lib/validators";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
@@ -10,7 +11,7 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
     const session = await getServerSession(authOptions);
 
     if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return NextResponse.json({ error: "Bu işlem için yönetici yetkisi gerekiyor" }, { status: 403 });
     }
 
     const { id } = await params;
@@ -39,13 +40,13 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
     });
 
     if (!agency) {
-      return NextResponse.json({ error: "Agency not found" }, { status: 404 });
+      return NextResponse.json({ error: "Acente bulunamadı" }, { status: 404 });
     }
 
     return NextResponse.json({ agency });
   } catch (error) {
     console.error("[ADMIN_AGENCIES_ID_GET]", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Sunucu hatası, biraz sonra tekrar dene" }, { status: 500 });
   }
 }
 
@@ -54,7 +55,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     const session = await getServerSession(authOptions);
 
     if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return NextResponse.json({ error: "Bu işlem için yönetici yetkisi gerekiyor" }, { status: 403 });
     }
 
     const { id } = await params;
@@ -73,13 +74,26 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     });
 
     if (!existing) {
-      return NextResponse.json({ error: "Agency not found" }, { status: 404 });
+      return NextResponse.json({ error: "Acente bulunamadı" }, { status: 404 });
     }
 
-    const body = await req.json();
-    const { discountRate, commission, feedId, notes } = body;
+    // Oranlar 0–100, feedId/notes metin (uzunluk sınırlı); yalnız gönderilen alanlar değişir.
+    const parsed = agencyUpdateSchema.safeParse(await req.json().catch(() => ({})));
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0]?.message ?? "Bilgileri kontrol et", details: parsed.error.flatten().fieldErrors },
+        { status: 422 }
+      );
+    }
+    const { discountRate, commission, feedId, notes, isApproved } = parsed.data;
 
     const updateData: Record<string, unknown> = {};
+    // Acenteyi kapatmak/açmak: onay kalkınca paneli kilitlenir, jetondaki
+    // agencyId de bir sonraki istekte boşalır (bkz. auth-options jwt).
+    if (isApproved !== undefined) {
+      updateData.isApproved = isApproved;
+      if (isApproved) updateData.approvedById = session.user.id;
+    }
     if (discountRate !== undefined) updateData.discountRate = discountRate;
     if (commission !== undefined) updateData.commission = commission;
     if (feedId !== undefined) updateData.feedId = feedId;
@@ -89,6 +103,9 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
       where: { id },
       data: updateData,
     });
+
+    // Onay/kapatma ve oranlar acentenin oturumuna hemen yansısın.
+    hesapOnbelleginiSil(updatedAgency.userId);
 
     await prisma.auditLog.create({
       data: {
@@ -104,49 +121,6 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ agency: updatedAgency });
   } catch (error) {
     console.error("[ADMIN_AGENCIES_ID_PATCH]", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-  }
-}
-
-export async function DELETE(_req: NextRequest, { params }: RouteParams) {
-  try {
-    const session = await getServerSession(authOptions);
-
-    if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    const { id } = await params;
-
-    const agency = await prisma.agency.findUnique({
-      where: { id },
-      select: { id: true, userId: true, companyName: true, isApproved: true },
-    });
-
-    if (!agency) {
-      return NextResponse.json({ error: "Agency not found" }, { status: 404 });
-    }
-
-    // Soft delete: deactivate the agency's user account
-    await prisma.user.update({
-      where: { id: agency.userId },
-      data: { isActive: false },
-    });
-
-    await prisma.auditLog.create({
-      data: {
-        userId: session.user.id,
-        action: "SOFT_DELETE_AGENCY",
-        entity: "Agency",
-        entityId: id,
-        oldData: agency,
-        newData: { isActive: false },
-      },
-    });
-
-    return NextResponse.json({ message: "Agency user deactivated successfully" });
-  } catch (error) {
-    console.error("[ADMIN_AGENCIES_ID_DELETE]", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Sunucu hatası, biraz sonra tekrar dene" }, { status: 500 });
   }
 }

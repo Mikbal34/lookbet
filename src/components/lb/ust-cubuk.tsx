@@ -1,0 +1,169 @@
+"use client";
+
+// İç sayfaların üst çubuğu (arama sonuçları, otel, ödeme…): logo · küçük arama
+// hapı · dil ve menü. Hapa tıklayınca çubuk aşağı açılır, tam arama çubuğu
+// gelir ve tıklanan alanın paneli açılır; sayfa kararır (Airbnb). Mobilde
+// hap tam ekran aramayı açar. `alt` verilirse (ör. filtre şeridi) çubuğun
+// altında, onunla birlikte yapışık durur.
+
+import * as React from "react";
+import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { useBicim } from "@/i18n/use-bicim";
+import { AramaCubugu, type AramaKontrol } from "./arama/arama-cubugu";
+import { MobilArama } from "./arama/mobil-arama";
+import type { AramaDegeri, PanelAdi } from "./arama/durum";
+import { Ikon } from "./ikon";
+import { Logo } from "./logo";
+import { Nesne, type NesneAdi } from "./nesne";
+import { DunyaDugmesi, MenuDugmesi } from "./ust-araclar";
+import { UygulamaGeri, durumCubugu, useUygulama } from "./uygulama";
+import s from "./ust-cubuk.module.css";
+
+/** Çubuğun tamamen turuncu olduğu kaydırma (px). */
+const TURUNCU_MESAFE = 80;
+
+export function UstCubuk({ deger, onDegis, onAra, nesne = "zil", alt, aramaYok, geri, turuncusuz }: {
+  deger: AramaDegeri;
+  onDegis: (d: AramaDegeri) => void;
+  onAra: () => void;
+  nesne?: NesneAdi;
+  alt?: React.ReactNode;
+  /** Ödeme gibi sayfalarda arama hapı gösterilmez. */
+  aramaYok?: boolean;
+  /** Uygulamada sekmesiz sayfa: hapın solunda geri düğmesi, doğrudan açıldıysa bu adrese gider. */
+  geri?: string;
+  /** Kaydırınca turuncuya dönmez, logo yazısız kalır (otel sayfası: müşteri isteği 2026-10-09). */
+  turuncusuz?: boolean;
+}) {
+  const t = useTranslations("ust.cubuk");
+  const tk = useTranslations("ortak");
+  const b = useBicim();
+  // Uygulamada menü ve dil düğmesi yok: Profil sekmesinde.
+  const uygulama = useUygulama();
+  const [acik, setAcik] = React.useState(false);
+  const [mobilAcik, setMobilAcik] = React.useState(false);
+  // Kaydırdıkça çubuk turuncuya döner (müşteri isteği): ilk TURUNCU_MESAFE px
+  // boyunca --k 0'dan 1'e, renk parmağı izler (CSS: .ust). Arama açıkken beyaz.
+  // Yarıyı geçince turuncu sayılır: uygulamada saat ve pil beyaza döner.
+  const ust = React.useRef<HTMLElement | null>(null);
+  const [turuncu, setTuruncu] = React.useState(false);
+  React.useEffect(() => {
+    let kare = 0;
+    const ciz = () => {
+      kare = 0;
+      const k = acik || turuncusuz ? 0 : Math.min(1, Math.max(0, window.scrollY / TURUNCU_MESAFE));
+      ust.current?.style.setProperty("--k", String(k));
+      setTuruncu(k >= 0.5);
+    };
+    const bak = () => {
+      if (!kare) kare = requestAnimationFrame(ciz);
+    };
+    ciz();
+    addEventListener("scroll", bak, { passive: true });
+    return () => {
+      removeEventListener("scroll", bak);
+      cancelAnimationFrame(kare);
+    };
+  }, [acik, turuncusuz]);
+  // Uygulamada turuncu çubukta saat ve pil beyaz; sayfadan çıkınca koyuya döner.
+  React.useEffect(() => {
+    if (uygulama) durumCubugu(turuncu ? "DARK" : "LIGHT");
+  }, [uygulama, turuncu]);
+  React.useEffect(() => () => void (uygulama && durumCubugu("LIGHT")), [uygulama]);
+  const kok = React.useRef<HTMLDivElement | null>(null);
+  const buyuk = React.useRef<HTMLDivElement | null>(null);
+  const kontrol = React.useRef<AramaKontrol>(null);
+
+  const ac = (alan?: PanelAdi) => {
+    if (matchMedia("(max-width: 720px)").matches) return setMobilAcik(true);
+    setAcik(true);
+    setTimeout(() => kontrol.current?.panelAc(alan ?? "yer"), matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 220);
+  };
+  const kapat = React.useCallback(() => {
+    kontrol.current?.panelKapat();
+    setAcik(false);
+  }, []);
+  React.useEffect(() => {
+    if (!acik) return;
+    const tus = (e: KeyboardEvent) => e.key === "Escape" && kapat();
+    const kaydir = () => kapat();
+    document.addEventListener("keydown", tus);
+    addEventListener("scroll", kaydir, { passive: true, once: true });
+    return () => {
+      document.removeEventListener("keydown", tus);
+      removeEventListener("scroll", kaydir);
+    };
+  }, [acik, kapat]);
+
+  // Hapın tarih ve misafir satırı: "26–28 Eki", "2 yetişkin, 1 çocuk".
+  const tarih = !deger.giris ? null : deger.cikis ? b.aralik(deger.giris, deger.cikis) : `${b.gunAy(deger.giris)} – ?`;
+  const misafir = deger.cocuklar.length
+    ? t("misafirCocuklu", { yetiskin: deger.yetiskin, cocuk: deger.cocuklar.length })
+    : tk("yetiskin", { sayi: deger.yetiskin });
+  const ara = () => {
+    setAcik(false);
+    setMobilAcik(false);
+    onAra();
+  };
+
+  return (
+    <>
+      <header ref={ust} className={`lb ${s.ust}`} data-acik={acik || undefined} data-turuncu={turuncu || undefined}>
+        <div className={s.satir} data-geri={(uygulama && geri) || undefined}>
+          {uygulama && geri && <UygulamaGeri yedek={geri} />}
+          <Link href="/" className={`lb-y lb-logo ${s.logo}`}><Logo yazi={!turuncusuz} /></Link>
+          {!aramaYok && (
+            <button
+              type="button"
+              className={s.hap}
+              aria-label={t("aramayiDegistir")}
+              aria-expanded={acik}
+              onClick={(e) => ac((e.target as HTMLElement).closest<HTMLElement>("[data-alan]")?.dataset.alan as PanelAdi | undefined)}
+            >
+              <Nesne ad={nesne} boyut={30} />
+              <span data-alan="yer">{deger.yer || t("nereye")}</span>
+              <span data-alan="tarih" className={s.soluk}>{tarih ?? t("tarihEkle")}</span>
+              <span data-alan="misafir" className={s.soluk}>{misafir}</span>
+              {/* Telefonda tek sütun: yer, altında tarih ve misafir. */}
+              <em className={s.hapIki}>
+                <b>{deger.yer || t("nereye")}</b>
+                <small>{tarih ?? t("tarihEkle")} · {misafir}</small>
+              </em>
+              <i><Ikon ad="search" boyut={16} kalinlik={2.6} /></i>
+            </button>
+          )}
+          {!uygulama && (
+            <div className={s.sag}>
+              <DunyaDugmesi className={s.dunya} />
+              <MenuDugmesi />
+            </div>
+          )}
+        </div>
+        {!aramaYok && (
+          <div className={s.genis} aria-hidden={!acik}>
+            <div className={s.genisIc}>
+              <AramaCubugu
+                akis
+                deger={deger}
+                onDegis={onDegis}
+                onAra={ara}
+                kokRef={kok}
+                buyukRef={buyuk}
+                kontrol={kontrol}
+                nesne={nesne}
+                onKucuk={() => {}}
+                onTek={() => setMobilAcik(true)}
+              />
+            </div>
+          </div>
+        )}
+        {alt && <div className={s.alt}>{alt}</div>}
+      </header>
+      <div className={s.perde} data-acik={acik || undefined} onClick={kapat} />
+      {!aramaYok && (
+        <MobilArama acik={mobilAcik} deger={deger} onDegis={onDegis} onAra={ara} onKapat={() => setMobilAcik(false)} />
+      )}
+    </>
+  );
+}

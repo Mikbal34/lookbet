@@ -1,7 +1,10 @@
+import { getLocale, getTranslations } from "next-intl/server";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
+import { otelBilgisiEkle } from "@/lib/rezervasyon-otel";
+import { rezervasyonYaniti } from "@/lib/rezervasyon-yanit";
 
 type ReservationStatus = "PENDING" | "CONFIRMED" | "CANCELLED" | "FAILED";
 
@@ -19,21 +22,21 @@ const VALID_STATUSES: ReservationStatus[] = [
 // GET /api/reservations
 // Requires authentication.
 // Role-scoped listing:
-//   ADMIN   – all reservations
 //   AGENCY  – reservations belonging to their agency
-//   CUSTOMER – only their own reservations
+//   CUSTOMER, ADMIN – only their own reservations (admin: Yönetim › Rezervasyonlar)
 //
 // Query params:
 //   status  – filter by ReservationStatus
 //   page    – 1-based page number (default: 1)
 //   limit   – page size (default: 20, max: 100)
 export async function GET(request: NextRequest) {
+  const t = await getTranslations("api");
   try {
     const session = await getServerSession(authOptions);
 
     if (!session?.user) {
       return NextResponse.json(
-        { error: "Bu işlem için giriş yapmanız gerekiyor" },
+        { error: t("genel.girisGerekli") },
         { status: 401 }
       );
     }
@@ -61,26 +64,62 @@ export async function GET(request: NextRequest) {
     if (role === "AGENCY") {
       if (!agencyId) {
         return NextResponse.json(
-          { error: "Acente bilgisi bulunamadı" },
+          { error: t("rezervasyon.acenteYok") },
           { status: 403 }
         );
       }
       where.agencyId = agencyId;
-    } else if (role === "CUSTOMER") {
+    } else {
+      // Müşteri ve yönetici: kendi rezervasyonları ("Rezervasyonlarım").
+      // Yönetici tüm rezervasyonları Yönetim › Rezervasyonlar'da görür.
       where.userId = userId;
     }
-    // ADMIN: no additional constraint – sees everything
 
     if (statusParam && VALID_STATUSES.includes(statusParam as ReservationStatus)) {
       where.status = statusParam as ReservationStatus;
     }
+
+    // ?upcoming=true — konaklaması henüz bitmemiş, iptal/başarısız olmayan
+    // rezervasyonlar, girişe en yakın önce. Uygulama ana sayfasındaki
+    // "yaklaşan rezervasyonun" kartı bunu kullanıyor: aksi hâlde istemcinin
+    // sayfalarca kayıt çekip kendi ayıklaması gerekirdi.
+    const upcoming = searchParams.get("upcoming") === "true";
+    if (upcoming) {
+      where.checkOut = { gte: new Date() };
+      where.status = { in: ["PENDING", "CONFIRMED"] as ReservationStatus[] };
+    }
+
+    // ?zaman=gelecek|gecmis|iptal — Rezervasyonlarım sayfasındaki üç sekme.
+    //   gelecek: konaklaması bitmemiş, aktif (beklemede/onaylı)
+    //   gecmis:  konaklaması bitmiş, aktif kalmış (tamamlanan)
+    //   iptal:   iptal edilmiş ya da tamamlanamamış, tarihi ne olursa olsun
+    const zaman = searchParams.get("zaman");
+    const simdi = new Date();
+    const AKTIF = ["PENDING", "CONFIRMED"] as ReservationStatus[];
+    const ZAMAN_KOSULU: Record<string, ReservationWhereInput> = {
+      gelecek: { checkOut: { gte: simdi }, status: { in: AKTIF } },
+      gecmis: { checkOut: { lt: simdi }, status: { in: AKTIF } },
+      iptal: { status: { in: ["CANCELLED", "FAILED"] as ReservationStatus[] } },
+    };
+    const temel = { ...where };
+    if (zaman && ZAMAN_KOSULU[zaman]) Object.assign(where, ZAMAN_KOSULU[zaman]);
 
     const [reservations, total] = await Promise.all([
       prisma.reservation.findMany({
         where,
         skip,
         take: limit,
-        orderBy: { createdAt: "desc" },
+        // Gelecek: girişe en yakın önce. Geçmiş ve varsayılan: en yeni önce.
+        // İkinci anahtar id: aynı tarihli kayıtlar sayfalar arasında atlanmasın
+        // ya da tekrarlanmasın.
+        orderBy: [
+          upcoming || zaman === "gelecek"
+            ? { checkIn: "asc" as const }
+            : zaman === "gecmis"
+              ? { checkIn: "desc" as const }
+              : { createdAt: "desc" as const },
+          { id: "asc" as const },
+        ],
         include: {
           user: { select: { id: true, name: true, email: true } },
           agency: { select: { id: true, companyName: true } },
@@ -89,8 +128,23 @@ export async function GET(request: NextRequest) {
       prisma.reservation.count({ where }),
     ]);
 
+    // Sekme başlıklarındaki sayılar (yalnız ?zaman ile istenince).
+    const sayilar = zaman
+      ? Object.fromEntries(
+          await Promise.all(
+            Object.entries(ZAMAN_KOSULU).map(async ([k, kosul]) => [k, await prisma.reservation.count({ where: { ...temel, ...kosul } })] as const)
+          )
+        )
+      : undefined;
+
+    // Kartlardaki fotoğraf, yıldız, konum ve pansiyon adı; net fiyat ve
+    // yönetim alanları yalnız yöneticiye (lib/rezervasyon-yanit).
+    // Pansiyon adları: müşteride sitenin dili, acente panelinde Türkçe.
+    const cikti = (await otelBilgisiEkle(reservations, role === "CUSTOMER" ? await getLocale() : "tr")).map((r) => rezervasyonYaniti(r, role));
+
     return NextResponse.json({
-      data: reservations,
+      data: cikti,
+      sayilar,
       pagination: {
         total,
         page,
@@ -101,7 +155,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("[GET /api/reservations]", error);
     return NextResponse.json(
-      { error: "Rezervasyonlar alınırken bir hata oluştu" },
+      { error: t("rezervasyon.listeHatasi") },
       { status: 500 }
     );
   }

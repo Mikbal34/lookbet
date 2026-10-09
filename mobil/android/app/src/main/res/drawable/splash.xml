@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Yedek açılış görseli (yeni açılış sistemi çalışmazsa): beyaz zemin, ortada işaret. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@android:color/white"/>
+    <item android:drawable="@drawable/splash_isaret" android:gravity="center"/>
+</layer-list>

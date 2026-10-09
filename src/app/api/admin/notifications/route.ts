@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { sayfalama } from "../_ortak";
 
 const createNotificationSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -21,16 +22,14 @@ export async function GET(req: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return NextResponse.json({ error: "Bu işlem için yönetici yetkisi gerekiyor" }, { status: 403 });
     }
 
     const { searchParams } = new URL(req.url);
-    const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
-    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") ?? "20", 10)));
+    const { page, limit, skip } = sayfalama(searchParams);
     const isReadParam = searchParams.get("isRead");
-    const userId = searchParams.get("userId");
-
-    const skip = (page - 1) * limit;
+    // ?kutu=ben: oturumdaki yöneticinin kendi bildirimleri (Yönetim › Bildirimler).
+    const userId = searchParams.get("kutu") === "ben" ? session.user.id : searchParams.get("userId");
 
     const where: Record<string, unknown> = {};
 
@@ -53,7 +52,7 @@ export async function GET(req: NextRequest) {
         },
       }),
       prisma.notification.count({ where }),
-      prisma.notification.count({ where: { isRead: false } }),
+      prisma.notification.count({ where: { ...(userId ? { userId } : {}), isRead: false } }),
     ]);
 
     return NextResponse.json({
@@ -68,7 +67,30 @@ export async function GET(req: NextRequest) {
     });
   } catch (error) {
     console.error("[ADMIN_NOTIFICATIONS_GET]", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Sunucu hatası, biraz sonra tekrar dene" }, { status: 500 });
+  }
+}
+
+// PATCH /api/admin/notifications { markAllRead: true } — yöneticinin kendi
+// okunmamış bildirimlerini okundu yapar.
+export async function PATCH(req: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || session.user.role !== "ADMIN") {
+      return NextResponse.json({ error: "Bu işlem için yönetici yetkisi gerekiyor" }, { status: 403 });
+    }
+    const body = await req.json().catch(() => ({}));
+    if (body?.markAllRead !== true) {
+      return NextResponse.json({ error: "markAllRead: true gerekli" }, { status: 400 });
+    }
+    const { count } = await prisma.notification.updateMany({
+      where: { userId: session.user.id, isRead: false },
+      data: { isRead: true },
+    });
+    return NextResponse.json({ count });
+  } catch (error) {
+    console.error("[ADMIN_NOTIFICATIONS_PATCH]", error);
+    return NextResponse.json({ error: "Sunucu hatası, biraz sonra tekrar dene" }, { status: 500 });
   }
 }
 
@@ -77,15 +99,15 @@ export async function POST(req: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return NextResponse.json({ error: "Bu işlem için yönetici yetkisi gerekiyor" }, { status: 403 });
     }
 
-    const body = await req.json();
+    const body = await req.json().catch(() => null);
     const parsed = createNotificationSchema.safeParse(body);
 
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Validation failed", details: parsed.error.flatten() },
+        { error: parsed.error.issues[0]?.message ?? "Bilgileri kontrol et", details: parsed.error.flatten() },
         { status: 400 }
       );
     }
@@ -101,7 +123,7 @@ export async function POST(req: NextRequest) {
 
       if (users.length === 0) {
         return NextResponse.json(
-          { error: "No active users found for the specified role" },
+          { error: "Bu roldeki etkin kullanıcı yok" },
           { status: 404 }
         );
       }
@@ -133,7 +155,7 @@ export async function POST(req: NextRequest) {
     // Send to a single user
     const userExists = await prisma.user.findUnique({ where: { id: userId! } });
     if (!userExists) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return NextResponse.json({ error: "Kullanıcı bulunamadı" }, { status: 404 });
     }
 
     const notification = await prisma.notification.create({
@@ -161,6 +183,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ notification }, { status: 201 });
   } catch (error) {
     console.error("[ADMIN_NOTIFICATIONS_POST]", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Sunucu hatası, biraz sonra tekrar dene" }, { status: 500 });
   }
 }

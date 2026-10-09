@@ -1,0 +1,152 @@
+{
+  "nereye": "Where",
+  "nereyeGidiyorsun": "Where to?",
+  "yerAra": "Search cities, regions or hotels",
+  "tarihEkle": "Add dates",
+  "otelAra": "Search hotels",
+  "tumunuTemizle": "Clear all",
+  "cubuk": {
+    "tarihler": "Dates",
+    "girisCikisEkle": "Add dates",
+    "misafirler": "Guests",
+    "buyut": "Expand search"
+  },
+  "mobil": {
+    "esnek": "I'm flexible",
+    "neZaman": "When",
+    "neZamanBaslik": "When's your trip?",
+    "kim": "Who",
+    "kimBaslik": "Who's coming?"
+  },
+  "yer": {
+    "onerilen": "Suggested destinations",
+    "populer": {
+      "bodrum": { "ad": "Bodrum", "alt": "Bays, marinas and beach clubs" },
+      "antalya": { "ad": "Antalya", "alt": "All-inclusive stays, long beaches" },
+      "kapadokya": { "ad": "Cappadocia", "alt": "Cave hotels and hot-air balloons" },
+      "istanbul": { "ad": "Istanbul", "alt": "The Bosphorus and the historic peninsula" },
+      "uludag": { "ad": "Uludağ", "alt": "Ski resort hotels" },
+      "afyonkarahisar": { "ad": "Afyonkarahisar", "alt": "Thermal spa hotels" }
+    },
+    "bulunamadi": "We couldn't find a place called “{q}”",
+    "ipucu": "Try a city, district or region; you can also search by hotel name.",
+    "adiylaAra": "Search for “{q}”",
+    "adiylaAraAlt": "Hotels with this in their name",
+    "otelSayisi": "{sayi, plural, one {# hotel} other {# hotels}}"
+  },
+  "takvim": {
+    "oncekiAy": "Previous month",
+    "sonrakiAy": "Next month",
+    "hizli": {
+      "buHaftaSonu": "This weekend",
+      "gelecekHaftaSonu": "Next weekend",
+      "birHafta": "One week"
+    },
+    "gunSec": "Select check-in and check-out dates",
+    "temizle": "Clear"
+  },
+  "misafir": {
+    "ozet": "{yetiskin, plural, one {# adult} other {# adults}}{cocuk, plural, =0 {} one {, # child} other {, # children}}",
+    "yetiskin": { "ad": "Adults", "alt": "Ages 18 or above", "azalt": "Decrease adults", "artir": "Increase adults" },
+    "cocuk": { "ad": "Children", "alt": "Ages 0–17", "azalt": "Decrease children", "artir": "Increase children" },
+    "yasNotu": "Prices depend on children's ages.",
+    "cocukYasi": "Age of child {sira}",
+    "birYasAlti": "Under 1",
+    "yas": "{sayi, plural, one {# year old} other {# years old}}"
+  },
+  "sonuc": {
+    "haritaYukleniyor": "Loading map…",
+    "bosMetin": "Choose a destination and dates to see available hotels here.",
+    "araniyor": "Searching for hotels",
+    "soruluyor": "Checking available hotels in {yer}",
+    "karsilastiriliyor": "Comparing prices",
+    "neredeyseHazir": "Almost there",
+    "yukleniyor": "Loading hotels",
+    "hataBaslik": "We couldn't search right now",
+    "hataMetin": "Please try again in a moment.",
+    "filtreBos": "No hotels match these filters",
+    "filtreBosMetin": "Try removing a few filters or widening the price range.",
+    "tarihBos": "No hotels available for these dates",
+    "tarihBosMetin": "Try changing the dates or destination and search again.",
+    "filtreleriTemizle": "Clear filters",
+    "geceIcin": "for {sayi, plural, one {# night} other {# nights}}",
+    "sayfalar": "Pages",
+    "oncekiSayfa": "Previous page",
+    "sonrakiSayfa": "Next page",
+    "baslik": "{sayi, plural, one {<b>#</b> hotel} other {<b>#</b> hotels}} in {yer}",
+    "baslikDevam": "<b>{sayi, number}+</b> hotels in {yer}",
+    "baslikBekliyor": "… hotels in {yer}",
+    "vergiDahil": "Prices include taxes",
+    "sirala": "Sort by",
+    "siralama": {
+      "oneri": "Recommended",
+      "ucuz": "Price: low to high",
+      "pahali": "Price: high to low",
+      "yildiz": "Star rating"
+    },
+    "dahaFazlaAraniyor": "Searching for more hotels…",
+    "harita": "Map",
+    "otellerGeliyor": "Hotels on the way…",
+    "haritadaOtelYok": "No hotels to show on the map",
+    "listeyiGoster": "Show list",
+    "haritayiBuyut": "Expand map",
+    "liste": "List"
+  },
+  "filtre": {
+    "filtreler": "Filters",
+    "secenek": {
+      "iptal": "Free cancellation",
+      "kahvalti": "Breakfast included",
+      "hepsiDahil": "All-inclusive",
+      "yildiz4": "4 stars and up"
+    },
+    "oneriler": "Recommended for you",
+    "fiyatAraligi": "Price range",
+    "fiyatNotu": "Nightly price, taxes included",
+    "enDusukEtiket": "Minimum nightly price",
+    "enYuksekEtiket": "Maximum nightly price",
+    "enDusuk": "Minimum",
+    "enYuksek": "Maximum",
+    "pansiyon": "Meal plan",
+    "yildiz": "Star rating",
+    "tumu": "Any",
+    "uyruk": "Guest nationality",
+    "uyrukNotu": "Hotel prices can vary with the guest's nationality; changing it runs the search again.",
+    "ulke": {
+      "tr": "Türkiye",
+      "de": "Germany",
+      "gb": "United Kingdom",
+      "fr": "France",
+      "ru": "Russia",
+      "us": "United States",
+      "nl": "Netherlands",
+      "be": "Belgium",
+      "it": "Italy",
+      "es": "Spain"
+    },
+    "yenidenAra": "Search again",
+    "goster": "Show {sayi, plural, one {# hotel} other {# hotels}}"
+  },
+  "kart": {
+    "fotoYok": "No photo",
+    "ucretsizIptal": "Free cancellation",
+    "otel": "Hotel",
+    "otelYer": "Hotel · {yer}",
+    "favoriyeEkle": "{ad}: add to favourites",
+    "favoridenCikar": "{ad}: remove from favourites"
+  },
+  "kampanya": {
+    "erkenRezervasyon": "Early booking: {yuzde, number}% off",
+    "sonDakika": "Last minute: {yuzde, number}% off",
+    "uzunKonaklama": "Long stay: {yuzde, number}% off",
+    "donem": "Special offer: {yuzde, number}% off",
+    "indirim": "{yuzde, number}% off"
+  },
+  "harita": {
+    "konumYok": "There's no location info for these results.",
+    "gosterilemiyor": "The map can't be shown right now."
+  },
+  "hata": {
+    "arama": "Something went wrong while searching"
+  }
+}
